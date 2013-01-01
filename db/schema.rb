@@ -258,7 +258,9 @@ end
     t.string   "informant_relationship_to_person",         limit: 255
     t.string   "other_informant_relationship_to_person",  limit: 255
     t.string   "informant_designation",                    limit: 255
+    t.string   "level",                                 limit: 10
     t.date     "date_registered",                                                null: false
+
     t.string   "document_id", limit: 100
     t.datetime "created_at",                                                     null: false
     t.datetime "updated_at",                                                     null: false
