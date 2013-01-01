@@ -979,6 +979,15 @@
 
         jQuery("#nidcomparison").modal("show");
         highlightNRISDiff();
+
+    <% end %>
+
+
+    <% unless @nris_up %>
+        var lockableFields = ["Check Completeness", "Confirm Completeness", "Approve for Printing", "Approve for Re-printing"];
+        for (var i = 0; i < lockableFields.length; i++){
+            __$(lockableFields[i]).setAttribute("disabled", "disabled")
+        }
     <% end %>
 </script>
 

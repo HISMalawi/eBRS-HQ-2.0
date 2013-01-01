@@ -86,6 +86,7 @@ class ApplicationController < ActionController::Base
   end
 
   def check_notifications
+    @nris_up = File.read("#{Rails.root}/public/nris_status").to_s == "true"
     #@notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
   end
 
