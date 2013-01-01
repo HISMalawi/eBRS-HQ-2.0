@@ -1000,7 +1000,7 @@ end
             AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
             #{entry_num_query} #{fac_serial_query} #{serial_num_query}  #{name_query} #{gender_query} #{place_of_birth_query} #{status_query}
            AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
-                person.birthdate, person.gender) REGEXP '#{search_val}' ")
+                person.birthdate, person.gender) REGEXP  \"#{search_val}\" ")
 
     total = main.select(" count(*) c ")[0]['c'] rescue 0
     page = (params[:start].to_i / params[:length].to_i) + 1
