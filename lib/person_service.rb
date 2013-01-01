@@ -787,7 +787,7 @@ end
     main = main.where("pbd.location_created_at IN (#{reg_facilities.join(', ')}) AND district_of_birth = #{birth_district}
             AND DATE(pbd.created_at) BETWEEN '#{start_date}' AND '#{end_date}' AND pbd.district_id_number IS NOT NULL
             AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.middle_name, n.last_name,
-                DATE_FORMAT(person.birthdate, '%d/%b/%Y'), person.gender) REGEXP '#{search_val}' ")
+                DATE_FORMAT(person.birthdate, '%d/%b/%Y'), person.gender) REGEXP \"#{search_val}\" ")
 
     total = main.select(" count(*) c ")[0]['c']
     page = (params[:start].to_i / params[:length].to_i) + 1
