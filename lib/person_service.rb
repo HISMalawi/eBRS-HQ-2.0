@@ -931,13 +931,13 @@ end
           fac_serial_query =  " AND pbd.facility_serial_number = '#{v}' " unless v.blank?
         when 'names'
           if v["last_name"].present?
-            name_query += " AND  n.last_name = '#{v["last_name"]}'"
+            name_query += " AND  n.last_name = \"#{v["last_name"]}\" "
           end
           if v["middle_name"].present?
-            name_query += " AND n.middle_name = '#{v["last_name"]}'"
+            name_query += " AND n.middle_name = \"#{v["last_name"]}\" "
           end
           if v["first_name"].present?
-            name_query += " AND n.first_name = '#{v["first_name"]}'"
+            name_query += " AND n.first_name = \"#{v["first_name"]}\" "
           end
         when 'gender'
           gender_query = " AND person.gender = '#{v}' "  unless v.blank?

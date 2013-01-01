@@ -8,6 +8,7 @@ class SearchController < ApplicationController
 
   def search_cases
     data = PersonService.search_results(params)
+
     render :text => data.to_json and return
   end
 end
