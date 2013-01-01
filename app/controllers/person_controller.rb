@@ -237,7 +237,7 @@ class PersonController < ApplicationController
                   "Family Name" => "#{@informant_name.last_name rescue nil}"
               },
               {
-                  "Relationship to child" => "#{@child.informant.relationship_to_child rescue ""}",
+                  "Relationship to child" => "#{@birth_details.informant_relationship_to_child rescue ""}",
                   "ID Number" => "#{@informant_person.id_number rescue ""}"
               },
               {
