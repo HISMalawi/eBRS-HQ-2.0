@@ -2,8 +2,10 @@
 
 # Version of your assets, change this if you want to expire all your assets.
 Rails.application.config.assets.version = '1.0'
-Rails.application.config.assets.precompile += %w( dashboard.js )
+Rails.application.config.assets.precompile += %w( bootstrap/* )
 Rails.application.config.assets.precompile += %w( DataTables/* )
+Rails.application.config.assets.precompile += %w( js/* )
+Rails.application.config.assets.precompile += %w( extras/* )
 
 
 # Add additional assets to the asset load path

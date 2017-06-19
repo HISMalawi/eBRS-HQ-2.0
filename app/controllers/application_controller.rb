@@ -2,7 +2,7 @@ class ApplicationController < ActionController::Base
   # Prevent CSRF attacks by raising an exception.
   # For APIs, you may want to use :null_session instead.
   #protect_from_forgery with: :exception
-  protect_from_forgery	#with: :null_session
+  #protect_from_forgery	#with: :null_session
 
   before_filter :check_if_logged_in, :except => ['login']
 
@@ -46,20 +46,11 @@ class ApplicationController < ActionController::Base
   private
 
   def check_if_logged_in
-    application_mode = SETTINGS['application_mode']
-    
-    if application_mode == 'DC'
-      Location.current_district         =  Location.find(SETTINGS['district_id'])
-      Location.current                  =  Location.find(SETTINGS['district_id'])
-    else
-      Location.current_health_facility  =  Location.find(SETTINGS['facility_id'])
-      Location.current                  =  Location.find(SETTINGS['facility_id'])
-    end
-
     if session[:user_id].blank?
       if request.filtered_parameters["action"] == 'create' and request.filtered_parameters["controller"] == 'logins'
         return
       end
+      raise session[:user_id].inspect
       redirect_to '/login' and return
     else
       User.current = User.find(session[:user_id])

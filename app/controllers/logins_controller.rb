@@ -2,7 +2,8 @@ class LoginsController < ApplicationController
   skip_before_filter :perform_basic_auth, :only => :logout
 
   def login
-    @coa = icoFolder("coa")
+    #@coa = icoFolder("coa")
+    render :layout => false
   end
 
   def create
@@ -12,7 +13,6 @@ class LoginsController < ApplicationController
     if user and user.password_matches?(password)
       #login! user
       session[:user_id] = user.id
-
       if (Time.now.to_date - user.last_password_date.to_date).to_i >= 90
          if user.password_attempt >= 5 && username.downcase != 'admin'
            logout!
@@ -31,7 +31,7 @@ class LoginsController < ApplicationController
           
          redirect_to default_path and return if back_or_default.match(/login/)
 
-         redirect_to back_or_default
+         redirect_to back_or_default and return
       end   
       
     else
