@@ -1,6 +1,20 @@
 <style>
 .dashboard-title {
-  margin-left: 55px;
+  margin-left: 5%;
+}
+
+.statistics {
+  margin-right: 5%;
+}
+
+.separator-line {
+  width: 100%;
+  border-style: solid;
+  border-width: 1px 0px 0px 0px;
+}
+
+.charts {
+  margin-left: 5%;
 }
 
 </style>
@@ -8,7 +22,9 @@
 
 <div class='dashboard-title'><h3>National statistics summary</h3></div>
 
-<div class="row">
+<div class='separator-line'>&nbsp;</div>
+
+<div class="row statistics">
   <div class="col-lg-12 main-chart"> 
     
     <div class="row ">
@@ -37,4 +53,21 @@
     </div><!-- /row mt -->	
 
   </div>
+
+
+  <div class="row charts">
+    <div class="col-lg-12"> 
+      
+      <div class="col-md-6">
+        <%= render partial: 'person/charts/bar_statistics' %>
+      </div>
+       
+      <div class="col-md-6">
+        .........
+      </div> 
+
+    </div> 
+  </div> 
+
+
 </div>

@@ -1,0 +1,88 @@
+<style>
+
+.panel-btns {
+  margin-top: 2%;
+}
+
+.panel-btns {
+  height: 120px;
+  width:  220px;
+  font-size: 15px;
+}
+
+.panel-btns-containers {
+}
+
+.panel-btns-main-containers {
+  width: 100%;
+}
+
+.dashboard-title {
+  margin-left: 1%;
+}
+
+.separator-line {
+  width: 100%;
+  border-style: solid;
+  border-width: 1px 0px 0px 0px;
+}
+</style>
+
+
+<div class='dashboard-title'><h3>Task(s)</h3></div>
+
+<div class='separator-line'>&nbsp;</div>
+
+
+<div id='button-container' class="panel-btns-main-containers"></div>
+
+
+
+    <%
+      attributes = [
+        ['Newly Received (HQ)', 53],
+        ['Print Que (HQ)', 2126],
+        ['Verified (HQ)', 3771],
+        ['Re-print Que (HQ)', 47],
+        ['Suspected Duplicate (HQ)', 245],
+        ['Incomplete Record (HQ)', 1],
+        ['Printed (HQ)', 2003],
+        ['Printed and Dispatched(HQ)', 72344],
+        ['Voided (HQ)', 50],
+      ]
+    %>
+
+
+<script>
+  var container = document.getElementById('button-container');
+
+  var row_count = 1;
+  var attributes = [];
+  <%(attributes).each do |a, count|%>
+    attributes.push(["<%=a%>", "<%=count%>"]);  
+  <%end%>
+
+  var row = document.createElement('div');
+  row.setAttribute('class','row btn-row');
+  container.appendChild(row);
+
+  for(var i = 0; i < attributes.length; i++){
+    var cell = document.createElement('div');
+    cell.setAttribute('class','col-lg-2 panel-btns-containers');
+    var btn = document.createElement('button');
+    btn.setAttribute('type','button');
+    btn.setAttribute('class','btn btn-primary btn-lg panel-btns');
+    btn.innerHTML = attributes[i][0];
+    cell.appendChild(btn);
+    row.appendChild(cell);
+
+    if(row_count == 5) {
+      var row = document.createElement('div');
+      row.setAttribute('class','row btn-row');
+      container.appendChild(row);
+      row_count = 0;
+    }
+    row_count++;
+  }
+
+</script>

@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get '/tasks' => 'person#tasks'
+
   get 'users/index'
 
   root 'person#index'
