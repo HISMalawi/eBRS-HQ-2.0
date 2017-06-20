@@ -1,1 +1,40 @@
-sssssssssssssss
+<style>
+.dashboard-title {
+  margin-left: 55px;
+}
+
+</style>
+
+
+<div class='dashboard-title'><h3>National statistics summary</h3></div>
+
+<div class="row">
+  <div class="col-lg-12 main-chart"> 
+    
+    <div class="row ">
+      <%
+        attributes = [
+          ['Newly Received (HQ)', 53],
+          ['Print Que (HQ)', 2126],
+          ['Verified (HQ)', 3771],
+          ['Re-print Que (HQ)', 47],
+          ['Suspected Duplicate (HQ)', 245],
+          ['Incomplete Record (HQ)', 1],
+          ['Printed (HQ)', 2003],
+          ['Printed and Dispatched(HQ)', 72344],
+          ['Voided (HQ)', 50],
+        ]
+      %>
+      <%(attributes || []).each do |a, count|%>   
+      <div class="col-md-2 col-sm-2 col-md-offset-1 box0">
+        <div class="box1">
+          <span class="li_heart"></span>
+          <h3><%=count%></h3>
+        </div>
+        <p><%= a %></p>
+      </div>
+      <%end%>
+    </div><!-- /row mt -->	
+
+  </div>
+</div>
