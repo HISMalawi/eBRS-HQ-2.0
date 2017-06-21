@@ -31,7 +31,7 @@
 </style>
 
 
-<div class='dashboard-title'><h3>Task(s)</h3></div>
+<div class='dashboard-title'><h3>Locations</h3></div>
 
 <div class='separator-line'>&nbsp;</div>
 
@@ -42,15 +42,10 @@
 
     <%
       attributes = [
-        ['Newly Received (HQ)', 53],
-        ['Print Que (HQ)', 2126],
-        ['Verified (HQ)', 3771],
-        ['Re-print Que (HQ)', 47],
-        ['Suspected Duplicate (HQ)', 245],
-        ['Incomplete Record (HQ)', 1],
-        ['Printed (HQ)', 2003],
-        ['Printed and Dispatched(HQ)', 72344],
-        ['Voided (HQ)', 50],
+        ['Districts', 'dc'],
+        ['Health facilities', 'fc'],
+        ['Traditionl Authority', 'ta'],
+        ['Villages', 'vl']
       ]
     %>
 
@@ -60,8 +55,8 @@
 
   var row_count = 1;
   var attributes = [];
-  <%(attributes).each do |a, count|%>
-    attributes.push(["<%=a%>", "<%=count%>"]);  
+  <%(attributes).each do |name, id|%>
+    attributes.push(["<%=name%>", "<%=id%>"]);  
   <%end%>
 
   var row = document.createElement('div');
@@ -73,6 +68,7 @@
     cell.setAttribute('class','col-lg-2 panel-btns-containers');
     var btn = document.createElement('button');
     btn.setAttribute('type','button');
+    btn.setAttribute('onclick',"document.location='/location/" + attributes[i][1] + "'");
     btn.setAttribute('class','btn btn-primary btn-lg panel-btns');
     btn.innerHTML = attributes[i][0];
     cell.appendChild(btn);

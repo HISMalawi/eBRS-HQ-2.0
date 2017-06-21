@@ -1,4 +1,10 @@
 Rails.application.routes.draw do
+  get '/sites' => 'location#sites'
+
+  get 'location/:location_tag' => 'location#tag'
+
+  get 'get_location/:location_tag_id' => 'location#get_location'
+
   get '/tasks' => 'person#tasks'
 
   get 'users/index'

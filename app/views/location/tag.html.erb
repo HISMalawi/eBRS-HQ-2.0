@@ -1,0 +1,99 @@
+<style>
+.dashboard-title {
+}
+
+.separator-line {
+  width: 100%;
+  border-style: solid;
+  border-width: 1px 0px 0px 0px;
+}
+
+.time_period {
+  float: right;
+  right: 10px;
+  top: 30px;
+  margin-bottom: 20px;
+}
+
+</style>
+
+<%#=javascript_include_tag "datatables/jquery" %>
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap.min" %>
+
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+
+<div class='dashboard-title'><h3>Manage location (<%=params[:location_tag]%>)</h3></div>
+<div class='separator-line'>&nbsp;</div>
+
+<%if params[:location_tag] == 'dc'%>
+<%= render partial: "location/loc/#{params[:location_tag]}" %>
+<%elsif params[:location_tag] == 'ta'%>
+<%elsif params[:location_tag] == 'village'%>
+<%elsif params[:location_tag] == 'facility'%>
+<%end%>
+
+<script>
+
+var data_Table = jQuery('#sites');
+data_Table.DataTable({
+  "order": [[0,"asc"],[1,"asc"]],
+  "pageLength": 10
+});
+
+/*
+var data_Table = null;
+
+function dataT() {
+  data_Table = $('#sites').dataTable( {
+    "order": [[ 4, "asc" ],[3,"asc"],[2,"asc"]],
+    "pageLength": 10
+  } );
+}
+
+*/
+
+function addRows(data) {
+  locations = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < locations.length; i++) {
+    location_id      = locations[i]['location_id'];
+    name             = locations[i]['name'];
+    description      = locations[i]['description'];
+    latitude         = locations[i]['latitude'];
+    longitude        = locations[i]['longitude'];
+    code             = locations[i]['code'];
+
+    data_Table.api().row.add([code, name, description, latitude, longitude]).draw();
+  }
+}
+
+
+
+function fetchData(e) {                                                       
+  var tag = e.value;               
+                                                                            
+  if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari  
+    xmlhttp=new XMLHttpRequest();                                             
+  }else{// code for IE6, IE5                                                  
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");                           
+  }                                                                           
+  xmlhttp.onreadystatechange=function() {                                     
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {                       
+      var results = xmlhttp.responseText;                                     
+      if(results == 'undefined' || results == '' || results == '"not validate"') {                           
+        return;                                                               
+      }else{                                                                  
+        data_Table.fnClearTable();
+        addRows(results);                                                           
+      }                                                                       
+    }                                                                         
+  }                                                                           
+  xmlhttp.open("GET","/get_location/" + tag, true);           
+  xmlhttp.send();                                                             
+}
+
+//dataT();
+</script>
+

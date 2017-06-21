@@ -19,6 +19,8 @@
 
 </style>
 
+<%= stylesheet_link_tag "bootstrap/bootstrap" %>                                         
+<%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>                                         
 
 <div class='dashboard-title'><h3>National statistics summary</h3></div>
 
@@ -54,6 +56,9 @@
 
   </div>
 
+  <%#=javascript_include_tag "Highcharts/jquery.min"%>
+  <%=javascript_include_tag "Highcharts/highcharts"%>
+  <%=javascript_include_tag "Highcharts/exporting"%>
 
   <div class="row charts">
     <div class="col-lg-12"> 
@@ -63,7 +68,7 @@
       </div>
        
       <div class="col-md-6">
-        .........
+        <%= render partial: 'person/charts/pie_statistics' %>
       </div> 
 
     </div> 

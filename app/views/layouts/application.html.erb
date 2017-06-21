@@ -254,11 +254,17 @@
       *********************************************************************************************************************************************************** -->
 
     <!-- js placed at the end of the document so the pages load faster -->
+    <%=javascript_include_tag "datatables/jquery"%>                                         
+    <script>
+      var $j = jQuery.noConflict();
+    </script> 
     <%=javascript_include_tag "js/jquery"%>                                         
+    <script>
+      var $ = jQuery.noConflict();
+    </script> 
     <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>                                         
     <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         
     <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>                                         
-    <!--script class="include" type="text/javascript" src="assets/js/jquery.dcjqaccordion.2.7.js"></script-->
     <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>                                         
     <%=javascript_include_tag "js/jquery.scrollTo.min"%>                                         
     <%=javascript_include_tag "js/jquery.nicescroll"%>                                         
@@ -271,10 +277,12 @@
     
     <script>
         //custom select box
-
-        $(function(){
-            $('select.styled').customSelect();
-        });
+        try {
+          //$(function(){
+              $('select.styled').customSelect();
+          //});
+        }catch(z){
+        }
 
     </script>
       <section id="main-content">
@@ -288,8 +296,8 @@
       <!--footer start-->
       <footer class="site-footer">
           <div class="text-center">
-              <%=Date.today.year%> - Alvarez.is
-              <a href="blank.html#" class="go-top">
+              <a href="http://baobabhealth.org" target="_blank" style="color:white;">baobabhealth.org</a><span style="color: #006f95;">Alvarez.is</span>
+              <a href="#" class="go-top">
                   <i class="fa fa-angle-up"></i>
               </a>
           </div>

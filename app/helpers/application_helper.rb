@@ -12,4 +12,8 @@ module ApplicationHelper
     return User.current.preferred_keyboard
   end
 
+  def datatable
+    return true
+  end
+
 end

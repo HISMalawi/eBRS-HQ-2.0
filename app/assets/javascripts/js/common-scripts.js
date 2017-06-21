@@ -1,6 +1,6 @@
 /*---LEFT BAR ACCORDION----*/
-$(function() {
-    $('#nav-accordion').dcAccordion({
+jQuery(function() {
+    jQuery('#nav-accordion').dcAccordion({
         eventType: 'click',
         autoClose: true,
         saveState: true,
@@ -19,61 +19,61 @@ var Script = function () {
 //    sidebar dropdown menu auto scrolling
 
     jQuery('#sidebar .sub-menu > a').click(function () {
-        var o = ($(this).offset());
+        var o = (jQuery(this).offset());
         diff = 250 - o.top;
         if(diff>0)
-            $("#sidebar").scrollTo("-="+Math.abs(diff),500);
+            jQuery("#sidebar").scrollTo("-="+Math.abs(diff),500);
         else
-            $("#sidebar").scrollTo("+="+Math.abs(diff),500);
+            jQuery("#sidebar").scrollTo("+="+Math.abs(diff),500);
     });
 
 
 
 //    sidebar toggle
 
-    $(function() {
+    jQuery(function() {
         function responsiveView() {
-            var wSize = $(window).width();
+            var wSize = jQuery(window).width();
             if (wSize <= 768) {
-                $('#container').addClass('sidebar-close');
-                $('#sidebar > ul').hide();
+                jQuery('#container').addClass('sidebar-close');
+                jQuery('#sidebar > ul').hide();
             }
 
             if (wSize > 768) {
-                $('#container').removeClass('sidebar-close');
-                $('#sidebar > ul').show();
+                jQuery('#container').removeClass('sidebar-close');
+                jQuery('#sidebar > ul').show();
             }
         }
-        $(window).on('load', responsiveView);
-        $(window).on('resize', responsiveView);
+        jQuery(window).on('load', responsiveView);
+        jQuery(window).on('resize', responsiveView);
     });
 
-    $('.fa-bars').click(function () {
-        if ($('#sidebar > ul').is(":visible") === true) {
-            $('#main-content').css({
+    jQuery('.fa-bars').click(function () {
+        if (jQuery('#sidebar > ul').is(":visible") === true) {
+            jQuery('#main-content').css({
                 'margin-left': '0px'
             });
-            $('#sidebar').css({
+            jQuery('#sidebar').css({
                 'margin-left': '-210px'
             });
-            $('#sidebar > ul').hide();
-            $("#container").addClass("sidebar-closed");
+            jQuery('#sidebar > ul').hide();
+            jQuery("#container").addClass("sidebar-closed");
         } else {
-            $('#main-content').css({
+            jQuery('#main-content').css({
                 'margin-left': '210px'
             });
-            $('#sidebar > ul').show();
-            $('#sidebar').css({
+            jQuery('#sidebar > ul').show();
+            jQuery('#sidebar').css({
                 'margin-left': '0'
             });
-            $("#container").removeClass("sidebar-closed");
+            jQuery("#container").removeClass("sidebar-closed");
         }
     });
 
 // custom scrollbar
-    $("#sidebar").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '3', cursorborderradius: '10px', background: '#404040', spacebarenabled:false, cursorborder: ''});
+    jQuery("#sidebar").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '3', cursorborderradius: '10px', background: '#404040', spacebarenabled:false, cursorborder: ''});
 
-    $("html").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '6', cursorborderradius: '10px', background: '#404040', spacebarenabled:false,  cursorborder: '', zindex: '1000'});
+    jQuery("html").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '6', cursorborderradius: '10px', background: '#404040', spacebarenabled:false,  cursorborder: '', zindex: '1000'});
 
 // widget tools
 
@@ -95,21 +95,22 @@ var Script = function () {
 
 //    tool tips
 
-    $('.tooltips').tooltip();
+    jQuery('.tooltips').tooltip();
 
 //    popovers
-
-    $('.popovers').popover();
-
+    try{
+      jQuery('.popovers').popover();
+    }catch(z){
+    }
 
 
 // custom bar chart
 
-    if ($(".custom-bar-chart")) {
-        $(".bar").each(function () {
-            var i = $(this).find(".value").html();
-            $(this).find(".value").html("");
-            $(this).find(".value").animate({
+    if (jQuery(".custom-bar-chart")) {
+        jQuery(".bar").each(function () {
+            var i = jQuery(this).find(".value").html();
+            jQuery(this).find(".value").html("");
+            jQuery(this).find(".value").animate({
                 height: i
             }, 2000)
         })
