@@ -1,16 +1,14 @@
 <style>
 
-.panel-btns {
-  margin-top: 2%;
+.btn-row {
+  width: 100%;
 }
 
 .panel-btns {
   height: 120px;
   width:  220px;
   font-size: 15px;
-}
-
-.panel-btns-containers {
+  margin: 2% 2% 0% 0%;
 }
 
 .panel-btns-main-containers {
@@ -76,7 +74,7 @@
     cell.appendChild(btn);
     row.appendChild(cell);
 
-    if(row_count == 5) {
+    if(row_count == 4) {
       var row = document.createElement('div');
       row.setAttribute('class','row btn-row');
       container.appendChild(row);
