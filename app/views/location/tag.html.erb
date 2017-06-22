@@ -15,6 +15,10 @@
   margin-bottom: 20px;
 }
 
+.ctrls {
+  width: 10%;
+}
+
 </style>
 
 <%#=javascript_include_tag "datatables/jquery" %>
@@ -24,55 +28,121 @@
 
 <%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
 
-<div class='dashboard-title'><h3>Manage location (<%=params[:location_tag]%>)</h3></div>
+<%
+if params[:location_tag] == 'dc'
+  location = 'District'
+elsif params[:location_tag] == 'ta'
+  location = 'Traditional authority'
+elsif params[:location_tag] == 'vl'
+  location = 'Village'
+elsif params[:location_tag] == 'fc'
+  location = 'Health facility'
+end
+%>
+<div class='dashboard-title'><h3>Manage location (<%=location%>)</h3></div>
 <div class='separator-line'>&nbsp;</div>
 
-<%if params[:location_tag] == 'dc'%>
-<%= render partial: "location/loc/#{params[:location_tag]}" %>
-<%elsif params[:location_tag] == 'ta'%>
-<%elsif params[:location_tag] == 'village'%>
-<%elsif params[:location_tag] == 'facility'%>
-<%end%>
 
+<%= render partial: "location/loc/#{params[:location_tag]}" %>
 <script>
 
-var data_Table = jQuery('#sites');
-data_Table.DataTable({
+var dataTable = null;
+/*
+data_Table = $i('#sites').DataTable({
   "order": [[0,"asc"],[1,"asc"]],
   "pageLength": 10
 });
+*/
 
 /*
 var data_Table = null;
 
 function dataT() {
-  data_Table = $('#sites').dataTable( {
-    "order": [[ 4, "asc" ],[3,"asc"],[2,"asc"]],
-    "pageLength": 10
-  } );
+dataTable = jQuery('#sites').dataTable( {
+"order": [[ 4, "asc" ],[3,"asc"],[2,"asc"]],
+"pageLength": 10
+} );
 }
-
 */
 
-function addRows(data) {
-  locations = JSON.parse(data);
-  counter = 0;
-  for (var i = 0; i < locations.length; i++) {
-    location_id      = locations[i]['location_id'];
-    name             = locations[i]['name'];
-    description      = locations[i]['description'];
-    latitude         = locations[i]['latitude'];
-    longitude        = locations[i]['longitude'];
-    code             = locations[i]['code'];
-
-    data_Table.api().row.add([code, name, description, latitude, longitude]).draw();
-  }
+function dataT(){          
+  dataTable = jQuery('#sites').dataTable({"pageLength": 10});                                                  
 }
 
 
+function addRows(data) {
+locations = JSON.parse(data);
+counter = 0;
+for (var i = 0; i < locations.length; i++) {
+<%if params[:location_tag] == 'dc'%>
+  location_id      = locations[i]['location_id'];
+  name             = locations[i]['name'];
+  description      = locations[i]['description'];
+  code             = locations[i]['code'];
 
-function fetchData(e) {                                                       
-  var tag = e.value;               
+  dataTable.api().row.add([code, name, description, createBtn(location_id)]).draw();
+<%elsif params[:location_tag] == 'ta'%>
+  location_id      = locations[i]['location_id'];
+  name             = locations[i]['name'];
+  district         = locations[i]['district'];
+
+  dataTable.api().row.add([name, district, createBtn(location_id)]).draw();
+<%elsif params[:location_tag] == 'vl'%>
+  location_id      = locations[i]['location_id'];
+  name             = locations[i]['name'];
+  ta               = locations[i]['ta'];
+  district         = locations[i]['district'];
+
+  dataTable.api().row.add([name, ta, district, createBtn(location_id)]).draw();
+<%elsif params[:location_tag] == 'fc'%>
+  location_id      = locations[i]['location_id'];
+  name             = locations[i]['name'];
+  description      = locations[i]['description'];
+  latitude         = locations[i]['latitude'];
+  longitude        = locations[i]['longitude'];
+  code             = locations[i]['code'];
+
+  dataTable.api().row.add([code, name, description, latitude, longitude, createBtn(location_id)]).draw();
+<%end%>
+}
+
+  if(locations.length > 0){
+    rec_limit += 100;
+    fetchData();       
+  }
+                                                 
+}
+
+function createBtn(location_id) {
+  t = document.createElement('table');
+  t.setAttribute('class', 'btn-loc-ctrls');
+  
+  tr = document.createElement('tr');
+  t.appendChild(tr);
+
+/*
+...................... we can do better: code looks bad
+*/
+  var td = document.createElement('td');
+  td.innerHTML = '<button onclick="javascript:editLoc(this)" id="' + location_id + '" class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>';
+  tr.appendChild(td);
+
+  var td = document.createElement('td');
+  td.innerHTML = '<button onclick="javascript:voidLoc(this)" id="' + location_id + '" class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>';
+  tr.appendChild(td);
+/*
+...................... ****************************************
+*/
+
+
+
+  var span = document.createElement('span');
+  span.appendChild(t)
+  return span.innerHTML;
+
+}
+
+function fetchData() {                                                       
                                                                             
   if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari  
     xmlhttp=new XMLHttpRequest();                                             
@@ -85,15 +155,37 @@ function fetchData(e) {
       if(results == 'undefined' || results == '' || results == '"not validate"') {                           
         return;                                                               
       }else{                                                                  
-        data_Table.fnClearTable();
-        addRows(results);                                                           
+        //dataTable.fnClearTable();
+        addRows(results);    
       }                                                                       
     }                                                                         
   }                                                                           
-  xmlhttp.open("GET","/get_location/" + tag, true);           
+  xmlhttp.open("GET","/get_location/" + location_tag + "/" + rec_limit, true);           
   xmlhttp.send();                                                             
 }
 
 //dataT();
+
+<%if params[:location_tag] == 'dc'
+  location_tag_name = 'District'
+elsif params[:location_tag] == 'ta'
+  location_tag_name = 'Traditional Authority'
+elsif params[:location_tag] == 'vl'
+  location_tag_name = 'Village'
+elsif params[:location_tag] == 'fc'
+  location_tag_name = 'Health Facility'
+end%>
+
+var location_tag = "<%=LocationTag.where(name: location_tag_name).first.id%>";
+var rec_limit = 0;
+
+dataT();
+fetchData();
+
+function editLoc(e) {
+}
+
+function voidLoc(e) {
+}
 </script>
 

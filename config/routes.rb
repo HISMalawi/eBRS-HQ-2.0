@@ -3,7 +3,7 @@ Rails.application.routes.draw do
 
   get 'location/:location_tag' => 'location#tag'
 
-  get 'get_location/:location_tag_id' => 'location#get_location'
+  get 'get_location/:location_tag_id/:record_limit' => 'location#get_location'
 
   get '/tasks' => 'person#tasks'
 
