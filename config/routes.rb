@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  get 'task/:task_id'  => 'person#task'
+
   get '/sites' => 'location#sites'
 
   get 'location/:location_tag' => 'location#tag'

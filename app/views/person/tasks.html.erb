@@ -1,9 +1,5 @@
 <style>
 
-.btn-row {
-  width: 100%;
-}
-
 .panel-btns {
   height: 120px;
   width:  220px;
@@ -24,9 +20,21 @@
   border-width: 1px 0px 0px 0px;
 }
 
-.panel-btns-containers {
-  margin: 10px 55px 0px 0px;
+#table-container {
+  display: table;
+  width: 100%;
 }
+
+.rows  {
+  display: table-row;
+  width: 100%;
+}
+
+.cells {
+  display: table-cell;
+  padding: 10px;
+}
+
 
 </style>
 
@@ -41,17 +49,10 @@
 
 
     <%
-      attributes = [
-        ['Newly Received (HQ)', 53],
-        ['Print Que (HQ)', 2126],
-        ['Verified (HQ)', 3771],
-        ['Re-print Que (HQ)', 47],
-        ['Suspected Duplicate (HQ)', 245],
-        ['Incomplete Record (HQ)', 1],
-        ['Printed (HQ)', 2003],
-        ['Printed and Dispatched(HQ)', 72344],
-        ['Voided (HQ)', 50],
-      ]
+      attributes = []
+      (Status.where("name LIKE (?)", "HQ-%") || []).each do |s|
+        attributes << [s.name, s.id]
+      end
     %>
 
 
@@ -64,25 +65,30 @@
     attributes.push(["<%=a%>", "<%=count%>"]);  
   <%end%>
 
-  var row = document.createElement('div');
-  row.setAttribute('class','row btn-row');
-  container.appendChild(row);
+  var table = document.createElement('div');
+  table.setAttribute('class','table-container');
+  container.appendChild(table);
+
+  var table_row = document.createElement('div');
+  table_row.setAttribute('class','rows');
+  table.appendChild(table_row);
 
   for(var i = 0; i < attributes.length; i++){
     var cell = document.createElement('div');
-    cell.setAttribute('class','col-lg-2 panel-btns-containers');
+    cell.setAttribute('class','cells');
     var btn = document.createElement('button');
     btn.setAttribute('type','button');
     btn.setAttribute('class','btn btn-primary btn-lg panel-btns');
     btn.innerHTML = attributes[i][0];
+    btn.setAttribute('onclick','document.location="/task/' + attributes[i][1] + '"');
     cell.appendChild(btn);
-    row.appendChild(cell);
+    table_row.appendChild(cell);
 
     if(row_count == 5) {
-      /*var row = document.createElement('div');
-      row.setAttribute('class','row btn-row');
-      container.appendChild(row);
-      row_count = 0;*/
+      table_row = document.createElement('div');
+      table_row.setAttribute('class','rows') 
+      table.appendChild(table_row);
+      row_count = 0;
     }
     row_count++;
   }

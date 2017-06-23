@@ -45,7 +45,7 @@ class LocationController < ApplicationController
       end
 
       if location_tag.name == 'Health Facility'
-        district = Location.find(ta.parent_location).name
+        district = Location.find(l.parent_location).name
         location << {
           location_id:  l.id,
           name:         l.name,
