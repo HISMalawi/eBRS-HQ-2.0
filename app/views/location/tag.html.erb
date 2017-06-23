@@ -66,49 +66,53 @@ dataTable = jQuery('#sites').dataTable( {
 */
 
 function dataT(){          
-  dataTable = jQuery('#sites').dataTable({"pageLength": 10});                                                  
+  dataTable = jQuery('#sites').dataTable(
+    {
+      "pageLength": 10,
+      "processing": true
+  });                                                  
 }
 
 
 function addRows(data) {
-locations = JSON.parse(data);
-counter = 0;
-for (var i = 0; i < locations.length; i++) {
+  locations = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < locations.length; i++) {
 <%if params[:location_tag] == 'dc'%>
-  location_id      = locations[i]['location_id'];
-  name             = locations[i]['name'];
-  description      = locations[i]['description'];
-  code             = locations[i]['code'];
+    location_id      = locations[i]['location_id'];
+    name             = locations[i]['name'];
+    description      = locations[i]['description'];
+    code             = locations[i]['code'];
 
-  dataTable.api().row.add([code, name, description, createBtn(location_id)]).draw();
+    dataTable.api().row.add([code, name, description, createBtn(location_id)]).draw();
 <%elsif params[:location_tag] == 'ta'%>
-  location_id      = locations[i]['location_id'];
-  name             = locations[i]['name'];
-  district         = locations[i]['district'];
+    location_id      = locations[i]['location_id'];
+    name             = locations[i]['name'];
+    district         = locations[i]['district'];
 
-  dataTable.api().row.add([name, district, createBtn(location_id)]).draw();
+    dataTable.api().row.add([name, district, createBtn(location_id)]).draw();
 <%elsif params[:location_tag] == 'vl'%>
-  location_id      = locations[i]['location_id'];
-  name             = locations[i]['name'];
-  ta               = locations[i]['ta'];
-  district         = locations[i]['district'];
+    location_id      = locations[i]['location_id'];
+    name             = locations[i]['name'];
+    ta               = locations[i]['ta'];
+    district         = locations[i]['district'];
 
-  dataTable.api().row.add([name, ta, district, createBtn(location_id)]).draw();
+    dataTable.api().row.add([name, ta, district, createBtn(location_id)]).draw();
 <%elsif params[:location_tag] == 'fc'%>
-  location_id      = locations[i]['location_id'];
-  name             = locations[i]['name'];
-  description      = locations[i]['description'];
-  latitude         = locations[i]['latitude'];
-  longitude        = locations[i]['longitude'];
-  code             = locations[i]['code'];
-  district         = locations[i]['district'];
+    location_id      = locations[i]['location_id'];
+    name             = locations[i]['name'];
+    description      = locations[i]['description'];
+    latitude         = locations[i]['latitude'];
+    longitude        = locations[i]['longitude'];
+    code             = locations[i]['code'];
+    district         = locations[i]['district'];
 
-  dataTable.api().row.add([code, name, description, district, latitude, longitude, createBtn(location_id)]).draw();
+    dataTable.api().row.add([code, name, description, district, latitude, longitude, createBtn(location_id)]).draw();
 <%end%>
-}
-
+  }
+  
   if(locations.length > 0){
-    rec_limit += 100;
+    rec_limit += 1000;
     fetchData();       
   }
                                                  

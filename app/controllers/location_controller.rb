@@ -5,7 +5,7 @@ class LocationController < ApplicationController
   def get_location
     location = []
     from  = params[:record_limit].to_i
-    to    = (from + 99)
+    to    = 1000
 
     location_tag = LocationTag.find(params[:location_tag_id])
 
@@ -13,7 +13,7 @@ class LocationController < ApplicationController
       location_tag.id).joins("INNER JOIN location_tag_map m 
       ON m.location_id = location.location_id
       INNER JOIN location_tag t 
-      ON t.location_tag_id = m.location_tag_id").limit("#{from}, #{to}").order("location.name ASC")
+      ON t.location_tag_id = m.location_tag_id").limit("#{from}, #{to}").order("location.location_id ASC")
 
     (locations || []).each do |l|
       if location_tag.name == 'Village'
