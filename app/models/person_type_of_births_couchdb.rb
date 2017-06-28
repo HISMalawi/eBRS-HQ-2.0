@@ -1,6 +1,6 @@
 require 'couchrest_model'
 class PersonTypeOfBirthsCouchdb < CouchRest::Model::Base
-  property :person_type_id, Integer
+  property :person_type_of_birth_id, Integer
   property :name, String
   property :description, String
   
