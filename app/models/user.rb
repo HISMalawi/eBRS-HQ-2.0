@@ -54,6 +54,10 @@ class User < ActiveRecord::Base
     #Audit.create(record_id: self.id, audit_type: "Audit", level: "User", reason: "Created user record")
   end
 
+  def blocked
+    self.active == 0 ? true : false
+  end
+
 end
 
 

@@ -16,4 +16,8 @@ module ApplicationHelper
     return true
   end
 
+  def admin?
+    ((User.current.user_role.role.role.strip.downcase.match(/Administrator/i) rescue false) ? true : false)
+  end
+
 end

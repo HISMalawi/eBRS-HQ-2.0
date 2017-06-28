@@ -16,129 +16,56 @@ class UsersController < ApplicationController
 
   #Displays The Created User
   def show
-
-    @section = "View User"
-
-    @user = User.find(params[:id])
-
-    @person_name = PersonName.find_by_person_id(@user.person_id)
-
-    @user_role = @user.user_role.role
-
-    @targeturl = "/view_users"
-
-    render :layout => "facility"
-
+    @user = User.find(params[:user_id])
   end
 
   #Displays All Users
   def view
-
     @users = User.all.each
-
-    @section = "View Users"
-
-    @targeturl = "/users"
-
-    render :layout => "data_table"
   end
 
   #Adds A New User
   def new
-
     @user = User.new
-
-    @section = "Create User"
-
-    @targeturl = "/users"
-
-    render :layout => "touch"
-
   end
 
   # Edits Selected User
   def edit
-
-    #redirect_to "/" and return if !(User.current_user.activities_by_level("Facility").include?("Update User"))
-
-    @user = User.find(params[:id])
-
-    @section = "Edit User"
-
-    @targeturl = "/view_users"
-
-    render :layout => "touch"
-
+    @user = User.find(params[:user_id])
   end
 
   #Creates A New User
   def create
+    username = params[:post][:username]
+    password = params[:post][:password]
 
-      @targeturl = "/user"
-      #user = User.find(params[:user]['username'])
+    first_name  = params[:post][:person_name][:first_name]
+    last_name   = params[:post][:person_name][:last_name]
+    gender      = params[:post][:person][:gender]
 
-      #if user.present?
-        #flash["notice"] = "User already already exists"
-         #redirect_to "/user/new" and return
-      #end
-      core_person = CorePerson.create(person_type_id: 1)
-      person_name = PersonName.create(person_id: core_person.person_id, first_name: params[:user]['person']['first_name'], last_name: params[:user]['person']['last_name'] )
-      person_name_code = PersonNameCode.create(person_name_id: person_name.person_name_id, first_name_code: params[:user]['person']['first_name'].soundex, last_name_code: params[:user]['person']['last_name'].soundex )
+    ActiveRecord::Base.transaction do
+      core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
+      person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender)
 
-      user_role = UserRole.create(role: params[:user]['user_role']['role'], level: 1, voided: 0)
+      names = PersonName.create(first_name: first_name, last_name: last_name, person_id: core_person.id)
+      PersonNameCode.create(first_name_code: first_name.soundex,
+        last_name_code: last_name.soundex, person_name_id: names.id)
 
-      @user = User.create(username: params[:user]['username'], plain_password: params[:user]['plain_password'], location_id: 1, uuid: 1, user_role_id:     	 user_role.user_role_id,  email: params[:user]['email'], person_id: core_person.person_id)
-
-      respond_to do |format|
-
-      if @user.present?
-        format.html { redirect_to @user, :notice => 'User was successfully created.' }
-        format.json { render :show, :status => :created, :location => @user }
-      else
-        format.html { render :new }
-        format.json { render :json => @user.errors, :status => :unprocessable_entity }
-      end
+      user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id: 71780)
+      role = Role.where(role: params[:post][:user_role]).first
+      UserRole.create(user_id: user.id, role_id: role.id)
     end
+
+    redirect_to '/users'
   end
 
   def update
-    @user = User.find(params[:id])
-
-    if request.referrer.match('edit_account')
-      @user.preferred_keyboard = params[:user][:preferred_keyboard]
-      @user.save!
-      redirect_to '/users/my_account' and return
-    end
-
+    @user = User.find(params[:user_id])
     if params[:user][:plain_password].present? && params[:user][:plain_password].length > 1
       @user.update_attributes(password_hash: params[:user][:plain_password], 
         password_attempt: 0, last_password_date: Time.now)
     end
 
-    respond_to do |format|
-      role = User.current.user_role.role.role
-      if ((role.strip.downcase.match(/Administrator/i) rescue false) ? true : false) and @user.update_attributes(user_params)
-
-        if params[:user][:person][:first_name].present? && params[:user][:person][:last_name].present?
-          @user.core_person.person_name.update_attributes(voided: true, void_reason: 'Edited')
-          person_name = PersonName.create(person_id: @user.person_id, 
-            first_name: params[:user][:person][:first_name],
-            last_name: params[:user][:person][:last_name])
-          
-          PersonNameCode.create(person_name_id: person_name.person_name_id, 
-            first_name_code: params[:user]['person']['first_name'].soundex, 
-            last_name_code: params[:user]['person']['last_name'].soundex )
-        end
-
-        if @user.present?
-          format.html { redirect_to @user, :notice => 'User was successfully updated.' }
-          format.json { render :show, :status => :ok, :location => @user }
-        else
-          format.html { render :edit }
-          format.json { render :json => @user.errors, :status => :unprocessable_entity }
-        end
-      end
-    end
   end
 
   #Displays All Users
@@ -164,90 +91,39 @@ class UsersController < ApplicationController
     render :text => results.to_json
   end
 
-  #Deletes Selected User
-  def destroy
-
-    if ((User.current.user_role.role.role.strip.downcase.match(/Administrator/i) rescue false) ? true : false)
-      @user.update_attributes(voided: true)
+  #Gives Back Bloked User Access Rights
+  def unblock
+    user = User.find(params[:user_id]) rescue nil
+    if !user.nil?
+      if admin?
+        user.update_attributes(active: true, un_or_block_reason: nil)
+      end
     end
 
-    respond_to do |format|
-      format.html { redirect_to "/view_users", :notice => 'User was successfully destroyed.' }
-      format.json { head :no_content }
-    end
-
+    redirect_to "/users" and return
   end
 
   #Revokes User Access Rights
   def block
-
-    @users = User.all.each
-
-    @section = "Block User"
-
-    @targeturl = "/users"
-
-    render :layout => "facility"
-
-  end
-
-  #Gives Back Bloked User Access Rights
-  def unblock
-
-    @users = User.all.each
-
-    @section = "Unblock User"
-
-    @targeturl = "/users"
-
-    render :layout => "facility"
-
-  end
-
-  #Revokes User Access Rights
-  def block_user
-
-    user = User.find(params[:id]) rescue nil
-
+    user = User.find(params[:user_id]) rescue nil
     if !user.nil?
-      role = User.current.user_role.role.role.strip rescue nil
-      if ((role.downcase.match(/Administrator/i) rescue false) ? true : false)
+      if admin?
         user.update_attributes(active: false, 
-          un_or_block_reason: params[:reason]) 
+          un_or_block_reason: (params[:reason].blank? ? 'Unknown' : params[:reason]))
       end
     end
 
-    redirect_to "/view_users" and return
-
+    redirect_to "/users" and return
   end
 
   #Gives Back Bloked User Access Rights
   def void_user
-
-    user = User.find(params[:id]) rescue nil
+    user = User.find(params[:user_id]) rescue nil
 
     if !user.nil?
-      role = User.current.user_role.role.role.strip rescue nil
-      if ((role.downcase.match(/Administrator/i) rescue false) ? true : false)
+      if admin?
         user.update_attributes(voided: true, 
           :void_reason => "Removed from system by (user_id): #{User.current.id}") 
-      end
-    end
-
-    redirect_to "/view_users" and return
-
-  end
-
-  #Gives Back Bloked User Access Rights
-  def unblock_user
-
-    user = User.find(params[:id]) rescue nil
-
-    if !user.nil?
-      role = User.current.user_role.role.role.strip rescue nil
-      if ((role.downcase.match(/Administrator/i) rescue false) ? true : false)
-        user.update_attributes(active: true, 
-          :un_or_block_reason => params[:reason]) 
       end
     end
 
@@ -338,7 +214,7 @@ class UsersController < ApplicationController
 
 
   def username_availability
-    user = User.get_active_user(params[:search_str])
+    user = User.where(username: params[:search_str])
     render :text => user = user.blank? ? 'OK' : 'N/A' and return
   end
 
@@ -388,6 +264,21 @@ class UsersController < ApplicationController
 
   end
 
+  def deleted
+    @users = User.unscoped.where(voided: true)
+  end
+
+  def recover
+    user = User.unscoped.find(params[:user_id]) rescue nil
+    if !user.nil?
+      if admin?
+        user.update_attributes(voided: false, void_reason: nil)
+      end
+    end
+
+    redirect_to "/deleted_users" and return
+  end
+
   private
   # Use callbacks to share common setup or constraints between actions.
   def set_user
@@ -400,11 +291,8 @@ class UsersController < ApplicationController
   end
 
   def check_if_user_admin
-
     @search = icoFolder("search")
-
     @admin = ((User.current.user_role.role.role.strip.downcase.match(/Administrator/i) rescue false) ? true : false)
-
   end
 
 

@@ -41,6 +41,10 @@ class ApplicationController < ActionController::Base
      return "#{con['prefix']}_#{con['suffix']}" 
   end
 
+  def admin?
+    ApplicationController.helpers.admin?
+  end
+
   private
 
   def check_if_logged_in

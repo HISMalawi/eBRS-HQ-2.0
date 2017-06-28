@@ -224,8 +224,13 @@
                       </a>
                       <ul class="sub">
                           <li><a  href="/sites">Manage sites</a></li>
-                          <li><a  href="/users">Manage users</a></li>
-                          <li><a  href="#">My account</a></li>
+                          <%if admin? %>
+                            <li><a  href="/users">Manage users</a></li>
+                          <%end%>
+                          <li><a  href="/user/<%=User.current.id%>">My account</a></li>
+                          <%if admin? %>
+                            <li><a  href="/deleted_users">Manage deleted users</a></li>
+                          <%end%>
                       </ul>
                   </li>
                   <li class="sub-menu">

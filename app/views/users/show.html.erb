@@ -25,6 +25,10 @@
         color: #3465a4;
     }
 
+    .btn-ctrls {
+      text-align: right;
+    }
+
 </style>
 
 <fieldset>
@@ -60,7 +64,7 @@
         :
       </td>
       <td>
-       <%= @person_name.first_name %>
+       <%= @user.core_person.person_name.first_name %>
       </td>
     </tr>
 
@@ -72,7 +76,7 @@
         :
       </td>
       <td>
-       <%= @person_name.last_name %>
+       <%= @user.core_person.person_name.last_name %>
       </td>
     </tr>
 
@@ -85,7 +89,7 @@
         :
       </td>
       <td>
-        <%= @user_role.role rescue '' %>
+        <%= @user.user_role.role.role rescue '' %>
       </td>
     </tr>
 
@@ -120,4 +124,19 @@
 
   <fieldset style="border: 1px solid #eee;"></fieldset>
 
+  <div class="btn-ctrls">
+    <%unless @user.blocked %>
+      <button onclick="javascript:location='/block/<%=@user.id%>'"
+        class="btn btn-warning btn-lg"><i class="fa fa-lock"></i>&nbsp;Block</button>
+    <%else%>
+      <button onclick="javascript:location='/unblock/<%=@user.id%>'"
+        class="btn btn-warning btn-lg"><i class="fa fa-unlock"></i>&nbsp;Unblock</button>
+    <%end%>
+
+    <button onclick="javascript:location='/edit/<%=@user.id%>'"
+                  class="btn btn-success btn-lg"><i class="fa fa-lock"></i>&nbsp;Edit</button>
+    
+    <button onclick="javascript:location='/users'"
+                  class="btn btn-primary btn-lg"><i class="fa fa-chevron-circle-left"></i>&nbsp;Back</button>
+  </div>
 </fieldset>

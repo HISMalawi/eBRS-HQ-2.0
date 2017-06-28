@@ -13,23 +13,17 @@ Rails.application.routes.draw do
 
   root 'person#index'
 
-  get 'users/show'
+  get 'user/:user_id' => 'users#show'
 
-  get 'users/view'
+  get '/users' => 'users#view'
 
   get 'users/new'
 
-  get 'users/create'
+  get "block/:user_id" => "users#block"
 
-  get "/block_user/:id" => "users#block_user"
+  get "unblock/:user_id" => "users#unblock"
 
-  get "/unblock_user/:id" => "users#unblock_user"
-
-  get "/void_user/:id" => "users#void_user"
-
-  get '/block'  => "users#block"
-
-  get '/unblock' => "users#unblock"
+  get "/void_user/:user_id" => "users#void_user"
 
   get '/query_users' =>"users#query_users"
 
@@ -47,6 +41,9 @@ Rails.application.routes.draw do
 
   get "query_sync" =>"person#query_sync"
 
+  get '/deleted_users' => 'users#deleted'
+
+  get 'recover/:user_id' => 'users#recover'
 
   get "/logout" => "logins#logout"
 
@@ -61,6 +58,12 @@ Rails.application.routes.draw do
   get "/set_context/:id" => "logins#set_context"
 
   get "/edit_account" => "users#edit_account"
+
+  get "edit/:user_id" => "users#edit"
+
+  get '/username_availability' => 'users#username_availability'
+
+  post '/create_user' => 'users#create'
 
   get 'person/index'
 
