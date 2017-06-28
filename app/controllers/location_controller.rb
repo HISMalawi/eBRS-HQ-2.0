@@ -5,7 +5,7 @@ class LocationController < ApplicationController
   def get_location
     location = []
     from  = params[:record_limit].to_i
-    to    = 1000
+    to    = 100
 
     location_tag = LocationTag.find(params[:location_tag_id])
 
