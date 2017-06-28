@@ -1,0 +1,16 @@
+development:  
+  protocol: 'https'
+  host: localhost
+  port: 5984
+  prefix: project
+  suffix: text
+  username: test
+  password: user
+test:
+  <<: *development
+  suffix: test
+
+production:
+  <<: *development
+  protocol: 'http'
+  suffix:
