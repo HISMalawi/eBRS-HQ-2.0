@@ -1,7 +1,6 @@
 require 'couchrest_model'
 
 class PersonBirthDetailsCouchdb < CouchRest::Model::Base
-  use_database ApplicationController.helpers.application_couchdb
 
   #Demographics details
   property :first_name,                                 String
@@ -106,7 +105,7 @@ class PersonBirthDetailsCouchdb < CouchRest::Model::Base
         birth_weight:                                   birth_detail.birth_weight,
         type_of_birth:                                  birth_detail.type_of_birth,
         parents_married_to_each_other:                  birth_detail.parents_married_to_each_other,
-        date_of_marriage:                               birth_detail.date_of_marriage
+        date_of_marriage:                               birth_detail.date_of_marriage,
         gestation_at_birth:                             birth_detail.gestation_at_birth,
         number_of_prenatal_visits:                      birth_detail.number_of_prenatal_visits,
         month_prenatal_care_started:                    birth_detail.month_prenatal_care_started,
@@ -117,14 +116,14 @@ class PersonBirthDetailsCouchdb < CouchRest::Model::Base
         district_id_number:                             birth_detail.district_id_number,
         national_serial_number:                         birth_detail.national_serial_number,
         court_order_attached:                           birth_detail.court_order_attached,
-        acknowledgement_of_receipt_date:                birth_detail.acknowledgement_of_receipt_date,,
+        acknowledgement_of_receipt_date:                birth_detail.acknowledgement_of_receipt_date,
         facility_serial_number:                         birth_detail.facility_serial_number,
         adoption_court_order:                           birth_detail.adoption_court_order,
         birth_registration_type_id:                     birth_detail.birth_registration_type_id,
         location_created_at:                            birth_detail.location_created_at,
         old_district_id_number:                         (get_person_identifier(core_person.id, "Old district ID number")),
         old_national_serial_number:                     (get_person_identifier(core_person.id, "Old national serial number")),
-        nrb_national_id:                                (get_person_identifier(core_person.id, "NRB national ID"))
+        nrb_national_id:                                (get_person_identifier(core_person.id, "NRB national ID")),
         patient_national_id:                            (get_person_identifier(core_person.id, "National patient ID")),                  
         person_home_village_id:                         birth_detail.person_home_village_id,
         person_current_village_id:                      birth_detail.person_current_village_id,
