@@ -16,6 +16,8 @@ class LocationCouchdb < CouchRest::Model::Base
   property :void_reason, String
   property :voided_by, Integer
   property :date_voided, Date
+  property :changed_by, Integer
+  property :changed_at, DateTime
   
   timestamps!
   
