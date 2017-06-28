@@ -178,7 +178,7 @@ class PersonBirthDetailsCouchdb < CouchRest::Model::Base
         end
 
 
-
+        return record.id
     end
 
   end
