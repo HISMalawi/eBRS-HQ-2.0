@@ -6,7 +6,8 @@
     <meta name="description" content="">
     <meta name="author" content="Dashboard">
     <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
-
+    
+    <%= favicon_link_tag 'fav.ico' %>
     <title>eBRS</title>
 
     <!-- Bootstrap core CSS -->
@@ -198,7 +199,7 @@
               <!-- sidebar menu start-->
               <ul class="sidebar-menu" id="nav-accordion">
               
-              	  <p class="centered"><a href="profile.html">
+              	  <p class="centered"><a href="/">
                     <%=image_tag 'coat-arms.png', class: 'img-circle', width: '60' %></a></p>
               	  <h5 class="centered"><%=User.current.username%></h5>
               	  	
