@@ -36,6 +36,11 @@ class ApplicationController < ActionController::Base
     session[:user_id] = nil
   end
 
+  def application_couchdb
+     con = YAML.load_file(File.join(Rails.root, "config", "couchdb.yml"))
+     return "#{con['prefix']}_#{con['suffix']}" 
+  end
+
   private
 
   def check_if_logged_in

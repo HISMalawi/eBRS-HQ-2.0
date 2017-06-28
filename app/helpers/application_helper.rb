@@ -16,4 +16,9 @@ module ApplicationHelper
     return true
   end
 
+  def application_couchdb
+    con = YAML.load_file(File.join(Rails.root, "config", "couchdb.yml"))[Rails.env]
+    return "#{con['prefix']}_#{con['suffix']}"
+  end
+
 end
