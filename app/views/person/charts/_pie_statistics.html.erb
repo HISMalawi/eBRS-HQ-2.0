@@ -41,25 +41,18 @@ $i('#pie').highcharts({
       },
       series: [{
         type: 'pie',
-        name: 'Browser share',
-        data: [
-            ['Firefox',   45.0],
-            ['IE',       26.8],
-            {
-                name: 'Chrome',
-                y: 12.8,
-                sliced: true,
-                selected: true
-            },
-            ['Safari',    8.5],
-            ['Opera',     6.2],
-            ['Others',   0.7]
-        ]
+        name: 'Reported births',
+        data: [series_stats]
     }]
 });
 });
 
 }
+
+var series_stats = [];
+<%(@pie_stats || []).each do |c, s|%>
+  series_stats.push(["<%= c %>", "<%= s %>"]);
+<%end%>
 
 initPie();
 
@@ -67,7 +60,7 @@ initPie();
 </head>
 <body>
 
-<div id="pie" style="min-width: 310px; height: 400px; max-width: 600px; margin: 0 auto"></div>
+<div id="pie" style="min-width: 310px; height: 600px; width: 100%; margin: 0 auto"></div>
 
 </body>
 </html>
