@@ -99,6 +99,26 @@ person_type_of_births.each do |person_type_of_birth|
   puts "Loading PersonTypeOfBirth: #{person_type_of_birth.name}"
 end
 
+person_types = PersonType.all
+person_types.each do |t|
+  person_type = PersonTypeCouchdb.create(
+    person_type_id: t.id,
+    name:           t.name,
+    description:    t.description
+  )
+  puts "Loading PersonType: #{t.name}"
+end
+
+roles = Role.all
+roles.each do |r|
+  role = RoleCouchdb.create(
+    role_id:  r.id,
+    role:     r.role,
+    level:    r.level
+  )
+  puts "Loading Role: #{r.role}"
+end
+
 statuses = Status.all
 statuses.each do |status|
   status_couch_db = StatusCouchdb.new
@@ -120,4 +140,6 @@ LocationCouchdb.count
 LocationTagCouchdb.count
 LevelOfEducationCouchdb.count
 BirthRegistrationTypeCouchdb.count
+PersonTypeCouchdb.count
+RoleCouchdb.count
 puts "Init Couchdb (indexing) done ...."
