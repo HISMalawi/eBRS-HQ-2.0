@@ -32,6 +32,9 @@ locations.each do |location|
   location_couchdb.creator = location.creator
   location_couchdb.changed_by = location.changed_by
   location_couchdb.changed_at = location.changed_at
+  location_couchdb.parent_location = location.parent_location
+  location_couchdb.voided = location.voided
+  location_couchdb.date_voided = location.date_voided
   location_couchdb.save
   puts "Loading Location: #{location.name}"
 end
@@ -105,3 +108,16 @@ statuses.each do |status|
   status_couch_db.save
   puts "Loading Status: #{status.name}"
 end
+
+puts "Init Couchdb (indexing) ...."
+PersonTypeOfBirthsCouchdb.count
+StatusCouchdb.count
+PersonRelationshipTypesCouchdb.count
+PersonAttributeTypesCouchdb.count
+ModeOfDeliveryCouchdb.count
+LocationTagMapCouchdb.count
+LocationCouchdb.count
+LocationTagCouchdb.count
+LevelOfEducationCouchdb.count
+BirthRegistrationTypeCouchdb.count
+puts "Init Couchdb (indexing) done ...."
