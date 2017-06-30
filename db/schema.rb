@@ -209,6 +209,7 @@ ActiveRecord::Schema.define(version: 1) do
     t.string   "district_id_number",                      limit: 20
     t.integer  "national_serial_number",                  limit: 4
     t.integer  "court_order_attached",                    limit: 1,  default: 0, null: false
+    t.integer  "parents_signed",                          limit: 1,  default: 0, null: false
     t.date     "acknowledgement_of_receipt_date",                                null: false
     t.string   "facility_serial_number",                  limit: 30
     t.integer  "adoption_court_order",                    limit: 1,  default: 0, null: false
@@ -312,7 +313,7 @@ ActiveRecord::Schema.define(version: 1) do
 
   create_table "role", primary_key: "role_id", force: :cascade do |t|
     t.string  "role",  limit: 50, default: "", null: false
-    t.string "level", limit: 10
+    t.string "level", limit: 10   
   end
 
   add_index "role", ["role_id"], name: "fk_user_role_1_idx", using: :btree
