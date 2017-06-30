@@ -1,11 +1,11 @@
-development:  
-  protocol: 'https'
+development: &development
+  protocol: 'http'
   host: localhost
   port: 5984
-  prefix: project
-  suffix: text
-  username: test
-  password: user
+  prefix: ebrs
+  suffix: hq_development
+  username: admin
+  password: password
 test:
   <<: *development
   suffix: test
@@ -13,4 +13,4 @@ test:
 production:
   <<: *development
   protocol: 'http'
-  suffix:
+  suffix: hq_production
