@@ -8,9 +8,13 @@ class LocationController < ApplicationController
     to    = 400
 
     location_tag = LocationTag.find(params[:location_tag_id])
+    tag_name = location_tag.name
 
-    sleep 5 if from > 0 and location_tag.name.match(/village/i)
-    sleep 3 if from > 0 and not location_tag.name.match(/village/i)
+    if from > 0 && tag_name.match(/village/i)
+      sleep 5 
+    elsif from > 0 && !tag_name.match(/village/i)
+      sleep 3
+    end
 
     locations = Location.group("location.location_id").where("t.location_tag_id = ?",
       location_tag.id).joins("INNER JOIN location_tag_map m 
@@ -62,7 +66,7 @@ class LocationController < ApplicationController
       end
 
     end
-    render text: location.to_json and return
+    render text: location.to_json && return
   end
 
   def tag
