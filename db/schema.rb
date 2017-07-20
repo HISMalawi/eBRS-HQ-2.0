@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 1) do
+ActiveRecord::Schema.define(version: 0) do
 
   create_table "birth_registration_type", primary_key: "birth_registration_type_id", force: :cascade do |t|
     t.string   "name",        limit: 45,                  null: false
