@@ -56,6 +56,7 @@ begin
       require Rails.root.join('db','load_health_facilities.rb')
       require Rails.root.join('db','load_place_of_birth.rb')
       require Rails.root.join('db','load_statuses.rb')
+      require Rails.root.join('db','load_person_attributes.rb')
       require Rails.root.join('db','load_birth_registration_type.rb')
       require Rails.root.join('db','load_couch_data.rb')
       create_user
