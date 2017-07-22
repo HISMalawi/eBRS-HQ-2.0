@@ -20,6 +20,7 @@ puts "Loading Data to Couch ...."
 (   BirthRegistrationType.all +
     LevelOfEducation.all +
     Location.all +
+    LocationTag.all +
     LocationTagMap.all +
     ModeOfDelivery.all +
     PersonAttributeType.all +
