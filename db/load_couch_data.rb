@@ -32,9 +32,10 @@ puts "Loading Data to Couch ...."
 ).each do |data|
 
     transformed_data = data.as_json
-    transformed_data.delete("#{eval(data.class.name).primary_key}")
+    #transformed_data.delete("#{eval(data.class.name).primary_key}")
     transformed_data['type'] = eval(data.class.name).table_name
     doc_id = send_data(transformed_data)
+    sleep 0.001
     data.update_attributes(:document_id => doc_id)
 end
 
