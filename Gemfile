@@ -77,6 +77,3 @@ gem 'sucker_punch', '~> 2.0'
 gem 'countries'
 
 gem 'composite_primary_keys', '~> 8.0'
-
-gem 'sucker_punch', '~> 2.0'
-
