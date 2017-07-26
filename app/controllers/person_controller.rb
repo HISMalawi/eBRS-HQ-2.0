@@ -66,6 +66,17 @@ class PersonController < ApplicationController
   def show
   end
 
+  def view
+    @states = params[:statuses]
+    @section = params[:destination]
+
+
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
+
+    @records = PersonService.query_for_display(@states)
+
+    render :template => "/person/records"
+  end
   def records
     person_type = PersonType.where(name: 'Client').first
     @records = Person.where("p.person_type_id = ?", 
@@ -223,5 +234,31 @@ class PersonController < ApplicationController
   end
 
   #########################################################################
+  def tasks
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+              ["Manage Cases","Manage Cases" , [],"/person/manage_cases","/assets/folder3.png"],
+              ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
+              ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
+              ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
+              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates","/assets/folder3.png"],
+              ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
+              ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
+              ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
+            ]
+    @section = "Task(s)"
+  end
 
+  def manage_cases
+     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+     @tasks = [
+              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+              ["Incomplete records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
+              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
+
+            ]
+      @section = "Manage Cases"
+      render :template => "/person/tasks"
+  end
 end

@@ -53,6 +53,7 @@ class ActionMatrix
     index = -1
 
     csv.each_with_index do |row, i|
+      
       if row[0] == "Root Folder Privileges"
         found = true
         next
@@ -62,7 +63,7 @@ class ActionMatrix
         roles = row.collect{|r| r.upcase.strip}
         index = roles.index(role.upcase.strip)
       end
-
+  
       if found && SETTINGS['enable_role_privileges'].to_s == 'false' && !row[0].blank? && Rails.env.to_s == 'development'
         folders << row[0]
       elsif index > -1 && !row[index].blank? && row[index].to_s == 'Y'

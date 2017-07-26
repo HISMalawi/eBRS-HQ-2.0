@@ -39,58 +39,22 @@
 </style>
 
 
-<div class='dashboard-title'><h3>Task(s)</h3></div>
+<div class='dashboard-title'><h3><%= @section%></h3></div>
 
 <div class='separator-line'>&nbsp;</div>
 
 
-<div id='button-container' class="panel-btns-main-containers"></div>
-
-
-
-    <%
-      attributes = []
-      (Status.where("name LIKE (?)", "HQ-%") || []).each do |s|
-        attributes << [s.name, s.id]
-      end
-    %>
-
-
-<script>
-  var container = document.getElementById('button-container');
-
-  var row_count = 1;
-  var attributes = [];
-  <%(attributes).each do |a, count|%>
-    attributes.push(["<%=a%>", "<%=count%>"]);  
-  <%end%>
-
-  var table = document.createElement('div');
-  table.setAttribute('class','table-container');
-  container.appendChild(table);
-
-  var table_row = document.createElement('div');
-  table_row.setAttribute('class','rows');
-  table.appendChild(table_row);
-
-  for(var i = 0; i < attributes.length; i++){
-    var cell = document.createElement('div');
-    cell.setAttribute('class','cells');
-    var btn = document.createElement('button');
-    btn.setAttribute('type','button');
-    btn.setAttribute('class','btn btn-primary btn-lg panel-btns');
-    btn.innerHTML = attributes[i][0];
-    btn.setAttribute('onclick','document.location="/task/' + attributes[i][1] + '"');
-    cell.appendChild(btn);
-    table_row.appendChild(cell);
-
-    if(row_count == 5) {
-      table_row = document.createElement('div');
-      table_row.setAttribute('class','rows') 
-      table.appendChild(table_row);
-      row_count = 0;
-    }
-    row_count++;
-  }
-
-</script>
+<div id='button-container' class="panel-btns-main-containers">
+       <%(@tasks || []).each do |title, desc, stauses, link, icon|%>
+              <% @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title%>
+              <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
+                <div class="divbtn">
+                    <span class="icons">
+                        <img class="icon-attr" src="<%= icon %>">
+                        <p><%=title%></p>
+                    </span>
+                </div>
+                
+              </div>
+        <%end%>
+</div>
