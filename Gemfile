@@ -49,6 +49,8 @@ group :development do
 end
 
 gem 'couchrest_model'
+ 
+gem 'rest-client'
 
 gem 'bcrypt', '3.1.7'
 
