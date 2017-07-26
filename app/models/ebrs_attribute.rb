@@ -31,7 +31,7 @@ module EbrsAttribute
       before_create :check_record_complteness_before_creating
       before_save :check_record_complteness_before_updating
       before_create :generate_key
-      after_create :create_or_update_in_couch
+      #after_create :create_or_update_in_couch
       after_save :create_or_update_in_couch
     end
   end
@@ -61,7 +61,9 @@ module EbrsAttribute
   end
 
   def generate_key
-    eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
+    if !self.class.primary_key.blank? && !self.class.primary_key.class.to_s.match('CompositePrimaryKeys')
+      eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
+    end
   end
 
   def create_or_update_in_couch
