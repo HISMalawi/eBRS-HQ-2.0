@@ -1,3 +1,7 @@
+#Create couch DB
+h = Hallo.new
+h.save
+h.destroy
 
 def create_user
   puts "Creating Person Type for User"
@@ -28,7 +32,7 @@ def create_user
 
   user = User.create!(username: 'admin', 
                       password_hash: 'adminebrs', 
-                      creator: 1, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'), 
+                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
                       person_id: core_person.person_id)
 
   puts "Creating Role for User"
@@ -54,11 +58,14 @@ begin
       require Rails.root.join('db','load_districts.rb')
       require Rails.root.join('db','load_tas_and_villages.rb')
       require Rails.root.join('db','load_health_facilities.rb')
+      require Rails.root.join('db','load_place_of_birth.rb')
       require Rails.root.join('db','load_statuses.rb')
+      require Rails.root.join('db','load_person_attribute_types.rb')
+      require Rails.root.join('db','load_person_identifier_types.rb')
       require Rails.root.join('db','load_birth_registration_type.rb')
       require Rails.root.join('db','load_couch_data.rb')
       create_user
     end
-rescue => e 
+rescue => e
 	puts "Error ::::  #{e.message}  ::  #{e.backtrace.inspect}"
 end
