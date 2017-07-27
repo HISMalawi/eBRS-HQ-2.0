@@ -1,3 +1,5 @@
+#Create couch DB
+Hallo.count
 
 def create_user
   puts "Creating Person Type for User"

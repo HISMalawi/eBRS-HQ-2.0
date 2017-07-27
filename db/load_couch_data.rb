@@ -37,7 +37,7 @@ puts "Loading Data to Couch ...."
     transformed_data['type'] = eval(data.class.name).table_name
     doc_id = send_data(transformed_data)
     data.update_column('document_id', doc_id)
-    sleep 0.001
+    sleep 0.002
 end
 
 protocol = $configs['secure_connection'].to_s == 'true' ? 'https' : 'http'
