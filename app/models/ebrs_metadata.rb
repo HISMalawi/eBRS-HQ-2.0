@@ -4,7 +4,7 @@ module EbrsMetadata
     base.class_eval do
       before_create :check_record_complteness_before_creating
       before_save :check_record_complteness_before_updating
-      before_create :generate_key
+      #before_create :generate_key
     end
   end
 
