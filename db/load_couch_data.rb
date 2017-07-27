@@ -40,9 +40,4 @@ puts "Loading Data to Couch ...."
     sleep 0.002
 end
 
-protocol = $configs['secure_connection'].to_s == 'true' ? 'https' : 'http'
-last_seq = JSON.parse(RestClient.get("#{protocol}://#{$configs['host']}:#{$configs['port']}/#{$configs['prefix']}_#{$configs['suffix']}/_changes"))['last_seq']
-puts "Setting sequence to #{last_seq}"
-ActiveRecord::Base.connection.update("UPDATE couch_sequence SET seq  = #{last_seq}")
-
 puts "Done Loading Data to Couch!!"
