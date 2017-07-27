@@ -29,7 +29,7 @@ do
     password+="$char"
 done
 
-mysqldump -u $username -p$password $database --tables birth_registration_type level_of_education  location location_tag mode_of_delivery person_attribute_types person_relationship_types person_identifier_types person_type_of_births person_type role statuses > metadata.sql
+mysqldump -u $username -p$password $database --tables birth_registration_type level_of_education  location location_tag location_tag_map mode_of_delivery person_attribute_types person_relationship_types person_identifier_types person_type_of_births person_type role statuses > metadata.sql
 clear
 
 echo "Done!"
