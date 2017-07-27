@@ -11,7 +11,7 @@ class User < ActiveRecord::Base
   has_one :user_role
 
   after_create :create_audit
-  
+
   cattr_accessor :current
 
   def has_role?(role_name)
@@ -23,7 +23,7 @@ class User < ActiveRecord::Base
     self.password_hash = BCrypt::Password.create(self.password_hash) if (check_password == 'invalid hash')
     self.creator = 'admin' if self.creator.blank?
   end
- 
+
   def password_matches?(plain_password)
     not plain_password.nil? and self.password_hash == password
   end
@@ -49,13 +49,17 @@ class User < ActiveRecord::Base
   def confirm_password
     password_hash
   end
-  
-  def create_audit
-    #Audit.create(record_id: self.id, audit_type: "Audit", level: "User", reason: "Created user record")
+
+  def first_name
+    self.core_person.person_name.first_name rescue nil
   end
 
-  def blocked
-    self.active == 0 ? true : false
+  def last_name
+    self.core_person.person_name.last_name rescue nil
+  end
+
+  def create_audit
+    #Audit.create(record_id: self.id, audit_type: "Audit", level: "User", reason: "Created user record")
   end
 
 end

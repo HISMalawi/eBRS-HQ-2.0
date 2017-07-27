@@ -1,13 +1,13 @@
 source 'https://rubygems.org'
 
 ruby '2.1.2'
+gem 'couch_tap'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.6'
 # Use mysql as the database for Active Record
 gem 'mysql2', '>= 0.3.13', '< 0.5'
 
 gem 'mysql'
-
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -49,6 +49,8 @@ group :development do
 end
 
 gem 'couchrest_model'
+ 
+gem 'rest-client'
 
 gem 'bcrypt', '3.1.7'
 
@@ -72,8 +74,11 @@ gem 'chronic', '0.10.2'
 
 gem 'whenever',  :require => false 
 
-gem 'sucker_punch', '~> 2.0'
-
 gem 'countries'
 
 gem 'composite_primary_keys', '~> 8.0'
+
+gem 'sucker_punch', '~> 2.0'
+
+gem "faker", "~> 1.6.6"
+

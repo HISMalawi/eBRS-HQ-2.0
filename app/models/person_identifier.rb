@@ -1,4 +1,5 @@
 class PersonIdentifier < ActiveRecord::Base
+    include EbrsAttribute
     self.table_name = :person_identifiers
     self.primary_key = :person_identifier_id
     belongs_to :core_person, foreign_key: "person_id"
