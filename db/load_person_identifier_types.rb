@@ -4,4 +4,4 @@ CSV.foreach("#{Rails.root}/app/assets/data/person_identifier_types.csv", :header
  person_identifier_type = PersonIdentifierType.create(name: row[0], description: row[1])
  puts "Loaded #{person_identifier_type.name}"
 end
-puts "Loaded Person Identfier Types !!!"
+puts "Loaded Person Identifier Types !!!"
