@@ -1,3 +1,7 @@
+#Create couch DB
+h = Hallo.new
+h.save
+h.destroy
 
 def create_user
   puts "Creating Person Type for User"
@@ -28,7 +32,7 @@ def create_user
 
   user = User.create!(username: 'admin', 
                       password_hash: 'adminebrs', 
-                      creator: 1, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'), 
+                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
                       person_id: core_person.person_id)
 
   puts "Creating Role for User"
