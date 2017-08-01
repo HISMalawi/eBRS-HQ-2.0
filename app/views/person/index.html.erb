@@ -22,7 +22,7 @@
 <%= stylesheet_link_tag "bootstrap/bootstrap" %>                                         
 <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>                                         
 
-<div class='dashboard-title'><h3>National statistics summary</h3></div>
+<div class='dashboard-title'><h3>National Statistics Summary</h3></div>
 
 <div class='separator-line'>&nbsp;</div>
 
@@ -32,24 +32,24 @@
     <div class="row ">
       <%
         attributes = [
-          ['Newly Received (HQ)', 53],
-          ['Print Que (HQ)', 2126],
-          ['Verified (HQ)', 3771],
-          ['Re-print Que (HQ)', 47],
-          ['Suspected Duplicate (HQ)', 245],
-          ['Incomplete Record (HQ)', 1],
-          ['Printed (HQ)', 2003],
-          ['Printed and Dispatched(HQ)', 72344],
-          ['Voided (HQ)', 50],
+          ['Newly Received (HQ)', @stats['HQ-ACTIVE']],
+          ['Print Que (HQ)', @stats['HQ-CAN-PRINT']],
+          ['Verified (HQ)', @stats['HQ-APPROVED']],
+          ['Re-print Que (HQ)', @stats['HQ-RE-PRINT']],
+          ['Suspected Duplicate (HQ)', @stats['HQ-POTENTIAL DUPLICATE']],
+          ['Incomplete Record (HQ)', @stats['HQ-INCOMPLETE']],
+          ['Printed (HQ)', @stats['HQ-PRINTED']],
+          ['Printed and Dispatched(HQ)', @stats['HQ-DISPATCHED']],
+          ['Voided (HQ)', @stats['HQ-VOIDED']],
         ]
       %>
       <%(attributes || []).each do |a, count|%>   
       <div class="col-md-2 col-sm-2 col-md-offset-1 box0">
-        <div class="box1">
+        <div class="box1" style="padding: 0px;">
           <span class="li_heart"></span>
-          <h3><%=count%></h3>
+          <h3 style="color: black;"><%=count%></h3>
         </div>
-        <p><%= a %></p>
+        <p style="color: darkslategray;"><%= a %></p>
       </div>
       <%end%>
     </div><!-- /row mt -->	

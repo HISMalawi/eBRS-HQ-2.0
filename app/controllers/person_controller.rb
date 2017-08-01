@@ -58,9 +58,11 @@ class PersonController < ApplicationController
     details = PersonBirthDetail.where("district_id_number IS NOT NULL")
     (details || []).each do |d|
       code = d.district_id_number.split('/')[0]
+      @pie_stats[code] = 0 if @pie_stats[code].blank?
       @pie_stats[code] += 1
     end
-    
+
+    @stats = PersonRecordStatus.stats
   end
 
   def show
@@ -70,13 +72,13 @@ class PersonController < ApplicationController
     @states = params[:statuses]
     @section = params[:destination]
 
-
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
     @records = PersonService.query_for_display(@states)
-
     render :template => "/person/records"
   end
+
+
   def records
     person_type = PersonType.where(name: 'Client').first
     @records = Person.where("p.person_type_id = ?", 

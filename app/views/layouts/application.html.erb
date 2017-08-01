@@ -21,11 +21,6 @@
     <%= stylesheet_link_tag "extras/style" %>                                         
     <%= stylesheet_link_tag "extras/style-responsive" %>                                         
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
   </head>
 
   <body>
@@ -47,6 +42,21 @@
         width: 50%;
         padding-top: 10px;
       }
+      .mt a{
+          padding: 0px;
+          font-size: 15px;
+      }
+
+      .black-bg{
+          border-bottom: 1px solid white !important;
+      }
+      #sidebar{
+          background: #006f95 none repeat scroll 0 0 !important;
+      }
+      .btn-image{
+          width: 50px;
+          height: 50px;
+      }
   </style>
 
   <section id="container" >
@@ -59,7 +69,7 @@
                   <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
               </div>
             <!--logo start-->
-            <a href="/" class="logo"><b>eBRS</b></a>
+            <a href="/" class="logo"><b>eBRS &nbsp;&nbsp;<sub>V2.0</sub></b></a>
             <!--logo end-->
             <div class="nav notify-row" id="top_menu">
                 <!--  notification start -->
@@ -203,7 +213,7 @@
             </div>
             <div class="top-menu">
             	<ul class="nav pull-right top-menu">
-                    <li><a class="logout" href="/logout">Logout</a></li>
+                    <li><a style="color: black" class="logout" href="/logout">Logout</a></li>
             	</ul>
             </div>
         </header>
@@ -222,21 +232,21 @@
                     <%=image_tag 'coat-arms.png', class: 'img-circle', width: '60' %></a></p>
               	  <h5 class="centered"><%=User.current.username%></h5>
               	  	
-                  <li class="mt">
-                      <a href="/">
+                  <li class="">
+                      <a href="/" style="color: white;font-size: 1em">
                           <i class="fa fa-home"></i>
                           <span>Home</span>
                       </a>
                   </li>
-                  <li class="mt">
-                      <a href="/tasks">
+                  <li class="">
+                      <a href="/tasks" style="color: white;font-size: 1em">
                           <i class="fa fa-desktop"></i>
-                          <span>Tasks</span>
+                          <span >Tasks</span>
                       </a>
                   </li>
 
                   <li class="sub-menu">
-                      <a href="javascript:;" >
+                      <a href="javascript:;" style="color: white;font-size: 1em">
                           <i class="fa fa-cogs"></i>
                           <span>Settings</span>
                       </a>
@@ -252,7 +262,7 @@
                       </ul>
                   </li>
                   <li class="sub-menu">
-                      <a href="javascript:;" >
+                      <a href="javascript:;" style="color: white;font-size: 1em">
                           <i class="fa fa-book"></i>
                           <span>Reports</span>
                       </a>
@@ -278,24 +288,24 @@
       *********************************************************************************************************************************************************** -->
 
     <!-- js placed at the end of the document so the pages load faster -->
-    <%=javascript_include_tag "datatables/jquery"%>                                         
+    <%=javascript_include_tag "datatables/jquery"%>
     <script>
       var $j = jQuery.noConflict();
     </script> 
-    <%=javascript_include_tag "js/jquery"%>                                         
+    <%#=javascript_include_tag "js/jquery"%>
     <script>
       var $i = jQuery.noConflict();
-    </script> 
-    <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>                                         
+    </script>
+    <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
     <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         
     <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>                                         
-    <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>                                         
-    <%=javascript_include_tag "js/jquery.scrollTo.min"%>                                         
+    <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
+    <%=javascript_include_tag "js/jquery.scrollTo.min"%>
     <%=javascript_include_tag "js/jquery.nicescroll"%>                                         
 
 
     <!--common script for all pages-->
-    <%=javascript_include_tag "js/common-scripts"%>                                         
+    <%=javascript_include_tag "js/common-scripts"%>
 
     <!--script for this page-->
     

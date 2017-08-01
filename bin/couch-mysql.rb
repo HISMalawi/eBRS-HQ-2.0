@@ -118,5 +118,8 @@ changes "http://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/
   document 'type' => 'person_type' do |doc|
     output = Methods.update_doc(doc.document)
   end
+  document 'type' => 'person_record_statuses' do |doc|
+    output = Methods.update_doc(doc.document)
+  end
 end
 

@@ -714,7 +714,7 @@ end
 
 
     main = Person.find_by_sql(
-          "SELECT n.*, prs.status_id FROM person p
+          "SELECT n.*, p.birthdate AS dob, prs.status_id FROM person p
             INNER JOIN core_person cp ON p.person_id = cp.person_id
             INNER JOIN person_name n ON p.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON p.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
@@ -745,6 +745,7 @@ end
           'id' => data.person_id,
           'name'        => name,
           'father_name'       => father_name,
+          'dob' => data.dob.to_date.strftime('%d/%b/%Y'),
           'mother_name'       => mother_name,
           'status'            => Status.find(data.status_id).name, #.gsub(/DC\-|FC\-|HQ\-/, '')
           'date_of_reporting' => data['created_at'].to_date.strftime("%d/%b/%Y"),
