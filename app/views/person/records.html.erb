@@ -1,11 +1,25 @@
-<%=javascript_include_tag "datatables/jquery" %>
+<%=javascript_include_tag "datatables/prototype" %>
 <%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+
 
 <style>
     .btn-image{
         width: 70px;height: 35px;
         padding: 7px;
     }
+    #example_wrapper {
+        margin-top: 15px;
+    }
+
+    .fa{
+        min-width: 35px;
+        padding: 5px;
+        border-radius: 10px !important;
+    }
+
 </style>
 
 <div class='data-table-container' style="background: white;">
@@ -15,7 +29,7 @@
     <tr>
       <th style="text-align: left;">BEN</th>
       <th style="text-align: left;">Name</th>
-      <th style="text-align: center; width:120px;">Birthdate</th>
+      <th style="text-align: center; width:90px;">Birthdate</th>
       <th style="text-align: left;">Mother's Name</th>
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Record State</th>
@@ -33,18 +47,21 @@
         <td style="text-align: center;"><%= record['status'] %></td>
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
-            <tr>  
-              <td><button class="btn btn-info btn-image" onmousedown="javascript:alert();">
-                View</button>
+            <tr>
+              <td>
+                <button onclick="javascript:location='user/'"
+                        class="btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
               </td>
-              <td><button class="btn btn-warning btn-image" onmousedown="javascript:alert();">
-                Edit
-              </button>
-               </td>
-              <td style="">
-                <button class="btn btn-danger btn-image" onmousedown="javascript:alert();">
-                Void</button>
-               </td>
+              <%if admin?%>
+                  <td>
+                    <button onclick="javascript:location='edit/>'"
+                            class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
+                  </td>
+                  <td>
+                    <button onclick="javascript:location='/void_user/'"
+                            class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
+                  </td>
+              <%end%>
             </tr>
           </table>
         </td>
@@ -58,8 +75,8 @@
 
 <script>
 
-jQuery(document).ready(function() {
-    $('#example').DataTable();
+$i(document).ready(function() {
+    $i('#example').DataTable();
 } );
 
 </script>

@@ -10,8 +10,8 @@ end
 module EbrsAttribute
 
   def send_data(hash)
-    if !hash['document_id'].blank?
-      h = Pusher.database.get(hash['document_id'])
+    h = Pusher.database.get(hash['document_id']) rescue nil
+    if !h.blank?
       hash.keys.each do |k|
         h[k] = hash[k]
       end

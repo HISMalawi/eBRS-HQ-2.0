@@ -25,6 +25,8 @@ Rails.application.routes.draw do
 
   get "/void_user/:user_id" => "users#void_user"
 
+  get "/block_user/:user_id" => "users#block_user"
+
   get '/query_users' =>"users#query_users"
 
   get "/view" => "person#view"
@@ -61,7 +63,7 @@ Rails.application.routes.draw do
 
   get "edit/:user_id" => "users#edit"
 
-  get '/username_availability' => 'users#username_availability'
+  post "update/:user_id" => "users#update"
 
   post '/create_user' => 'users#create'
 
