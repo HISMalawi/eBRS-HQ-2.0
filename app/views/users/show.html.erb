@@ -114,7 +114,7 @@
         :
       </td>
       <td>
-        <%= Person.find(@user.person_id).gender rescue '' %>
+        <%= Person.find(@user.person_id).gender == 'F' ? 'Female' : 'Male' rescue '' %>
       </td>
     </tr>
 
@@ -195,7 +195,7 @@
       <span class="fa fa-chevron-circle-left"></span>
       Back
     </a>
-    <% if @user.username != 'admin'%>
+    <% if @user.username != 'admin' && @user != User.current%>
         <%if @user.active == 1 %>
             <a class="btn btn-sm btn-danger"
                style="position: relative;"
@@ -213,7 +213,7 @@
         <%end
     end%>
 
-    <% if @user.username != 'admin'%>
+    <% if @user.username != 'admin' && @user != User.current%>
         <a class="btn btn-sm btn-success"
            onclick="javascript:location='/edit/<%= @user.id%>'">
           <span class="fa fa-pencil"></span>
@@ -221,6 +221,13 @@
         </a>
     <% end %>
 
+    <% if @user == User.current%>
+        <a class="btn btn-sm btn-success"
+           onclick="javascript:location='/change_password/<%= @user.id%>'">
+          <span class="fa fa-pencil"></span>
+          Change Password
+        </a>
+    <% end %>
 
   </div>
 

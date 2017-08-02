@@ -185,12 +185,10 @@ class UsersController < ApplicationController
   def search
 
     #redirect_to "/" and return if !(User.current_user.activities_by_level("Facility").include?("View Users"))
-
     @section = "Search for User"
 
     @targeturl = "/users"
 
-    render :layout => "facility"
 
   end
 
@@ -290,8 +288,6 @@ class UsersController < ApplicationController
     @targeturl = "/"
 
     @user = User.current
-
-    render :layout => "facility"
 
   end
 
