@@ -3,8 +3,8 @@
 
 <style>
     .btn-image{
-        width: 40;
-        height: 40;
+        width: 70px;height: 35px;
+        padding: 7px;
     }
 </style>
 
@@ -25,23 +25,25 @@
     <%(@records || []).each do |record|
     %>
       <tr>
-        <td style="text-align: left;"><%= record['district_id_number'] %>&nbsp;</td>
-        <td style="text-align: left;"><%= record['name'] %></td>
-        <td style="text-align: center;"><%= record['dob'] %></td>
-        <td style="text-align: center;"><%= record['mother_name'] %></td>
-        <td style="text-align: center;"><%= record['father_name'] %></td>
-        <td style="text-align: center;"><%= 'DC OPEN' %></td>
+        <td style="text-align: left;width: 15%"><%= record['den'] %>&nbsp;</td>
+        <td style="text-align: left;width: 15%"><%= record['name'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['dob'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['mother_name'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['father_name'] %></td>
+        <td style="text-align: center;"><%= record['status'] %></td>
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
             <tr>  
               <td><button class="btn btn-info btn-image" onmousedown="javascript:alert();">
-                <%= image_tag "view.png", class: 'btn-images' %></button>
+                View</button>
               </td>
               <td><button class="btn btn-warning btn-image" onmousedown="javascript:alert();">
-                <%= image_tag "edit.png", class: 'btn-images' %></button>
+                Edit
+              </button>
                </td>
-              <td><button class="btn btn-success btn-image" onmousedown="javascript:alert();">
-                <%= image_tag "void.png", class: 'btn-images' %></button>
+              <td style="">
+                <button class="btn btn-danger btn-image" onmousedown="javascript:alert();">
+                Void</button>
                </td>
             </tr>
           </table>

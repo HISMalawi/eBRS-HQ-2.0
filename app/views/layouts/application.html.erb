@@ -57,6 +57,9 @@
           width: 50px;
           height: 50px;
       }
+      .wrapper{
+          background: white;;
+      }
   </style>
 
   <section id="container" >
@@ -230,7 +233,8 @@
               
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coat-arms.png', class: 'img-circle', width: '60' %></a></p>
-              	  <h5 class="centered"><%=User.current.username%></h5>
+              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;" class="centered"><%=User.current.username%></h5>
+
               	  	
                   <li class="">
                       <a href="/" style="color: white;font-size: 1em">

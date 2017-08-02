@@ -217,8 +217,7 @@ class PersonController < ApplicationController
     end
   end
 
-
-    def get_hospital
+  def get_hospital
     
     nationality_tag = LocationTag.where(name: 'Health facility').first
     data = []
