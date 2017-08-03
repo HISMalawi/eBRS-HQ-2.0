@@ -6,12 +6,15 @@
 
 
 <style>
-    .btn-image{
-        width: 70px;height: 35px;
-        padding: 7px;
+
+
+    #example{
+        background-color: #d3d3d3;
     }
-    #example_wrapper {
-        margin-top: 15px;
+    #example tr td{
+        background-color: white !important;
+        border-left: 0.5px dotted lightgray;
+        padding: 7px;
     }
 
     .fa{
@@ -20,9 +23,36 @@
         border-radius: 10px !important;
     }
 
-</style>
+    th{
+        background: lightsteelblue;
+        color: black;
+    }
 
-<div class='data-table-container' style="background: white;">
+    .panel-heading{
+        margin-bottom: 20px;
+    }
+
+    .action-btn{
+        border: none !important;
+        margin-top: 0px;
+    }
+
+</style>
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
 
 <table id="example" class="display" cellspacing="0" width="100%">
   <thead>
@@ -32,7 +62,7 @@
       <th style="text-align: center; width:90px;">Birthdate</th>
       <th style="text-align: left;">Mother's Name</th>
       <th style="text-align: left;">Father's Name</th>
-      <th style="text-align: center;">Record State</th>
+      <th style="text-align: center;">Status</th>
       <th>&nbsp;</th>
   </tr>
   </thead>
@@ -49,17 +79,17 @@
           <table style="width: 100%; text-align: center; border-style: none;">
             <tr>
               <td>
-                <button onclick="javascript:location='user/'"
-                        class="btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
+                <button onclick="javascript:location='/show_person/<%= record['id']%>'"
+                        class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
               </td>
               <%if admin?%>
                   <td>
-                    <button onclick="javascript:location='edit/>'"
-                            class="btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
+                    <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
+                            class="action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
                   </td>
                   <td>
-                    <button onclick="javascript:location='/void_user/'"
-                            class="btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
+                    <button onclick="javascript:location='/void/<%= record['person_id']%>'"
+                            class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
                   </td>
               <%end%>
             </tr>

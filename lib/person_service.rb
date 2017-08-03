@@ -686,6 +686,20 @@ end
     result
   end
 
+  def self.informant(person_id)
+    result = nil
+    #raise person_id.inspect
+    relationship_type = PersonRelationType.find_by_name("Informant")
+
+    relationship = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => relationship_type.id).last
+    #raise relationship.person_b.inspect
+    unless relationship.blank?
+      result = PersonName.where(:person_id => relationship.person_b).last
+    end
+
+    result
+  end
+
   def self.is_num?(val)
 
     #checks if the val is numeric or string

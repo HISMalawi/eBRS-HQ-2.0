@@ -1,2 +1,2817 @@
-<h1>Person#show</h1>
-<p>Find me in app/views/person/show.html.erb</p>
+<style>
+
+.record td {
+  font-size: 16px;
+  color: #000;
+  padding: 10px;
+  text-align: left;
+
+  <% if @child[:request_status] == "VOIDED" %>
+
+  text-decoration: line-through;
+
+  <% end %>
+
+}
+
+.record td strong {
+  font-size: 12px;
+  font-style: normal;
+  color: #333;
+  float: right;
+}
+
+.btn {
+    background-repeat: repeat-x;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) #b3b3b3;
+    border-image: none;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    display: inline-block;
+    font-size: 14px;
+    line-height: 20px;
+    margin-bottom: 0;
+    padding: 4px 12px;
+    text-align: center;
+    vertical-align: middle;
+    min-width: inherit;
+    min-height: 20px;
+}
+
+.btn-primary {
+    background-color: #006dcc;
+    background-image: linear-gradient(to bottom, #08c, #04c);
+    background-repeat: repeat-x;
+    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+    color: #fff;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
+.modal-header {
+    border-bottom: 1px solid #eee;
+    padding: 9px 15px;
+    font-weight: bold !important;
+}
+.modal-footer {
+    background-color: #f5f5f5;
+    border-radius: 0 0 6px 6px;
+    border-top: 1px solid #ddd;
+    box-shadow: 0 1px 0 #fff inset;
+    margin-bottom: 0;
+    padding: 14px 15px 15px;
+    text-align: right;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: inherit;
+    font-family: inherit;
+    font-weight: bold;
+    line-height: 20px;
+    margin: 10px 0;
+    text-rendering: optimizelegibility;
+}
+
+.modal-dialog {
+    margin: 70px auto;
+    width: 600px;
+}
+
+.modal-header .close {
+    margin-top: 2px;
+}
+
+button.close {
+    background: transparent none repeat scroll 0 0;
+    border: 0 none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.close {
+    min-width: inherit;
+    min-height: inherit;
+}
+
+</style>
+
+<div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;">
+
+  <table width="100%">
+
+    <tr>
+      <td>
+        &nbsp;
+      </td>
+    </tr>
+
+    <% @record.each do |group, children| %>
+
+    <% r = 0 %>
+
+    <tr>
+      <td style="font-size: 18px; text-align: left; padding: 10px; border-top: 1px solid #ccc; background-color: #eee;
+      border-bottom: 1px solid #ccc;">
+      <%= group %>
+    </td>
+  </tr>
+  <tr>
+    <td>
+
+
+      <table class="record" width="100%" cellpadding="10" cellspacing="0">
+
+        <% children.each do |child| %>
+
+        <% kids = child.keys %>
+
+        <tr>
+
+          <% (0..(kids.length - 1)).each do |i| %>
+
+          <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+            <% unless kids[i].kind_of?(Array) %>
+            <strong><%= kids[i].html_safe %></strong>
+            <% else %>
+                <% if  kids[i].second == "mandatory" %>
+            			<strong><%= kids[i].first %><span style='color: red;'> *</span></strong>
+            	  <% elsif  kids[i].second == "sub" %>
+            			<strong><%= kids[i].first %><br /><span style='color: grey;font-size: smaller; font-style: italic;'>(<%= (child[kids[i]] == "Yes" ? "Registered after 42 days of birth" : "Registered within 42 days of birth") rescue nil %>)</span>
+            		<% end %>
+            <% end %>
+          </td>
+
+          <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>" id='<%= kids[i].kind_of?(Array) ? "#{group.gsub(" ", "_").downcase}_#{kids[i].first.gsub(" ", "_").downcase}" : "#{group.gsub(" ", "_").downcase}_#{kids[i].gsub(" ", "_").downcase}" %>'>
+            <%= child[kids[i]] rescue nil %>
+          </td>
+
+          <% end %>
+
+          <% ((kids.length)..2).each do |i| %>
+
+          <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+            <strong>&nbsp;</strong>
+          </td>
+          <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+            &nbsp;
+          </td>
+
+          <% end %>
+
+        </tr>
+
+        <% r += 1 %>
+
+        <% end %>
+
+      </table>
+
+    </td>
+  </tr>
+
+  <% end %>
+
+  <tr>
+    <td style="border-top: 1px solid #ccc;">
+      &nbsp;
+    </td>
+  </tr>
+
+</table>
+
+</div>
+<div style="width: 100%; overflow: hidden; height: 45px; vertical-align: middle;">
+
+  
+  <button id="btnApprove" class="red" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="history.back();return false;">
+      Finish
+  </button>
+  <div class="modal fade" id="dmCommentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Approval Comment
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="dmCommentModalContent">
+              Something went wrong...
+            </span>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+ <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="dsCommentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="dsCommentModalContent">
+              Something went wrong...
+            </span>
+            <form role="form" id="dmnewcomments" method="post" action="/dm_post_comment">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="dmnewcomments" required>
+		            <option value=""></option>
+								<option>Approve</option>
+								<option>Disapprove</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dmnewcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->   
+    
+    <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="dmGrantCommentModal" tabindex="-1" role="dialog" aria-labelledby="myGrantModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myGrantModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="dmGrantCommentModalContent">
+              Something went wrong...
+            </span>
+            <form role="form" id="dmgrantcomments" method="post" action="/dm_post_grant_comment">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="dmgrantcomments" required>
+		            <option value=""></option>
+								<option>Approve</option>
+								<option>Disapprove</option>
+							</select> 
+							<br />
+							<br />
+              <label for="dmgrantcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dmgrantcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END --> 
+    
+    <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="dmConflictCommentModal" tabindex="-1" role="dialog" aria-labelledby="myConflictModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myConflictModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="dmConflictCommentModalContent">
+              Something went wrong...
+            </span>
+            <form role="form" id="dmconflictcomments" method="post" action="/dm_post_conflict_comment">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="dmconflictcomments" required>
+		            <option value=""></option>
+								<option>Complete</option>
+								<option>InComplete</option>
+							</select> 
+							<br />
+							<br />
+              <label for="dmconflictcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dmconflictcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->   
+      
+    
+    
+<% if has_role("Approve/Reject a child record") %>
+  
+  <% if @child.record_status.to_s.strip.upcase == "PRINTED" && @child.request_status.to_s.strip.upcase == "CLOSED" %>
+  
+      <% unless @readonly == true %>
+      
+				  <button id="btnDispatch" class="green" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="dispatch();">Dispatch at HQ
+				  </button>
+				  
+				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="view_printed();">View Printed
+				  </button>
+      
+      <% else %>
+          
+          <button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Dispatch at HQ
+				  </button>
+				  
+				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Printed
+				  </button>
+
+      <% end %>
+
+   <% elsif @child.record_status.to_s.strip.upcase == "PRINTED" && @child.request_status.to_s.strip.upcase == "DISPATCHED" %> 
+      
+      <% unless @readonly == true %>
+      	  
+				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="view_printed();">View Dispatched
+				  </button>
+      
+      <% else %>
+          
+				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Dispatched
+				  </button>
+
+      <% end %>
+
+  <% elsif @child.record_status.to_s.strip.upcase == "HQ OPEN" && @child.request_status.to_s.strip.upcase == "CAN REJECT" %> 
+      
+      <% unless @readonly == true %>
+      	  
+				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDMRejectedCommentsModal()">Confirm
+				  </button>
+      
+      <% else %>
+          
+				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Confirm
+				  </button>
+
+      <% end %>
+
+      
+       <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myDMRejectedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myDMRejectedModalContent">
+              Something went wrong...
+            </span>
+            
+				<form role="form" id="dmcanrejectcomments" method="post" action="/dm_re_print_comment">
+            <div class="form-group">
+              <label for="request_status">Action:</label>
+              <select name="request_status" form="dmcanrejectcomments" required>
+		            <option value=""></option>
+								<option>Approve for Printing</option>
+								<option>Approve Rejection</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dmcanrejectcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+     
+
+
+
+            
+        
+
+   <% end %>
+   
+   
+   
+<% end %>  
+  
+<% if has_role("Manage incomplete records") %>
+
+    <% if (['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+              ["REJECTED"].include?(@child.request_status.to_s.strip.upcase))   %>
+       
+      <% unless @readonly == true %> 
+       
+				  <button id="btnReject" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="reject();">Confirm Rejection
+				  </button>
+      
+      <% else %>
+      				
+      		<button id="btnReject" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Confirm Rejection
+				  </button>	
+      
+      <% end %>
+
+    <% end %>
+    
+    <% if @child.record_status.to_s.strip.upcase == "HQ OPEN" && @child.request_status.to_s.strip.upcase == "RE-APPROVED" %>
+      
+      <% unless @readonly == true %> 
+				  
+				  
+				  <button id="btnDispatch" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showReApprovedDSCommentsModal();">View Comments
+				  </button>
+				  
+				  <!--button id="btnDispatch" class="green" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="re_approve();">Re-Approve Record
+				  </button>
+				  
+				  <button id="btnReject" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="reject();">Reject Record
+				  </button-->
+      
+      <% else %>
+         
+          <!--button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Re-Approve Record
+				  </button>
+				  
+				  <button id="btnReject" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Reject Record
+				  </button-->
+				  
+				    <button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Comments
+				  </button>
+				  
+      
+      <% end %>
+      
+      <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myReApprovedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myReApprovedModalContent">
+              Something went wrong...
+            </span>
+            
+				<form role="form" id="dscomments" method="post" action="/ds_re_approve_comment">
+            <div class="form-group">
+              <label for="request_status">Action:</label>
+              <select name="request_status" form="dscomments" required>
+		            <option value=""></option>
+								<option>Re-Approve Record</option>
+								<option>Reject Record</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dscomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+     
+   <% end %>
+
+<% end %>
+  <% if has_role("Check completeness") || has_role("Check for duplicates") %>
+      <% if  ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) && (
+             ["APPROVED"].include?(@child.request_status.to_s.strip.upcase) ||
+             ["ACTIVE"].include?(@child.request_status.to_s.strip.upcase)) %>
+              
+            <% unless @readonly == true %>   
+              
+				        <button id="btnApprove" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="checkDuplicates('<%= current_user.role%>');">Check
+				          Completeness
+				        </button>
+            
+            <% else %>
+            
+               <button id="btnApprove" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Check Completeness
+				       </button>
+				        
+            <% end %>  
+            
+     <% elsif (['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+              ["ADOPTION PENDING"].include?(@child.request_status.to_s.strip.upcase))    %>
+            
+            <% unless @readonly == true %> 
+            
+				        <button id="btnApprove" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="approve_adoption();">Approve Adoption
+				        </button> 
+            
+            <% else %>
+            
+		            <button id="btnApprove" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
+		           	 margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Approve Adoption
+		          	</button> 
+       
+            <% end %>      
+            
+    <% end %>
+
+<% end %>
+
+<% if has_role("Make ammendments") and !params[:process].blank? %>
+
+    <% if ['DC OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+    @child.request_status.to_s.strip.upcase == "DC_ASK" %>
+    
+        <% unless @readonly == true %> 
+        
+				    <!--button id="btnApproveRequest" class="green" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/approve_request/<%= @child.id %>';">
+				    Approve Request
+				    </button>
+
+				    <button id="btnRejectRequest" class="red" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/reject_request/<%= @child.id %>';">
+				    Reject Request "showRejectCommentsModal()
+				    </button-->
+				    
+				    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsAdrCommentsModal();">
+		     		 View Comments
+		   		 </button>
+        
+        <% else %>
+        
+           <!--button id="btnApproveRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				    Approve Request
+				    </button>
+
+				    <button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				    Reject Request
+				    </button-->
+				    
+				     <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+		     		 View Comments
+		   		 </button>
+        
+         <% end %>  
+        
+         
+    <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myDsAdrCommentsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myDsAdrCommentsModalContent">
+              Something went wrong...
+            </span>
+            
+				<form role="form" id="dscomments" method="post" action="/ds_adr_comments">
+            <div class="form-group">
+              <label for="request_status">Action:</label>
+              <select name="request_status" form="dscomments" required>
+		            <option value=""></option>
+								<option>Approve</option>
+								<option>Reject</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dscomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END --> 
+        
+    <% end %>
+    
+ <% elsif has_role("Make ammendments") %>  
+      <%if params[:approved].present? && params[:approved]== "true" %>
+          
+          <% unless @readonly == true %> 
+          
+				      <button id="btnVoid" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDMCommentModal('<%= @child.id %>')">
+				          View Comment
+				      </button>
+          
+          <% else %>
+               
+				      <button id="btnVoid" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				          View Comment
+				      </button>
+				       
+          <% end %>  
+          
+      <% else %>
+              
+              <%# unless @readonly == true %>
+              
+		            <!--button id="btnVoid" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/void_record/<%= @child.id %>';">
+		            Void Record
+		       			</button>
+		       			
+         			<%# else %>
+         			  
+         			  <button id="btnVoid" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+		            Void Record
+		       			</button-->
+         			
+         			<%# end %> 
+         			
+      <% end %>
+ 
+<% end %>
+
+<%# if has_role("Check for duplicates") %>
+
+    <%# if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+    @child.request_status.to_s.strip.upcase == "ACTIVE" %>
+    
+          <%# unless @readonly == true %>
+          
+				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/check_duplicates/<%= @child.id %>';">
+				      Check Duplicates
+				      </button-->
+          
+          <%# else %>
+             
+              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				      Check Duplicates
+				      </button-->
+          
+          <%# end %> 
+
+    <%# end %>
+
+<%# end %>
+
+<% if has_role("Authorise printing") %>
+
+    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+    @child.request_status.to_s.strip.upcase == "GRANTED" %>
+    
+          <% unless @readonly == true %>
+          
+				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsCommentModal('<%= @child.id %>')">
+				      Check Duplicates
+				      </button-->
+				     
+				     
+				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmGrantCommentModal()">
+				       View Comments
+				      </button>
+				     
+          <% else %>
+             
+              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				      Check Duplicates
+				      
+				      </button-->
+				      
+				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				       View Comments
+				       </button>
+				      
+          
+          <% end %> 
+
+    <% end %>
+
+<% end %>
+
+
+<% if  has_role("Manage incomplete records") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+        @child.request_status.to_s.strip.upcase == "INCOMPLETE" %>
+        
+      <% unless @readonly == true %>
+        
+				  <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showCommentsModal();">
+				    View Comments
+				  </button>
+				  
+      <% else %>
+      
+          <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				    View Comments
+				  </button>
+				 
+      <% end %>
+
+  <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myModalContent">
+              Something went wrong...
+            </span>
+            
+            <form role="form" id="newcomments" method="post" action="/post_comment">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="newcomments" required>
+		            <option value=""></option>
+								<option value="Complete">Record Complete</option>
+								<option value="InComplete">Record Incomplete</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="newcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+
+<% end %>
+
+<% if  has_role("Manage duplicates") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+        @child.request_status.to_s.strip.upcase == "CAN VOID" %>
+        
+      <% unless @readonly == true %>
+        
+				  <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showVoidDSCommentsModal();">
+				    View Comments
+				  </button>
+				  
+      <% else %>
+      
+          <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				    View Comments
+				  </button>
+				 
+      <% end %>
+
+  <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myVoidModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myVoidModalContent">
+              Something went wrong...
+            </span>
+            
+            <form role="form" id="voidcomments" method="post" action="/post_void_comment">
+            <div class="form-group">
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Void Duplicate</button>
+            </div>
+          </form>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+
+<% end %>
+
+
+<% if  @child.record_status.to_s.strip.upcase == "VOIDED" && @child.request_status.to_s.strip.upcase == "CLOSED" %>
+   
+     <% unless @readonly == true %>
+      
+		    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showvoidCommentsModal();">
+		      View Comments
+		    </button>
+      
+      <% else %>
+      
+         <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+              margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+         View Comments
+         </button>
+      
+      <% end %>
+
+  <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Reason record voided
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myModalContent">
+              Something went wrong...
+            </span>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+
+
+
+<% end %>
+
+<% if has_role("Authorise printing") %>
+
+    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+    @child.request_status.to_s.strip.upcase == "TBA-CONFLICT" %>
+    
+          <% unless @readonly == true %>
+          
+				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsCommentModal('<%= @child.id %>')">
+				      Check Duplicates
+				      </button-->
+				     
+				     
+				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmConflictCommentModal()">
+				       View Comments
+				      </button>
+				     
+          <% else %>
+             
+              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				      Check Duplicates
+				      
+				      </button-->
+				      
+				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				       View Comments
+				       </button>
+				      
+          
+          <% end %> 
+
+    <% end %>
+
+<% end %>
+
+
+<% if has_role("Authorise reprinting of a certificate") %>
+
+    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+    @child.request_status.to_s.strip.upcase == "RE-PRINT" %>
+    
+          <% unless @readonly == true %>
+          
+				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmGrantCommentModal()">
+				       View Comments
+				      </button>
+				     
+          <% else %>
+             
+				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				       View Comments
+				       </button>
+				      
+          <% end %> 
+
+    <% end %>
+   
+
+   <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="dmReprintCommentModal" tabindex="-1" role="dialog" aria-labelledby="myReprintModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myReprintModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="dmReprintCommentModalContent">
+              Something went wrong...
+            </span>
+            <form role="form" id="dmreprintcomments" method="post" action="">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="dmreprintcomments" required>
+		            <option value=""></option>
+								<option>Approve</option>
+								<option>Disapprove</option>
+							</select> 
+							<br />
+							<br />
+              <label for="dmreprintcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="dmreprintcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END --> 
+    
+
+
+
+
+<% end %>
+
+
+
+<% if ((['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+              ["REJECTED"].include?(@child.request_status.to_s.strip.upcase)))   %>
+      
+      <% unless @readonly == true %>        
+              
+		    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showRejectCommentsModal();">
+		      View Comments
+		    </button>
+		    
+		  <% else %> 
+		  	
+		  	<button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+		      View Comments
+		    </button>
+		  	
+		  <% end %> 
+
+  <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myModalContentThree">
+             	Something went wrong...
+            </span>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+
+<% end %>
+
+<% if  has_role("Manage incomplete records") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
+        @child.request_status.to_s.strip.upcase == "ACTIVE" && @child.relationship.downcase != "normal" %>
+        
+      <% unless @readonly == true %>
+        
+				  <button id="btnSpecialApprove" class="green" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showApproveDSCommentsModal();">
+				    Approve
+				  </button>
+				  
+      <% else %>
+      
+          <button id="btnSpecialApprove" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
+				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
+				    Approve
+				  </button>
+				 
+      <% end %>
+      
+     
+      
+      
+      
+       <!--CONFIRMATION POPUP BEGIN -->
+    <div class="modal fade" id="myDsSpecialApprovedModal" tabindex="-1" role="dialog" aria-labelledby="myDsSpecialApprovedModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myDsSpecialApprovedModalLabel" style="text-align: left;">
+              Comments
+            </h4>
+          </div>
+          <div class="modal-body" style="text-align: left;">
+            <span id="myDsSpecialApprovedModalContent">
+              Something went wrong...
+            </span>
+            
+            <form role="form" id="newcomments" method="post" action="/ds_approve_special_post_comment">
+            <div class="form-group">
+              <label for="request_status">Recommendation:</label>
+              <select name="request_status" form="newcomments" required>
+		            <option value=""></option>
+								<option value="Approve">Approve</option>
+								<option value="Reject">Reject</option>
+							</select> 
+							<br />
+							<br />
+              <label for="newcomments">Enter Comment:</label>
+              <input type="text" class="form-control" name="newcomments" placeholder="Enter Comment" required>
+              <br />
+              <input type="hidden" name="id" value="<%= @child.id %>" > 
+              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
+            </div>
+           
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!--CONFIRMATION POPUP END -->
+
+      
+      
+<% end %>
+
+
+
+
+
+</div>
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+              Select Printer
+            </h4>
+          </div>
+          <div class="modal-body">
+            <span style="text-align:center;">
+              <table align="center" id="printers">
+                <% @available_printers.each do |printer| %>
+                  <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                    <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                    <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+                  </tr>
+                <% end %>
+              </table>
+            </span>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-primary" onclick="submitForm();">Okay</button>
+              <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+<script>
+    var dispatch_action ="";
+   birth_place = __$('details_of_child_place_of_birth').innerHTML.trim().toLowerCase();
+   
+   switch(birth_place) {
+    case 'hospital':
+        place_of_birth_name = ["details_of_child_name_of_hospital"];
+        break;
+    case 'home':
+         place_of_birth_name = ["details_of_child_village","details_of_child_t/a","details_of_child_district"];
+        break;
+    default:
+        place_of_birth_name = ["details_of_child_other_details"];
+	 }  
+
+  summaryHash = {
+    "Birth Entry Number": ["details_of_child_district_id_number"],
+    "Child Name": ["details_of_child_first_name","details_of_child_other_name" ,"details_of_child_surname"],
+    "Child Gender": ["details_of_child_sex"],
+    "Child Date of Birth": ["details_of_child_date_of_birth"],
+    "Child Place of Birth": place_of_birth_name,
+    "Mother ": ["details_of_child's_mother_first_name", "details_of_child's_mother_other_name", "details_of_child's_mother_maiden_surname"],
+    "Nationality of Mother ": ["details_of_child's_mother_nationality"],
+    "Father": ["details_of_child's_father_first_name", "details_of_child's_father_other_name" ,"details_of_child's_father_surname"],
+    "Nationality of Father": ["details_of_child's_father_nationality"],
+    "Parents Married to each Other?": ['details_of_child_are_the_parents_married_to_each_other?'],
+    "Court order attached": ['details_of_child_court_order_attached?'],
+    "Parents signed?": ['details_of_child_parents_signed?'],
+    "Informant Signed?": ["details_of_child's_informant_informant_signed?"],
+    "Delayed Registration": ["details_of_child's_informant_delayed_registration"]
+  };
+
+  function __$(id) {
+    return document.getElementById(id);
+  }
+
+  function closeChild() {
+    //link = "window.location='/close_child/<%= @child.id %>';";
+    //submitSummary(link);
+  }
+
+  function approve() {
+    link = "window.location='/approve_child/<%= @child.id %>';";
+    submitSummary(link);
+  }
+  
+  function re_approve() {
+   link = "window.location='/re_approve_record/<%= @child.id %>';";
+   //submitSummary(link);
+   rejectMsgForAction("Re-Approved Record?", link, "400px", "Re-Approve Record", "", "100px");
+ 
+  }
+  
+  
+  function approve_adoption() {
+   link = "window.location='/approved_adoption/<%= @child.id %>';";
+   //submitSummary(link);
+   showMsgForAdoptedAction("Approved adoption case?", link, "400px", "Approved Adoption", "", "100px")
+  }
+  
+  
+  function reject() {
+    link = "window.location='/hq/return_for_complete?id=<%= @child.id %>';";
+    //submitSummary(link);
+    rejectMsgForAction("Reject this record?", link, "400px", "Record Rejection", "", "100px");
+  }
+  
+  function dispatch() {
+    link = "window.location='/hq/dispatch_certificate?id=<%= @child.id %>";
+    
+    rejectMsgForAction("Dispatch this certificate at HQ?", link, "400px", "Birth Certificate Dispatch", "", "100px");
+    
+  }
+  
+  
+  function view_printed() {
+    window.location = "/printed_view/<%= @child.id %>";
+    
+    //rejectMsgForAction("Are you sure you want to view printed certificate?", link, "400px", "Birth Certificate Printed View", "", "100px");
+    
+  }
+  
+  function checkDuplicates(role) {
+
+    jQuery.ajax({
+      url: '/potential_duplicates?id=<%= @child.id %>',
+
+      success: function (data) {
+        data = JSON.parse(data);
+        if (data && data.length > 0) {
+
+          //var msg = data.length + " potential duplicate(s) found"
+          var msg = "potential duplicate(s) found"
+          showMsg(msg, undefined, undefined, "window.location = window.location.href;");
+          
+          var delayMillis = 1000; //1 second
+
+          setTimeout(function() {
+            //your code to be executed after 1 second
+          }, delayMillis);
+
+          gotoDuplicates("<%= @child.id %>");
+
+        } else {
+          checkChild(role);
+        }
+      }
+    })
+  }
+
+  function checkChild(user_role) {
+    <% if record_complete?(@child) %>
+    link = "window.location='/hq/approve_for_printing';";
+    <% else %>
+    link = "window.location='/hq/view_cases';";
+    <% end %>
+  
+    submitSummary(link, user_role);
+  }
+  
+  function gotoDuplicates(id) {
+    window.location='/duplicates/'+ id;
+  }
+
+  function addComment(action){
+  
+     showSpinner();
+      var parent = document.createElement("div");
+
+      var div = document.createElement("div");
+      div.style.height = "430px";
+      div.style.overflow = "auto";
+      div.style.border = "2px inset #eee";
+      div.style.borderRadius = "8px";
+      div.style.padding = "10px";
+      div.style.backgroundColor = "#eee";
+
+      parent.appendChild(div);
+
+      var table = document.createElement("table");
+      table.style.width = "100%";
+      table.style.fontSize = "14px";
+
+      div.appendChild(table);
+
+      var tbody = document.createElement("tbody");
+
+      table.appendChild(tbody);
+      msg = parent.innerHTML;
+
+      hideSpinner();
+
+      rejectComment(msg, action, "600px", "Reason For Reject Record");
+
+
+  }
+
+  function rejectComment(msg, action, width, title, noAction, height) {
+
+    showShield(undefined, true);
+
+    if (!__$("shield")) {
+
+      showShield(undefined, true);
+
+    }
+
+    var popup = document.createElement("div");
+    popup.id = "popup";
+    popup.style.position = "absolute";
+    popup.style.minHeight = (height == undefined ? "450px" : height);
+    popup.style.top = "20%";
+    popup.style.width = (width == undefined ? "330px" : width);
+    popup.style.left = ((window.innerWidth - 500) / 2) + "px";
+    popup.style.backgroundColor = "#eee";
+    popup.style.zIndex = 1300;
+    popup.style.border = "2px outset #eee";
+    popup.style.borderRadius = "8px";
+    popup.style.padding = "3px";
+
+    document.body.appendChild(popup);
+
+    var table = document.createElement("table");
+    table.width = "100%";
+    table.style.fontSize = "24px";
+
+    popup.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr1 = document.createElement("tr");
+    tr1.id = "header_row";
+
+    tbody.appendChild(tr1);
+
+    var th = document.createElement("th");
+    th.innerHTML = (title == undefined ? "Info" : title);
+    th.style.backgroundColor = "#345d8c";
+    th.id = "header_data";
+    th.style.color = "#fff";
+    th.style.borderTopLeftRadius = "8px";
+    th.style.borderTopRightRadius = "8px";
+    th.style.border = "1px outset #23538a !important";
+    th.colSpan = "3";
+    th.style.padding = "5px";
+    th.style.fontSize = "16px";
+
+    tr1.appendChild(th);
+
+    var tr2 = document.createElement("tr");
+    tr2.id = "content_row";
+
+    tbody.appendChild(tr2);
+
+    var td1_1 = document.createElement("td");
+    td1_1.id = "content_data";
+    td1_1.colSpan = "3";
+    td1_1.style.padding = "5px";
+    td1_1.style.paddingTop = "5px";
+    td1_1.style.paddingBottom = "5px";
+    td1_1.align = "center";
+    td1_1.innerHTML = msg;
+    td1_1.style.lineHeight = "120%";
+    td1_1.style.fontSize = "20px";
+
+    tr2.appendChild(td1_1);
+
+    var tr3 = document.createElement("tr");
+    tr3.id = "footer_row";
+
+    tbody.appendChild(tr3);
+
+    var td2_1 = document.createElement("td");
+    td2_1.align = "center";
+    td2_1.style.padding = "10px";
+
+    tr3.appendChild(td2_1);
+
+    var td2_2 = document.createElement("td");
+    td2_2.id = "footer_data";
+    td2_2.align = "center";
+    td2_2.style.padding = "10px";
+
+    tr3.appendChild(td2_2);
+
+    var btnReturn = document.createElement("button");
+    btnReturn.className = "green";
+    btnReturn.innerHTML = "Continue";
+    btnReturn.id = "reject"
+    btnReturn.style.cursor = "pointer";
+    btnReturn.style.fontSize = "14px";
+    btnReturn.style.minWidth = "120px";
+    btnReturn.style.minHeight = "20px";
+    btnReturn.style.padding = "6px";
+    btnReturn.style.margin = "10px";
+    btnReturn.style.fontWeight = "bold !important";
+    td2_2.appendChild(btnReturn);
+
+    var btnNo = document.createElement("button");
+    btnNo.className = "red";
+    btnNo.innerHTML = "Cancel";
+    btnNo.id = "cancel"
+    btnNo.style.cursor = "pointer";
+    btnNo.style.fontSize = "14px";
+    btnNo.style.minWidth = "120px";
+    btnNo.style.minHeight = "20px";
+    btnNo.style.padding = "6px";
+    btnNo.style.margin = "10px";
+    btnNo.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnNo);
+
+    
+
+
+    __$("header_data").innerHTML = "Rejecting Record"
+
+    data = __$("content_data");
+    data.innerHTML = "";
+
+    var parent = document.createElement("div");
+
+    var div = document.createElement("div");
+    div.style.height = "430px";
+    div.style.overflow = "auto";
+
+    parent.appendChild(div);
+
+    var table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.fontSize = "14px";
+
+    div.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr = document.createElement("tr");
+
+    tbody.appendChild(tr);
+
+    var td = document.createElement("td");
+    td.style.width = "200px";
+    td.style.verticalAlign = "top";
+    td.style.textAlign = "right";
+    td.style.paddingTop = "22px";
+    td.style.paddingRight = "0px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "Reason for rejection :";
+
+    var td = document.createElement("td");
+    td.style.padding = "10px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
+
+    data.appendChild(parent);
+
+    footer = __$("footer_data");
+
+    
+    __$("reject").innerHTML = "Continue";
+
+    btnReturn.onmousedown = function () {
+
+      value = document.getElementById('reason').value;
+      if (value == "" || value == 'Enter reason please') {
+        return
+      }
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      link = 'window.location="/hq/return_for_complete?id=<%= params[:id] %>&reason=' + value + '";'
+      eval(link);
+    }
+     btnNo.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      if (noAction != undefined) {
+
+        eval(noAction);
+
+      }
+
+    }
+  }
+
+
+
+  function submitSummary(action, user_role) {
+
+    showSpinner();
+
+    var msg = "";
+
+    var parent = document.createElement("div");
+
+    var div = document.createElement("div");
+    div.style.height = "490px";
+    div.style.overflow = "auto";
+    div.style.border = "2px inset #eee";
+    div.style.borderRadius = "8px";
+    div.style.padding = "10px";
+    div.style.backgroundColor = "#eee";
+
+    parent.appendChild(div);
+
+    var table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.fontSize = "14px";
+
+    div.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var keys = Object.keys(summaryHash);
+
+    for (var i = 0; i < keys.length; i++) {
+
+      var tr = document.createElement("tr");
+
+      tbody.appendChild(tr);
+
+      var td1 = document.createElement("th");
+      td1.style.textAlign = "right";
+      td1.style.padding = "5px";
+      td1.style.width = "250px";
+      td1.innerHTML = keys[i];
+
+      tr.appendChild(td1);
+
+      var td2 = document.createElement("td");
+      td2.innerHTML = ":";
+      td2.style.padding = "5px";
+
+      tr.appendChild(td2);
+
+      var td3 = document.createElement("td");
+      td3.style.padding = "5px";
+
+      var label = "";
+
+      for (var j = 0; j < summaryHash[keys[i]].length; j++) {
+
+        if (__$(summaryHash[keys[i]][j])) {
+
+          if (label.trim().length > 0) {
+
+            label = label.trim() + " " + __$(summaryHash[keys[i]][j]).innerHTML;
+
+          } else {
+            label = __$(summaryHash[keys[i]][j]).innerHTML.trim();
+
+          }
+
+        }
+
+      }
+
+      label = (label.trim) ? label.trim() : label.replace(/^\s+/, '');
+
+      if (label == '')
+      label = "<span class='blank'>N/A</span>"
+
+      if (keys[i].match(/weight/i))
+      label = label + " Kg"
+
+
+      td3.innerHTML = label;
+
+      tr.appendChild(td3);
+
+    }
+
+    var pos = checkCtrl(parent);
+
+    msg = parent.innerHTML;
+
+    hideSpinner();
+
+    showMsgForAction(msg, action, "600px", "Data Completeness Check");
+
+  }
+  
+  
+  
+  function rejectMsgForAction(msg, action, width, title, noAction, height) {
+    showShield(undefined, true);
+
+    if (!__$("shield")) {
+
+      showShield(undefined, true);
+
+    }
+
+    var popup = document.createElement("div");
+    popup.id = "popup";
+    popup.style.position = "absolute";
+    popup.style.minHeight = (height == undefined ? "450px" : height);
+    popup.style.top = "20%";
+    popup.style.width = (width == undefined ? "330px" : width);
+    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
+    popup.style.backgroundColor = "#eee";
+    popup.style.zIndex = 1300;
+    popup.style.border = "2px outset #eee";
+    popup.style.borderRadius = "8px";
+    popup.style.padding = "3px";
+
+    document.body.appendChild(popup);
+
+    var table = document.createElement("table");
+    table.width = "100%";
+    table.style.fontSize = "24px";
+
+    popup.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr1 = document.createElement("tr");
+    tr1.id = "header_row";
+
+    tbody.appendChild(tr1);
+
+    var th = document.createElement("th");
+    th.innerHTML = (title == undefined ? "Info" : title);
+    th.style.backgroundColor = "#345d8c";
+    th.id = "header_data";
+    th.style.color = "#fff";
+    th.style.borderTopLeftRadius = "8px";
+    th.style.borderTopRightRadius = "8px";
+    th.style.border = "1px outset #23538a !important";
+    th.colSpan = "3";
+    th.style.padding = "5px";
+    th.style.fontSize = "16px";
+
+    tr1.appendChild(th);
+
+    var tr2 = document.createElement("tr");
+    tr2.id = "content_row";
+
+    tbody.appendChild(tr2);
+
+    var td1_1 = document.createElement("td");
+    td1_1.id = "content_data";
+    td1_1.colSpan = "3";
+    td1_1.style.padding = "5px";
+    td1_1.style.paddingTop = "5px";
+    td1_1.style.paddingBottom = "5px";
+    td1_1.align = "center";
+    td1_1.innerHTML = msg;
+    td1_1.style.lineHeight = "120%";
+    td1_1.style.fontSize = "20px";
+
+    tr2.appendChild(td1_1);
+
+    var tr3 = document.createElement("tr");
+    tr3.id = "footer_row";
+
+    tbody.appendChild(tr3);
+
+    var td2_1 = document.createElement("td");
+    td2_1.align = "center";
+    td2_1.style.padding = "10px";
+
+    tr3.appendChild(td2_1);
+
+    var td2_2 = document.createElement("td");
+    td2_2.id = "footer_data";
+    td2_2.align = "center";
+    td2_2.style.padding = "10px";
+
+    tr3.appendChild(td2_2);
+
+    var btnNo = document.createElement("button");
+    btnNo.className = "red";
+    btnNo.innerHTML = "No";
+    btnNo.id = "cancel"
+    btnNo.style.cursor = "pointer";
+    btnNo.style.fontSize = "14px";
+    btnNo.style.minWidth = "120px";
+    btnNo.style.minHeight = "20px";
+    btnNo.style.padding = "6px";
+    btnNo.style.margin = "10px";
+    btnNo.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnNo);
+
+    var btnYes = document.createElement("button");
+    btnYes.className = "green";
+    btnYes.innerHTML = "Yes";
+    btnYes.id = 'approve';
+    btnYes.style.cursor = "pointer";
+    btnYes.style.fontSize = "14px";
+    btnYes.style.minWidth = "120px";
+    btnYes.style.minHeight = "20px";
+    btnYes.style.padding = "6px";
+    btnYes.style.margin = "10px";
+    btnYes.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnYes);
+
+    btnYes.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+      if(title=="Birth Certificate Dispatch"){
+         selectPrinter();
+      }
+      else if(title == "Birth Certificate Printed View") {
+       window.location=action;
+      }else if(title == "Re-Approve Record") {
+        eval(action);
+      }else{
+         addComment(action);
+        //eval(action);
+      }
+
+    }
+
+ 
+    btnNo.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      if (noAction != undefined) {
+
+        eval(noAction);
+
+      }
+
+    }
+
+    if (__$("popup")) {
+
+      var c = checkCtrl(__$("popup"));
+
+      // [w, h, t, l]
+
+      if (c[1] > 240) {
+
+        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
+
+      }
+
+      if (c[0] > 330) {
+
+        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
+
+      }
+
+    }
+  }
+  
+  
+  
+  
+  function showMsgForAction(msg, action, width, title, noAction, height) {
+
+    showShield(undefined, true);
+
+    if (!__$("shield")) {
+
+      showShield(undefined, true);
+
+    }
+
+    var popup = document.createElement("div");
+    popup.id = "popup";
+    popup.style.position = "absolute";
+    popup.style.minHeight = (height == undefined ? "450px" : height);
+    popup.style.top = "20%";
+    popup.style.width = (width == undefined ? "330px" : width);
+    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
+    popup.style.backgroundColor = "#eee";
+    popup.style.zIndex = 1300;
+    popup.style.border = "2px outset #eee";
+    popup.style.borderRadius = "8px";
+    popup.style.padding = "3px";
+
+    document.body.appendChild(popup);
+
+    var table = document.createElement("table");
+    table.width = "100%";
+    table.style.fontSize = "24px";
+
+    popup.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr1 = document.createElement("tr");
+    tr1.id = "header_row";
+
+    tbody.appendChild(tr1);
+
+    var th = document.createElement("th");
+    th.innerHTML = (title == undefined ? "Info" : title);
+    th.style.backgroundColor = "#345d8c";
+    th.id = "header_data";
+    th.style.color = "#fff";
+    th.style.borderTopLeftRadius = "8px";
+    th.style.borderTopRightRadius = "8px";
+    th.style.border = "1px outset #23538a !important";
+    th.colSpan = "3";
+    th.style.padding = "5px";
+    th.style.fontSize = "16px";
+
+    tr1.appendChild(th);
+
+    var tr2 = document.createElement("tr");
+    tr2.id = "content_row";
+
+    tbody.appendChild(tr2);
+
+    var td1_1 = document.createElement("td");
+    td1_1.id = "content_data";
+    td1_1.colSpan = "3";
+    td1_1.style.padding = "5px";
+    td1_1.style.paddingTop = "5px";
+    td1_1.style.paddingBottom = "5px";
+    td1_1.align = "center";
+    td1_1.innerHTML = msg;
+    td1_1.style.lineHeight = "120%";
+    td1_1.style.fontSize = "20px";
+
+    tr2.appendChild(td1_1);
+
+    var tr3 = document.createElement("tr");
+    tr3.id = "footer_row";
+
+    tbody.appendChild(tr3);
+
+    var td2_1 = document.createElement("td");
+    td2_1.align = "center";
+    td2_1.style.padding = "10px";
+
+    tr3.appendChild(td2_1);
+
+    var td2_2 = document.createElement("td");
+    td2_2.id = "footer_data";
+    td2_2.align = "center";
+    td2_2.style.padding = "10px";
+
+    tr3.appendChild(td2_2);
+
+    var btnNo = document.createElement("button");
+    btnNo.className = "red";
+    btnNo.innerHTML = "Cancel";
+    btnNo.id = "cancel"
+    btnNo.style.cursor = "pointer";
+    btnNo.style.fontSize = "14px";
+    btnNo.style.minWidth = "120px";
+    btnNo.style.minHeight = "20px";
+    btnNo.style.padding = "6px";
+    btnNo.style.margin = "10px";
+    btnNo.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnNo);
+
+    var btnReturn = document.createElement("button");
+    btnReturn.className = "blue";
+    btnReturn.innerHTML = "Reject";
+    btnReturn.id = "reject"
+    btnReturn.style.cursor = "pointer";
+    btnReturn.style.fontSize = "14px";
+    btnReturn.style.minWidth = "120px";
+    btnReturn.style.minHeight = "20px";
+    btnReturn.style.padding = "6px";
+    btnReturn.style.margin = "10px";
+    btnReturn.style.fontWeight = "bold !important";
+
+    <% if !has_role("Approve/Reject a child record") %>
+
+    btnReturn.style.display = "none";
+
+    <% end %>
+
+    td2_2.appendChild(btnReturn);
+
+    var btnIncomplete = document.createElement("button");
+    btnIncomplete.className = "blue";
+    btnIncomplete.innerHTML = "Record Incomplete";
+    btnIncomplete.id = "incomplete"
+    btnIncomplete.style.cursor = "pointer";
+    btnIncomplete.style.fontSize = "14px";
+    btnIncomplete.style.minWidth = "120px";
+    btnIncomplete.style.minHeight = "20px";
+    btnIncomplete.style.padding = "6px";
+    btnIncomplete.style.margin = "10px";
+    btnIncomplete.style.fontWeight = "bold !important";
+
+    <% if !has_role("Check completeness") %>
+
+    btnIncomplete.style.display = "none";
+
+    <% end %>
+
+    td2_2.appendChild(btnIncomplete);
+
+    var btnYes = document.createElement("button");
+    btnYes.className = "green";
+    btnYes.innerHTML = "Record Complete";
+    btnYes.id = 'approve';
+    btnYes.style.cursor = "pointer";
+    btnYes.style.fontSize = "14px";
+    btnYes.style.minWidth = "120px";
+    btnYes.style.minHeight = "20px";
+    btnYes.style.padding = "6px";
+    btnYes.style.margin = "10px";
+    btnYes.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnYes);
+
+    btnYes.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      window.location = '/children/approve?id=<%=params[:id]%>';
+
+    }
+
+    <% if !has_role("Check completeness") %>
+
+    btnYes.style.display = "none";
+
+    <% end %>
+
+    btnReturn.onmousedown = function () {
+
+      reloadData();
+
+    }
+
+    btnIncomplete.onmousedown = function () {
+
+      reloadIncompleteData(true);
+
+    }
+
+    btnNo.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      if (noAction != undefined) {
+
+        eval(noAction);
+
+      }
+
+    }
+
+    if (__$("popup")) {
+
+      var c = checkCtrl(__$("popup"));
+
+      // [w, h, t, l]
+
+      if (c[1] > 240) {
+
+        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
+
+      }
+
+      if (c[0] > 330) {
+
+        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
+
+      }
+
+    }
+
+   <% if  has_role("Manage incomplete records") %>
+      btnIncomplete.style.display = "";
+      btnIncomplete.style.float = "left";
+      btnYes.style.display = "";
+      btnYes.style.float = "left";
+      btnNo.style.float = "right";
+      btnYes.setAttribute("onmousedown", "window.location='/approve_incomplete/<%= params[:id]%>'")
+      btnIncomplete.setAttribute("onmousedown", "reloadIncompleteData(false);")
+   <% end %>
+  }
+  
+  
+  function showMsgForAdoptedAction(msg, action, width, title, noAction, height) {
+
+    showShield(undefined, true);
+
+    if (!__$("shield")) {
+
+      showShield(undefined, true);
+
+    }
+
+    var popup = document.createElement("div");
+    popup.id = "popup";
+    popup.style.position = "absolute";
+    popup.style.minHeight = (height == undefined ? "450px" : height);
+    popup.style.top = "20%";
+    popup.style.width = (width == undefined ? "330px" : width);
+    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
+    popup.style.backgroundColor = "#eee";
+    popup.style.zIndex = 1300;
+    popup.style.border = "2px outset #eee";
+    popup.style.borderRadius = "8px";
+    popup.style.padding = "3px";
+
+    document.body.appendChild(popup);
+
+    var table = document.createElement("table");
+    table.width = "100%";
+    table.style.fontSize = "24px";
+
+    popup.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr1 = document.createElement("tr");
+    tr1.id = "header_row";
+
+    tbody.appendChild(tr1);
+
+    var th = document.createElement("th");
+    th.innerHTML = (title == undefined ? "Info" : title);
+    th.style.backgroundColor = "#345d8c";
+    th.id = "header_data";
+    th.style.color = "#fff";
+    th.style.borderTopLeftRadius = "8px";
+    th.style.borderTopRightRadius = "8px";
+    th.style.border = "1px outset #23538a !important";
+    th.colSpan = "3";
+    th.style.padding = "5px";
+    th.style.fontSize = "16px";
+
+    tr1.appendChild(th);
+
+    var tr2 = document.createElement("tr");
+    tr2.id = "content_row";
+
+    tbody.appendChild(tr2);
+
+    var td1_1 = document.createElement("td");
+    td1_1.id = "content_data";
+    td1_1.colSpan = "3";
+    td1_1.style.padding = "5px";
+    td1_1.style.paddingTop = "5px";
+    td1_1.style.paddingBottom = "5px";
+    td1_1.align = "center";
+    td1_1.innerHTML = msg;
+    td1_1.style.lineHeight = "120%";
+    td1_1.style.fontSize = "20px";
+
+    tr2.appendChild(td1_1);
+
+    var tr3 = document.createElement("tr");
+    tr3.id = "footer_row";
+
+    tbody.appendChild(tr3);
+
+    var td2_1 = document.createElement("td");
+    td2_1.align = "center";
+    td2_1.style.padding = "10px";
+
+    tr3.appendChild(td2_1);
+
+    var td2_2 = document.createElement("td");
+    td2_2.id = "footer_data";
+    td2_2.align = "center";
+    td2_2.style.padding = "10px";
+
+    tr3.appendChild(td2_2);
+
+    var btnNo = document.createElement("button");
+    btnNo.className = "red";
+    btnNo.innerHTML = "Cancel";
+    btnNo.id = "cancel"
+    btnNo.style.cursor = "pointer";
+    btnNo.style.fontSize = "14px";
+    btnNo.style.minWidth = "120px";
+    btnNo.style.minHeight = "20px";
+    btnNo.style.padding = "6px";
+    btnNo.style.margin = "10px";
+    btnNo.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnNo);
+
+    var btnReturn = document.createElement("button");
+    btnReturn.className = "green";
+    btnReturn.innerHTML = "Yes";
+    btnReturn.id = "reject"
+    btnReturn.style.cursor = "pointer";
+    btnReturn.style.fontSize = "14px";
+    btnReturn.style.minWidth = "120px";
+    btnReturn.style.minHeight = "20px";
+    btnReturn.style.padding = "6px";
+    btnReturn.style.margin = "10px";
+    btnReturn.style.fontWeight = "bold !important";
+
+    <% if !has_role("Approve/Reject a child record") %>
+
+    btnReturn.style.display = "none";
+
+    <% end %>
+
+    td2_2.appendChild(btnReturn);
+
+    var btnIncomplete = document.createElement("button");
+    btnIncomplete.className = "blue";
+    btnIncomplete.innerHTML = "Record Incomplete";
+    btnIncomplete.id = "incomplete"
+    btnIncomplete.style.cursor = "pointer";
+    btnIncomplete.style.fontSize = "14px";
+    btnIncomplete.style.minWidth = "120px";
+    btnIncomplete.style.minHeight = "20px";
+    btnIncomplete.style.padding = "6px";
+    btnIncomplete.style.margin = "10px";
+    btnIncomplete.style.fontWeight = "bold !important";
+
+    <% if !has_role("Check completeness") %>
+
+    btnIncomplete.style.display = "none";
+
+    <% end %>
+
+    td2_2.appendChild(btnIncomplete);
+
+    var btnYes = document.createElement("button");
+    btnYes.className = "green";
+    btnYes.innerHTML = "Record Complete";
+    btnYes.id = 'approve';
+    btnYes.style.cursor = "pointer";
+    btnYes.style.fontSize = "14px";
+    btnYes.style.minWidth = "120px";
+    btnYes.style.minHeight = "20px";
+    btnYes.style.padding = "6px";
+    btnYes.style.margin = "10px";
+    btnYes.style.fontWeight = "bold !important";
+
+    td2_2.appendChild(btnYes);
+
+    btnReturn.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      window.location = '/approve_adopted?id=<%=params[:id]%>';
+
+    }
+
+    <% if !has_role("Check completeness") %>
+
+    btnYes.style.display = "none";
+
+    <% end %>
+
+    btnIncomplete.onmousedown = function () {
+
+      reloadIncompleteData(true);
+
+    }
+
+    btnNo.onmousedown = function () {
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+      if (noAction != undefined) {
+
+        eval(noAction);
+
+      }
+
+    }
+
+    if (__$("popup")) {
+
+      var c = checkCtrl(__$("popup"));
+
+      // [w, h, t, l]
+
+      if (c[1] > 240) {
+
+        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
+
+      }
+
+      if (c[0] > 330) {
+
+        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
+
+      }
+
+    }
+    
+  }
+
+  function reloadData() {
+
+    __$("header_data").innerHTML = "Rejecting Record"
+
+    data = __$("content_data");
+    data.innerHTML = "";
+
+    var parent = document.createElement("div");
+
+    var div = document.createElement("div");
+    div.style.height = "430px";
+    div.style.overflow = "auto";
+
+    parent.appendChild(div);
+
+    var table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.fontSize = "14px";
+
+    div.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr = document.createElement("tr");
+
+    tbody.appendChild(tr);
+
+    var td = document.createElement("td");
+    td.style.width = "200px";
+    td.style.verticalAlign = "top";
+    td.style.textAlign = "right";
+    td.style.paddingTop = "22px";
+    td.style.paddingRight = "0px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "Reason for rejection :";
+
+    var td = document.createElement("td");
+    td.style.padding = "10px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
+
+    data.appendChild(parent);
+
+    footer = __$("footer_data");
+
+    __$("approve").style.display = "none";
+    __$("reject").innerHTML = "Continue";
+
+    __$("reject").onmousedown = function () {
+
+      value = document.getElementById('reason').value;
+      if (value == "" || value == 'Enter reason please') {
+        return
+      }
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+
+      link = 'window.location="/hq/return_for_complete?id=<%= params[:id] %>&reason=' + value + '";'
+      eval(link);
+    }
+
+  }
+
+  function reloadIncompleteData(check) {
+
+    __$("header_data").innerHTML = (check ? "Flagging Incomplete Record" : "Confirming Incomplete Record")
+
+    data = __$("content_data");
+    data.innerHTML = "";
+
+    var parent = document.createElement("div");
+
+    var div = document.createElement("div");
+    div.style.height = "430px";
+    div.style.overflow = "auto";
+
+    parent.appendChild(div);
+
+    var table = document.createElement("table");
+    table.style.width = "100%";
+    table.style.fontSize = "14px";
+
+    div.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr = document.createElement("tr");
+
+    tbody.appendChild(tr);
+
+    var td = document.createElement("td");
+    td.style.width = "200px";
+    td.style.verticalAlign = "top";
+    td.style.textAlign = "right";
+    td.style.paddingTop = "22px";
+    td.style.paddingRight = "0px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "Reason for flagging :";
+
+    var td = document.createElement("td");
+    td.style.padding = "10px";
+
+    tr.appendChild(td);
+
+    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
+
+    data.appendChild(parent);
+
+    footer = __$("footer_data");
+
+    __$("approve").style.display = "none";
+    __$("incomplete").innerHTML = "Continue";
+
+    __$("incomplete").onmousedown = function () {
+
+      value = document.getElementById('reason').value;
+      if (value == "" || value == 'Enter reason please') {
+        return
+      }
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+
+      link = 'window.location="/hq/return_for_incomplete?id=<%= params[:id] %>&reason=' + value + '";'
+      eval(link);
+    }
+
+  }
+
+  function showMsg(msg, height, width, action) {
+
+    showShield(undefined, true);
+
+    if (!__$("shield")) {
+
+      showShield(undefined, true);
+
+    }
+
+    var popup = document.createElement("div");
+    popup.id = "popup";
+    popup.style.position = "absolute";
+    popup.style.minHeight = (height == undefined ? "150px" : height);
+    popup.style.top = "20%";
+    popup.style.width = (width == undefined ? "330px" : width);
+    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
+    popup.style.backgroundColor = "#eee";
+    popup.style.zIndex = 1300;
+    popup.style.border = "2px outset #eee";
+    popup.style.borderRadius = "8px";
+    popup.style.padding = "3px";
+
+    document.body.appendChild(popup);
+
+    var table = document.createElement("table");
+    table.width = "100%";
+    table.style.fontSize = "14px";
+
+    popup.appendChild(table);
+
+    var tbody = document.createElement("tbody");
+
+    table.appendChild(tbody);
+
+    var tr1 = document.createElement("tr");
+
+    tbody.appendChild(tr1);
+
+    var th = document.createElement("th");
+    th.innerHTML = "Info";
+    th.style.backgroundColor = "#345d8c";
+    th.style.color = "#fff";
+    th.style.borderTopLeftRadius = "8px";
+    th.style.borderTopRightRadius = "8px";
+    th.colSpan = "2";
+    th.style.padding = "5px";
+
+    tr1.appendChild(th);
+
+    var tr2 = document.createElement("tr");
+
+    tbody.appendChild(tr2);
+
+    var td1_1 = document.createElement("td");
+    td1_1.colSpan = "2";
+    td1_1.style.padding = "5px";
+    td1_1.style.paddingTop = "15px";
+    td1_1.style.paddingBottom = "15px";
+    td1_1.align = "center";
+    td1_1.innerHTML = msg;
+    td1_1.style.lineHeight = "120%";
+    td1_1.style.fontSize = "14px";
+
+    tr2.appendChild(td1_1);
+
+    var tr3 = document.createElement("tr");
+
+    tbody.appendChild(tr3);
+
+    var td2_2 = document.createElement("td");
+    td2_2.align = "center";
+    td2_2.style.padding = "10px";
+    td2_2.colSpan = "2";
+
+    tr3.appendChild(td2_2);
+
+    var btnYes = document.createElement("button");
+    btnYes.className = "blue";
+    btnYes.innerHTML = "OK";
+    btnYes.style.width = "50px";
+    btnYes.style.cursor = "pointer";
+    btnYes.style.fontSize = "14px";
+    btnYes.style.minHeight = "30px";
+    btnYes.setAttribute("act", action);
+
+    td2_2.appendChild(btnYes);
+
+    btnYes.onmousedown = function () {
+
+      if(this.getAttribute("act") != null){
+
+        eval(this.getAttribute("act"));
+
+      }
+
+      if (__$("popup")) {
+
+        document.body.removeChild(__$("popup"));
+
+      }
+
+      if (__$("shield")) {
+
+        document.body.removeChild(__$("shield"));
+
+      }
+
+    }
+
+  }
+
+  setTimeout(function () {
+    var oldHandler = resize;
+
+    resize = function (e) {
+
+      if (oldHandler) {
+
+        oldHandler();
+
+        if (__$("stats")) {
+
+          __$("stats").style.height = (window.innerHeight - 180) + "px";
+
+        }
+
+      }
+
+    }
+
+    resize();
+
+  }, 50);
+
+  function confirmCompleteness()
+  {
+      showMsgForAction("Verify completeness of record","","500px","Verify Completeness",'',"150px")
+  }
+
+  function showCommentsModal(){
+    childID = '<%= params[:id] %>';
+    jQuery.ajax({
+      type: "POST",
+      url: "/children/show_incompleteness_messages",
+      data: "id=" + childID,
+      success: function(result){
+        __$('myModalContent').innerHTML = result;
+      }
+
+    });
+    $('#myModal').modal('show');
+  }
+  function showvoidCommentsModal(){
+      childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myModal').modal('show');
+  }
+  function showRejectCommentsModal(){
+    childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myModalContentThree').innerHTML = result;
+        }
+
+      });
+      $('#myModal').modal('show');
+  }
+  
+  
+  function showApproveDSCommentsModal(){
+    childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myDsSpecialApprovedModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myDsSpecialApprovedModal').modal('show');
+  }
+  
+  function showDsAdrCommentsModal(){
+    childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myDsAdrCommentsModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myDsAdrCommentsModal').modal('show');
+  }
+  
+  
+  function messages(){
+
+  }
+  function selectPrinter(){
+        //__$("printer_name").value = '';
+        $(".printer_radio_button").prop( "checked", false );//Uncheck printer
+        $('#printerModal').modal('show');
+      }
+  function updateValue(obj){
+      obj.getElementsByTagName('input')[0].checked = true
+      dispatch_action = link+"&printer="+obj.getAttribute('value')+"';"
+  }
+  function submitForm(){
+    console.log(dispatch_action);
+    eval(dispatch_action);
+  }
+  function showDMCommentModal(id){
+        jQuery.ajax({
+        type: "GET",
+        url: "/children/show_incompleteness_messages_approved",
+        data: "id=" + id,
+        success: function(result){
+          __$('dmCommentModalContent').innerHTML = result;
+        }
+
+        });
+        $('#dmCommentModal').modal('show');
+    }
+    
+  function showDsCommentModal(id){
+        jQuery.ajax({
+        type: "GET",
+        url: "/children/show_incompleteness_messages_approved",
+        data: "id=" + id,
+        success: function(result){
+          __$('dsCommentModalContent').innerHTML = result;
+        }
+
+        });
+        $('#dsCommentModal').modal('show');
+    }  
+    
+ function showDmGrantCommentModal(){
+        childID = '<%= params[:id] %>';
+        jQuery.ajax({
+        type: "GET",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('dmGrantCommentModalContent').innerHTML = result;
+        }
+
+        });
+        $('#dmGrantCommentModal').modal('show');
+    } 
+
+  function showDmReprintCommentModal(){
+        childID = '<%= params[:id] %>';
+        jQuery.ajax({
+        type: "GET",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('dmReprintCommentModalContent').innerHTML = result;
+        }
+
+        });
+        $('#dmReprintCommentModal').modal('show');
+    }   
+    
+  function showDmConflictCommentModal(){
+        childID = '<%= params[:id] %>';
+        jQuery.ajax({
+        type: "GET",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('dmConflictCommentModalContent').innerHTML = result;
+        }
+
+        });
+        $('#dmConflictCommentModal').modal('show');
+    }  
+    
+    
+    function showVoidDSCommentsModal(){
+      childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myVoidModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myVoidModal').modal('show');
+  }
+  
+  function showReApprovedDSCommentsModal(){
+      childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myReApprovedModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myReApprovedModal').modal('show');
+  }
+  
+  function showDMRejectedCommentsModal(){
+      childID = '<%= params[:id] %>';
+      jQuery.ajax({
+        type: "POST",
+        url: "/children/show_incompleteness_messages",
+        data: "id=" + childID,
+        success: function(result){
+          __$('myDMRejectedModalContent').innerHTML = result;
+        }
+
+      });
+      $('#myDMRejectedModal').modal('show');
+  }
+
+
+</script>

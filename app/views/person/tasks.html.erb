@@ -30,26 +30,47 @@
   padding: 10px;
 }
 
+.divbtn{
+    height: 80px;
+    padding: 0px;
+    background: ghostwhite;
+    text-align: left;
+    padding-left: 10px;
+}
+.icon-attr{
+    height: 70px;
+}
 
 </style>
 
 
-<div class='dashboard-title'><h3><%= @section%></h3></div>
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
 
-<div class='separator-line'>&nbsp;</div>
-
-
-<div id='button-container' class="panel-btns-main-containers">
-       <%(@tasks || []).each do |title, desc, stauses, link, icon|%>
-              <% @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title%>
-              <div class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
-                <div class="divbtn">
-                    <span class="icons">
-                        <img class="icon-attr" src="<%= icon %>">
-                        <p><%=title%></p>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="panel-body" style="">
+           <%(@tasks || []).each do |title, desc, stauses, link, icon|%>
+                  <% @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title%>
+                  <span class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
+                    <span class="divbtn">
+                        <span class="icons">
+                            <img class="icon-attr" src="<%= icon %>">
+                            <p><%=title%></p>
+                        </span>
                     </span>
-                </div>
-                
-              </div>
-        <%end%>
+
+                  </span>
+            <%end%>
+    </div>
 </div>

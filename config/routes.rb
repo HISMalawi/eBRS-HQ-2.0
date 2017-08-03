@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   root 'person#index'
 
+  get '/show_person/:person_id' => 'person#show'
+
   get 'user/:user_id' => 'users#show'
 
   get '/users' => 'users#view'

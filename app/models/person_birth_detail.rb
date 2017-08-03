@@ -9,4 +9,8 @@ class PersonBirthDetail < ActiveRecord::Base
     has_one :guardianship, foreign_key: ":guardianship_id"
     has_one :mode_of_delivery, foreign_key: "mode_of_delivery"
     has_one :person_type_of_birth, foreign_key: "person_type_of_birth_id"
+
+  def type
+    PersonTypeOfBirth.find(self.type_of_birth)
+  end
 end
