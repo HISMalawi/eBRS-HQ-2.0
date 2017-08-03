@@ -55,7 +55,7 @@ class UsersController < ApplicationController
         last_name_code: last_name.soundex, person_name_id: names.id)
 
       user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id:
-          SETTINGS['location_id'], email: email)
+          SETTINGS['location_id'], email: email, last_password_date: Time.now)
 
       UserRole.create(user_id: user.id, role_id: params[:post][:user_role]['role'])
     end
@@ -293,7 +293,7 @@ class UsersController < ApplicationController
 
   def update_password
 
-    user = User.current
+    user = User.find(params[:user_id])
 
     result = user.password_matches?(params[:old_password])
 

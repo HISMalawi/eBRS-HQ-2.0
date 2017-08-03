@@ -65,6 +65,8 @@ Rails.application.routes.draw do
 
   get "change_password/:user_id" => "users#change_password"
 
+  get "update_password/:user_id" => "users#update_password"
+
   post "update/:user_id" => "users#update"
 
   post '/create_user' => 'users#create'

@@ -25,7 +25,7 @@ class User < ActiveRecord::Base
   end
 
   def password_matches?(plain_password)
-    not plain_password.nil? and self.password_hash == password
+    !plain_password.nil? and BCrypt::Password.new(self.password_hash) == plain_password
   end
 
   def password
