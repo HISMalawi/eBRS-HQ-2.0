@@ -10,7 +10,19 @@ class PersonBirthDetail < ActiveRecord::Base
     has_one :mode_of_delivery, foreign_key: "mode_of_delivery"
     has_one :person_type_of_birth, foreign_key: "person_type_of_birth_id"
 
-  def type
+  def birth_type
     PersonTypeOfBirth.find(self.type_of_birth)
+  end
+
+  def reg_type
+    BirthRegistrationType.find(self.birth_registration_type_id)
+  end
+
+  def mode_of_delivery
+    ModeOfDelivery.find(self.mode_of_delivery_id)
+  end
+
+  def mode_of_delivery
+    LevelOfEducation.find(self.level_of_education_id)
   end
 end

@@ -6,7 +6,7 @@
   padding: 10px;
   text-align: left;
 
-  <% if @child[:request_status] == "VOIDED" %>
+  <% if @status == "VOIDED" %>
 
   text-decoration: line-through;
 
@@ -94,1055 +94,109 @@ button.close {
     min-height: inherit;
 }
 
+
 </style>
 
-<div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;">
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 50px;">
+      <table style="width: 100%;">
+        <tr>
+          <td>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Record Details</h3>
+          </td>
+          <td colspan="8" style="width: 60%;">
+            <div class="pull-right" style="height: 40px; margin-top: 0px;">
 
-  <table width="100%">
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
 
-    <tr>
-      <td>
-        &nbsp;
-      </td>
-    </tr>
+    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
 
-    <% @record.each do |group, children| %>
-
-    <% r = 0 %>
-
-    <tr>
-      <td style="font-size: 18px; text-align: left; padding: 10px; border-top: 1px solid #ccc; background-color: #eee;
-      border-bottom: 1px solid #ccc;">
-      <%= group %>
-    </td>
-  </tr>
-  <tr>
-    <td>
+      <table width="85%;" style="margin: auto;border: 1px solid gray;padding: 0px;">
 
 
-      <table class="record" width="100%" cellpadding="10" cellspacing="0">
+        <% @record.each do |group, children| %>
 
-        <% children.each do |child| %>
-
-        <% kids = child.keys %>
+        <% r = 0 %>
 
         <tr>
+          <td valign="top" style="font-size: 18px; text-align: left; padding: 10px;padding-top: 0px; background-color: lightsteelblue;
+          border-bottom: 1px solid #ccc;">
+          <%= group %>
+        </td>
+      </tr>
+      <tr>
+        <td>
 
-          <% (0..(kids.length - 1)).each do |i| %>
 
-          <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
-            <% unless kids[i].kind_of?(Array) %>
-            <strong><%= kids[i].html_safe %></strong>
-            <% else %>
-                <% if  kids[i].second == "mandatory" %>
-            			<strong><%= kids[i].first %><span style='color: red;'> *</span></strong>
-            	  <% elsif  kids[i].second == "sub" %>
-            			<strong><%= kids[i].first %><br /><span style='color: grey;font-size: smaller; font-style: italic;'>(<%= (child[kids[i]] == "Yes" ? "Registered after 42 days of birth" : "Registered within 42 days of birth") rescue nil %>)</span>
-            		<% end %>
+          <table class="record" width="100%" cellpadding="10" cellspacing="0">
+
+            <% children.each do |child| %>
+
+            <% kids = child.keys %>
+
+            <tr>
+
+              <% (0..(kids.length - 1)).each do |i| %>
+
+              <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                <% unless kids[i].kind_of?(Array) %>
+                <strong style="color: #3465a4;;"><%= kids[i].html_safe %></strong>
+                <% else %>
+                    <% if  kids[i].second == "mandatory" %>
+                            <strong style="color: #3465a4;;"><%= kids[i].first %><span style='color: red;'> *</span></strong>
+                  <% elsif  kids[i].second == "sub" %>
+                            <strong style="color:#3465a4;;"><%= kids[i].first %><br /><span style='color: grey;font-size: smaller; font-style: italic;'>(<%= (child[kids[i]] == "Yes" ? "Registered after 42 days of birth" : "Registered within 42 days of birth") rescue nil %>)</span>
+                    <% end %>
+                <% end %>
+              </td>
+
+              <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>" id='<%= kids[i].kind_of?(Array) ? "#{group.gsub(" ", "_").downcase}_#{kids[i].first.gsub(" ", "_").downcase}" : "#{group.gsub(" ", "_").downcase}_#{kids[i].gsub(" ", "_").downcase}" %>'>
+                <%= child[kids[i]] rescue nil %>
+              </td>
+
+              <% end %>
+
+              <% ((kids.length)..2).each do |i| %>
+
+              <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                <strong>&nbsp;</strong>
+              </td>
+              <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                &nbsp;
+              </td>
+
+              <% end %>
+
+            </tr>
+
+            <% r += 1 %>
+
             <% end %>
-          </td>
 
-          <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>" id='<%= kids[i].kind_of?(Array) ? "#{group.gsub(" ", "_").downcase}_#{kids[i].first.gsub(" ", "_").downcase}" : "#{group.gsub(" ", "_").downcase}_#{kids[i].gsub(" ", "_").downcase}" %>'>
-            <%= child[kids[i]] rescue nil %>
-          </td>
+          </table>
 
-          <% end %>
-
-          <% ((kids.length)..2).each do |i| %>
-
-          <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
-            <strong>&nbsp;</strong>
-          </td>
-          <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
-            &nbsp;
-          </td>
-
-          <% end %>
-
-        </tr>
-
-        <% r += 1 %>
-
-        <% end %>
-
-      </table>
-
-    </td>
-  </tr>
-
-  <% end %>
-
-  <tr>
-    <td style="border-top: 1px solid #ccc;">
-      &nbsp;
-    </td>
-  </tr>
-
-</table>
-
-</div>
-<div style="width: 100%; overflow: hidden; height: 45px; vertical-align: middle;">
-
-  
-  <button id="btnApprove" class="red" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="history.back();return false;">
-      Finish
-  </button>
-  <div class="modal fade" id="dmCommentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Approval Comment
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="dmCommentModalContent">
-              Something went wrong...
-            </span>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    
- <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="dsCommentModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="dsCommentModalContent">
-              Something went wrong...
-            </span>
-            <form role="form" id="dmnewcomments" method="post" action="/dm_post_comment">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="dmnewcomments" required>
-		            <option value=""></option>
-								<option>Approve</option>
-								<option>Disapprove</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dmnewcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->   
-    
-    <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="dmGrantCommentModal" tabindex="-1" role="dialog" aria-labelledby="myGrantModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myGrantModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="dmGrantCommentModalContent">
-              Something went wrong...
-            </span>
-            <form role="form" id="dmgrantcomments" method="post" action="/dm_post_grant_comment">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="dmgrantcomments" required>
-		            <option value=""></option>
-								<option>Approve</option>
-								<option>Disapprove</option>
-							</select> 
-							<br />
-							<br />
-              <label for="dmgrantcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dmgrantcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END --> 
-    
-    <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="dmConflictCommentModal" tabindex="-1" role="dialog" aria-labelledby="myConflictModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myConflictModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="dmConflictCommentModalContent">
-              Something went wrong...
-            </span>
-            <form role="form" id="dmconflictcomments" method="post" action="/dm_post_conflict_comment">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="dmconflictcomments" required>
-		            <option value=""></option>
-								<option>Complete</option>
-								<option>InComplete</option>
-							</select> 
-							<br />
-							<br />
-              <label for="dmconflictcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dmconflictcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->   
-      
-    
-    
-<% if has_role("Approve/Reject a child record") %>
-  
-  <% if @child.record_status.to_s.strip.upcase == "PRINTED" && @child.request_status.to_s.strip.upcase == "CLOSED" %>
-  
-      <% unless @readonly == true %>
-      
-				  <button id="btnDispatch" class="green" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="dispatch();">Dispatch at HQ
-				  </button>
-				  
-				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="view_printed();">View Printed
-				  </button>
-      
-      <% else %>
-          
-          <button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Dispatch at HQ
-				  </button>
-				  
-				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Printed
-				  </button>
+        </td>
+      </tr>
 
       <% end %>
 
-   <% elsif @child.record_status.to_s.strip.upcase == "PRINTED" && @child.request_status.to_s.strip.upcase == "DISPATCHED" %> 
-      
-      <% unless @readonly == true %>
-      	  
-				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="view_printed();">View Dispatched
-				  </button>
-      
-      <% else %>
-          
-				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Dispatched
-				  </button>
+      <tr>
+        <td style="border-top: 1px solid #ccc;">
+          &nbsp;
+        </td>
+      </tr>
 
-      <% end %>
-
-  <% elsif @child.record_status.to_s.strip.upcase == "HQ OPEN" && @child.request_status.to_s.strip.upcase == "CAN REJECT" %> 
-      
-      <% unless @readonly == true %>
-      	  
-				  <button id="btnView" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDMRejectedCommentsModal()">Confirm
-				  </button>
-      
-      <% else %>
-          
-				  <button id="btnView" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Confirm
-				  </button>
-
-      <% end %>
-
-      
-       <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myDMRejectedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myDMRejectedModalContent">
-              Something went wrong...
-            </span>
-            
-				<form role="form" id="dmcanrejectcomments" method="post" action="/dm_re_print_comment">
-            <div class="form-group">
-              <label for="request_status">Action:</label>
-              <select name="request_status" form="dmcanrejectcomments" required>
-		            <option value=""></option>
-								<option>Approve for Printing</option>
-								<option>Approve Rejection</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dmcanrejectcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-          </form>
-          </div>
-        </div>
-      </div>
+    </table>
     </div>
-    <!--CONFIRMATION POPUP END -->
-     
-
-
-
-            
-        
-
-   <% end %>
-   
-   
-   
-<% end %>  
-  
-<% if has_role("Manage incomplete records") %>
-
-    <% if (['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-              ["REJECTED"].include?(@child.request_status.to_s.strip.upcase))   %>
-       
-      <% unless @readonly == true %> 
-       
-				  <button id="btnReject" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="reject();">Confirm Rejection
-				  </button>
-      
-      <% else %>
-      				
-      		<button id="btnReject" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Confirm Rejection
-				  </button>	
-      
-      <% end %>
-
-    <% end %>
-    
-    <% if @child.record_status.to_s.strip.upcase == "HQ OPEN" && @child.request_status.to_s.strip.upcase == "RE-APPROVED" %>
-      
-      <% unless @readonly == true %> 
-				  
-				  
-				  <button id="btnDispatch" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showReApprovedDSCommentsModal();">View Comments
-				  </button>
-				  
-				  <!--button id="btnDispatch" class="green" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="re_approve();">Re-Approve Record
-				  </button>
-				  
-				  <button id="btnReject" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="reject();">Reject Record
-				  </button-->
-      
-      <% else %>
-         
-          <!--button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Re-Approve Record
-				  </button>
-				  
-				  <button id="btnReject" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Reject Record
-				  </button-->
-				  
-				    <button id="btnDispatch" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">View Comments
-				  </button>
-				  
-      
-      <% end %>
-      
-      <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myReApprovedModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myReApprovedModalContent">
-              Something went wrong...
-            </span>
-            
-				<form role="form" id="dscomments" method="post" action="/ds_re_approve_comment">
-            <div class="form-group">
-              <label for="request_status">Action:</label>
-              <select name="request_status" form="dscomments" required>
-		            <option value=""></option>
-								<option>Re-Approve Record</option>
-								<option>Reject Record</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dscomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-     
-   <% end %>
-
-<% end %>
-  <% if has_role("Check completeness") || has_role("Check for duplicates") %>
-      <% if  ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) && (
-             ["APPROVED"].include?(@child.request_status.to_s.strip.upcase) ||
-             ["ACTIVE"].include?(@child.request_status.to_s.strip.upcase)) %>
-              
-            <% unless @readonly == true %>   
-              
-				        <button id="btnApprove" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="checkDuplicates('<%= current_user.role%>');">Check
-				          Completeness
-				        </button>
-            
-            <% else %>
-            
-               <button id="btnApprove" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">Check Completeness
-				       </button>
-				        
-            <% end %>  
-            
-     <% elsif (['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-              ["ADOPTION PENDING"].include?(@child.request_status.to_s.strip.upcase))    %>
-            
-            <% unless @readonly == true %> 
-            
-				        <button id="btnApprove" class="blue" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="approve_adoption();">Approve Adoption
-				        </button> 
-            
-            <% else %>
-            
-		            <button id="btnApprove" class="orange" style="font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-		           	 margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" >Approve Adoption
-		          	</button> 
-       
-            <% end %>      
-            
-    <% end %>
-
-<% end %>
-
-<% if has_role("Make ammendments") and !params[:process].blank? %>
-
-    <% if ['DC OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-    @child.request_status.to_s.strip.upcase == "DC_ASK" %>
-    
-        <% unless @readonly == true %> 
-        
-				    <!--button id="btnApproveRequest" class="green" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/approve_request/<%= @child.id %>';">
-				    Approve Request
-				    </button>
-
-				    <button id="btnRejectRequest" class="red" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/reject_request/<%= @child.id %>';">
-				    Reject Request "showRejectCommentsModal()
-				    </button-->
-				    
-				    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsAdrCommentsModal();">
-		     		 View Comments
-		   		 </button>
-        
-        <% else %>
-        
-           <!--button id="btnApproveRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				    Approve Request
-				    </button>
-
-				    <button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				    margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				    Reject Request
-				    </button-->
-				    
-				     <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-		     		 View Comments
-		   		 </button>
-        
-         <% end %>  
-        
-         
-    <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myDsAdrCommentsModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myDsAdrCommentsModalContent">
-              Something went wrong...
-            </span>
-            
-				<form role="form" id="dscomments" method="post" action="/ds_adr_comments">
-            <div class="form-group">
-              <label for="request_status">Action:</label>
-              <select name="request_status" form="dscomments" required>
-		            <option value=""></option>
-								<option>Approve</option>
-								<option>Reject</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dscomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END --> 
-        
-    <% end %>
-    
- <% elsif has_role("Make ammendments") %>  
-      <%if params[:approved].present? && params[:approved]== "true" %>
-          
-          <% unless @readonly == true %> 
-          
-				      <button id="btnVoid" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDMCommentModal('<%= @child.id %>')">
-				          View Comment
-				      </button>
-          
-          <% else %>
-               
-				      <button id="btnVoid" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				          View Comment
-				      </button>
-				       
-          <% end %>  
-          
-      <% else %>
-              
-              <%# unless @readonly == true %>
-              
-		            <!--button id="btnVoid" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/void_record/<%= @child.id %>';">
-		            Void Record
-		       			</button>
-		       			
-         			<%# else %>
-         			  
-         			  <button id="btnVoid" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-		            Void Record
-		       			</button-->
-         			
-         			<%# end %> 
-         			
-      <% end %>
- 
-<% end %>
-
-<%# if has_role("Check for duplicates") %>
-
-    <%# if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-    @child.request_status.to_s.strip.upcase == "ACTIVE" %>
-    
-          <%# unless @readonly == true %>
-          
-				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="window.location = '/check_duplicates/<%= @child.id %>';">
-				      Check Duplicates
-				      </button-->
-          
-          <%# else %>
-             
-              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				      Check Duplicates
-				      </button-->
-          
-          <%# end %> 
-
-    <%# end %>
-
-<%# end %>
-
-<% if has_role("Authorise printing") %>
-
-    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-    @child.request_status.to_s.strip.upcase == "GRANTED" %>
-    
-          <% unless @readonly == true %>
-          
-				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsCommentModal('<%= @child.id %>')">
-				      Check Duplicates
-				      </button-->
-				     
-				     
-				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmGrantCommentModal()">
-				       View Comments
-				      </button>
-				     
-          <% else %>
-             
-              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				      Check Duplicates
-				      
-				      </button-->
-				      
-				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				       View Comments
-				       </button>
-				      
-          
-          <% end %> 
-
-    <% end %>
-
-<% end %>
-
-
-<% if  has_role("Manage incomplete records") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-        @child.request_status.to_s.strip.upcase == "INCOMPLETE" %>
-        
-      <% unless @readonly == true %>
-        
-				  <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showCommentsModal();">
-				    View Comments
-				  </button>
-				  
-      <% else %>
-      
-          <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				    View Comments
-				  </button>
-				 
-      <% end %>
-
-  <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myModalContent">
-              Something went wrong...
-            </span>
-            
-            <form role="form" id="newcomments" method="post" action="/post_comment">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="newcomments" required>
-		            <option value=""></option>
-								<option value="Complete">Record Complete</option>
-								<option value="InComplete">Record Incomplete</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="newcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-
-<% end %>
-
-<% if  has_role("Manage duplicates") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-        @child.request_status.to_s.strip.upcase == "CAN VOID" %>
-        
-      <% unless @readonly == true %>
-        
-				  <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showVoidDSCommentsModal();">
-				    View Comments
-				  </button>
-				  
-      <% else %>
-      
-          <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				    View Comments
-				  </button>
-				 
-      <% end %>
-
-  <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myVoidModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myVoidModalContent">
-              Something went wrong...
-            </span>
-            
-            <form role="form" id="voidcomments" method="post" action="/post_void_comment">
-            <div class="form-group">
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Void Duplicate</button>
-            </div>
-          </form>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-
-<% end %>
-
-
-<% if  @child.record_status.to_s.strip.upcase == "VOIDED" && @child.request_status.to_s.strip.upcase == "CLOSED" %>
-   
-     <% unless @readonly == true %>
-      
-		    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showvoidCommentsModal();">
-		      View Comments
-		    </button>
-      
-      <% else %>
-      
-         <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-              margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-         View Comments
-         </button>
-      
-      <% end %>
-
-  <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Reason record voided
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myModalContent">
-              Something went wrong...
-            </span>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-
-
-
-<% end %>
-
-<% if has_role("Authorise printing") %>
-
-    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-    @child.request_status.to_s.strip.upcase == "TBA-CONFLICT" %>
-    
-          <% unless @readonly == true %>
-          
-				      <!--button id="btnRejectRequest" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDsCommentModal('<%= @child.id %>')">
-				      Check Duplicates
-				      </button-->
-				     
-				     
-				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmConflictCommentModal()">
-				       View Comments
-				      </button>
-				     
-          <% else %>
-             
-              <!--button id="btnRejectRequest" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				      margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				      Check Duplicates
-				      
-				      </button-->
-				      
-				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				       View Comments
-				       </button>
-				      
-          
-          <% end %> 
-
-    <% end %>
-
-<% end %>
-
-
-<% if has_role("Authorise reprinting of a certificate") %>
-
-    <% if ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-    @child.request_status.to_s.strip.upcase == "RE-PRINT" %>
-    
-          <% unless @readonly == true %>
-          
-				      <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showDmGrantCommentModal()">
-				       View Comments
-				      </button>
-				     
-          <% else %>
-             
-				       <button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				       View Comments
-				       </button>
-				      
-          <% end %> 
-
-    <% end %>
-   
-
-   <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="dmReprintCommentModal" tabindex="-1" role="dialog" aria-labelledby="myReprintModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myReprintModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="dmReprintCommentModalContent">
-              Something went wrong...
-            </span>
-            <form role="form" id="dmreprintcomments" method="post" action="">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="dmreprintcomments" required>
-		            <option value=""></option>
-								<option>Approve</option>
-								<option>Disapprove</option>
-							</select> 
-							<br />
-							<br />
-              <label for="dmreprintcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="dmreprintcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END --> 
-    
-
-
-
-
-<% end %>
-
-
-
-<% if ((['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-              ["REJECTED"].include?(@child.request_status.to_s.strip.upcase)))   %>
-      
-      <% unless @readonly == true %>        
-              
-		    <button id="btnComments" class="blue" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showRejectCommentsModal();">
-		      View Comments
-		    </button>
-		    
-		  <% else %> 
-		  	
-		  	<button id="btnComments" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-		            margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-		      View Comments
-		    </button>
-		  	
-		  <% end %> 
-
-  <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myModalContentThree">
-             	Something went wrong...
-            </span>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" data-dismiss="modal">Okay</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-
-<% end %>
-
-<% if  has_role("Manage incomplete records") && ['HQ OPEN'].include?(@child.record_status.to_s.strip.upcase) &&
-        @child.request_status.to_s.strip.upcase == "ACTIVE" && @child.relationship.downcase != "normal" %>
-        
-      <% unless @readonly == true %>
-        
-				  <button id="btnSpecialApprove" class="green" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;" onclick="showApproveDSCommentsModal();">
-				    Approve
-				  </button>
-				  
-      <% else %>
-      
-          <button id="btnSpecialApprove" class="orange" style="font-size: 14px; min-width: 140px; min-height: 20px; padding: 6px;
-				          margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;">
-				    Approve
-				  </button>
-				 
-      <% end %>
-      
-     
-      
-      
-      
-       <!--CONFIRMATION POPUP BEGIN -->
-    <div class="modal fade" id="myDsSpecialApprovedModal" tabindex="-1" role="dialog" aria-labelledby="myDsSpecialApprovedModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myDsSpecialApprovedModalLabel" style="text-align: left;">
-              Comments
-            </h4>
-          </div>
-          <div class="modal-body" style="text-align: left;">
-            <span id="myDsSpecialApprovedModalContent">
-              Something went wrong...
-            </span>
-            
-            <form role="form" id="newcomments" method="post" action="/ds_approve_special_post_comment">
-            <div class="form-group">
-              <label for="request_status">Recommendation:</label>
-              <select name="request_status" form="newcomments" required>
-		            <option value=""></option>
-								<option value="Approve">Approve</option>
-								<option value="Reject">Reject</option>
-							</select> 
-							<br />
-							<br />
-              <label for="newcomments">Enter Comment:</label>
-              <input type="text" class="form-control" name="newcomments" placeholder="Enter Comment" required>
-              <br />
-              <input type="hidden" name="id" value="<%= @child.id %>" > 
-              <button type="submit" class="btn btn-default btn-success btn-block">Save Comment</button>
-            </div>
-           
-          </form>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!--CONFIRMATION POPUP END -->
-
-      
-      
-<% end %>
-
-
-
 
 
 </div>
-<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+
+    <div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
@@ -1170,6 +224,7 @@ button.close {
         </div>
       </div>
     </div>
+
 <script>
     var dispatch_action ="";
    birth_place = __$('details_of_child_place_of_birth').innerHTML.trim().toLowerCase();
@@ -1207,17 +262,17 @@ button.close {
   }
 
   function closeChild() {
-    //link = "window.location='/close_child/<%= @child.id %>';";
+    //link = "window.location='/close_child/<%= @person.id %>';";
     //submitSummary(link);
   }
 
   function approve() {
-    link = "window.location='/approve_child/<%= @child.id %>';";
+    link = "window.location='/approve_child/<%= @person.id %>';";
     submitSummary(link);
   }
   
   function re_approve() {
-   link = "window.location='/re_approve_record/<%= @child.id %>';";
+   link = "window.location='/re_approve_record/<%= @person.id %>';";
    //submitSummary(link);
    rejectMsgForAction("Re-Approved Record?", link, "400px", "Re-Approve Record", "", "100px");
  
@@ -1225,20 +280,20 @@ button.close {
   
   
   function approve_adoption() {
-   link = "window.location='/approved_adoption/<%= @child.id %>';";
+   link = "window.location='/approved_adoption/<%= @person.id %>';";
    //submitSummary(link);
    showMsgForAdoptedAction("Approved adoption case?", link, "400px", "Approved Adoption", "", "100px")
   }
   
   
   function reject() {
-    link = "window.location='/hq/return_for_complete?id=<%= @child.id %>';";
+    link = "window.location='/hq/return_for_complete?id=<%= @person.id %>';";
     //submitSummary(link);
     rejectMsgForAction("Reject this record?", link, "400px", "Record Rejection", "", "100px");
   }
   
   function dispatch() {
-    link = "window.location='/hq/dispatch_certificate?id=<%= @child.id %>";
+    link = "window.location='/hq/dispatch_certificate?id=<%= @person.id %>";
     
     rejectMsgForAction("Dispatch this certificate at HQ?", link, "400px", "Birth Certificate Dispatch", "", "100px");
     
@@ -1246,7 +301,7 @@ button.close {
   
   
   function view_printed() {
-    window.location = "/printed_view/<%= @child.id %>";
+    window.location = "/printed_view/<%= @person.id %>";
     
     //rejectMsgForAction("Are you sure you want to view printed certificate?", link, "400px", "Birth Certificate Printed View", "", "100px");
     
@@ -1255,7 +310,7 @@ button.close {
   function checkDuplicates(role) {
 
     jQuery.ajax({
-      url: '/potential_duplicates?id=<%= @child.id %>',
+      url: '/potential_duplicates?id=<%= @person.id %>',
 
       success: function (data) {
         data = JSON.parse(data);
@@ -1271,7 +326,7 @@ button.close {
             //your code to be executed after 1 second
           }, delayMillis);
 
-          gotoDuplicates("<%= @child.id %>");
+          gotoDuplicates("<%= @person.id %>");
 
         } else {
           checkChild(role);
@@ -1281,12 +336,9 @@ button.close {
   }
 
   function checkChild(user_role) {
-    <% if record_complete?(@child) %>
     link = "window.location='/hq/approve_for_printing';";
-    <% else %>
-    link = "window.location='/hq/view_cases';";
-    <% end %>
-  
+    //link = "window.location='/hq/view_cases';";
+
     submitSummary(link, user_role);
   }
   
@@ -1952,11 +1004,9 @@ button.close {
     btnReturn.style.margin = "10px";
     btnReturn.style.fontWeight = "bold !important";
 
-    <% if !has_role("Approve/Reject a child record") %>
 
     btnReturn.style.display = "none";
 
-    <% end %>
 
     td2_2.appendChild(btnReturn);
 
@@ -1972,11 +1022,9 @@ button.close {
     btnIncomplete.style.margin = "10px";
     btnIncomplete.style.fontWeight = "bold !important";
 
-    <% if !has_role("Check completeness") %>
 
     btnIncomplete.style.display = "none";
 
-    <% end %>
 
     td2_2.appendChild(btnIncomplete);
 
@@ -2012,11 +1060,9 @@ button.close {
 
     }
 
-    <% if !has_role("Check completeness") %>
 
     btnYes.style.display = "none";
 
-    <% end %>
 
     btnReturn.onmousedown = function () {
 
@@ -2072,7 +1118,6 @@ button.close {
 
     }
 
-   <% if  has_role("Manage incomplete records") %>
       btnIncomplete.style.display = "";
       btnIncomplete.style.float = "left";
       btnYes.style.display = "";
@@ -2080,7 +1125,6 @@ button.close {
       btnNo.style.float = "right";
       btnYes.setAttribute("onmousedown", "window.location='/approve_incomplete/<%= params[:id]%>'")
       btnIncomplete.setAttribute("onmousedown", "reloadIncompleteData(false);")
-   <% end %>
   }
   
   
@@ -2200,11 +1244,9 @@ button.close {
     btnReturn.style.margin = "10px";
     btnReturn.style.fontWeight = "bold !important";
 
-    <% if !has_role("Approve/Reject a child record") %>
 
     btnReturn.style.display = "none";
 
-    <% end %>
 
     td2_2.appendChild(btnReturn);
 
@@ -2220,11 +1262,9 @@ button.close {
     btnIncomplete.style.margin = "10px";
     btnIncomplete.style.fontWeight = "bold !important";
 
-    <% if !has_role("Check completeness") %>
 
     btnIncomplete.style.display = "none";
 
-    <% end %>
 
     td2_2.appendChild(btnIncomplete);
 
@@ -2260,11 +1300,9 @@ button.close {
 
     }
 
-    <% if !has_role("Check completeness") %>
 
     btnYes.style.display = "none";
 
-    <% end %>
 
     btnIncomplete.onmousedown = function () {
 

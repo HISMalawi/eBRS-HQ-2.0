@@ -68,11 +68,11 @@ class PersonController < ApplicationController
       tag_id = LocationTag.where(name: tag).last.id rescue nil
       result = nil
       if tag_id.blank?
-        result = Location.where(location_id: id).name rescue nil
+        result = Location.find(id).name rescue nil
       else
         tagmap = LocationTagMap.where(location_tag_id: tag_id, location_id: id).last rescue nil
         if tagmap
-          result = Location.find(tagmap.location_id) rescue nil
+          result = Location.find(tagmap.location_id).name rescue nil
         end
       end
 
@@ -93,7 +93,7 @@ class PersonController < ApplicationController
 
     @father_person = @person.father
     @father_address = @father_person.addresses.last rescue nil
-    @mother_name = @father_person.person_names.last rescue nil
+    @father_name = @father_person.person_names.last rescue nil
 
     @informant_person = @person.informant rescue nil
     @informant_address = @informant_person.addresses.last rescue nil
@@ -112,11 +112,12 @@ class PersonController < ApplicationController
       @birth_details.other_birth_location
     end
 
-      @record = {
+    @status = PersonRecordStatus.status(@person.id)
+        @record = {
           "Details of Child" => [
               {
                   "District ID Number" => "#{@birth_details.district_id_number rescue nil}",
-                  "Serial Number" => "#{@birth_details.national_serial_number rescue nil}"
+                  "Serial Number" => "#{@birth_details.national_serial_number  rescue nil}"
               },
               {
                   ["First Name", "mandatory"] => "#{@name.first_name rescue nil}",
@@ -126,7 +127,7 @@ class PersonController < ApplicationController
               {
                   ["Date of birth", "mandatory"] => "#{@person.birthdate}",
                   ["Sex", "mandatory"] => "#{(@person.gender == 'F' ? 'Female' : 'Male')}",
-                  "Place of birth" => "#{loc(@birth_details.place_of_birth)}"
+                  "Place of birth" => "#{loc(@birth_details.place_of_birth, 'Place of Birth')}"
               },
               {
                   "Name of Hospital" => "#{loc(@birth_details.birth_location_id, 'Health Facility')}",
@@ -140,109 +141,109 @@ class PersonController < ApplicationController
               },
               {
                   "Birth weight (kg)" => "#{@birth_details.birth_weight rescue nil}",
-                  "Type of birth" => "#{@birth_details.type.name rescue nil}",
+                  "Type of birth" => "#{@birth_details.birth_type.name rescue nil}",
                   "Other birth specified" => "#{@birth_details.other_type_of_birth rescue nil}"
               },
               {
-                  "Are the parents married to each other?" => "#{@birth_details.parents_married_to_each_other rescue nil}",
+                  "Are the parents married to each other?" => "#{(@birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil}",
                   "If yes, date of marriage" => "#{@birth_details.date_of_marriage rescue nil}"
               },
 
               {
                   "Court Order Attached?" => "#{(@birth_details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil}",
                   "Parents Signed?" => "#{(@birth_details.parents_signed == "1" ? 'Yes' : 'No') rescue nil}",
-                  "Record Complete?" => "#{ (record_complete?(@birth_details) == false ? 'No' : 'Yes')}"
+                  "Record Complete?" => "----"
               },
               {
                   "Place where birth was recorded" => "#{loc(@birth_details.location_created_at)}",
-                  "Record Status" => "#{}",
-                  "Child/Person Type" => "#{@child.relationship.titleize}"
+                  "Record Status" => "#{@status}",
+                  "Child/Person Type" => "#{@birth_details.reg_type.name}"
               }
           ],
           "Details of Child's Mother" => [
               {
-                  ["First Name", "mandatory"] => "#{@child.mother.first_name rescue nil}",
-                  "Other Name" => "#{@child.mother.middle_name rescue nil}",
-                  ["Maiden Surname", "mandatory"] => "#{@child.mother.last_name rescue nil}"
+                  ["First Name", "mandatory"] => "#{@mother_name.first_name rescue nil}",
+                  "Other Name" => "#{@mother_name.middle_name rescue nil}",
+                  ["Maiden Surname", "mandatory"] => "#{@mother_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@child.mother.birthdate rescue nil}",
-                  "Nationality" => "#{@child.mother.citizenship rescue nil}",
-                  "ID Number" => "#{@child.mother.id_number rescue nil}"
+                  "Date of birth" => "#{@mother_person.birthdate rescue nil}",
+                  "Nationality" => "#{@mother_person.citizenship rescue nil}",
+                  "ID Number" => "#{@mother_person.id_number rescue nil}"
               },
               {
-                  "Physical Residential Address, District" => "#{@child.mother.current_district rescue nil}",
-                  "T/A" => "#{@child.mother.current_ta rescue nil}",
-                  "Village/Town" => "#{@child.mother.current_village rescue nil}"
+                  "Physical Residential Address, District" => "#{loc(@mother_address.current_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@mother_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@mother_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Home Address, Village/Town" => "#{@child.mother.home_village rescue nil}",
-                  "T/A" => "#{@child.mother.home_ta rescue nil}",
-                  "District" => "#{@child.mother.home_district rescue nil}"
+                  "Home Address, Village/Town" => "#{loc(@mother_address.home_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@mother_address.home_ta, 'Traditional Authority') rescue nil}",
+                  "District" => "#{loc(@mother_address.home_village, 'Village') rescue nil}"
               },
               {
-                  "Gestation age at birth in weeks" => "#{@child.gestation_at_birth rescue nil}",
-                  "Number of prenatal visits" => "#{@child.number_of_prenatal_visits rescue nil}",
-                  "Month of pregnancy prenatal care started" => "#{@child.month_prenatal_care_started rescue nil}"
+                  "Gestation age at birth in weeks" => "#{@birth_details.gestation_at_birth rescue nil}",
+                  "Number of prenatal visits" => "#{@birth_details.number_of_prenatal_visits rescue nil}",
+                  "Month of pregnancy prenatal care started" => "#{@birth_details.month_prenatal_care_started rescue nil}"
               },
               {
-                  "Mode of delivery" => "#{@child.mode_of_delivery rescue nil}",
-                  "Number of children born to the mother, including this child" => "#{@child.number_of_children_born_alive_inclusive rescue nil}",
-                  "Number of children born to the mother, and still living" => "#{@child.number_of_children_born_still_alive rescue nil}"
+                  "Mode of delivery" => "#{@birth_details.mode_of_delivery.name rescue nil}",
+                  "Number of children born to the mother, including this child" => "#{@birth_details.number_of_children_born_alive_inclusive rescue nil}",
+                  "Number of children born to the mother, and still living" => "#{@birth_details.number_of_children_born_still_alive rescue nil}"
               },
               {
-                  "Level of education" => "#{@child.level_of_education rescue nil}"
+                  "Level of education" => "#{@birth_details.level_of_education rescue nil}"
               }
           ],
           "Details of Child's Father" => [
               {
-                  parents_married(@child, "First Name") => "#{@child.father.first_name rescue nil}",
-                  "Other Name" => "#{@child.father.middle_name rescue nil}",
-                  parents_married(@child, "Surname") => "#{@child.father.last_name rescue nil}"
+                  "First Name" => "#{@father_name.first_name rescue nil}",
+                  "Other Name" => "#{@father_name.middle_name rescue nil}",
+                  "Surname" => "#{@father_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@child.father.birthdate rescue nil}",
-                  "Nationality" => "#{@child.father.citizenship rescue nil}",
-                  "ID Number" => "#{@child.father.id_number rescue nil}"
+                  "Date of birth" => "#{@father_person.birthdate rescue nil}",
+                  "Nationality" => "#{@father_person.citizenship rescue nil}",
+                  "ID Number" => "#{@father_person.id_number rescue nil}"
               },
               {
-                  "Physical Residential Address, District" => "#{@child.father.current_district rescue nil}",
-                  "T/A" => "#{@child.father.current_ta rescue nil}",
-                  "Village/Town" => "#{@child.father.current_village rescue nil}"
+                  "Physical Residential Address, District" => "#{loc(@father_address.current_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@father_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@father_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Home Address, Village/Town" => "#{@child.father.home_village rescue nil}",
-                  "T/A" => "#{@child.father.home_ta rescue nil}",
-                  "District" => "#{@child.father.home_district rescue nil}"
+                  "Home Address, Village/Town" => "#{loc(@father_address.home_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@father_address.home_ta, 'Traditional Authority') rescue nil}",
+                  "District" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
               }
           ],
           "Details of Child's Informant" => [
               {
-                  "First Name" => "#{@child.informant.first_name rescue nil}",
-                  "Other Name" => "#{@child.informant.middle_name rescue nil}",
-                  "Family Name" => "#{@child.informant.last_name rescue nil}"
+                  "First Name" => "#{@informant_name.first_name rescue nil}",
+                  "Other Name" => "#{@informant_name.middle_name rescue nil}",
+                  "Family Name" => "#{@informant_name.last_name rescue nil}"
               },
               {
                   "Relationship to child" => "#{@child.informant.relationship_to_child rescue ""}",
-                  "ID Number" => "#{@child.informant.id_number rescue ""}"
+                  "ID Number" => "#{@informant_person.id_number rescue ""}"
               },
               {
-                  "Physical Address, District" => "#{@child.informant.current_district rescue nil}",
-                  "T/A" => "#{@child.informant.current_ta rescue nil}",
-                  "Village/Town" => "#{@child.informant.current_village rescue nil}"
+                  "Physical Address, District" => "#{loc(@informant_address.home_district, 'District')rescue nil}",
+                  "T/A" => "#{loc(@informant_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@informant_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Postal Address" => "#{@child.informant.addressline1 rescue nil}",
-                  "" => "#{@child.informant.addressline2 rescue nil}",
-                  "City" => "#{@child.informant.city rescue nil}"
+                  "Postal Address" => "#{@informant_address.addressline1 rescue nil}",
+                  "" => "#{@informant_address.addressline2 rescue nil}",
+                  "City" => "#{@informant_address.city rescue nil}"
               },
               {
-                  "Phone Number" => "#{@child.informant.phone_number rescue ""}",
-                  "Informant Signed?" => "#{@child.form_signed rescue ""}"
+                  "Phone Number" => "#{@informant_person.phone_number rescue ""}",
+                  "Informant Signed?" => "#{@birth_details.form_signed rescue ""}"
               },
               {
-                  "Acknowledgement Date" => "#{@child.acknowledgement_of_receipt_date.strftime('%d/%B/%Y') rescue ""}",
-                  "Date of Registration" => "#{@child.date_registered.to_date.strftime('%d/%B/%Y') rescue ""}",
+                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.strftime('%d/%B/%Y') rescue ""}",
+                  "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%B/%Y') rescue ""}",
                   ["Delayed Registration", "sub"] => "#{delayed}"
               }
           ]
@@ -250,6 +251,14 @@ class PersonController < ApplicationController
 
     @section = "View Record"
 
+  end
+
+  def parents_married(child, value)
+    if child.parents_married_to_each_other.to_s == '1'
+      [value, "mandatory"]
+    else
+      return value
+    end
   end
 
   def view
