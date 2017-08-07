@@ -102,15 +102,19 @@ class PersonController < ApplicationController
     @available_printers = SETTINGS["printer_name"].split('|')
 
     days_gone = ((@birth_details.acknowledgement_of_receipt_date.to_date rescue Date.today) - @person.birthdate.to_date).to_i rescue 0
-    delayed =  days_gone > 42 ? "Yes" : "No"
+    @delayed =  days_gone > 42 ? "Yes" : "No"
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
     birth_location = birth_loc.name rescue nil
 
+    @place_of_birth = birth_loc.name rescue nil
+
     if birth_location == 'Other' && @birth_details.other_birth_location.present?
       @birth_details.other_birth_location
     end
+
+    @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
         @record = {
@@ -125,7 +129,7 @@ class PersonController < ApplicationController
                   ["Surname", "mandatory"] => "#{@name.last_name rescue nil}"
               },
               {
-                  ["Date of birth", "mandatory"] => "#{@person.birthdate}",
+                  ["Date of birth", "mandatory"] => "#{@person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
                   ["Sex", "mandatory"] => "#{(@person.gender == 'F' ? 'Female' : 'Male')}",
                   "Place of birth" => "#{loc(@birth_details.place_of_birth, 'Place of Birth')}"
               },
@@ -167,7 +171,7 @@ class PersonController < ApplicationController
                   ["Maiden Surname", "mandatory"] => "#{@mother_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@mother_person.birthdate rescue nil}",
+                  "Date of birth" => "#{@mother_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
                   "Nationality" => "#{@mother_person.citizenship rescue nil}",
                   "ID Number" => "#{@mother_person.id_number rescue nil}"
               },
@@ -202,7 +206,7 @@ class PersonController < ApplicationController
                   "Surname" => "#{@father_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@father_person.birthdate rescue nil}",
+                  "Date of birth" => "#{@father_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
                   "Nationality" => "#{@father_person.citizenship rescue nil}",
                   "ID Number" => "#{@father_person.id_number rescue nil}"
               },
@@ -242,9 +246,9 @@ class PersonController < ApplicationController
                   "Informant Signed?" => "#{@birth_details.form_signed rescue ""}"
               },
               {
-                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.strftime('%d/%B/%Y') rescue ""}",
-                  "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%B/%Y') rescue ""}",
-                  ["Delayed Registration", "sub"] => "#{delayed}"
+                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  ["Delayed Registration", "sub"] => "#{@delayed}"
               }
           ]
       }
