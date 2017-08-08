@@ -37,6 +37,13 @@
         margin-top: 0px;
     }
 
+    .fix-middle{
+        position: fixed;
+        z-index: 2000;
+        left: 45%;
+        top: 40%;
+    }
+
 </style>
 <div class="panel panel-default">
   <div class="panel-heading" style="height: 50px;">
@@ -46,20 +53,33 @@
           <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
         </td>
         <td colspan="8" style="width: 60%;">
-          <div class="pull-right" style="height: 40px; margin-top: 0px;">
 
-          </div>
         </td>
       </tr>
     </table>
+  </div>
+
+  <div class="fix-middle" style="height: 40px; margin-top: 0px;">
+    <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
+        <button onclick="printAll()"
+                class=" action-btn btn btn-sm btn-success"><i class="fa fa-print"></i>Print Selected</button>
+    <% end %>
+    <%if (['HQ-PRINTED'] & params['statuses']).length > 0%>
+        <button onclick="printAll()"
+                class=" action-btn btn btn-sm btn-primary"><i class="fa fa-pencil"></i>Dispatch Selected</button>
+    <% end %>
   </div>
 
 <table id="example" class="display" cellspacing="0" width="100%">
   <thead>
     <tr>
       <th style="text-align: left;">BEN</th>
+      <% if @records.length > 0 && @records[0]['brn'].present? %>
+        <th style="text-align: left;">BRN</th>
+      <% end %>
       <th style="text-align: left;">Name</th>
       <th style="text-align: center; width:90px;">Birthdate</th>
+      <th style="text-align: left;">Gender</th>
       <th style="text-align: left;">Mother's Name</th>
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
@@ -69,29 +89,41 @@
     <%(@records || []).each do |record|
     %>
       <tr>
-        <td style="text-align: left;width: 15%"><%= record['den'] %>&nbsp;</td>
-        <td style="text-align: left;width: 15%"><%= record['name'] %></td>
+        <td style="text-align: left;width: 15%"><%= record['ben'] %>&nbsp;</td>
+        <% if @records.length > 0 && @records[0]['brn'].present? %>
+            <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
+      <% end %>
+        <td style="text-align: left;width: 15%"><%= record['name']%></td>
         <td style="text-align: center;width: 15%"><%= record['dob'] %></td>
+        <td style="text-align: center;width: 3%"><%= record['gender'] %></td>
         <td style="text-align: center;width: 15%"><%= record['mother_name'] %></td>
         <td style="text-align: center;width: 15%"><%= record['father_name'] %></td>
         <td style="text-align: center;"><%= record['status'] %></td>
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
             <tr>
-              <td>
+              <td class="act-btn">
                 <button onclick="javascript:location='/show_person/<%= record['id']%>'"
                         class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
               </td>
               <%if admin?%>
-                  <td>
+                  <td class="act-btn">
                     <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
-                            class="action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
+                            class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
                   </td>
-                  <td>
+                  <td class="act-btn">
                     <button onclick="javascript:location='/void/<%= record['person_id']%>'"
                             class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
                   </td>
               <%end%>
+
+              <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                  <td class="act-btn">
+                    <div class="checkbox">
+                      <label><input type="checkbox" value=""></label>
+                    </div>
+                  </td>
+              <% end %>
             </tr>
           </table>
         </td>
@@ -110,3 +142,9 @@ $i(document).ready(function() {
 } );
 
 </script>
+
+<style>
+  .action-btn, .act-btn{
+    border: none !important;
+  }
+</style>

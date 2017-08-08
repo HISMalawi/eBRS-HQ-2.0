@@ -121,8 +121,8 @@ class PersonController < ApplicationController
     @record = {
           "Details of Child" => [
               {
-                  "District ID Number" => "#{@birth_details.district_id_number rescue nil}",
-                  "Serial Number" => "#{@birth_details.national_serial_number  rescue nil}"
+                  "District ID Number" => "#{@birth_details.ben rescue nil}",
+                  "Serial Number" => "#{@birth_details.brn  rescue nil}"
               },
               {
                   ["First Name", "mandatory"] => "#{@name.first_name rescue nil}",
@@ -494,11 +494,10 @@ class PersonController < ApplicationController
      @tasks = [
               ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Conflict Cases", "Conflict Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
               ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
-              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
-
+              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
             ]
       @section = "Manage Cases"
       render :template => "/person/tasks"

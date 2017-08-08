@@ -194,8 +194,6 @@
         View Comments (<%= @comments.count%>)
       </button>
     </div>
-
-
 </div>
 
 <% if @results.present? %>
@@ -480,8 +478,8 @@
         var role = '<%= User.current.user_role.role.role%>';
         if (!status) {
             status = ({
-                'Data Checking Clerk': 'HQ-INCOMPLETE',
-                'Administrator': 'HQ-INCOMPLETE',
+                'Data Checking Clerk': 'HQ-INCOMPLETE-TBA',
+                'Administrator': 'HQ-INCOMPLETE-TBA',
                 'Data Supervisor': 'HQ-CONFLICT'
             })[role];
         }
