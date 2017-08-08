@@ -160,22 +160,22 @@
         </button>
 
         <button class="btn btn-success pull-right"
-                onclick="validate()">
+                onclick="ajaxify('HQ-DISPTACHED')">
           <span class="fa fa-truck"></span>
           Dispatch
         </button>
         <button class="btn btn-success pull-right"
-                onclick="validate()">
+                onclick="preview()">
           <span class="fa fa-print"></span>
           Print
         </button>
         <button class="btn btn-danger pull-right"
-                onclick="validate()">
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
           <span class="fa"></span>
           Reject
         </button>
         <button class="btn btn-warning pull-right"
-                onclick="validate()">
+                onclick="generalComment('Enter void reason to proceed', 'HQ-VOIDED')">
           <span class="fa fa-void"></span>
           Void
         </button>
@@ -287,6 +287,7 @@
           </table>
         </span>
         <div class="modal-footer">
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-COMPLETE')">Complete</button>
           <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
         </div>
@@ -334,6 +335,7 @@
   </div>
 </div>
 </div>
+
 <div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
   <div class="media-body" style="width: 550px;">
     <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
@@ -346,7 +348,7 @@
     function ajaxify(status){
         var role = '<%= User.current.user_role.role.role%>';
 
-        if (status = "HQ-COMPLETE") {
+        if (status == "HQ-COMPLETE") {
             var status = ({
                 'Data Checking Clerk': 'HQ-COMPLETE',
                 'Administrator': 'HQ-COMPLETE',
@@ -415,18 +417,38 @@
         )
     }
 
-    function saveComment(){
+    function generalComment(header, status){
+
+        ajaxPullComments();
+
+        __$('submit_btn').style.display = 'inline';
+        __$("comment-header").innerHTML = header;
+
+        if(status){
+            __$('submit_btn').onclick = function(){
+                    saveComment(status);
+                };
+        }
+    }
+
+    function reject(){
+
+    }
+
+    function saveComment(status){
         if (__$("textarea").value.trim().length == 0){
             jQuery('#error').show();
             return
         }
 
-        var role = '<%= User.current.user_role.role.role%>'
-        var status =({
-            'Data Checking Clerk' : 'HQ-INCOMPLETE',
-            'Administrator' : 'HQ-INCOMPLETE',
-            'Data Supervisor' : 'HQ-CONFLICT'
-        })[role];
+        var role = '<%= User.current.user_role.role.role%>';
+        if (!status) {
+            status = ({
+                'Data Checking Clerk': 'HQ-INCOMPLETE',
+                'Administrator': 'HQ-INCOMPLETE',
+                'Data Supervisor': 'HQ-CONFLICT'
+            })[role];
+        }
 
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment="
         jQuery.ajax(
