@@ -10,10 +10,6 @@ class User < ActiveRecord::Base
   belongs_to :location
   has_one :user_role
 
-  after_create :create_audit
-
-  cattr_accessor :current
-
   def has_role?(role_name)
     self.current.role == role_name ? true : false
   end

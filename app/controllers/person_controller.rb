@@ -100,7 +100,7 @@ class PersonController < ApplicationController
     @informant_name = @informant_person.person_names.last rescue nil
 
     @available_printers = SETTINGS["printer_name"].split('|')
-
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
     days_gone = ((@birth_details.acknowledgement_of_receipt_date.to_date rescue Date.today) - @person.birthdate.to_date).to_i rescue 0
     @delayed =  days_gone > 42 ? "Yes" : "No"
     location = Location.find(SETTINGS['location_id'])
@@ -266,9 +266,9 @@ class PersonController < ApplicationController
   end
 
   def view
+    session[:list_url] = request.fullpath
     @states = params[:statuses]
     @section = params[:destination]
-
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
     @records = PersonService.query_for_display(@states)
@@ -451,7 +451,9 @@ class PersonController < ApplicationController
      @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
      @tasks = [
               ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-              ["Incomplete records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Conflict Cases", "Conflict Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
 
@@ -460,5 +462,41 @@ class PersonController < ApplicationController
       render :template => "/person/tasks"
   end
 
+  def get_comments
+    @statuses = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ").order('created_at')
+    @comments = []
+
+    @statuses.each do |audit|
+      user = User.find(audit.creator)
+      name = PersonName.where(person_id: user.person_id).last
+      user_name = (name.first_name + " " + name.last_name)
+      ago = ""
+      if (audit.created_at.to_date == Date.today)
+        ago = "today"
+      else
+        ago = (Date.today - audit.created_at.to_date).to_i
+        ago = ago.to_s + (ago.to_i == 1 ? " day ago" : " days ago")
+      end
+      @comments << {
+          "created_at" => audit.created_at.to_time,
+          'user' => user_name,
+          'user_role' => (user.user_role.role.role rescue nil),
+          'level' => (user.user_role.role.level rescue nil),
+          'status' => (Status.find(audit.status_id).name),
+          'comment' => audit.comments,
+          'date_added' => ago
+      }
+      @comments = @comments.sort_by{|c| c['created_at']}
+    end
+
+    render :text => @comments.to_json
+  end
+
+  def ajax_status_change
+
+    PersonRecordStatus.new_record_state(params[:person_id], params[:status], params[:comment])
+
+    render :text => 'ok'
+  end
 
 end

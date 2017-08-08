@@ -100,14 +100,8 @@ Rails.application.routes.draw do
   get '/search_by_hospital' => 'person#get_hospital'
   ########################### (create record form) routes end
 
-
-
-
-
-
-
-
-
+  get '/get_comments' => 'person#get_comments'
+  get '/ajax_status_change' => 'person#ajax_status_change'
 
   resources :person
 
