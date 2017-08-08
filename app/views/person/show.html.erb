@@ -187,10 +187,7 @@
         View Comments (<%= @comments.count%>)
       </button>
     </div>
-
-
 </div>
-
 
 <div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -444,8 +441,8 @@
         var role = '<%= User.current.user_role.role.role%>';
         if (!status) {
             status = ({
-                'Data Checking Clerk': 'HQ-INCOMPLETE',
-                'Administrator': 'HQ-INCOMPLETE',
+                'Data Checking Clerk': 'HQ-INCOMPLETE-TBA',
+                'Administrator': 'HQ-INCOMPLETE-TBA',
                 'Data Supervisor': 'HQ-CONFLICT'
             })[role];
         }

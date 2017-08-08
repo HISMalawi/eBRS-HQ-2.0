@@ -25,6 +25,18 @@ class PersonRecordStatus < ActiveRecord::Base
           creator: User.current.id,
           comments: change_reason
       )
+
+      birth_details = PersonBirthDetail.where(person_id: person_id).last
+
+      if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
+          allocation = IdentifierAllocationQueue.new
+          allocation.person_id = person_id
+          allocation.assigned = 0
+          allocation.creator = User.current.id
+          allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "Birth Registration Number").last.person_identifier_type_id
+          allocation.created_at = Time.now
+          allocation.save 
+      end
     end
 
     def self.status(person_id)
