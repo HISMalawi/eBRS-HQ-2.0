@@ -160,20 +160,21 @@ class SimpleElasticSearch
       potential_duplicates = []
       hits = self.query("content",query_string,precision,10,0)["data"]
       hits.each do |hit|
-        potential_duplicates << hit if hit["_id"] !=(person.person_id rescue nil)
+        potential_duplicates << hit if hit["_id"] !=(person["id"] rescue nil)
       end
 
       return potential_duplicates
   end
 
   def self.query_duplicate_coded(person,precision)
-      content =  self.format_content(person)
+      content =  self.format_coded_content(person)
       query_string = "#{person["first_name"].soundex} #{person["last_name"].soundex} #{content}"
 
       potential_duplicates = []
       hits = self.query("coded_content",query_string,precision,10,0)["data"]
+
       hits.each do |hit|
-        potential_duplicates << hit if hit["_id"] !=(person.person_id rescue nil)
+        potential_duplicates << hit if hit["_id"] !=(person["id"] rescue nil)
       end
 
       return potential_duplicates

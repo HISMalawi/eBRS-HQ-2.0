@@ -118,7 +118,7 @@ class PersonController < ApplicationController
     @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
-        @record = {
+    @record = {
           "Details of Child" => [
               {
                   "District ID Number" => "#{@birth_details.district_id_number rescue nil}",
@@ -255,7 +255,7 @@ class PersonController < ApplicationController
       }
     if @person.present? && SETTINGS['potential_search']
       person = {}
-      person["id"] = @person.person_id
+      person["id"] = @person.person_id.to_s
       person["first_name"]= @name.first_name rescue ''
       person["last_name"] =  @name.last_name rescue ''
       person["middle_name"] = @name.middle_name rescue ''
@@ -277,6 +277,20 @@ class PersonController < ApplicationController
       person["father_middle_name"] = @father_name.middle_name  rescue ''
     
       SimpleElasticSearch.add(person)
+
+      if @status == "HQ-ACTIVE"
+        @results = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])        
+        if @results.present?
+           potential_duplicate = PotentialDuplicate.create(person_id: @person.person_id,created_at: (Time.now))
+           if potential_duplicate.present?
+                 @results.each do |result|
+                    potential_duplicate.create_duplicate(result["_id"])
+                 end
+           end
+           PersonRecordStatus.new_record_state(@person.person_id, "HQ-POTENTIAL DUPLICATE-TBA", "System mark record as potential duplicate")
+           @status = PersonRecordStatus.status(@person.id)
+        end      
+      end
     else
 
     end
@@ -467,7 +481,7 @@ class PersonController < ApplicationController
               ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
-              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates","/assets/folder3.png"],
+              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
               ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
@@ -525,6 +539,21 @@ class PersonController < ApplicationController
     PersonRecordStatus.new_record_state(params[:person_id], params[:status], params[:comment])
 
     render :text => 'ok'
+  end
+
+  ########################### Duplicates ###############################
+  def duplicates_menu
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+              ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Approved for printing","Approved for printing" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Voided Records","Voided Records" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"]
+            ]
+    @section = "Manage duplicate"
+    render :template => "/person/tasks"
   end
 
 end

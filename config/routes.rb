@@ -79,6 +79,8 @@ Rails.application.routes.draw do
 
   get 'person/new'
 
+  get "person/duplicates_menu"
+
   post 'person/create'
 
   post '/application/get_registration_type'
