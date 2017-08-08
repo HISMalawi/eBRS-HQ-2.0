@@ -106,6 +106,7 @@ class PersonController < ApplicationController
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
+    
     birth_location = birth_loc.name rescue nil
 
     @place_of_birth = birth_loc.name rescue nil
@@ -252,6 +253,33 @@ class PersonController < ApplicationController
               }
           ]
       }
+    if @person.present? && SETTINGS['potential_search']
+      person = {}
+      person["id"] = @person.person_id
+      person["first_name"]= @name.first_name rescue ''
+      person["last_name"] =  @name.last_name rescue ''
+      person["middle_name"] = @name.middle_name rescue ''
+      person["gender"] = (@person.gender == 'F' ? 'Female' : 'Male')
+      person["birthdate"]= @person.birthdate.to_date
+      person["birthdate_estimated"] = @person.birthdate_estimated
+      person["nationality"]=  @mother_person.citizenship
+      person["place_of_birth"] = @place_of_birth
+      if  birth_loc.district.present?
+        person["district"] = birth_loc.district
+      else
+        person["district"] = "Lilongwe"
+      end      
+      person["mother_first_name"]= @mother_name.first_name rescue ''
+      person["mother_last_name"] =  @mother_name.last_name  rescue ''
+      person["mother_middle_name"] = @mother_name.middle_name rescue '' 
+      person["father_first_name"]= @father_name.first_name  rescue ''
+      person["father_last_name"] =  @father_name.last_name  rescue ''
+      person["father_middle_name"] = @father_name.middle_name  rescue ''
+    
+      SimpleElasticSearch.add(person)
+    else
+
+    end
 
     @section = "View Record"
 
