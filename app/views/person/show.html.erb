@@ -6,7 +6,7 @@
   padding: 10px;
   text-align: left;
 
-  <% if @status == "VOIDED" %>
+  <% if @status.match(/VOIDED/i) %>
 
   text-decoration: line-through;
 
@@ -20,82 +20,23 @@
   color: #333;
   float: right;
 }
-
-.btn {
-    background-repeat: repeat-x;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) #b3b3b3;
-    border-image: none;
-    border-radius: 4px;
-    border-style: solid;
-    border-width: 1px;
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-    display: inline-block;
-    font-size: 14px;
-    line-height: 20px;
-    margin-bottom: 0;
-    padding: 4px 12px;
-    text-align: center;
-    vertical-align: middle;
-    min-width: inherit;
-    min-height: 20px;
+#completeness_details tr{
+    border-top: 1px dotted lightgray
 }
 
-.btn-primary {
-    background-color: #006dcc;
-    background-image: linear-gradient(to bottom, #08c, #04c);
-    background-repeat: repeat-x;
-    border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
-    color: #fff;
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}
-.modal-header {
-    border-bottom: 1px solid #eee;
-    padding: 9px 15px;
+.labell{
+    text-align: left;
     font-weight: bold !important;
+    padding: 4px;
 }
-.modal-footer {
-    background-color: #f5f5f5;
-    border-radius: 0 0 6px 6px;
-    border-top: 1px solid #ddd;
-    box-shadow: 0 1px 0 #fff inset;
-    margin-bottom: 0;
-    padding: 14px 15px 15px;
-    text-align: right;
+.modal-header{
+    background: #006f95 none repeat scroll 0 0;
+    padding: 12px;
 }
-
-h1, h2, h3, h4, h5, h6 {
-    color: inherit;
-    font-family: inherit;
-    font-weight: bold;
-    line-height: 20px;
-    margin: 10px 0;
-    text-rendering: optimizelegibility;
-}
-
-.modal-dialog {
-    margin: 70px auto;
-    width: 600px;
-}
-
-.modal-header .close {
-    margin-top: 2px;
-}
-
-button.close {
-    background: transparent none repeat scroll 0 0;
-    border: 0 none;
-    cursor: pointer;
-    padding: 0;
-}
-
-.close {
-    min-width: inherit;
-    min-height: inherit;
-}
-
 
 </style>
+
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
 
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 50px;">
@@ -191,1665 +132,162 @@ button.close {
       </tr>
 
     </table>
+
+      <div style="margin-right: 100px;margin-top: 5px;">
+        <button class="btn btn-success pull-right"
+                onclick="jQuery('#completenessModal').modal('show')">
+          <span class="fa fa-check"></span>
+          Check Completeness
+        </button>
+        <button class="btn btn-success pull-right"
+                onclick="validate()">
+          <span class="fa fa-thumbs-o-up"></span>
+          Approve for Printing
+        </button>
+
+        <button class="btn btn-success pull-right"
+                onclick="validate()">
+          <span class="fa fa-truck"></span>
+          Dispatch
+        </button>
+        <button class="btn btn-success pull-right"
+                onclick="validate()">
+          <span class="fa fa-print"></span>
+          Print
+        </button>
+        <button class="btn btn-danger pull-right"
+                onclick="validate()">
+          <span class="fa"></span>
+          Reject
+        </button>
+        <button class="btn btn-warning pull-right"
+                onclick="validate()">
+          <span class="fa fa-void"></span>
+          Void
+        </button>
+      </div>
+
+      <button class="btn btn-primary pull-right"
+              onclick="validate()">
+        <span class="fa fa-comments"></span>
+        Comments
+      </button>
     </div>
 
 
 </div>
 
-    <div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
-              Select Printer
-            </h4>
-          </div>
-          <div class="modal-body">
-            <span style="text-align:center;">
-              <table align="center" id="printers">
-                <% @available_printers.each do |printer| %>
-                  <tr onmousedown="updateValue(this)" value="<%= printer %>">
-                    <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
-                    <td style="text-align: left; padding-left:50px;"><%= printer %></td>
-                  </tr>
-                <% end %>
-              </table>
-            </span>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-primary" onclick="submitForm();">Okay</button>
-              <button type="button" class="btn" data-dismiss="modal">Cancel</button>
-            </div>
-          </div>
+
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Select Printer
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="printers">
+            <% @available_printers.each do |printer| %>
+              <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+              </tr>
+            <% end %>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="submitForm();">Okay</button>
+          <button type="button" class="btn" data-dismiss="modal">Cancel</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="modal fade" id="completenessModal" tabindex="-1" role="dialog" aria-labelledby="completenessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Check Completeness
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="completeness_details">
+            <tr>
+              <td class="labell" >Birth Entry Number</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.district_id_number %></td> </tr>
+            <tr>
+              <td class="labell">Child Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= "#{@name.first_name} #{@name.middle_name} #{@name.last_name}" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Gender</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Date of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.strftime("%d/%b/%Y") %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Place of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @place_of_birth %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name %></td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Mother</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship %></td>
+            </tr>
+            <tr>
+              <td class="labell">Father</td>
+              <td style="text-align: left; padding-left:50px;"><%=@father_person.name %></td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Father</td>
+              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship  %></td>
+            </tr>
+            <tr>
+              <td class="labell">Parents Married to each Other?</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Court order attached</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.court_order_attached.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Parents signed?</td>
+              <td style="text-align: left; padding-left:50px;"><%=  @birth_details.parents_signed.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Delayed Registration</td>
+              <td style="text-align: left; padding-left:50px;"><%= @delayed %></td>
+            </tr>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="">Complete</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">Incomplete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <script>
-    var dispatch_action ="";
-   birth_place = __$('details_of_child_place_of_birth').innerHTML.trim().toLowerCase();
-   
-   switch(birth_place) {
-    case 'hospital':
-        place_of_birth_name = ["details_of_child_name_of_hospital"];
-        break;
-    case 'home':
-         place_of_birth_name = ["details_of_child_village","details_of_child_t/a","details_of_child_district"];
-        break;
-    default:
-        place_of_birth_name = ["details_of_child_other_details"];
-	 }  
-
-  summaryHash = {
-    "Birth Entry Number": ["details_of_child_district_id_number"],
-    "Child Name": ["details_of_child_first_name","details_of_child_other_name" ,"details_of_child_surname"],
-    "Child Gender": ["details_of_child_sex"],
-    "Child Date of Birth": ["details_of_child_date_of_birth"],
-    "Child Place of Birth": place_of_birth_name,
-    "Mother ": ["details_of_child's_mother_first_name", "details_of_child's_mother_other_name", "details_of_child's_mother_maiden_surname"],
-    "Nationality of Mother ": ["details_of_child's_mother_nationality"],
-    "Father": ["details_of_child's_father_first_name", "details_of_child's_father_other_name" ,"details_of_child's_father_surname"],
-    "Nationality of Father": ["details_of_child's_father_nationality"],
-    "Parents Married to each Other?": ['details_of_child_are_the_parents_married_to_each_other?'],
-    "Court order attached": ['details_of_child_court_order_attached?'],
-    "Parents signed?": ['details_of_child_parents_signed?'],
-    "Informant Signed?": ["details_of_child's_informant_informant_signed?"],
-    "Delayed Registration": ["details_of_child's_informant_delayed_registration"]
-  };
-
-  function __$(id) {
-    return document.getElementById(id);
-  }
-
-  function closeChild() {
-    //link = "window.location='/close_child/<%= @person.id %>';";
-    //submitSummary(link);
-  }
-
-  function approve() {
-    link = "window.location='/approve_child/<%= @person.id %>';";
-    submitSummary(link);
-  }
-  
-  function re_approve() {
-   link = "window.location='/re_approve_record/<%= @person.id %>';";
-   //submitSummary(link);
-   rejectMsgForAction("Re-Approved Record?", link, "400px", "Re-Approve Record", "", "100px");
- 
-  }
-  
-  
-  function approve_adoption() {
-   link = "window.location='/approved_adoption/<%= @person.id %>';";
-   //submitSummary(link);
-   showMsgForAdoptedAction("Approved adoption case?", link, "400px", "Approved Adoption", "", "100px")
-  }
-  
-  
-  function reject() {
-    link = "window.location='/hq/return_for_complete?id=<%= @person.id %>';";
-    //submitSummary(link);
-    rejectMsgForAction("Reject this record?", link, "400px", "Record Rejection", "", "100px");
-  }
-  
-  function dispatch() {
-    link = "window.location='/hq/dispatch_certificate?id=<%= @person.id %>";
-    
-    rejectMsgForAction("Dispatch this certificate at HQ?", link, "400px", "Birth Certificate Dispatch", "", "100px");
-    
-  }
-  
-  
-  function view_printed() {
-    window.location = "/printed_view/<%= @person.id %>";
-    
-    //rejectMsgForAction("Are you sure you want to view printed certificate?", link, "400px", "Birth Certificate Printed View", "", "100px");
-    
-  }
-  
-  function checkDuplicates(role) {
-
-    jQuery.ajax({
-      url: '/potential_duplicates?id=<%= @person.id %>',
-
-      success: function (data) {
-        data = JSON.parse(data);
-        if (data && data.length > 0) {
-
-          //var msg = data.length + " potential duplicate(s) found"
-          var msg = "potential duplicate(s) found"
-          showMsg(msg, undefined, undefined, "window.location = window.location.href;");
-          
-          var delayMillis = 1000; //1 second
-
-          setTimeout(function() {
-            //your code to be executed after 1 second
-          }, delayMillis);
-
-          gotoDuplicates("<%= @person.id %>");
-
-        } else {
-          checkChild(role);
-        }
-      }
-    })
-  }
-
-  function checkChild(user_role) {
-    link = "window.location='/hq/approve_for_printing';";
-    //link = "window.location='/hq/view_cases';";
-
-    submitSummary(link, user_role);
-  }
-  
-  function gotoDuplicates(id) {
-    window.location='/duplicates/'+ id;
-  }
-
-  function addComment(action){
-  
-     showSpinner();
-      var parent = document.createElement("div");
-
-      var div = document.createElement("div");
-      div.style.height = "430px";
-      div.style.overflow = "auto";
-      div.style.border = "2px inset #eee";
-      div.style.borderRadius = "8px";
-      div.style.padding = "10px";
-      div.style.backgroundColor = "#eee";
-
-      parent.appendChild(div);
-
-      var table = document.createElement("table");
-      table.style.width = "100%";
-      table.style.fontSize = "14px";
-
-      div.appendChild(table);
-
-      var tbody = document.createElement("tbody");
-
-      table.appendChild(tbody);
-      msg = parent.innerHTML;
-
-      hideSpinner();
-
-      rejectComment(msg, action, "600px", "Reason For Reject Record");
-
-
-  }
-
-  function rejectComment(msg, action, width, title, noAction, height) {
-
-    showShield(undefined, true);
-
-    if (!__$("shield")) {
-
-      showShield(undefined, true);
-
-    }
-
-    var popup = document.createElement("div");
-    popup.id = "popup";
-    popup.style.position = "absolute";
-    popup.style.minHeight = (height == undefined ? "450px" : height);
-    popup.style.top = "20%";
-    popup.style.width = (width == undefined ? "330px" : width);
-    popup.style.left = ((window.innerWidth - 500) / 2) + "px";
-    popup.style.backgroundColor = "#eee";
-    popup.style.zIndex = 1300;
-    popup.style.border = "2px outset #eee";
-    popup.style.borderRadius = "8px";
-    popup.style.padding = "3px";
-
-    document.body.appendChild(popup);
-
-    var table = document.createElement("table");
-    table.width = "100%";
-    table.style.fontSize = "24px";
-
-    popup.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr1 = document.createElement("tr");
-    tr1.id = "header_row";
-
-    tbody.appendChild(tr1);
-
-    var th = document.createElement("th");
-    th.innerHTML = (title == undefined ? "Info" : title);
-    th.style.backgroundColor = "#345d8c";
-    th.id = "header_data";
-    th.style.color = "#fff";
-    th.style.borderTopLeftRadius = "8px";
-    th.style.borderTopRightRadius = "8px";
-    th.style.border = "1px outset #23538a !important";
-    th.colSpan = "3";
-    th.style.padding = "5px";
-    th.style.fontSize = "16px";
-
-    tr1.appendChild(th);
-
-    var tr2 = document.createElement("tr");
-    tr2.id = "content_row";
-
-    tbody.appendChild(tr2);
-
-    var td1_1 = document.createElement("td");
-    td1_1.id = "content_data";
-    td1_1.colSpan = "3";
-    td1_1.style.padding = "5px";
-    td1_1.style.paddingTop = "5px";
-    td1_1.style.paddingBottom = "5px";
-    td1_1.align = "center";
-    td1_1.innerHTML = msg;
-    td1_1.style.lineHeight = "120%";
-    td1_1.style.fontSize = "20px";
-
-    tr2.appendChild(td1_1);
-
-    var tr3 = document.createElement("tr");
-    tr3.id = "footer_row";
-
-    tbody.appendChild(tr3);
-
-    var td2_1 = document.createElement("td");
-    td2_1.align = "center";
-    td2_1.style.padding = "10px";
-
-    tr3.appendChild(td2_1);
-
-    var td2_2 = document.createElement("td");
-    td2_2.id = "footer_data";
-    td2_2.align = "center";
-    td2_2.style.padding = "10px";
-
-    tr3.appendChild(td2_2);
-
-    var btnReturn = document.createElement("button");
-    btnReturn.className = "green";
-    btnReturn.innerHTML = "Continue";
-    btnReturn.id = "reject"
-    btnReturn.style.cursor = "pointer";
-    btnReturn.style.fontSize = "14px";
-    btnReturn.style.minWidth = "120px";
-    btnReturn.style.minHeight = "20px";
-    btnReturn.style.padding = "6px";
-    btnReturn.style.margin = "10px";
-    btnReturn.style.fontWeight = "bold !important";
-    td2_2.appendChild(btnReturn);
-
-    var btnNo = document.createElement("button");
-    btnNo.className = "red";
-    btnNo.innerHTML = "Cancel";
-    btnNo.id = "cancel"
-    btnNo.style.cursor = "pointer";
-    btnNo.style.fontSize = "14px";
-    btnNo.style.minWidth = "120px";
-    btnNo.style.minHeight = "20px";
-    btnNo.style.padding = "6px";
-    btnNo.style.margin = "10px";
-    btnNo.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnNo);
-
-    
-
-
-    __$("header_data").innerHTML = "Rejecting Record"
-
-    data = __$("content_data");
-    data.innerHTML = "";
-
-    var parent = document.createElement("div");
-
-    var div = document.createElement("div");
-    div.style.height = "430px";
-    div.style.overflow = "auto";
-
-    parent.appendChild(div);
-
-    var table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.fontSize = "14px";
-
-    div.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr = document.createElement("tr");
-
-    tbody.appendChild(tr);
-
-    var td = document.createElement("td");
-    td.style.width = "200px";
-    td.style.verticalAlign = "top";
-    td.style.textAlign = "right";
-    td.style.paddingTop = "22px";
-    td.style.paddingRight = "0px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "Reason for rejection :";
-
-    var td = document.createElement("td");
-    td.style.padding = "10px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
-
-    data.appendChild(parent);
-
-    footer = __$("footer_data");
-
-    
-    __$("reject").innerHTML = "Continue";
-
-    btnReturn.onmousedown = function () {
-
-      value = document.getElementById('reason').value;
-      if (value == "" || value == 'Enter reason please') {
-        return
-      }
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      link = 'window.location="/hq/return_for_complete?id=<%= params[:id] %>&reason=' + value + '";'
-      eval(link);
-    }
-     btnNo.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      if (noAction != undefined) {
-
-        eval(noAction);
-
-      }
-
-    }
-  }
-
-
-
-  function submitSummary(action, user_role) {
-
-    showSpinner();
-
-    var msg = "";
-
-    var parent = document.createElement("div");
-
-    var div = document.createElement("div");
-    div.style.height = "490px";
-    div.style.overflow = "auto";
-    div.style.border = "2px inset #eee";
-    div.style.borderRadius = "8px";
-    div.style.padding = "10px";
-    div.style.backgroundColor = "#eee";
-
-    parent.appendChild(div);
-
-    var table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.fontSize = "14px";
-
-    div.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var keys = Object.keys(summaryHash);
-
-    for (var i = 0; i < keys.length; i++) {
-
-      var tr = document.createElement("tr");
-
-      tbody.appendChild(tr);
-
-      var td1 = document.createElement("th");
-      td1.style.textAlign = "right";
-      td1.style.padding = "5px";
-      td1.style.width = "250px";
-      td1.innerHTML = keys[i];
-
-      tr.appendChild(td1);
-
-      var td2 = document.createElement("td");
-      td2.innerHTML = ":";
-      td2.style.padding = "5px";
-
-      tr.appendChild(td2);
-
-      var td3 = document.createElement("td");
-      td3.style.padding = "5px";
-
-      var label = "";
-
-      for (var j = 0; j < summaryHash[keys[i]].length; j++) {
-
-        if (__$(summaryHash[keys[i]][j])) {
-
-          if (label.trim().length > 0) {
-
-            label = label.trim() + " " + __$(summaryHash[keys[i]][j]).innerHTML;
-
-          } else {
-            label = __$(summaryHash[keys[i]][j]).innerHTML.trim();
-
-          }
-
-        }
-
-      }
-
-      label = (label.trim) ? label.trim() : label.replace(/^\s+/, '');
-
-      if (label == '')
-      label = "<span class='blank'>N/A</span>"
-
-      if (keys[i].match(/weight/i))
-      label = label + " Kg"
-
-
-      td3.innerHTML = label;
-
-      tr.appendChild(td3);
-
-    }
-
-    var pos = checkCtrl(parent);
-
-    msg = parent.innerHTML;
-
-    hideSpinner();
-
-    showMsgForAction(msg, action, "600px", "Data Completeness Check");
-
-  }
-  
-  
-  
-  function rejectMsgForAction(msg, action, width, title, noAction, height) {
-    showShield(undefined, true);
-
-    if (!__$("shield")) {
-
-      showShield(undefined, true);
-
-    }
-
-    var popup = document.createElement("div");
-    popup.id = "popup";
-    popup.style.position = "absolute";
-    popup.style.minHeight = (height == undefined ? "450px" : height);
-    popup.style.top = "20%";
-    popup.style.width = (width == undefined ? "330px" : width);
-    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-    popup.style.backgroundColor = "#eee";
-    popup.style.zIndex = 1300;
-    popup.style.border = "2px outset #eee";
-    popup.style.borderRadius = "8px";
-    popup.style.padding = "3px";
-
-    document.body.appendChild(popup);
-
-    var table = document.createElement("table");
-    table.width = "100%";
-    table.style.fontSize = "24px";
-
-    popup.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr1 = document.createElement("tr");
-    tr1.id = "header_row";
-
-    tbody.appendChild(tr1);
-
-    var th = document.createElement("th");
-    th.innerHTML = (title == undefined ? "Info" : title);
-    th.style.backgroundColor = "#345d8c";
-    th.id = "header_data";
-    th.style.color = "#fff";
-    th.style.borderTopLeftRadius = "8px";
-    th.style.borderTopRightRadius = "8px";
-    th.style.border = "1px outset #23538a !important";
-    th.colSpan = "3";
-    th.style.padding = "5px";
-    th.style.fontSize = "16px";
-
-    tr1.appendChild(th);
-
-    var tr2 = document.createElement("tr");
-    tr2.id = "content_row";
-
-    tbody.appendChild(tr2);
-
-    var td1_1 = document.createElement("td");
-    td1_1.id = "content_data";
-    td1_1.colSpan = "3";
-    td1_1.style.padding = "5px";
-    td1_1.style.paddingTop = "5px";
-    td1_1.style.paddingBottom = "5px";
-    td1_1.align = "center";
-    td1_1.innerHTML = msg;
-    td1_1.style.lineHeight = "120%";
-    td1_1.style.fontSize = "20px";
-
-    tr2.appendChild(td1_1);
-
-    var tr3 = document.createElement("tr");
-    tr3.id = "footer_row";
-
-    tbody.appendChild(tr3);
-
-    var td2_1 = document.createElement("td");
-    td2_1.align = "center";
-    td2_1.style.padding = "10px";
-
-    tr3.appendChild(td2_1);
-
-    var td2_2 = document.createElement("td");
-    td2_2.id = "footer_data";
-    td2_2.align = "center";
-    td2_2.style.padding = "10px";
-
-    tr3.appendChild(td2_2);
-
-    var btnNo = document.createElement("button");
-    btnNo.className = "red";
-    btnNo.innerHTML = "No";
-    btnNo.id = "cancel"
-    btnNo.style.cursor = "pointer";
-    btnNo.style.fontSize = "14px";
-    btnNo.style.minWidth = "120px";
-    btnNo.style.minHeight = "20px";
-    btnNo.style.padding = "6px";
-    btnNo.style.margin = "10px";
-    btnNo.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnNo);
-
-    var btnYes = document.createElement("button");
-    btnYes.className = "green";
-    btnYes.innerHTML = "Yes";
-    btnYes.id = 'approve';
-    btnYes.style.cursor = "pointer";
-    btnYes.style.fontSize = "14px";
-    btnYes.style.minWidth = "120px";
-    btnYes.style.minHeight = "20px";
-    btnYes.style.padding = "6px";
-    btnYes.style.margin = "10px";
-    btnYes.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnYes);
-
-    btnYes.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-      if(title=="Birth Certificate Dispatch"){
-         selectPrinter();
-      }
-      else if(title == "Birth Certificate Printed View") {
-       window.location=action;
-      }else if(title == "Re-Approve Record") {
-        eval(action);
-      }else{
-         addComment(action);
-        //eval(action);
-      }
-
-    }
-
- 
-    btnNo.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      if (noAction != undefined) {
-
-        eval(noAction);
-
-      }
-
-    }
-
-    if (__$("popup")) {
-
-      var c = checkCtrl(__$("popup"));
-
-      // [w, h, t, l]
-
-      if (c[1] > 240) {
-
-        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
-
-      }
-
-      if (c[0] > 330) {
-
-        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
-
-      }
-
-    }
-  }
-  
-  
-  
-  
-  function showMsgForAction(msg, action, width, title, noAction, height) {
-
-    showShield(undefined, true);
-
-    if (!__$("shield")) {
-
-      showShield(undefined, true);
-
-    }
-
-    var popup = document.createElement("div");
-    popup.id = "popup";
-    popup.style.position = "absolute";
-    popup.style.minHeight = (height == undefined ? "450px" : height);
-    popup.style.top = "20%";
-    popup.style.width = (width == undefined ? "330px" : width);
-    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-    popup.style.backgroundColor = "#eee";
-    popup.style.zIndex = 1300;
-    popup.style.border = "2px outset #eee";
-    popup.style.borderRadius = "8px";
-    popup.style.padding = "3px";
-
-    document.body.appendChild(popup);
-
-    var table = document.createElement("table");
-    table.width = "100%";
-    table.style.fontSize = "24px";
-
-    popup.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr1 = document.createElement("tr");
-    tr1.id = "header_row";
-
-    tbody.appendChild(tr1);
-
-    var th = document.createElement("th");
-    th.innerHTML = (title == undefined ? "Info" : title);
-    th.style.backgroundColor = "#345d8c";
-    th.id = "header_data";
-    th.style.color = "#fff";
-    th.style.borderTopLeftRadius = "8px";
-    th.style.borderTopRightRadius = "8px";
-    th.style.border = "1px outset #23538a !important";
-    th.colSpan = "3";
-    th.style.padding = "5px";
-    th.style.fontSize = "16px";
-
-    tr1.appendChild(th);
-
-    var tr2 = document.createElement("tr");
-    tr2.id = "content_row";
-
-    tbody.appendChild(tr2);
-
-    var td1_1 = document.createElement("td");
-    td1_1.id = "content_data";
-    td1_1.colSpan = "3";
-    td1_1.style.padding = "5px";
-    td1_1.style.paddingTop = "5px";
-    td1_1.style.paddingBottom = "5px";
-    td1_1.align = "center";
-    td1_1.innerHTML = msg;
-    td1_1.style.lineHeight = "120%";
-    td1_1.style.fontSize = "20px";
-
-    tr2.appendChild(td1_1);
-
-    var tr3 = document.createElement("tr");
-    tr3.id = "footer_row";
-
-    tbody.appendChild(tr3);
-
-    var td2_1 = document.createElement("td");
-    td2_1.align = "center";
-    td2_1.style.padding = "10px";
-
-    tr3.appendChild(td2_1);
-
-    var td2_2 = document.createElement("td");
-    td2_2.id = "footer_data";
-    td2_2.align = "center";
-    td2_2.style.padding = "10px";
-
-    tr3.appendChild(td2_2);
-
-    var btnNo = document.createElement("button");
-    btnNo.className = "red";
-    btnNo.innerHTML = "Cancel";
-    btnNo.id = "cancel"
-    btnNo.style.cursor = "pointer";
-    btnNo.style.fontSize = "14px";
-    btnNo.style.minWidth = "120px";
-    btnNo.style.minHeight = "20px";
-    btnNo.style.padding = "6px";
-    btnNo.style.margin = "10px";
-    btnNo.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnNo);
-
-    var btnReturn = document.createElement("button");
-    btnReturn.className = "blue";
-    btnReturn.innerHTML = "Reject";
-    btnReturn.id = "reject"
-    btnReturn.style.cursor = "pointer";
-    btnReturn.style.fontSize = "14px";
-    btnReturn.style.minWidth = "120px";
-    btnReturn.style.minHeight = "20px";
-    btnReturn.style.padding = "6px";
-    btnReturn.style.margin = "10px";
-    btnReturn.style.fontWeight = "bold !important";
-
-
-    btnReturn.style.display = "none";
-
-
-    td2_2.appendChild(btnReturn);
-
-    var btnIncomplete = document.createElement("button");
-    btnIncomplete.className = "blue";
-    btnIncomplete.innerHTML = "Record Incomplete";
-    btnIncomplete.id = "incomplete"
-    btnIncomplete.style.cursor = "pointer";
-    btnIncomplete.style.fontSize = "14px";
-    btnIncomplete.style.minWidth = "120px";
-    btnIncomplete.style.minHeight = "20px";
-    btnIncomplete.style.padding = "6px";
-    btnIncomplete.style.margin = "10px";
-    btnIncomplete.style.fontWeight = "bold !important";
-
-
-    btnIncomplete.style.display = "none";
-
-
-    td2_2.appendChild(btnIncomplete);
-
-    var btnYes = document.createElement("button");
-    btnYes.className = "green";
-    btnYes.innerHTML = "Record Complete";
-    btnYes.id = 'approve';
-    btnYes.style.cursor = "pointer";
-    btnYes.style.fontSize = "14px";
-    btnYes.style.minWidth = "120px";
-    btnYes.style.minHeight = "20px";
-    btnYes.style.padding = "6px";
-    btnYes.style.margin = "10px";
-    btnYes.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnYes);
-
-    btnYes.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      window.location = '/children/approve?id=<%=params[:id]%>';
-
-    }
-
-
-    btnYes.style.display = "none";
-
-
-    btnReturn.onmousedown = function () {
-
-      reloadData();
-
-    }
-
-    btnIncomplete.onmousedown = function () {
-
-      reloadIncompleteData(true);
-
-    }
-
-    btnNo.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      if (noAction != undefined) {
-
-        eval(noAction);
-
-      }
-
-    }
-
-    if (__$("popup")) {
-
-      var c = checkCtrl(__$("popup"));
-
-      // [w, h, t, l]
-
-      if (c[1] > 240) {
-
-        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
-
-      }
-
-      if (c[0] > 330) {
-
-        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
-
-      }
-
-    }
-
-      btnIncomplete.style.display = "";
-      btnIncomplete.style.float = "left";
-      btnYes.style.display = "";
-      btnYes.style.float = "left";
-      btnNo.style.float = "right";
-      btnYes.setAttribute("onmousedown", "window.location='/approve_incomplete/<%= params[:id]%>'")
-      btnIncomplete.setAttribute("onmousedown", "reloadIncompleteData(false);")
-  }
-  
-  
-  function showMsgForAdoptedAction(msg, action, width, title, noAction, height) {
-
-    showShield(undefined, true);
-
-    if (!__$("shield")) {
-
-      showShield(undefined, true);
-
-    }
-
-    var popup = document.createElement("div");
-    popup.id = "popup";
-    popup.style.position = "absolute";
-    popup.style.minHeight = (height == undefined ? "450px" : height);
-    popup.style.top = "20%";
-    popup.style.width = (width == undefined ? "330px" : width);
-    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-    popup.style.backgroundColor = "#eee";
-    popup.style.zIndex = 1300;
-    popup.style.border = "2px outset #eee";
-    popup.style.borderRadius = "8px";
-    popup.style.padding = "3px";
-
-    document.body.appendChild(popup);
-
-    var table = document.createElement("table");
-    table.width = "100%";
-    table.style.fontSize = "24px";
-
-    popup.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr1 = document.createElement("tr");
-    tr1.id = "header_row";
-
-    tbody.appendChild(tr1);
-
-    var th = document.createElement("th");
-    th.innerHTML = (title == undefined ? "Info" : title);
-    th.style.backgroundColor = "#345d8c";
-    th.id = "header_data";
-    th.style.color = "#fff";
-    th.style.borderTopLeftRadius = "8px";
-    th.style.borderTopRightRadius = "8px";
-    th.style.border = "1px outset #23538a !important";
-    th.colSpan = "3";
-    th.style.padding = "5px";
-    th.style.fontSize = "16px";
-
-    tr1.appendChild(th);
-
-    var tr2 = document.createElement("tr");
-    tr2.id = "content_row";
-
-    tbody.appendChild(tr2);
-
-    var td1_1 = document.createElement("td");
-    td1_1.id = "content_data";
-    td1_1.colSpan = "3";
-    td1_1.style.padding = "5px";
-    td1_1.style.paddingTop = "5px";
-    td1_1.style.paddingBottom = "5px";
-    td1_1.align = "center";
-    td1_1.innerHTML = msg;
-    td1_1.style.lineHeight = "120%";
-    td1_1.style.fontSize = "20px";
-
-    tr2.appendChild(td1_1);
-
-    var tr3 = document.createElement("tr");
-    tr3.id = "footer_row";
-
-    tbody.appendChild(tr3);
-
-    var td2_1 = document.createElement("td");
-    td2_1.align = "center";
-    td2_1.style.padding = "10px";
-
-    tr3.appendChild(td2_1);
-
-    var td2_2 = document.createElement("td");
-    td2_2.id = "footer_data";
-    td2_2.align = "center";
-    td2_2.style.padding = "10px";
-
-    tr3.appendChild(td2_2);
-
-    var btnNo = document.createElement("button");
-    btnNo.className = "red";
-    btnNo.innerHTML = "Cancel";
-    btnNo.id = "cancel"
-    btnNo.style.cursor = "pointer";
-    btnNo.style.fontSize = "14px";
-    btnNo.style.minWidth = "120px";
-    btnNo.style.minHeight = "20px";
-    btnNo.style.padding = "6px";
-    btnNo.style.margin = "10px";
-    btnNo.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnNo);
-
-    var btnReturn = document.createElement("button");
-    btnReturn.className = "green";
-    btnReturn.innerHTML = "Yes";
-    btnReturn.id = "reject"
-    btnReturn.style.cursor = "pointer";
-    btnReturn.style.fontSize = "14px";
-    btnReturn.style.minWidth = "120px";
-    btnReturn.style.minHeight = "20px";
-    btnReturn.style.padding = "6px";
-    btnReturn.style.margin = "10px";
-    btnReturn.style.fontWeight = "bold !important";
-
-
-    btnReturn.style.display = "none";
-
-
-    td2_2.appendChild(btnReturn);
-
-    var btnIncomplete = document.createElement("button");
-    btnIncomplete.className = "blue";
-    btnIncomplete.innerHTML = "Record Incomplete";
-    btnIncomplete.id = "incomplete"
-    btnIncomplete.style.cursor = "pointer";
-    btnIncomplete.style.fontSize = "14px";
-    btnIncomplete.style.minWidth = "120px";
-    btnIncomplete.style.minHeight = "20px";
-    btnIncomplete.style.padding = "6px";
-    btnIncomplete.style.margin = "10px";
-    btnIncomplete.style.fontWeight = "bold !important";
-
-
-    btnIncomplete.style.display = "none";
-
-
-    td2_2.appendChild(btnIncomplete);
-
-    var btnYes = document.createElement("button");
-    btnYes.className = "green";
-    btnYes.innerHTML = "Record Complete";
-    btnYes.id = 'approve';
-    btnYes.style.cursor = "pointer";
-    btnYes.style.fontSize = "14px";
-    btnYes.style.minWidth = "120px";
-    btnYes.style.minHeight = "20px";
-    btnYes.style.padding = "6px";
-    btnYes.style.margin = "10px";
-    btnYes.style.fontWeight = "bold !important";
-
-    td2_2.appendChild(btnYes);
-
-    btnReturn.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      window.location = '/approve_adopted?id=<%=params[:id]%>';
-
-    }
-
-
-    btnYes.style.display = "none";
-
-
-    btnIncomplete.onmousedown = function () {
-
-      reloadIncompleteData(true);
-
-    }
-
-    btnNo.onmousedown = function () {
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-      if (noAction != undefined) {
-
-        eval(noAction);
-
-      }
-
-    }
-
-    if (__$("popup")) {
-
-      var c = checkCtrl(__$("popup"));
-
-      // [w, h, t, l]
-
-      if (c[1] > 240) {
-
-        __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
-
-      }
-
-      if (c[0] > 330) {
-
-        __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
-
-      }
-
-    }
-    
-  }
-
-  function reloadData() {
-
-    __$("header_data").innerHTML = "Rejecting Record"
-
-    data = __$("content_data");
-    data.innerHTML = "";
-
-    var parent = document.createElement("div");
-
-    var div = document.createElement("div");
-    div.style.height = "430px";
-    div.style.overflow = "auto";
-
-    parent.appendChild(div);
-
-    var table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.fontSize = "14px";
-
-    div.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr = document.createElement("tr");
-
-    tbody.appendChild(tr);
-
-    var td = document.createElement("td");
-    td.style.width = "200px";
-    td.style.verticalAlign = "top";
-    td.style.textAlign = "right";
-    td.style.paddingTop = "22px";
-    td.style.paddingRight = "0px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "Reason for rejection :";
-
-    var td = document.createElement("td");
-    td.style.padding = "10px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
-
-    data.appendChild(parent);
-
-    footer = __$("footer_data");
-
-    __$("approve").style.display = "none";
-    __$("reject").innerHTML = "Continue";
-
-    __$("reject").onmousedown = function () {
-
-      value = document.getElementById('reason').value;
-      if (value == "" || value == 'Enter reason please') {
-        return
-      }
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-
-      link = 'window.location="/hq/return_for_complete?id=<%= params[:id] %>&reason=' + value + '";'
-      eval(link);
-    }
-
-  }
-
-  function reloadIncompleteData(check) {
-
-    __$("header_data").innerHTML = (check ? "Flagging Incomplete Record" : "Confirming Incomplete Record")
-
-    data = __$("content_data");
-    data.innerHTML = "";
-
-    var parent = document.createElement("div");
-
-    var div = document.createElement("div");
-    div.style.height = "430px";
-    div.style.overflow = "auto";
-
-    parent.appendChild(div);
-
-    var table = document.createElement("table");
-    table.style.width = "100%";
-    table.style.fontSize = "14px";
-
-    div.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr = document.createElement("tr");
-
-    tbody.appendChild(tr);
-
-    var td = document.createElement("td");
-    td.style.width = "200px";
-    td.style.verticalAlign = "top";
-    td.style.textAlign = "right";
-    td.style.paddingTop = "22px";
-    td.style.paddingRight = "0px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "Reason for flagging :";
-
-    var td = document.createElement("td");
-    td.style.padding = "10px";
-
-    tr.appendChild(td);
-
-    td.innerHTML = "<textarea id='reason' rows=15 cols=40 style='font-size:14px; padding: 10px;' placeholder='Enter reason please' ></textarea>";
-
-    data.appendChild(parent);
-
-    footer = __$("footer_data");
-
-    __$("approve").style.display = "none";
-    __$("incomplete").innerHTML = "Continue";
-
-    __$("incomplete").onmousedown = function () {
-
-      value = document.getElementById('reason').value;
-      if (value == "" || value == 'Enter reason please') {
-        return
-      }
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-
-      link = 'window.location="/hq/return_for_incomplete?id=<%= params[:id] %>&reason=' + value + '";'
-      eval(link);
-    }
-
-  }
-
-  function showMsg(msg, height, width, action) {
-
-    showShield(undefined, true);
-
-    if (!__$("shield")) {
-
-      showShield(undefined, true);
-
-    }
-
-    var popup = document.createElement("div");
-    popup.id = "popup";
-    popup.style.position = "absolute";
-    popup.style.minHeight = (height == undefined ? "150px" : height);
-    popup.style.top = "20%";
-    popup.style.width = (width == undefined ? "330px" : width);
-    popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-    popup.style.backgroundColor = "#eee";
-    popup.style.zIndex = 1300;
-    popup.style.border = "2px outset #eee";
-    popup.style.borderRadius = "8px";
-    popup.style.padding = "3px";
-
-    document.body.appendChild(popup);
-
-    var table = document.createElement("table");
-    table.width = "100%";
-    table.style.fontSize = "14px";
-
-    popup.appendChild(table);
-
-    var tbody = document.createElement("tbody");
-
-    table.appendChild(tbody);
-
-    var tr1 = document.createElement("tr");
-
-    tbody.appendChild(tr1);
-
-    var th = document.createElement("th");
-    th.innerHTML = "Info";
-    th.style.backgroundColor = "#345d8c";
-    th.style.color = "#fff";
-    th.style.borderTopLeftRadius = "8px";
-    th.style.borderTopRightRadius = "8px";
-    th.colSpan = "2";
-    th.style.padding = "5px";
-
-    tr1.appendChild(th);
-
-    var tr2 = document.createElement("tr");
-
-    tbody.appendChild(tr2);
-
-    var td1_1 = document.createElement("td");
-    td1_1.colSpan = "2";
-    td1_1.style.padding = "5px";
-    td1_1.style.paddingTop = "15px";
-    td1_1.style.paddingBottom = "15px";
-    td1_1.align = "center";
-    td1_1.innerHTML = msg;
-    td1_1.style.lineHeight = "120%";
-    td1_1.style.fontSize = "14px";
-
-    tr2.appendChild(td1_1);
-
-    var tr3 = document.createElement("tr");
-
-    tbody.appendChild(tr3);
-
-    var td2_2 = document.createElement("td");
-    td2_2.align = "center";
-    td2_2.style.padding = "10px";
-    td2_2.colSpan = "2";
-
-    tr3.appendChild(td2_2);
-
-    var btnYes = document.createElement("button");
-    btnYes.className = "blue";
-    btnYes.innerHTML = "OK";
-    btnYes.style.width = "50px";
-    btnYes.style.cursor = "pointer";
-    btnYes.style.fontSize = "14px";
-    btnYes.style.minHeight = "30px";
-    btnYes.setAttribute("act", action);
-
-    td2_2.appendChild(btnYes);
-
-    btnYes.onmousedown = function () {
-
-      if(this.getAttribute("act") != null){
-
-        eval(this.getAttribute("act"));
-
-      }
-
-      if (__$("popup")) {
-
-        document.body.removeChild(__$("popup"));
-
-      }
-
-      if (__$("shield")) {
-
-        document.body.removeChild(__$("shield"));
-
-      }
-
-    }
-
-  }
-
-  setTimeout(function () {
-    var oldHandler = resize;
-
-    resize = function (e) {
-
-      if (oldHandler) {
-
-        oldHandler();
-
-        if (__$("stats")) {
-
-          __$("stats").style.height = (window.innerHeight - 180) + "px";
-
-        }
-
-      }
-
-    }
-
-    resize();
-
-  }, 50);
-
-  function confirmCompleteness()
-  {
-      showMsgForAction("Verify completeness of record","","500px","Verify Completeness",'',"150px")
-  }
-
-  function showCommentsModal(){
-    childID = '<%= params[:id] %>';
-    jQuery.ajax({
-      type: "POST",
-      url: "/children/show_incompleteness_messages",
-      data: "id=" + childID,
-      success: function(result){
-        __$('myModalContent').innerHTML = result;
-      }
-
-    });
-    $('#myModal').modal('show');
-  }
-  function showvoidCommentsModal(){
-      childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myModal').modal('show');
-  }
-  function showRejectCommentsModal(){
-    childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myModalContentThree').innerHTML = result;
-        }
-
-      });
-      $('#myModal').modal('show');
-  }
-  
-  
-  function showApproveDSCommentsModal(){
-    childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myDsSpecialApprovedModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myDsSpecialApprovedModal').modal('show');
-  }
-  
-  function showDsAdrCommentsModal(){
-    childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myDsAdrCommentsModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myDsAdrCommentsModal').modal('show');
-  }
-  
-  
-  function messages(){
-
-  }
-  function selectPrinter(){
-        //__$("printer_name").value = '';
-        $(".printer_radio_button").prop( "checked", false );//Uncheck printer
-        $('#printerModal').modal('show');
-      }
-  function updateValue(obj){
-      obj.getElementsByTagName('input')[0].checked = true
-      dispatch_action = link+"&printer="+obj.getAttribute('value')+"';"
-  }
-  function submitForm(){
-    console.log(dispatch_action);
-    eval(dispatch_action);
-  }
-  function showDMCommentModal(id){
-        jQuery.ajax({
-        type: "GET",
-        url: "/children/show_incompleteness_messages_approved",
-        data: "id=" + id,
-        success: function(result){
-          __$('dmCommentModalContent').innerHTML = result;
-        }
-
-        });
-        $('#dmCommentModal').modal('show');
-    }
-    
-  function showDsCommentModal(id){
-        jQuery.ajax({
-        type: "GET",
-        url: "/children/show_incompleteness_messages_approved",
-        data: "id=" + id,
-        success: function(result){
-          __$('dsCommentModalContent').innerHTML = result;
-        }
-
-        });
-        $('#dsCommentModal').modal('show');
-    }  
-    
- function showDmGrantCommentModal(){
-        childID = '<%= params[:id] %>';
-        jQuery.ajax({
-        type: "GET",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('dmGrantCommentModalContent').innerHTML = result;
-        }
-
-        });
-        $('#dmGrantCommentModal').modal('show');
-    } 
-
-  function showDmReprintCommentModal(){
-        childID = '<%= params[:id] %>';
-        jQuery.ajax({
-        type: "GET",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('dmReprintCommentModalContent').innerHTML = result;
-        }
-
-        });
-        $('#dmReprintCommentModal').modal('show');
-    }   
-    
-  function showDmConflictCommentModal(){
-        childID = '<%= params[:id] %>';
-        jQuery.ajax({
-        type: "GET",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('dmConflictCommentModalContent').innerHTML = result;
-        }
-
-        });
-        $('#dmConflictCommentModal').modal('show');
-    }  
-    
-    
-    function showVoidDSCommentsModal(){
-      childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myVoidModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myVoidModal').modal('show');
-  }
-  
-  function showReApprovedDSCommentsModal(){
-      childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myReApprovedModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myReApprovedModal').modal('show');
-  }
-  
-  function showDMRejectedCommentsModal(){
-      childID = '<%= params[:id] %>';
-      jQuery.ajax({
-        type: "POST",
-        url: "/children/show_incompleteness_messages",
-        data: "id=" + childID,
-        success: function(result){
-          __$('myDMRejectedModalContent').innerHTML = result;
-        }
-
-      });
-      $('#myDMRejectedModal').modal('show');
-  }
-
-
 </script>
+
+<style>
+  .btn{
+    margin-left: 5px;
+      margin-right: 5px;
+  }
+</style>

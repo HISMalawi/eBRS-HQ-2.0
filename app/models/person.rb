@@ -47,4 +47,15 @@ class Person < ActiveRecord::Base
     result
   end
 
+  def citizenship
+    adr = PersonAddress.where(person_id: self.id).last
+    loc_name = Location.find(adr.citizenship).name  rescue nil
+    loc_name
+  end
+
+  def name
+    name = self.person_names.last
+    "#{name.first_name} #{name.middle_name} #{name.last_name}".gsub(/\s+/, ' ')
+  end
+
 end
