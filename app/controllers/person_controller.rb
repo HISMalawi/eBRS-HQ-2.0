@@ -83,6 +83,11 @@ class PersonController < ApplicationController
     @core_person = CorePerson.find(params[:person_id])
     @person = @core_person.person
 
+    @status = PersonRecordStatus.status(@person.id)
+    if ["HQ-POTENTIAL DUPLICATE-TBA"].include? @status
+        redirect_to "/person/duplicate?person_id=#{@person.id}"
+    end
+
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
     @address = @person.addresses.last
@@ -554,5 +559,75 @@ class PersonController < ApplicationController
     @section = "Manage duplicate"
     render :template => "/person/tasks"
   end
+  def duplicate
+    @section = "Resolve Duplicates"
+    @potential_duplicate =  person_details(params[:person_id])
+    @potential_records = PotentialDuplicate.where(:person_id => (params[:person_id].to_i)).last
+    @similar_records = []
+    @potential_records.duplicate_records.each do |record|
+      @similar_records << person_details(record.person_id)
+    end
+  end
 
+  def person_details(id)
+
+    person_mother_id = PersonRelationType.find_by_name("Mother").id
+    person_father_id = PersonRelationType.find_by_name("Father").id
+    informant_type_id = PersonType.find_by_name("Informant").id
+
+    relations = PersonRelationship.find_by_sql(['select * from person_relationship where person_a = ?', id]).map(&:person_b)
+    informant_id = CorePerson.find_by_sql(['select * from core_person
+                    where person_type_id = ?
+                    and person_id in (?)',informant_type_id, relations]).map(&:person_id)
+
+    #raise @informant.inspect
+
+    person_mother_relation = PersonRelationship.find_by_sql(["select * from person_relationship where person_a = ? and person_relationship_type_id = ?",params[:id], person_mother_id])
+    mother_id = person_mother_relation.map{|relation| relation.person_b} #rescue nil
+    father_id = PersonRelationship.where(person_a: id,
+                                          person_relationship_type_id: person_father_id).first.person_b rescue nil
+
+    person_name = PersonName.find_by_person_id(id)
+    person = Person.find(id)
+    core_person = CorePerson.find(id)
+    birth_details = PersonBirthDetail.find_by_person_id(id)
+    person_record_status = PersonRecordStatus.where(:person_id => id).last
+    person_status = person_record_status.status.name rescue nil
+
+    actions = ActionMatrix.read_actions(User.current.user_role.role.role, [person_status]) rescue nil
+
+    mother = Person.find(mother_id)
+    mother_name = PersonName.find_by_person_id(mother_id)
+    father_name = PersonName.find_by_person_id(father_id)
+    mother_address = PersonAddress.find_by_person_id(mother_id)
+
+
+    informant = Person.find(informant_id)
+    informant_name = PersonName.find_by_person_id(informant_id)
+
+    person = {
+              id: person.id,
+              first_name: person_name.first_name,
+              last_name: person_name.last_name,
+              middle_name: person_name.middle_name,
+              birth_entry_number: (birth_details.district_id_number rescue "XXXXXXXXXX"),
+              birth_registration_number: (birth_details.national_serial_number rescue "XXXXXXXXXX"),
+              birthdate: person.birthdate,
+              gender: person.gender,
+              status: person_status,
+              hospital_of_birth: (Location.find(birth_details.birth_location_id).name rescue nil),
+              birth_address: (person.birth_address rescue nil),
+              village_of_birth: (person.birth_village rescue nil),
+              ta_of_birth: (person.birth_ta rescue nil),
+              district_of_birth: (person.birth_district rescue nil),
+              mother_first_name: (mother_name.first_name rescue nil),
+              mother_last_name:(mother_name.last_name rescue nil),
+              mother_middle_name: (mother_name.middle_name rescue nil),
+              father_first_name: (father_name.first_name rescue nil),
+              father_last_name: (father_name.last_name rescue nil),
+              father_middle_name: (father_name.middle_name rescue nil)
+    }
+    return person
+    
+  end
 end
