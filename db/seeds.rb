@@ -30,7 +30,7 @@ def create_user
 
   puts "Creating User"
 
-  user = User.create!(username: 'admin', 
+  user = User.create!(username: "admin_#{SETTINGS['location_id']}",
                       password_hash: 'adminebrs', 
                       creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
                       person_id: core_person.person_id)
@@ -63,7 +63,7 @@ begin
       require Rails.root.join('db','load_person_attribute_types.rb')
       require Rails.root.join('db','load_person_identifier_types.rb')
       require Rails.root.join('db','load_birth_registration_type.rb')
-      require Rails.root.join('db','load_couch_data.rb')
+      #require Rails.root.join('db','load_couch_data.rb') #This will be handled by metadata
       create_user
     end
 rescue => e

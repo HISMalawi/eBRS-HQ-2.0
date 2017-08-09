@@ -41,7 +41,7 @@
     .fix-middle{
         position: fixed;
         z-index: 2000;
-        left: 45%;
+        left: 55%;
         top: 40%;
     }
 
@@ -165,15 +165,46 @@
 </div>
 
 
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header" style="background: #006f95 none repeat scroll 0 0;padding: 12px;" >
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Select Printer
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="printers">
+            <%
+               @available_printers = SETTINGS["printer_name"].split('|')
+               @available_printers.each do |printer| %>
+                <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                  <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                  <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+                </tr>
+            <% end %>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="submitForm();">Okay</button>
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-    selected = []
+    selected = [];
 
     $i(document).ready(function() {
         $i('#example').DataTable();
     } );
 
     function printAll() {
-        window.location = "/print_preview?person_ids=" + selected.join(',')
+        jQuery("#printerModal").modal("show");
     }
 
     function dispatchAll(){
@@ -185,7 +216,19 @@
                 'status' : 'HQ-DISPATCHED'
             },
             success: function(result){
-                window.location = window.location
+                jQuery.ajax({
+                    url: "/print_dispatched_certificates?person_ids=",
+                    method: 'POST',
+                    data: {
+                        'person_ids' : selected.join(',')
+                    },
+                    success: function(result){
+                        window.location = '<%=session['list_url']%>'
+                    },
+                    error: function(){
+                        alert("Something went wrong!!")
+                    }
+                });
             },
             error: function(error){
                 alert("Something went wrong!")
@@ -227,6 +270,21 @@
         }
         checkSelections();
     }
+
+    printer_name = ""
+
+    function updateValue(obj){
+        printer_name = obj.getAttribute('value');
+    }
+
+    function submitForm(){
+        if (printer_name.length == 0){
+            alert("Please select a printer");
+        }else {
+            window.location = "/print?person_ids=" + selected.join(',') + "&printer_name=" + printer_name;
+        }
+    }
+
     checkSelections();
 
 </script>
