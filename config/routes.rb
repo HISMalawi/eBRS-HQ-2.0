@@ -83,6 +83,8 @@ Rails.application.routes.draw do
 
   get "person/duplicate"
 
+  get "/duplicate_processing/:id" =>"person#duplicate_processing"
+
   post 'person/create'
 
   post '/application/get_registration_type'

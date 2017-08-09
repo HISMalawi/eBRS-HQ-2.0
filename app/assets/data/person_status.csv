@@ -31,3 +31,4 @@ HQ,DUPLICATE,VOIDED,HQ-VOIDED,A voided record at HQ
 HQ,DC OPEN,GRANTED,DC-GRANTED,Deprecated
 HQ,DC OPEN,REJECTED,DC-REJECTED,A record that has finally been rejected at HQ
 HQ,HQ OPEN,POTENTIAL DUPLICATE,HQ-POTENTIAL DUPLICATE,A record that has been marked as a potential duplicate at HQ
+HQ,HQ OPEN,,HQ-DUPLICATE,A confirmed as a duplicate by DS

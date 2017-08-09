@@ -84,8 +84,8 @@ class PersonController < ApplicationController
     @person = @core_person.person
 
     @status = PersonRecordStatus.status(@person.id)
-    if ["HQ-POTENTIAL DUPLICATE-TBA"].include? @status
-        redirect_to "/person/duplicate?person_id=#{@person.id}"
+    if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
+        redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
     end
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
@@ -538,10 +538,11 @@ class PersonController < ApplicationController
 
   def get_comments
     @statuses = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ").order('created_at')
+  
     @comments = []
 
     @statuses.each do |audit|
-      user = User.find(audit.creator)
+      user = User.find(audit.creator) rescue User.first
       name = PersonName.where(person_id: user.person_id).last
       user_name = (name.first_name + " " + name.last_name)
       ago = ""
@@ -656,10 +657,10 @@ class PersonController < ApplicationController
   def duplicates_menu
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE","HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"],
+              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
               ["Approved for printing","Approved for printing" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
               ["Voided Records","Voided Records" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"]
             ]
@@ -667,12 +668,72 @@ class PersonController < ApplicationController
     render :template => "/person/tasks"
   end
   def duplicate
-    @section = "Resolve Duplicates"
+    @section = "Manage Duplicates"
+    @operation = "Resolve"
     @potential_duplicate =  person_details(params[:person_id])
     @potential_records = PotentialDuplicate.where(:person_id => (params[:person_id].to_i)).last
     @similar_records = []
+    @comments = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ")
     @potential_records.duplicate_records.each do |record|
       @similar_records << person_details(record.person_id)
+    end
+  end
+
+  def duplicate_processing
+    if params[:operation] =="Resolve"
+         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+         if potential_records.present?
+            if params[:decision] == "NOT DUPLICATE"
+              PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
+            else
+
+                potential_records.resolved = 1
+                potential_records.decision = params[:decision]
+                potential_records.comment = params[:comment]
+                potential_records.resolved_at = Time.now
+                potential_records.save
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
+
+            end
+        end
+        redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Potential Duplicate"
+
+    elsif params[:operation] == "Confirm-duplicate"
+        potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+        if potential_records.present?
+            if params[:decision] == "NOT DUPLICATE"
+                potential_records.resolved = 1
+                potential_records.decision = params[:decision]
+                potential_records.comment = params[:comment]
+                potential_records.resolved_at = Time.now
+                potential_records.save
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
+            else
+               PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
+            end
+        end
+        redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
+
+    elsif params[:operation] == "Re-Confirm-duplicate"
+        potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+         if potential_records.present?
+            potential_records.resolved = 1
+            potential_records.decision = params[:decision]
+            potential_records.comment = params[:comment]
+            potential_records.resolved_at = Time.now
+            potential_records.save
+            if params[:decision] == "NOT DUPLICATE"
+              PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
+            else
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
+
+            end
+        end
+        redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
+
+    else
+      PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE', params[:comment])
+      redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE-TBA&destination=Potential Duplicate"
     end
   end
 
