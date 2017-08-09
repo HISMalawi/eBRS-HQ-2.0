@@ -61,11 +61,11 @@
   </div>
 
   <div class="fix-middle" style="height: 40px; margin-top: 0px;">
-    <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
+    <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
         <button id="print-all" onclick="printAll()"
                 class=" action-btn btn btn-sm btn-success"><i class="fa fa-print"></i>Print Selected</button>
     <% end %>
-    <%if (['HQ-ACTIVE', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+    <%if (['HQ-PRINTED'] & params['statuses']).length > 0%>
         <button id="dispatch-all" onclick="__$('dispatch-count').innerHTML = selected.length; jQuery('#comments').modal('show')"
                 class=" action-btn btn btn-sm btn-primary"><i class="fa fa-truck"></i>Dispatch Selected</button>
     <% end %>
@@ -90,7 +90,7 @@
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
-        <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
             <div class="checkbox pull-right">
               <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
             </div>
@@ -129,7 +129,7 @@
                   </td>
               <%end%>
 
-              <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+              <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
                   <td class="act-btn">
                     <div class="checkbox">
                       <label><input class='multi-check' person_id = "<%= record['id']%>" onchange="checkSelections();" type="checkbox" value=""></label>

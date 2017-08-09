@@ -83,6 +83,11 @@ class PersonController < ApplicationController
     @core_person = CorePerson.find(params[:person_id])
     @person = @core_person.person
 
+    @status = PersonRecordStatus.status(@person.id)
+    if ["HQ-POTENTIAL DUPLICATE-TBA"].include? @status
+        redirect_to "/person/duplicate?person_id=#{@person.id}"
+    end
+
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
     @address = @person.addresses.last
@@ -106,6 +111,7 @@ class PersonController < ApplicationController
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
+    
     birth_location = birth_loc.name rescue nil
 
     @place_of_birth = birth_loc.name rescue nil
@@ -117,7 +123,7 @@ class PersonController < ApplicationController
     @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
-        @record = {
+    @record = {
           "Details of Child" => [
               {
                   "District ID Number" => "#{@birth_details.ben rescue nil}",
@@ -252,6 +258,47 @@ class PersonController < ApplicationController
               }
           ]
       }
+    if @person.present? && SETTINGS['potential_search']
+      person = {}
+      person["id"] = @person.person_id.to_s
+      person["first_name"]= @name.first_name rescue ''
+      person["last_name"] =  @name.last_name rescue ''
+      person["middle_name"] = @name.middle_name rescue ''
+      person["gender"] = (@person.gender == 'F' ? 'Female' : 'Male')
+      person["birthdate"]= @person.birthdate.to_date
+      person["birthdate_estimated"] = @person.birthdate_estimated
+      person["nationality"]=  @mother_person.citizenship
+      person["place_of_birth"] = @place_of_birth
+      if  birth_loc.district.present?
+        person["district"] = birth_loc.district
+      else
+        person["district"] = "Lilongwe"
+      end      
+      person["mother_first_name"]= @mother_name.first_name rescue ''
+      person["mother_last_name"] =  @mother_name.last_name  rescue ''
+      person["mother_middle_name"] = @mother_name.middle_name rescue '' 
+      person["father_first_name"]= @father_name.first_name  rescue ''
+      person["father_last_name"] =  @father_name.last_name  rescue ''
+      person["father_middle_name"] = @father_name.middle_name  rescue ''
+    
+      SimpleElasticSearch.add(person)
+
+      if @status == "HQ-ACTIVE"
+        @results = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])        
+        if @results.present?
+           potential_duplicate = PotentialDuplicate.create(person_id: @person.person_id,created_at: (Time.now))
+           if potential_duplicate.present?
+                 @results.each do |result|
+                    potential_duplicate.create_duplicate(result["_id"])
+                 end
+           end
+           PersonRecordStatus.new_record_state(@person.person_id, "HQ-POTENTIAL DUPLICATE-TBA", "System mark record as potential duplicate")
+           @status = PersonRecordStatus.status(@person.id)
+        end      
+      end
+    else
+
+    end
 
     @section = "View Record"
 
@@ -435,11 +482,12 @@ class PersonController < ApplicationController
   def tasks
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Manage Cases","Manage Cases" , [],"/person/manage_cases","/assets/folder3.png"],
-              ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
+              ["Manage Cases","Manage Cases" , ["HQ-ACTIVE", "HQ-COMPLETE", "HQ-CONFLICT-TBA", "HQ-PRINTED", "HQ-DISPATCHED"],
+                "/person/manage_cases","/assets/folder3.png"],
+              ["Rejected Cases" , "Rejected Cases" , ["HQ-REJECTED"],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
-              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates","/assets/folder3.png"],
+              ["Duplicate Cases" , "Duplicate cases" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
               ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
@@ -447,23 +495,27 @@ class PersonController < ApplicationController
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
+    @stats = PersonRecordStatus.stats
     @section = "Task(s)"
   end
 
   def manage_cases
-     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-     @tasks = [
-              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-              ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
-              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
-              ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
-              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
-            ]
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+            ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+            ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+            ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
+            ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+            ["View printed records","Printed records" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+            ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+          ]
 
-     @tasks.reject{|task| !@folders.include?(task[0]) }
-      @section = "Manage Cases"
-      render :template => "/person/tasks"
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Manage Cases"
+
+    render :template => "/person/tasks"
   end
 
   def get_comments
@@ -503,6 +555,7 @@ class PersonController < ApplicationController
     render :text => 'ok'
   end
 
+
   def multiple_status_change
     params[:person_ids].split(',').each do |person_id|
       PersonRecordStatus.new_record_state(person_id, params[:status])
@@ -532,5 +585,89 @@ class PersonController < ApplicationController
     end
 
     render :layout => false, :template => 'person/birth_certificate'
+  end
+  ########################### Duplicates ###############################
+  def duplicates_menu
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+              ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Approved for printing","Approved for printing" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Voided Records","Voided Records" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"]
+            ]
+    @section = "Manage duplicate"
+    render :template => "/person/tasks"
+  end
+  def duplicate
+    @section = "Resolve Duplicates"
+    @potential_duplicate =  person_details(params[:person_id])
+    @potential_records = PotentialDuplicate.where(:person_id => (params[:person_id].to_i)).last
+    @similar_records = []
+    @potential_records.duplicate_records.each do |record|
+      @similar_records << person_details(record.person_id)
+    end
+  end
+
+  def person_details(id)
+
+    person_mother_id = PersonRelationType.find_by_name("Mother").id
+    person_father_id = PersonRelationType.find_by_name("Father").id
+    informant_type_id = PersonType.find_by_name("Informant").id
+
+    relations = PersonRelationship.find_by_sql(['select * from person_relationship where person_a = ?', id]).map(&:person_b)
+    informant_id = CorePerson.find_by_sql(['select * from core_person
+                    where person_type_id = ?
+                    and person_id in (?)',informant_type_id, relations]).map(&:person_id)
+
+    #raise @informant.inspect
+
+    person_mother_relation = PersonRelationship.find_by_sql(["select * from person_relationship where person_a = ? and person_relationship_type_id = ?",params[:id], person_mother_id])
+    mother_id = person_mother_relation.map{|relation| relation.person_b} #rescue nil
+    father_id = PersonRelationship.where(person_a: id,
+                                          person_relationship_type_id: person_father_id).first.person_b rescue nil
+
+    person_name = PersonName.find_by_person_id(id)
+    person = Person.find(id)
+    core_person = CorePerson.find(id)
+    birth_details = PersonBirthDetail.find_by_person_id(id)
+    person_record_status = PersonRecordStatus.where(:person_id => id).last
+    person_status = person_record_status.status.name rescue nil
+
+    actions = ActionMatrix.read_actions(User.current.user_role.role.role, [person_status]) rescue nil
+
+    mother = Person.find(mother_id)
+    mother_name = PersonName.find_by_person_id(mother_id)
+    father_name = PersonName.find_by_person_id(father_id)
+    mother_address = PersonAddress.find_by_person_id(mother_id)
+
+
+    informant = Person.find(informant_id)
+    informant_name = PersonName.find_by_person_id(informant_id)
+
+    person = {
+              id: person.id,
+              first_name: person_name.first_name,
+              last_name: person_name.last_name,
+              middle_name: person_name.middle_name,
+              birth_entry_number: (birth_details.district_id_number rescue "XXXXXXXXXX"),
+              birth_registration_number: (birth_details.national_serial_number rescue "XXXXXXXXXX"),
+              birthdate: person.birthdate,
+              gender: person.gender,
+              status: person_status,
+              hospital_of_birth: (Location.find(birth_details.birth_location_id).name rescue nil),
+              birth_address: (person.birth_address rescue nil),
+              village_of_birth: (person.birth_village rescue nil),
+              ta_of_birth: (person.birth_ta rescue nil),
+              district_of_birth: (person.birth_district rescue nil),
+              mother_first_name: (mother_name.first_name rescue nil),
+              mother_last_name:(mother_name.last_name rescue nil),
+              mother_middle_name: (mother_name.middle_name rescue nil),
+              father_first_name: (father_name.first_name rescue nil),
+              father_last_name: (father_name.last_name rescue nil),
+              father_middle_name: (father_name.middle_name rescue nil)
+    }
+    return person
   end
 end
