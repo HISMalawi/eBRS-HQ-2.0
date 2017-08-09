@@ -1,6 +1,7 @@
 <%=javascript_include_tag "datatables/prototype" %>
 <%=javascript_include_tag "datatables/jquery.dataTables.min" %>
 <%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
 
 <%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
 
@@ -17,7 +18,7 @@
         padding: 7px;
     }
 
-    .fa{
+    .act-btn .fa{
         min-width: 35px;
         padding: 5px;
         border-radius: 10px !important;
@@ -60,16 +61,21 @@
   </div>
 
   <div class="fix-middle" style="height: 40px; margin-top: 0px;">
-    <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
-        <button onclick="printAll()"
+    <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
+        <button id="print-all" onclick="printAll()"
                 class=" action-btn btn btn-sm btn-success"><i class="fa fa-print"></i>Print Selected</button>
     <% end %>
-    <%if (['HQ-PRINTED'] & params['statuses']).length > 0%>
-        <button onclick="printAll()"
-                class=" action-btn btn btn-sm btn-primary"><i class="fa fa-pencil"></i>Dispatch Selected</button>
+    <%if (['HQ-ACTIVE', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+        <button id="dispatch-all" onclick="__$('dispatch-count').innerHTML = selected.length; jQuery('#comments').modal('show')"
+                class=" action-btn btn btn-sm btn-primary"><i class="fa fa-truck"></i>Dispatch Selected</button>
     <% end %>
   </div>
+<style>
+    #print-all, #dispatch-all{
+        display: none;
+    }
 
+</style>
 <table id="example" class="display" cellspacing="0" width="100%">
   <thead>
     <tr>
@@ -83,7 +89,13 @@
       <th style="text-align: left;">Mother's Name</th>
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
-      <th>&nbsp;</th>
+      <th>&nbsp;
+        <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+            <div class="checkbox pull-right">
+              <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
+            </div>
+        <% end %>
+      </th>
   </tr>
   </thead>
     <%(@records || []).each do |record|
@@ -112,15 +124,15 @@
                             class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
                   </td>
                   <td class="act-btn">
-                    <button onclick="javascript:location='/void/<%= record['person_id']%>'"
+                    <button onclick="javascript:location='/void/<%= record['id']%>'"
                             class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
                   </td>
               <%end%>
 
-              <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+              <%if (['HQ-ACTIVE', 'HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
                   <td class="act-btn">
                     <div class="checkbox">
-                      <label><input type="checkbox" value=""></label>
+                      <label><input class='multi-check' person_id = "<%= record['id']%>" onchange="checkSelections();" type="checkbox" value=""></label>
                     </div>
                   </td>
               <% end %>
@@ -135,11 +147,87 @@
 
 </div>
 
-<script>
 
-$i(document).ready(function() {
-    $i('#example').DataTable();
-} );
+<div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+
+          <h5>Are you sure you want to dispatch <span id="dispatch-count"></span> certificate(s)</h5>
+          <div class="modal-footer">
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments').modal('hide')" > Cancel </button>
+            <button type="button" class="btn btn-sm btn-primary pull-right" onclick="dispatchAll();" > Dispatch </button>
+          </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+<script>
+    selected = []
+
+    $i(document).ready(function() {
+        $i('#example').DataTable();
+    } );
+
+    function printAll() {
+        window.location = "/print_preview?person_ids=" + selected.join(',')
+    }
+
+    function dispatchAll(){
+        jQuery.ajax({
+            url:  "/multiple_status_change",
+            method: 'POST',
+            data: {
+                'person_ids' : selected.join(','),
+                'status' : 'HQ-DISPATCHED'
+            },
+            success: function(result){
+                window.location = window.location
+            },
+            error: function(error){
+                alert("Something went wrong!")
+            }
+        })
+    }
+
+    function checkSelections(){
+        var nodes = document.getElementsByClassName('multi-check');
+        selected = [];
+        for(var i = 0; i < nodes.length; i ++){
+            if(nodes[i].checked){
+                selected.push(nodes[i].getAttribute('person_id'));
+            }
+        }
+
+        if(selected.length > 0){
+            if (__$('print-all')){
+                jQuery('#print-all').show()
+            }
+            if (__$('dispatch-all')){
+                jQuery('#dispatch-all').show()
+            }
+        }else{
+            if (__$('print-all')){
+                jQuery('#print-all').hide()
+            }
+            if (__$('dispatch-all')){
+                jQuery('#dispatch-all').hide()
+            }
+        }
+    }
+
+    function selectAll(){
+        if(__$('select-all').checked){
+            jQuery(".multi-check").prop('checked', true);
+        }else{
+            jQuery(".multi-check").prop('checked', false);
+        }
+        checkSelections();
+    }
+    checkSelections();
 
 </script>
 

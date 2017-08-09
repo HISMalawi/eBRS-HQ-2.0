@@ -58,4 +58,8 @@ class Person < ActiveRecord::Base
     "#{name.first_name} #{name.middle_name} #{name.last_name}".gsub(/\s+/, ' ')
   end
 
+  def full_gender
+    {'M' => 'Male', 'F' => 'Female'}[self.gender]
+  end
+
 end

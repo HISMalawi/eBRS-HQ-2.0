@@ -444,6 +444,9 @@ class PersonController < ApplicationController
               ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
               ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
             ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
     @section = "Task(s)"
   end
 
@@ -457,6 +460,8 @@ class PersonController < ApplicationController
               ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
             ]
+
+     @tasks.reject{|task| !@folders.include?(task[0]) }
       @section = "Manage Cases"
       render :template => "/person/tasks"
   end
@@ -498,4 +503,34 @@ class PersonController < ApplicationController
     render :text => 'ok'
   end
 
+  def multiple_status_change
+    params[:person_ids].split(',').each do |person_id|
+      PersonRecordStatus.new_record_state(person_id, params[:status])
+    end
+
+    render :text => 'ok'
+  end
+
+  def print_preview
+
+    @data = []
+    person_ids = params[:person_ids].split(',')
+    person_ids.each do |person_id|
+      data = {}
+      data['person'] = Person.find(person_id)
+      data['birth']  = PersonBirthDetail.where(person_id: person_id).last
+
+      barcode = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png") rescue nil
+      if barcode.nil?
+        p = Process.fork{`bin/generate_barcode #{ data['person'].id} #{ data['person'].id} #{SETTINGS['barcodes_path']}`}
+        Process.detach(p)
+      end
+      sleep(0.5)
+      data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png")
+
+      @data << data
+    end
+
+    render :layout => false, :template => 'person/birth_certificate'
+  end
 end
