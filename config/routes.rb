@@ -79,6 +79,10 @@ Rails.application.routes.draw do
 
   get 'person/new'
 
+  get "person/duplicates_menu"
+
+  get "person/duplicate"
+
   post 'person/create'
 
   post '/application/get_registration_type'
@@ -102,6 +106,10 @@ Rails.application.routes.draw do
 
   get '/get_comments' => 'person#get_comments'
   get '/ajax_status_change' => 'person#ajax_status_change'
+  post '/multiple_status_change' => 'person#multiple_status_change'
+
+  get '/print_preview' => 'person#print_preview'
+  post '/print_preview' => 'person#print_preview'
 
   resources :person
 

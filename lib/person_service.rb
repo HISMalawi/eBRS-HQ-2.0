@@ -728,7 +728,7 @@ end
 
 
     main = Person.find_by_sql(
-          "SELECT n.*, p.birthdate AS dob, prs.status_id, pbd.district_id_number FROM person p
+          "SELECT n.*, p.birthdate AS dob, prs.status_id, pbd.district_id_number, p.gender FROM person p
             INNER JOIN core_person cp ON p.person_id = cp.person_id
             INNER JOIN person_name n ON p.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON p.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
@@ -757,8 +757,10 @@ end
 
       results << {
           'id' => data.person_id,
-          "den" => data.district_id_number,
+          "ben" => data.district_id_number,
+          "brn" => PersonBirthDetail.find_by_person_id(data.person_id).brn,
           'name'        => name,
+          'gender'        => {'M' => 'Male', 'F' => 'Female'}[data.gender],
           'father_name'       => father_name,
           'dob' => data.dob.to_date.strftime('%d/%b/%Y'),
           'mother_name'       => mother_name,
