@@ -431,15 +431,17 @@
 <button id="btnNext"
         class="btn btn-success pull-right"
         onclick="nextSimilar()">Next Similar Record</button>
-
+<% if User.current.user_role.role.role == "Data Manager" || !SETTINGS['enable_role_privileges']%>
+  
 <button id="btnApprove"
 		      class="btn btn-primary pull-right"
 		      onclick="resolveDuplicate('Resolve');">Resolve</button>
-
+<%end%>
+<% if User.current.user_role.role.role == "Data Supervisor" || !SETTINGS['enable_role_privileges']%>
 <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="resolveDuplicate('Confirm-duplicate')">Confirm Record Duplicate</button>
-
+<%end%>
 <button class="btn btn-primary pull-right"
               onclick= 'ajaxPullComments("view")' >
         <span class="fa fa-comments"></span>
