@@ -440,6 +440,8 @@ end
     t.datetime "updated_at"
   end
 
+  add_index "global_property", ["property"], name: "fk_global_property_1_idx", using: :btree
+
   ##########################################################################################################################
 
   add_index "users", ["person_id"], name: "fk_users_1_idx", using: :btree
