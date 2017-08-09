@@ -656,15 +656,17 @@ class PersonController < ApplicationController
   ########################### Duplicates ###############################
   def duplicates_menu
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+   
     @tasks = [
               ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE","HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
               ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
               ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"],
-              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Approved for printing","Approved for printing" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Voided Records","Voided Records" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"]
+              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Approved for printing","Approved for printing" , [],"/person/view","/assets/folder3.png"],
+              ["Voided Records","Voided Records" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"]
             ]
     @section = "Manage duplicate"
+    @stats = PersonRecordStatus.stats
     render :template => "/person/tasks"
   end
   def duplicate
@@ -682,11 +684,11 @@ class PersonController < ApplicationController
   def duplicate_processing
     if params[:operation] =="Resolve"
          potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+
          if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
               PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
             else
-
                 potential_records.resolved = 1
                 potential_records.decision = params[:decision]
                 potential_records.comment = params[:comment]

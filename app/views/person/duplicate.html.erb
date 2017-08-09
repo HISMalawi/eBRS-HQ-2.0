@@ -438,9 +438,15 @@
 		      onclick="resolveDuplicate('Resolve');">Resolve</button>
 <%end%>
 <% if User.current.user_role.role.role == "Data Supervisor" || !SETTINGS['enable_role_privileges']%>
-<button id="btnConfirm"
+  <%= @potential_duplicate[:status] == "HQ-POTENTIAL DUPLICATE-TBA" %>
+    <button id="btnConfirm"
+          class="btn btn-primary pull-right"
+          onclick="resolveDuplicate('Re-Confirm-duplicate')">Confirm Record Duplicate</button>
+  <%else%>
+    <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="resolveDuplicate('Confirm-duplicate')">Confirm Record Duplicate</button>
+  <%end%>
 <%end%>
 <button class="btn btn-primary pull-right"
               onclick= 'ajaxPullComments("view")' >
@@ -502,7 +508,7 @@
                 __$("textarea").focus();
                 return;
             }
-            link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+            link = link + "&decision=DUPLICATE&comment="+__$("textarea").value
             window.location.href = link
         }
     }else{
@@ -516,7 +522,7 @@
                 __$("textarea").focus();
                 return;
             }
-            link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+            link = link + "&decision=DUPLICATE&comment="+__$("textarea").value
             window.location.href = link
         }
     }
