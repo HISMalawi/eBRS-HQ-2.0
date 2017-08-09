@@ -489,7 +489,7 @@ class PersonController < ApplicationController
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
-              ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
+              ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"],
               ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
             ]
 
@@ -514,6 +514,24 @@ class PersonController < ApplicationController
 
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
+
+    render :template => "/person/tasks"
+  end
+
+  def print_out
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["Approve Printing " ,"All records pending Approval to generate  Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Print Certificate", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Closed Re-printed Certificates","All reprinteed records, those didn’t pass QC, option to view comments" , ["HQ-REPRINTED"],"/person/view","/assets/folder3.png"]
+    ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Print Out"
 
     render :template => "/person/tasks"
   end
@@ -564,7 +582,54 @@ class PersonController < ApplicationController
     render :text => 'ok'
   end
 
+  def print
+
+    print_errors = {}
+    print_error_log = Logger.new(Rails.root.join("log","print_error.log"))
+    paper_size = GlobalProperty.find("paper_size").value rescue 'A4'
+
+    if paper_size == "A4"
+      zoom = 0.83
+    elsif paper_size == "A5"
+      zoom = 0.6
+    end
+
+    person_ids = params[:person_ids].split(',')
+    person_ids.each do |person_id|
+      begin
+        PersonRecordStatus.new_record_state(person_id, 'HQ-PRINTED', 'Printed Child Record')
+        print_url = "wkhtmltopdf --zoom #{zoom} --page-size #{paper_size} #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/birth_certificate?person_ids=#{person_id} #{SETTINGS['certificates_path']}#{person_id}.pdf\n"
+
+        puts print_url
+        t4 = Thread.new {
+          Kernel.system print_url
+          sleep(4)
+          Kernel.system "lp -d #{params[:printer_name]} #{SETTINGS['certificates_path']}#{person_id}.pdf\n"
+          sleep(5)
+        }
+        sleep(1)
+
+      rescue => e
+        print_errors[person_id] = e.message + ":" + e.backtrace.inspect
+      end
+    end
+
+    if print_errors.present?
+      print_errors.each do |k,v|
+        print_error_log.debug "#{k} : #{v}"
+      end
+    end
+
+    redirect_to session[:list_url]
+  end
+
   def print_preview
+    @section = "Print Preview"
+    @available_printers = SETTINGS["printer_name"].split('|')
+    render :layout => false
+  end
+
+  def birth_certificate
 
     @data = []
     person_ids = params[:person_ids].split(',')
@@ -586,6 +651,7 @@ class PersonController < ApplicationController
 
     render :layout => false, :template => 'person/birth_certificate'
   end
+
   ########################### Duplicates ###############################
   def duplicates_menu
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
@@ -670,4 +736,9 @@ class PersonController < ApplicationController
     }
     return person
   end
+
+  def print_dispatched_certs
+    person_ids = params[:person_ids].split(',')
+  end
+
 end
