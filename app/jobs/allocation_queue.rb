@@ -3,6 +3,7 @@ class AllocationQueue
   workers 1
 
   def perform()
+    ActiveRecord::Base.logger.level = 1
     queue = IdentifierAllocationQueue.where(assigned: 0)
 
     SuckerPunch.logger.info "Approving for #{queue.count} record(s)"

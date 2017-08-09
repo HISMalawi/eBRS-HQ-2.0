@@ -13,6 +13,8 @@ Rails.application.routes.draw do
 
   root 'person#index'
 
+  get '/show_person/:person_id' => 'person#show'
+
   get 'user/:user_id' => 'users#show'
 
   get '/users' => 'users#view'
@@ -24,6 +26,8 @@ Rails.application.routes.draw do
   get "unblock/:user_id" => "users#unblock"
 
   get "/void_user/:user_id" => "users#void_user"
+
+  get "/block_user/:user_id" => "users#block_user"
 
   get '/query_users' =>"users#query_users"
 
@@ -61,7 +65,11 @@ Rails.application.routes.draw do
 
   get "edit/:user_id" => "users#edit"
 
-  get '/username_availability' => 'users#username_availability'
+  get "change_password/:user_id" => "users#change_password"
+
+  get "update_password/:user_id" => "users#update_password"
+
+  post "update/:user_id" => "users#update"
 
   post '/create_user' => 'users#create'
 
@@ -77,6 +85,10 @@ Rails.application.routes.draw do
 
   get 'records/:status' => 'person#records'
 
+  ############################### Main Tasks routes #####################################
+  get "/person/manage_cases"
+  get "/person/view"
+
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}
   get '/get_first_names' => 'person#get_names', :defaults => {first_name: 'first_name'}
@@ -88,14 +100,8 @@ Rails.application.routes.draw do
   get '/search_by_hospital' => 'person#get_hospital'
   ########################### (create record form) routes end
 
-
-
-
-
-
-
-
-
+  get '/get_comments' => 'person#get_comments'
+  get '/ajax_status_change' => 'person#ajax_status_change'
 
   resources :person
 

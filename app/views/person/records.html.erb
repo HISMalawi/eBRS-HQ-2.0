@@ -1,38 +1,97 @@
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
 
-<div class='data-table-container'>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+
+
+<style>
+
+
+    #example{
+        background-color: #d3d3d3;
+    }
+    #example tr td{
+        background-color: white !important;
+        border-left: 0.5px dotted lightgray;
+        padding: 7px;
+    }
+
+    .fa{
+        min-width: 35px;
+        padding: 5px;
+        border-radius: 10px !important;
+    }
+
+    th{
+        background: lightsteelblue;
+        color: black;
+    }
+
+    .panel-heading{
+        margin-bottom: 20px;
+    }
+
+    .action-btn{
+        border: none !important;
+        margin-top: 0px;
+    }
+
+</style>
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
 
 <table id="example" class="display" cellspacing="0" width="100%">
   <thead>
     <tr>
       <th style="text-align: left;">BEN</th>
-      <th style="text-align: left;">First name</th>
-      <!--th style="text-align: left;">Middle name(s)</th-->
-      <th style="text-align: left;">Last name</th>
-      <th style="text-align: center; width:120px;">Birthdate</th>
-      <th style="text-align: center;">Record state</th>
+      <th style="text-align: left;">Name</th>
+      <th style="text-align: center; width:90px;">Birthdate</th>
+      <th style="text-align: left;">Mother's Name</th>
+      <th style="text-align: left;">Father's Name</th>
+      <th style="text-align: center;">Status</th>
       <th>&nbsp;</th>
   </tr>
   </thead>
-    <%(@records || []).each do |record|%>
+    <%(@records || []).each do |record|
+    %>
       <tr>
-        <td style="text-align: left;"><%= '' %></td>
-        <td style="text-align: left;"><%= record.first_name %></td>
-        <!-- td style="text-align: left;"><%= record.middle_name %></td-->
-        <td style="text-align: left;"><%= record.last_name %></td>
-        <td style="text-align: center;"><%= record.birthdate.strftime('%d/%b/%Y') %></td>
-        <td style="text-align: center;"><%= 'DC OPEN' %></td>
+        <td style="text-align: left;width: 15%"><%= record['den'] %>&nbsp;</td>
+        <td style="text-align: left;width: 15%"><%= record['name'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['dob'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['mother_name'] %></td>
+        <td style="text-align: center;width: 15%"><%= record['father_name'] %></td>
+        <td style="text-align: center;"><%= record['status'] %></td>
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
-            <tr>  
-              <td><button class="btn btn-info" onmousedown="javascript:alert();">
-                <%= image_tag "view.png", class: 'btn-images' %></button>
+            <tr>
+              <td>
+                <button onclick="javascript:location='/show_person/<%= record['id']%>'"
+                        class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
               </td>
-              <td><button class="btn btn-warning" onmousedown="javascript:alert();">
-                <%= image_tag "edit.png", class: 'btn-images' %></button>
-               </td>
-              <td><button class="btn btn-success" onmousedown="javascript:alert();">
-                <%= image_tag "void.png", class: 'btn-images' %></button>
-               </td>
+              <%if admin?%>
+                  <td>
+                    <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
+                            class="action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
+                  </td>
+                  <td>
+                    <button onclick="javascript:location='/void/<%= record['person_id']%>'"
+                            class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
+                  </td>
+              <%end%>
             </tr>
           </table>
         </td>
@@ -46,8 +105,8 @@
 
 <script>
 
-$(document).ready(function() {
-    $('#example').DataTable();
+$i(document).ready(function() {
+    $i('#example').DataTable();
 } );
 
 </script>

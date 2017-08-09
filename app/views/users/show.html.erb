@@ -1,9 +1,10 @@
 <style>
 
     .record td {
-        font-size: 18px;
+        font-size: 15px;
         font-style: italic;
         color: #000;
+        padding: 7px;
     }
 
     .record td strong {
@@ -31,10 +32,35 @@
 
 </style>
 
-<fieldset>
-  <legend>
-    User Details
-  </legend>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">User Details</h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+            <a class="btn btn-sm btn-primary"
+               style="position: relative;"
+               onclick="javascript:location='/users/new'">
+              <span class="fa fa-plus-square"></span>
+              Add User
+            </a>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
 
   <fieldset style="border: 1px solid #eee;">
   <table class="record" style="margin: auto;" cellpadding="10" cellspacing="5">
@@ -80,6 +106,17 @@
       </td>
     </tr>
 
+    <tr>
+      <td>
+        <strong>Gender:</strong>
+      </td>
+      <td>
+        :
+      </td>
+      <td>
+        <%= Person.find(@user.person_id).gender == 'F' ? 'Female' : 'Male' rescue '' %>
+      </td>
+    </tr>
 
     <tr>
       <td>
@@ -93,6 +130,17 @@
       </td>
     </tr>
 
+    <tr>
+      <td>
+        <strong>E-Mail:</strong>
+      </td>
+      <td>
+        :
+      </td>
+      <td>
+        <%= @user.email rescue '' %>
+      </td>
+    </tr>
 
     <tr>
       <td>
@@ -122,21 +170,98 @@
 
   </fieldset>
 
-  <fieldset style="border: 1px solid #eee;"></fieldset>
 
-  <div class="btn-ctrls">
-    <%unless @user.blocked %>
-      <button onclick="javascript:location='/block/<%=@user.id%>'"
-        class="btn btn-warning btn-lg"><i class="fa fa-lock"></i>&nbsp;Block</button>
-    <%else%>
-      <button onclick="javascript:location='/unblock/<%=@user.id%>'"
-        class="btn btn-warning btn-lg"><i class="fa fa-unlock"></i>&nbsp;Unblock</button>
-    <%end%>
+  <div id="block_modal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
 
-    <button onclick="javascript:location='/edit/<%=@user.id%>'"
-                  class="btn btn-success btn-lg"><i class="fa fa-lock"></i>&nbsp;Edit</button>
-    
-    <button onclick="javascript:location='/users'"
-                  class="btn btn-primary btn-lg"><i class="fa fa-chevron-circle-left"></i>&nbsp;Back</button>
+      <!-- Modal content-->
+      <div class="modal-content">
+
+        <div class="modal-body">
+          <p><span id="text"></span></p>
+        </div>
+        <div class="modal-footer">
+          <button onclick="block()" id='block' type="button" class="btn btn-danger" data-dismiss="modal">Block</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
   </div>
-</fieldset>
+
+  <div class="btn-ctrls" style="margin-right: 42.5%;">
+    <a class="btn btn-sm btn-warning"
+       onclick="javascript:location='/users'">
+      <span class="fa fa-chevron-circle-left"></span>
+      Back
+    </a>
+    <% if @user.username != 'admin' && @user != User.current%>
+        <%if @user.active == 1 %>
+            <a class="btn btn-sm btn-danger"
+               style="position: relative;"
+               onclick="blockUser('/block_user/<%= @user.id%>', '<%= @user.username%>')">
+              <span class="fa fa-times"></span>
+                Block
+            </a>
+        <%else%>
+            <a class="btn btn-sm btn-primary"
+               style="position: relative;"
+               onclick="blockUser('/block_user/<%= @user.id%>?unblock=true', '<%= @user.username%>')">
+              <span class="fa fa-plus-square"></span>
+              Activate
+            </a>
+        <%end
+    end%>
+
+    <% if @user.username != 'admin' && @user != User.current%>
+        <a class="btn btn-sm btn-success"
+           onclick="javascript:location='/edit/<%= @user.id%>'">
+          <span class="fa fa-pencil"></span>
+          Edit
+        </a>
+    <% end %>
+
+    <% if @user == User.current%>
+        <a class="btn btn-sm btn-success"
+           onclick="javascript:location='/change_password/<%= @user.id%>'">
+          <span class="fa fa-pencil"></span>
+          Change Password
+        </a>
+    <% end %>
+
+  </div>
+
+</div>
+
+<script>
+    function blockUser(block_url, user_name){
+        __$('block_modal').setAttribute('block_url', block_url)
+        if (block_url.match('unblock')){
+            __$('block').className = 'btn btn-primary'
+            __$('block').innerHTML = 'Activate';
+            __$('text').innerHTML = 'Are you sure you want to activate user</span> <b id="username"></b>?'
+
+        }else{
+            __$('block').className = 'btn btn-danger';
+            __$('block').innerHTML = 'Block'
+            __$('text').innerHTML = 'Are you sure you want to block user</span> <b id="username"></b>?'
+
+        }
+
+        __$('username').innerHTML = user_name;
+
+        jQuery('#block_modal').modal('show');
+    }
+
+    function block(){
+        var url = __$('block_modal').getAttribute('block_url');
+        jQuery.ajax({
+                    url: url,
+                    success: function(result){
+                        window.location = '/users';
+                    }
+                }
+        )
+    }
+
+</script>

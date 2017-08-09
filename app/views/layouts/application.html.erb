@@ -20,15 +20,62 @@
     <!-- Custom styles for this template -->
     <%= stylesheet_link_tag "extras/style" %>                                         
     <%= stylesheet_link_tag "extras/style-responsive" %>                                         
-
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
+    <script>
+        function __$(id){
+            return document.getElementById(id)
+        }
+    </script>
   </head>
 
   <body>
+  <style type="text/css">
+      .divbtn {
+        height: 155px;
+        width: 99%;
+        display: table;
+        margin-top: 10px;
+        cursor:pointer;
+        box-shadow: 2px 2px 1px #888888;
+        text-align: center; 
+        background-color:#ffffff;
+        border: 1px solid #d1d1d1;
+        padding: 1em;
+      }
+      .icon-attr {
+        height: 50%;
+        width: 50%;
+        padding-top: 10px;
+      }
+      .mt a{
+          padding: 0px;
+          font-size: 15px;
+      }
+
+      .black-bg{
+          border-bottom: 1px solid white !important;
+      }
+      #sidebar{
+          background: #006f95 none repeat scroll 0 0 !important;
+      }
+
+      .wrapper{
+          background: white;;
+      }
+
+      body {
+          color: #333 !important;
+          font-size: 13.5px;
+          font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+      }
+      .panel{
+          width: 100% !important;
+          border: 1px solid #d3d3d3;
+          margin-top: 10px !important;
+          padding: 5px;
+          color: #333;
+      }
+
+  </style>
 
   <section id="container" >
       <!-- **********************************************************************************************************************************************************
@@ -40,151 +87,25 @@
                   <div class="fa fa-bars tooltips" data-placement="right" data-original-title="Toggle Navigation"></div>
               </div>
             <!--logo start-->
-            <a href="/" class="logo"><b>eBRS</b></a>
+            <a href="/" class="logo"><b><span style="text-transform: lowercase;color:white;">e</span>BRS</b></a>
             <!--logo end-->
             <div class="nav notify-row" id="top_menu">
                 <!--  notification start -->
                 <ul class="nav top-menu">
                     <!-- settings start -->
                     <li class="dropdown"><!--
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="index.html#">
-                            <i class="fa fa-tasks"></i>
-                            <span class="badge bg-theme">4</span>
-                        </a>
-                        <ul class="dropdown-menu extended tasks-bar">
-                            <div class="notify-arrow notify-arrow-green"></div>
-                            <li>
-                                <p class="green">You have 4 pending tasks</p>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <div class="task-info">
-                                        <div class="desc">DashGum Admin Panel</div>
-                                        <div class="percent">40%</div>
-                                    </div>
-                                    <div class="progress progress-striped">
-                                        <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" style="width: 40%">
-                                            <span class="sr-only">40% Complete (success)</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <div class="task-info">
-                                        <div class="desc">Database Update</div>
-                                        <div class="percent">60%</div>
-                                    </div>
-                                    <div class="progress progress-striped">
-                                        <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: 60%">
-                                            <span class="sr-only">60% Complete (warning)</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <div class="task-info">
-                                        <div class="desc">Product Development</div>
-                                        <div class="percent">80%</div>
-                                    </div>
-                                    <div class="progress progress-striped">
-                                        <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100" style="width: 80%">
-                                            <span class="sr-only">80% Complete</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <div class="task-info">
-                                        <div class="desc">Payments Sent</div>
-                                        <div class="percent">70%</div>
-                                    </div>
-                                    <div class="progress progress-striped">
-                                        <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100" style="width: 70%">
-                                            <span class="sr-only">70% Complete (Important)</span>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="external">
-                                <a href="#">See All Tasks</a>
-                            </li>
-                        </ul>   -->
+
                     </li>
                     <!-- settings end -->
                     <!-- inbox dropdown start-->
                     <li id="header_inbox_bar" class="dropdown"><!--
-                        <a data-toggle="dropdown" class="dropdown-toggle" href="index.html#">
-                            <i class="fa fa-envelope-o"></i>
-                            <span class="badge bg-theme">5</span>
-                        </a>
-                        <ul class="dropdown-menu extended inbox">
-                            <div class="notify-arrow notify-arrow-green"></div>
-                            <li>
-                                <p class="green">You have 5 new messages</p>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <span class="photo"><img alt="avatar" src="#"></span>
-                                    <span class="subject">
-                                    <span class="from">Zac Snider</span>
-                                    <span class="time">Just now</span>
-                                    </span>
-                                    <span class="message">
-                                        Hi mate, how is everything?
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <span class="photo"><img alt="avatar" src="#"></span>
-                                    <span class="subject">
-                                    <span class="from">Divya Manian</span>
-                                    <span class="time">40 mins.</span>
-                                    </span>
-                                    <span class="message">
-                                     Hi, I need your help with this.
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <span class="photo"><img alt="avatar" src="#"></span>
-                                    <span class="subject">
-                                    <span class="from">Dan Rogers</span>
-                                    <span class="time">2 hrs.</span>
-                                    </span>
-                                    <span class="message">
-                                        Love your new Dashboard.
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">
-                                    <span class="photo"><img alt="avatar" src="#"></span>
-                                    <span class="subject">
-                                    <span class="from">Dj Sherman</span>
-                                    <span class="time">4 hrs.</span>
-                                    </span>
-                                    <span class="message">
-                                        Please, answer asap.
-                                    </span>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="index.html#">See all messages</a>
-                            </li>
-                        </ul>
-                    </li> -->
-                    <!-- inbox dropdown end -->
+
                 </ul>
                 <!--  notification end -->
             </div>
             <div class="top-menu">
             	<ul class="nav pull-right top-menu">
-                    <li><a class="logout" href="/logout">Logout</a></li>
+                    <li><a style="color: black" class="logout" href="/logout">Logout</a></li>
             	</ul>
             </div>
         </header>
@@ -201,65 +122,24 @@
               
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coat-arms.png', class: 'img-circle', width: '60' %></a></p>
-              	  <h5 class="centered"><%=User.current.username%></h5>
+              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;" class="centered"><%=User.current.username%></h5>
+
               	  	
-                  <li class="mt">
-                      <a href="/">
+                  <li class="">
+                      <a href="/" style="color: white;">
                           <i class="fa fa-home"></i>
                           <span>Home</span>
                       </a>
                   </li>
-                  <li class="mt">
-                      <a href="">
-                          <i class="fa fa-search"></i>
-                          <span>Search</span>
-                      </a>
-                  </li>
-                  <li class="mt">
-                      <a href="/tasks">
+                  <li class="">
+                      <a href="/tasks" style="color: white;">
                           <i class="fa fa-desktop"></i>
-                          <span>Manage Cases</span>
-                      </a>
-                  </li>
-                  <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Rejected Cases</span>
+                          <span >Tasks</span>
                       </a>
                   </li>
 
-                  <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Edited from DC</span>
-                      </a>
-                  </li>
-                  <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Special Cases</span>
-                      </a>
-                  </li>
-                   <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Duplicate Cases</span>
-                      </a>
-                  </li>
-                   <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Amendment Cases</span>
-                      </a>
-                  </li>
-                   <li class="mt">
-                      <a href="">
-                          <i class="fa fa-desktop"></i>
-                          <span>Print outs</span>
-                      </a>
-                  </li>
                   <li class="sub-menu">
-                      <a href="javascript:;" >
+                      <a href="javascript:;" style="color: white;">
                           <i class="fa fa-cogs"></i>
                           <span>Settings</span>
                       </a>
@@ -275,7 +155,7 @@
                       </ul>
                   </li>
                   <li class="sub-menu">
-                      <a href="javascript:;" >
+                      <a href="javascript:;" style="color: white;">
                           <i class="fa fa-book"></i>
                           <span>Reports</span>
                       </a>
@@ -301,24 +181,24 @@
       *********************************************************************************************************************************************************** -->
 
     <!-- js placed at the end of the document so the pages load faster -->
-    <%=javascript_include_tag "datatables/jquery"%>                                         
+    <%=javascript_include_tag "datatables/jquery"%>
     <script>
       var $j = jQuery.noConflict();
     </script> 
-    <%=javascript_include_tag "js/jquery"%>                                         
+    <%=javascript_include_tag "js/jquery"%>
     <script>
       var $i = jQuery.noConflict();
-    </script> 
-    <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>                                         
+    </script>
+    <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
     <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         
     <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>                                         
-    <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>                                         
-    <%=javascript_include_tag "js/jquery.scrollTo.min"%>                                         
+    <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
+    <%=javascript_include_tag "js/jquery.scrollTo.min"%>
     <%=javascript_include_tag "js/jquery.nicescroll"%>                                         
 
 
     <!--common script for all pages-->
-    <%=javascript_include_tag "js/common-scripts"%>                                         
+    <%=javascript_include_tag "js/common-scripts"%>
 
     <!--script for this page-->
     
@@ -332,7 +212,7 @@
         }
 
     </script>
-      <section id="main-content">
+      <section id="main-content" >
       
         <!--main content start-->
           <section class="wrapper site-min-height">
@@ -353,4 +233,10 @@
   </section>
 
   </body>
+
+<style>
+    .btn{
+        border-left: 3px solid darkslategray !important;
+    }
+</style>
 </html>

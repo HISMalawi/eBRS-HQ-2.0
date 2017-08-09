@@ -46,8 +46,6 @@ class PersonController < ApplicationController
       end
     end
 
-
-
     ############################################
     @pie_stats = {}
     
@@ -58,13 +56,225 @@ class PersonController < ApplicationController
     details = PersonBirthDetail.where("district_id_number IS NOT NULL")
     (details || []).each do |d|
       code = d.district_id_number.split('/')[0]
+      @pie_stats[code] = 0 if @pie_stats[code].blank?
       @pie_stats[code] += 1
     end
-    
+
+    @stats = PersonRecordStatus.stats
+    @section = "National Statistics Summary"
+  end
+
+  def loc(id, tag=nil)
+      tag_id = LocationTag.where(name: tag).last.id rescue nil
+      result = nil
+      if tag_id.blank?
+        result = Location.find(id).name rescue nil
+      else
+        tagmap = LocationTagMap.where(location_tag_id: tag_id, location_id: id).last rescue nil
+        if tagmap
+          result = Location.find(tagmap.location_id).name rescue nil
+        end
+      end
+
+    result
   end
 
   def show
+    @core_person = CorePerson.find(params[:person_id])
+    @person = @core_person.person
+
+    @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
+    @name = @person.person_names.last
+    @address = @person.addresses.last
+
+    @mother_person = @person.mother
+    @mother_address = @mother_person.addresses.last rescue nil
+    @mother_name = @mother_person.person_names.last rescue nil
+
+    @father_person = @person.father
+    @father_address = @father_person.addresses.last rescue nil
+    @father_name = @father_person.person_names.last rescue nil
+
+    @informant_person = @person.informant rescue nil
+    @informant_address = @informant_person.addresses.last rescue nil
+    @informant_name = @informant_person.person_names.last rescue nil
+
+    @available_printers = SETTINGS["printer_name"].split('|')
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
+    days_gone = ((@birth_details.acknowledgement_of_receipt_date.to_date rescue Date.today) - @person.birthdate.to_date).to_i rescue 0
+    @delayed =  days_gone > 42 ? "Yes" : "No"
+    location = Location.find(SETTINGS['location_id'])
+    facility_code = location.code
+    birth_loc = Location.find(@birth_details.birth_location_id)
+    birth_location = birth_loc.name rescue nil
+
+    @place_of_birth = birth_loc.name rescue nil
+
+    if birth_location == 'Other' && @birth_details.other_birth_location.present?
+      @birth_details.other_birth_location
+    end
+
+    @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
+
+    @status = PersonRecordStatus.status(@person.id)
+        @record = {
+          "Details of Child" => [
+              {
+                  "District ID Number" => "#{@birth_details.district_id_number rescue nil}",
+                  "Serial Number" => "#{@birth_details.national_serial_number  rescue nil}"
+              },
+              {
+                  ["First Name", "mandatory"] => "#{@name.first_name rescue nil}",
+                  "Other Name" => "#{@name.middle_name rescue nil}",
+                  ["Surname", "mandatory"] => "#{@name.last_name rescue nil}"
+              },
+              {
+                  ["Date of birth", "mandatory"] => "#{@person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
+                  ["Sex", "mandatory"] => "#{(@person.gender == 'F' ? 'Female' : 'Male')}",
+                  "Place of birth" => "#{loc(@birth_details.place_of_birth, 'Place of Birth')}"
+              },
+              {
+                  "Name of Hospital" => "#{loc(@birth_details.birth_location_id, 'Health Facility')}",
+                  "Other Details" => "#{@birth_details.other_birth_location}",
+                  "Address" => "#{@child.birth_address rescue nil}"
+              },
+              {
+                  "District" => "#{birth_loc.district}",
+                  "T/A" => "#{birth_loc.ta}",
+                  "Village" => "#{birth_loc.village rescue nil}"
+              },
+              {
+                  "Birth weight (kg)" => "#{@birth_details.birth_weight rescue nil}",
+                  "Type of birth" => "#{@birth_details.birth_type.name rescue nil}",
+                  "Other birth specified" => "#{@birth_details.other_type_of_birth rescue nil}"
+              },
+              {
+                  "Are the parents married to each other?" => "#{(@birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil}",
+                  "If yes, date of marriage" => "#{@birth_details.date_of_marriage rescue nil}"
+              },
+
+              {
+                  "Court Order Attached?" => "#{(@birth_details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil}",
+                  "Parents Signed?" => "#{(@birth_details.parents_signed == "1" ? 'Yes' : 'No') rescue nil}",
+                  "Record Complete?" => "----"
+              },
+              {
+                  "Place where birth was recorded" => "#{loc(@birth_details.location_created_at)}",
+                  "Record Status" => "#{@status}",
+                  "Child/Person Type" => "#{@birth_details.reg_type.name}"
+              }
+          ],
+          "Details of Child's Mother" => [
+              {
+                  ["First Name", "mandatory"] => "#{@mother_name.first_name rescue nil}",
+                  "Other Name" => "#{@mother_name.middle_name rescue nil}",
+                  ["Maiden Surname", "mandatory"] => "#{@mother_name.last_name rescue nil}"
+              },
+              {
+                  "Date of birth" => "#{@mother_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
+                  "Nationality" => "#{@mother_person.citizenship rescue nil}",
+                  "ID Number" => "#{@mother_person.id_number rescue nil}"
+              },
+              {
+                  "Physical Residential Address, District" => "#{loc(@mother_address.current_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@mother_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@mother_address.current_village, 'Village') rescue nil}"
+              },
+              {
+                  "Home Address, Village/Town" => "#{loc(@mother_address.home_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@mother_address.home_ta, 'Traditional Authority') rescue nil}",
+                  "District" => "#{loc(@mother_address.home_village, 'Village') rescue nil}"
+              },
+              {
+                  "Gestation age at birth in weeks" => "#{@birth_details.gestation_at_birth rescue nil}",
+                  "Number of prenatal visits" => "#{@birth_details.number_of_prenatal_visits rescue nil}",
+                  "Month of pregnancy prenatal care started" => "#{@birth_details.month_prenatal_care_started rescue nil}"
+              },
+              {
+                  "Mode of delivery" => "#{@birth_details.mode_of_delivery.name rescue nil}",
+                  "Number of children born to the mother, including this child" => "#{@birth_details.number_of_children_born_alive_inclusive rescue nil}",
+                  "Number of children born to the mother, and still living" => "#{@birth_details.number_of_children_born_still_alive rescue nil}"
+              },
+              {
+                  "Level of education" => "#{@birth_details.level_of_education rescue nil}"
+              }
+          ],
+          "Details of Child's Father" => [
+              {
+                  "First Name" => "#{@father_name.first_name rescue nil}",
+                  "Other Name" => "#{@father_name.middle_name rescue nil}",
+                  "Surname" => "#{@father_name.last_name rescue nil}"
+              },
+              {
+                  "Date of birth" => "#{@father_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
+                  "Nationality" => "#{@father_person.citizenship rescue nil}",
+                  "ID Number" => "#{@father_person.id_number rescue nil}"
+              },
+              {
+                  "Physical Residential Address, District" => "#{loc(@father_address.current_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@father_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@father_address.current_village, 'Village') rescue nil}"
+              },
+              {
+                  "Home Address, Village/Town" => "#{loc(@father_address.home_district, 'District') rescue nil}",
+                  "T/A" => "#{loc(@father_address.home_ta, 'Traditional Authority') rescue nil}",
+                  "District" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
+              }
+          ],
+          "Details of Child's Informant" => [
+              {
+                  "First Name" => "#{@informant_name.first_name rescue nil}",
+                  "Other Name" => "#{@informant_name.middle_name rescue nil}",
+                  "Family Name" => "#{@informant_name.last_name rescue nil}"
+              },
+              {
+                  "Relationship to child" => "#{@child.informant.relationship_to_child rescue ""}",
+                  "ID Number" => "#{@informant_person.id_number rescue ""}"
+              },
+              {
+                  "Physical Address, District" => "#{loc(@informant_address.home_district, 'District')rescue nil}",
+                  "T/A" => "#{loc(@informant_address.current_ta, 'Traditional Authority') rescue nil}",
+                  "Village/Town" => "#{loc(@informant_address.current_village, 'Village') rescue nil}"
+              },
+              {
+                  "Postal Address" => "#{@informant_address.addressline1 rescue nil}",
+                  "" => "#{@informant_address.addressline2 rescue nil}",
+                  "City" => "#{@informant_address.city rescue nil}"
+              },
+              {
+                  "Phone Number" => "#{@informant_person.phone_number rescue ""}",
+                  "Informant Signed?" => "#{@birth_details.form_signed rescue ""}"
+              },
+              {
+                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  ["Delayed Registration", "sub"] => "#{@delayed}"
+              }
+          ]
+      }
+
+    @section = "View Record"
+
   end
+
+  def parents_married(child, value)
+    if child.parents_married_to_each_other.to_s == '1'
+      [value, "mandatory"]
+    else
+      return value
+    end
+  end
+
+  def view
+    session[:list_url] = request.fullpath
+    @states = params[:statuses]
+    @section = params[:destination]
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
+
+    @records = PersonService.query_for_display(@states)
+    render :template => "/person/records"
+  end
+
 
   def records
     person_type = PersonType.where(name: 'Client').first
@@ -204,8 +414,7 @@ class PersonController < ApplicationController
     end
   end
 
-
-    def get_hospital
+  def get_hospital
     
     nationality_tag = LocationTag.where(name: 'Health facility').first
     data = []
@@ -223,5 +432,71 @@ class PersonController < ApplicationController
   end
 
   #########################################################################
+  def tasks
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+              ["Manage Cases","Manage Cases" , [],"/person/manage_cases","/assets/folder3.png"],
+              ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
+              ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
+              ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
+              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates","/assets/folder3.png"],
+              ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
+              ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
+              ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
+            ]
+    @section = "Task(s)"
+  end
+
+  def manage_cases
+     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+     @tasks = [
+              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+              ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Conflict Cases", "Conflict Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
+              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
+
+            ]
+      @section = "Manage Cases"
+      render :template => "/person/tasks"
+  end
+
+  def get_comments
+    @statuses = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ").order('created_at')
+    @comments = []
+
+    @statuses.each do |audit|
+      user = User.find(audit.creator)
+      name = PersonName.where(person_id: user.person_id).last
+      user_name = (name.first_name + " " + name.last_name)
+      ago = ""
+      if (audit.created_at.to_date == Date.today)
+        ago = "today"
+      else
+        ago = (Date.today - audit.created_at.to_date).to_i
+        ago = ago.to_s + (ago.to_i == 1 ? " day ago" : " days ago")
+      end
+      @comments << {
+          "created_at" => audit.created_at.to_time,
+          'user' => user_name,
+          'user_role' => (user.user_role.role.role rescue nil),
+          'level' => (user.user_role.role.level rescue nil),
+          'status' => (Status.find(audit.status_id).name),
+          'comment' => audit.comments,
+          'date_added' => ago
+      }
+      @comments = @comments.sort_by{|c| c['created_at']}
+    end
+
+    render :text => @comments.to_json
+  end
+
+  def ajax_status_change
+
+    PersonRecordStatus.new_record_state(params[:person_id], params[:status], params[:comment])
+
+    render :text => 'ok'
+  end
 
 end

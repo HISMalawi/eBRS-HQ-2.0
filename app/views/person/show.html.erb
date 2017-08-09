@@ -1,2 +1,481 @@
-<h1>Person#show</h1>
-<p>Find me in app/views/person/show.html.erb</p>
+<style>
+
+.record td {
+  font-size: 16px;
+  color: #000;
+  padding: 10px;
+  text-align: left;
+
+  <% if @status.match(/VOIDED/i) %>
+
+  text-decoration: line-through;
+
+  <% end %>
+
+}
+
+.record td strong {
+  font-size: 12px;
+  font-style: normal;
+  color: #333;
+  float: right;
+}
+#completeness_details tr{
+    border-top: 1px dotted lightgray
+}
+
+.labell{
+    text-align: left;
+    font-weight: bold !important;
+    padding: 4px;
+}
+.modal-header{
+    background: #006f95 none repeat scroll 0 0;
+    padding: 12px;
+}
+.comments-list .media{
+    border-bottom: 1px dotted #ccc;
+}
+#comments-list{
+    max-height: 300px;
+    overflow: auto;
+    width: 100%;
+}
+</style>
+<script>
+  return_path = '<%= session[:list_url]%>'
+</script>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 50px;">
+      <table style="width: 100%;">
+        <tr>
+          <td>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Record Details</h3>
+          </td>
+          <td colspan="8" style="width: 60%;">
+            <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
+
+      <table width="85%;" style="margin: auto;border: 1px solid gray;padding: 0px;">
+
+
+        <% @record.each do |group, children| %>
+
+        <% r = 0 %>
+
+        <tr>
+          <td valign="top" style="font-size: 18px; text-align: left; padding: 10px;padding-top: 0px; background-color: lightsteelblue;
+          border-bottom: 1px solid #ccc;">
+          <%= group %>
+        </td>
+      </tr>
+      <tr>
+        <td>
+
+
+          <table class="record" width="100%" cellpadding="10" cellspacing="0">
+
+            <% children.each do |child| %>
+
+            <% kids = child.keys %>
+
+            <tr>
+
+              <% (0..(kids.length - 1)).each do |i| %>
+
+              <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                <% unless kids[i].kind_of?(Array) %>
+                <strong style="color: #3465a4;;"><%= kids[i].html_safe %></strong>
+                <% else %>
+                    <% if  kids[i].second == "mandatory" %>
+                            <strong style="color: #3465a4;;"><%= kids[i].first %><span style='color: red;'> *</span></strong>
+                  <% elsif  kids[i].second == "sub" %>
+                            <strong style="color:#3465a4;;"><%= kids[i].first %><br /><span style='color: grey;font-size: smaller; font-style: italic;'>(<%= (child[kids[i]] == "Yes" ? "Registered after 42 days of birth" : "Registered within 42 days of birth") rescue nil %>)</span>
+                    <% end %>
+                <% end %>
+              </td>
+
+              <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>" id='<%= kids[i].kind_of?(Array) ? "#{group.gsub(" ", "_").downcase}_#{kids[i].first.gsub(" ", "_").downcase}" : "#{group.gsub(" ", "_").downcase}_#{kids[i].gsub(" ", "_").downcase}" %>'>
+                <%= child[kids[i]] rescue nil %>
+              </td>
+
+              <% end %>
+
+              <% ((kids.length)..2).each do |i| %>
+
+              <td align="right" style="border-right: 1px solid #eee; <%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                <strong>&nbsp;</strong>
+              </td>
+              <td style="<%= (r < children.length - 1 ? "border-bottom: 1px solid #eee" : "") %>">
+                &nbsp;
+              </td>
+
+              <% end %>
+
+            </tr>
+
+            <% r += 1 %>
+
+            <% end %>
+
+          </table>
+
+        </td>
+      </tr>
+
+      <% end %>
+
+      <tr>
+        <td style="border-top: 1px solid #ccc;">
+          &nbsp;
+        </td>
+      </tr>
+
+    </table>
+
+      <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
+        <button class="btn btn-danger pull-left"
+                onclick="window.parent.location = return_path ">
+          Cancel
+        </button>
+
+        <button class="btn btn-success pull-right"
+                onclick="jQuery('#completenessModal').modal('show')">
+          <span class="fa fa-check"></span>
+          Check Completeness
+        </button>
+        <button class="btn btn-success pull-right"
+                onclick="ajaxify('HQ-CAN-PRINT')">
+          <span class="fa fa-thumbs-o-up"></span>
+          Approve for Printing
+        </button>
+
+        <button class="btn btn-success pull-right"
+                onclick="ajaxify('HQ-DISPTACHED')">
+          <span class="fa fa-truck"></span>
+          Dispatch
+        </button>
+        <button class="btn btn-success pull-right"
+                onclick="preview()">
+          <span class="fa fa-print"></span>
+          Print
+        </button>
+        <button class="btn btn-danger pull-right"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
+          <span class="fa"></span>
+          Reject
+        </button>
+        <button class="btn btn-warning pull-right"
+                onclick="generalComment('Enter void reason to proceed', 'HQ-VOIDED')">
+          <span class="fa fa-void"></span>
+          Void
+        </button>
+      </div>
+
+      <button class="btn btn-primary pull-right"
+              onclick= 'ajaxPullComments("view")' >
+        <span class="fa fa-comments"></span>
+        View Comments (<%= @comments.count%>)
+      </button>
+    </div>
+
+
+</div>
+
+
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Select Printer
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="printers">
+            <% @available_printers.each do |printer| %>
+              <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+              </tr>
+            <% end %>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" onclick="submitForm();">Okay</button>
+          <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="completenessModal" tabindex="-1" role="dialog" aria-labelledby="completenessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Check Completeness
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="completeness_details">
+            <tr>
+              <td class="labell" >Birth Entry Number</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.district_id_number %></td> </tr>
+            <tr>
+              <td class="labell">Child Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= "#{@name.first_name} #{@name.middle_name} #{@name.last_name}" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Gender</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Date of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.strftime("%d/%b/%Y") %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Place of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @place_of_birth %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name %></td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Mother</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship %></td>
+            </tr>
+            <tr>
+              <td class="labell">Father</td>
+              <td style="text-align: left; padding-left:50px;"><%=@father_person.name %></td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Father</td>
+              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship  %></td>
+            </tr>
+            <tr>
+              <td class="labell">Parents Married to each Other?</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Court order attached</td>
+              <td style="text-align: left; padding-left:50px;"><%= @birth_details.court_order_attached.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Parents signed?</td>
+              <td style="text-align: left; padding-left:50px;"><%=  @birth_details.parents_signed.to_s == '1' ? 'Yes' : 'No' %></td>
+            </tr>
+            <tr>
+              <td class="labell">Delayed Registration</td>
+              <td style="text-align: left; padding-left:50px;"><%= @delayed %></td>
+            </tr>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-COMPLETE')">Complete</button>
+          <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+ <div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header btn-primary">
+        <h4 class="modal-title" id="comment-header">Record Comments</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <div class=" form-group">
+              <div class="container">
+                <div class="row" style="width: 550px;">
+
+                  <div id="comments-list">
+
+                  </div>
+
+                  <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
+                    <form id="comment-form" action="/ajax_save_comment">
+                      <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
+                      <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments').modal('hide')" > Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
+  <div class="media-body" style="width: 550px;">
+    <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
+    <span class="comment" style="width: 100%;"></span>
+  </div>
+</div>
+
+
+<script>
+    function ajaxify(status){
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if (status == "HQ-COMPLETE") {
+            var status = ({
+                'Data Checking Clerk': 'HQ-COMPLETE',
+                'Administrator': 'HQ-COMPLETE',
+                'Data Supervisor': 'HQ-CONFLICT-TBA',
+                'Data Manager': 'HQ-CAN-PRINT'
+            })[role];
+        }
+        var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
+
+        jQuery.ajax({
+            url: url,
+            success: function(feedback){
+                window.parent.location = return_path;
+            },
+            error: function(error){
+                alert("Something went wrong!");
+            }
+        })
+    }
+
+    function ajaxPullComments(mode){
+        jQuery("#comment-list").html("");
+
+        if (mode && mode == 'view'){
+            __$('textarea').value = ''
+            __$('textarea').style.display = 'none';
+            __$('submit_btn').style.display = 'none';
+            __$("comment-header").innerHTML = "Record comments"
+        }else{
+            __$('textarea').style.display = 'inline';
+            __$('submit_btn').style.display = 'inline';
+            __$("comment-header").innerHTML = "Add comment to proceed";
+        }
+
+        jQuery.ajax(
+                {
+                    url: "/get_comments?person_id=<%= params[:person_id]%>",
+                    success: function(results){
+                        results = JSON.parse(results);
+                        var parent = document.getElementById("comments-list");
+                        parent.innerHTML = "";
+                        __$('textarea').value = ''
+                        var clone = document.getElementById("clone_me");
+                        for(var i = 0; i < results.length; i++){
+                            var dup = clone.cloneNode(true);
+                            dup.id = i;
+                            dup.style.display = "block";
+                            //set values
+                            dup.getElementsByClassName("name")[0].innerHTML = results[i]['user']
+                                    + " <small class='user_role'>" + results[i]['user_role'] + " - " + results[i]['date_added'] + " </small>";
+                            dup.getElementsByClassName("state")[0].innerHTML = results[i]['status'];
+                            dup.getElementsByClassName("comment")[0].innerHTML = results[i]['comment'];
+
+                            parent.appendChild(dup);
+                        }
+
+                        jQuery("#comments").modal('show');
+
+                        parent.scrollTop = parent.scrollHeight;
+
+                    },
+                    error: function(e){
+                        alert("Something went wrong!");
+                    }
+                }
+        )
+    }
+
+    function generalComment(header, status){
+
+        ajaxPullComments();
+
+        __$('submit_btn').style.display = 'inline';
+        __$("comment-header").innerHTML = header;
+
+        if(status){
+            __$('submit_btn').onclick = function(){
+                    saveComment(status);
+                };
+        }
+    }
+
+    function reject(){
+
+    }
+
+    function saveComment(status){
+        if (__$("textarea").value.trim().length == 0){
+            jQuery('#error').show();
+            return
+        }
+
+        var role = '<%= User.current.user_role.role.role%>';
+        if (!status) {
+            status = ({
+                'Data Checking Clerk': 'HQ-INCOMPLETE',
+                'Administrator': 'HQ-INCOMPLETE',
+                'Data Supervisor': 'HQ-CONFLICT'
+            })[role];
+        }
+
+        var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment="
+        jQuery.ajax(
+                {
+                    url: url,
+                    data: {
+                        'comment' : __$("textarea").value,
+                        "authenticity_token": "<%= form_authenticity_token %>"
+                    },
+                    success: function(result){
+                        if(result == 'ok'){
+                            window.location = return_path;
+                        }else{
+                            alert("Something went wrong!")
+                        }
+                    },
+                    error: function(){
+                        alert("Something went wrong!")
+                    }
+                }
+        )
+    }
+</script>
+
+<style>
+  .btn{
+    margin-left: 5px;
+      margin-right: 5px;
+  }
+</style>

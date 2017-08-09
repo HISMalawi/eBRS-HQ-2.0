@@ -27,45 +27,87 @@ class UsersController < ApplicationController
   #Adds A New User
   def new
     @user = User.new
+    @usernames = User.all.map(&:username)
   end
 
   # Edits Selected User
   def edit
     @user = User.find(params[:user_id])
+    @usernames = User.all.map(&:username)
   end
 
   #Creates A New User
   def create
     username = params[:post][:username]
     password = params[:post][:password]
+    email    = params[:post][:email]
 
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
-    gender      = params[:post][:person][:gender]
+    gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
 
     ActiveRecord::Base.transaction do
       core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
-      person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender)
+      person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
 
       names = PersonName.create(first_name: first_name, last_name: last_name, person_id: core_person.id)
       PersonNameCode.create(first_name_code: first_name.soundex,
         last_name_code: last_name.soundex, person_name_id: names.id)
 
-      user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id: 71780)
-      role = Role.where(role: params[:post][:user_role]).first
-      UserRole.create(user_id: user.id, role_id: role.id)
+      user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id:
+          SETTINGS['location_id'], email: email, last_password_date: Time.now)
+
+      UserRole.create(user_id: user.id, role_id: params[:post][:user_role]['role'])
     end
 
     redirect_to '/users'
   end
 
   def update
-    @user = User.find(params[:user_id])
-    if params[:user][:plain_password].present? && params[:user][:plain_password].length > 1
-      @user.update_attributes(password_hash: params[:user][:plain_password], 
-        password_attempt: 0, last_password_date: Time.now)
-    end
 
+    user = User.find(params[:user_id])
+    person = Person.find(user.person_id)
+    person_name = PersonName.where(person_id: user.person_id).last
+    name_code = PersonNameCode.where(person_name_id: person_name.id).last
+    user_role = user.user_role
+    username = params[:post][:username]
+    password = params[:post][:password]
+    email    = params[:post][:email]
+
+    first_name  = params[:post][:person_name][:first_name]
+    last_name   = params[:post][:person_name][:last_name]
+    gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
+    role = params[:post][:user_role]['role']
+    ActiveRecord::Base.transaction do
+
+      if password.length > 4
+        user.update_attributes(
+          password_hash: password,
+          password_attempt: 0,
+          email: email,
+          last_password_date: Time.now)
+      end
+
+      person.update_attributes(
+          gender: gender,
+      )
+
+      person_name.update_attributes(
+          first_name: first_name,
+          last_name: last_name
+      )
+
+      name_code.update_attributes(
+          first_name_code: first_name.soundex,
+          last_name_code: last_name.soundex
+      )
+
+      user_role.update_attributes(
+          role_id: role
+      )
+
+      redirect_to '/users'
+    end
   end
 
   #Displays All Users
@@ -104,42 +146,49 @@ class UsersController < ApplicationController
   end
 
   #Revokes User Access Rights
-  def block
-    user = User.find(params[:user_id]) rescue nil
-    if !user.nil?
-      if admin?
-        user.update_attributes(active: false, 
-          un_or_block_reason: (params[:reason].blank? ? 'Unknown' : params[:reason]))
+  def block_user
+
+    if params['unblock'].present?
+      user = User.find(params[:user_id]) rescue nil
+      if !user.nil?
+        if admin?
+          user.update_attributes(active: true,
+                                 un_or_block_reason: 'Unkown')
+        end
+      end
+    else
+      user = User.find(params[:user_id]) rescue nil
+      if !user.nil?
+        if admin?
+          user.update_attributes(active: false,
+            un_or_block_reason: (params[:reason].blank? ? 'Unknown' : params[:reason]))
+        end
       end
     end
 
-    redirect_to "/users" and return
+    render :text => true
   end
 
   #Gives Back Bloked User Access Rights
   def void_user
     user = User.find(params[:user_id]) rescue nil
 
-    if !user.nil?
+    if !user.blank?
       if admin?
-        user.update_attributes(voided: true, 
-          :void_reason => "Removed from system by (user_id): #{User.current.id}") 
+        user.update_attributes(blocked: true)
       end
     end
 
-    redirect_to "/view_users" and return
-
+  render :text => true
   end
 
   def search
 
     #redirect_to "/" and return if !(User.current_user.activities_by_level("Facility").include?("View Users"))
-
     @section = "Search for User"
 
     @targeturl = "/users"
 
-    render :layout => "facility"
 
   end
 
@@ -240,13 +289,11 @@ class UsersController < ApplicationController
 
     @user = User.current
 
-    render :layout => "facility"
-
   end
 
   def update_password
 
-    user = User.current
+    user = User.find(params[:user_id])
 
     result = user.password_matches?(params[:old_password])
 

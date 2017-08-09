@@ -20,6 +20,10 @@ class ApplicationController < ActionController::Base
 
   end
 
+  def has_role(role)
+    true
+  end
+
   def application_mode
     if SETTINGS['application_mode'] == 'FC'
       return 'Facility'
