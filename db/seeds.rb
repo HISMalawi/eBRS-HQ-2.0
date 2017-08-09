@@ -30,7 +30,7 @@ def create_user
 
   puts "Creating User"
 
-  user = User.create!(username: 'admin', 
+  user = User.create!(username: "admin_#{SETTINGS['location_id']}",
                       password_hash: 'adminebrs', 
                       creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
                       person_id: core_person.person_id)
