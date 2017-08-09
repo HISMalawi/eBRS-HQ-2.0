@@ -93,6 +93,7 @@ Rails.application.routes.draw do
 
   ############################### Main Tasks routes #####################################
   get "/person/manage_cases"
+  get "/person/print_out"
   get "/person/view"
 
   ########################### (create record form) routes
@@ -112,6 +113,9 @@ Rails.application.routes.draw do
 
   get '/print_preview' => 'person#print_preview'
   post '/print_preview' => 'person#print_preview'
+  get '/birth_certificate' => 'person#birth_certificate'
+  get '/print' => 'person#print'
+  post '/print_dispatched_certs' => 'person#print_dispatched_certs'
 
   resources :person
 

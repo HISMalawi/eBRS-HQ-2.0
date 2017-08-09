@@ -76,7 +76,12 @@
       }
 
   </style>
-
+<script>
+   function alert(data){
+       __$('alert-msg').innerHTML = data;
+       jQuery('#alert-modal').modal('show');
+   }
+</script>
   <section id="container" >
       <!-- **********************************************************************************************************************************************************
       TOP BAR CONTENT & NOTIFICATIONS
@@ -241,11 +246,26 @@
               </a>
           </div>
       </footer>
-      <!--footer end-->
   </section>
-
   </body>
 
+  <div class="modal fade" class="alert-modal" id="alert-modal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+
+        <div class="modal-body" style="background: #d9534f;color: white;">
+            <div style="width: 100%;">
+                <label id='alert-msg' style="font-size: 18px;width: 100%; text-align: center;">&nbsp;</label>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+              <button type="button" class="btn btn-sm btn-default pull-right"
+                      onclick="__$('alert-msg').innerHTML = '&nbsp;'; jQuery('#alert-modal').modal('hide')" >&nbsp;&nbsp; OK &nbsp;&nbsp; </button>
+        </div>
+      </div>
+    </div>
+  </div>
 <style>
     .btn{
         border-left: 3px solid darkslategray !important;
