@@ -70,7 +70,7 @@
   }
 
 </style>
-
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
 <div class="panel panel-default">
   <div class="panel-heading" style="height: 50px;">
     <table style="width: 100%;">
@@ -376,21 +376,76 @@
 </table>
 
 </div>
-<% if @potential_duplicate[:status] != "DC-VOIDED" %>
-<button id="btnApprove"
-		      class="green"
-		      style="position: absolute; right: 450px; bottom: 20px;"
-		      onclick="resolveDuplicate();">Resolve</button>
-<%else%>
-	<button id="btnApprove"
-		      class="green"
-		      style="position: absolute; right: 450px; bottom: 20px;"
-		      onclick="viewComment()">View Comment</button>
-<%end%>
+<div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header btn-primary">
+        <h4 class="modal-title" id="comment-header">Record Comments</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <div class=" form-group">
+              <div class="container">
+                <div class="row" style="width: 550px;">
+
+                  <div id="comments-list">
+
+                  </div>
+
+                  <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
+                    <form id="comment-form" action="/ajax_save_comment">
+                      <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
+                      <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" id="comment_footer">
+           
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments').modal('hide')" > Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
+  <div class="media-body" style="width: 550px;">
+    <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
+    <span class="comment" style="width: 100%;"></span>
+  </div>
+</div>
+
+<style type="text/css">
+    .btn{
+      margin-right: 2%;
+    }
+</style>
 <button id="btnNext"
-        class='blue'
-        style="position: absolute; right: 160px; bottom: 20px;"
+        class="btn btn-success pull-right"
         onclick="nextSimilar()">Next Similar Record</button>
+
+<button id="btnApprove"
+		      class="btn btn-primary pull-right"
+		      onclick="resolveDuplicate('Resolve');">Resolve</button>
+
+<button id="btnConfirm"
+          class="btn btn-primary pull-right"
+          onclick="resolveDuplicate('Confirm-duplicate')">Confirm Record Duplicate</button>
+
+<button class="btn btn-primary pull-right"
+              onclick= 'ajaxPullComments("view")' >
+        <span class="fa fa-comments"></span>
+        View Comments (<%= @comments.count%>)
+      </button>
+
 <script type="text/javascript">
 	var current_index = parseInt("<%= params[:index]%>");
 	function nextSimilar(){
@@ -400,368 +455,119 @@
 		window.location.href = path;
 	}
 
-	function resolveDuplicate(){
-		var noaction = "window.location.href='/add_duplicate_comment/<%=params[:id]%>?"+
-					 "decision=DUPLICATE&next_path=<%=params[:next_path]%>'";
-		var action = "window.location.href='/add_duplicate_comment/<%=params[:id]%>?"+
-					   "decision=NOT DUPLICATE&next_path=<%=params[:next_path]%>'"
-		showMsgForAction("Decision", action, "600px", "Resolve duplicate", noaction)
-	}
+	function resolveDuplicate(operation){
+    var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
 
-	function viewComment(){
-		showMsgPop("<%=  @potential_records.comment%>", "Comment","600px", null)
-	}
+		ajaxPullComments();
+    __$("comment-header").innerHTML = operation + " : Add comment to proceed"
+    __$("submit_btn").style.display ="none"
+    var comment_footer = __$("comment_footer");
+    var noactionBTN = __$("noaction")
+    if(noactionBTN){
 
-	function showMsgForAction(msg, action, width, title, noAction) {
-
-        showShield(undefined, true);
-
-        if (!__$("shield")) {
-
-            showShield(undefined, true);
-
-        }
-
-        var popup = document.createElement("div");
-        popup.id = "popup";
-        popup.style.position = "absolute";
-        popup.style.minHeight = "140px";
-        popup.style.top = "20%";
-        popup.style.width = (width == undefined ? "330px" : width);
-        popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-        popup.style.backgroundColor = "#eee";
-        popup.style.zIndex = 1300;
-        popup.style.border = "2px outset #eee";
-        popup.style.borderRadius = "8px";
-        popup.style.padding = "3px";
-
-        document.body.appendChild(popup);
-
-        var table = document.createElement("table");
-        table.width = "100%";
-        table.style.fontSize = "24px";
-
-        popup.appendChild(table);
-
-        var tbody = document.createElement("tbody");
-
-        table.appendChild(tbody);
-
-        var tr1 = document.createElement("tr");
-        tr1.id = "header_row";
-
-        tbody.appendChild(tr1);
-
-        var th = document.createElement("th");
-        th.innerHTML = (title == undefined ? "Info" : title);
-        th.style.backgroundColor = "#345d8c";
-        th.id = "header_data";
-        th.style.color = "#fff";
-        th.style.borderTopLeftRadius = "8px";
-        th.style.borderTopRightRadius = "8px";
-        th.style.border = "1px outset #23538a !important";
-        th.colSpan = "3";
-        th.style.padding = "5px";
-        th.style.fontSize = "16px";
-        th.style.textAlign = "center";
-
-        tr1.appendChild(th);
-
-        var tr2 = document.createElement("tr");
-        tr2.id = "content_row";
-
-        tbody.appendChild(tr2);
-
-        var td1_1 = document.createElement("td");
-        td1_1.id = "content_data";
-        td1_1.colSpan = "3";
-        td1_1.style.padding = "5px";
-        td1_1.style.paddingTop = "5px";
-        td1_1.style.paddingBottom = "5px";
-        td1_1.align = "center";
-        td1_1.innerHTML = msg;
-        td1_1.style.lineHeight = "120%";
-        td1_1.style.fontSize = "20px";
-
-        tr2.appendChild(td1_1);
-
-        var tr3 = document.createElement("tr");
-        tr3.id = "footer_row";
-
-        tbody.appendChild(tr3);
-
-        var td2_1 = document.createElement("td");
-        td2_1.align = "center";
-        td2_1.style.padding = "10px";
-
-        tr3.appendChild(td2_1);
-
-        var td2_2 = document.createElement("td");
-        td2_2.id = "footer_data";
-        td2_2.align = "center";
-        td2_2.style.padding = "10px";
-
-        tr3.appendChild(td2_2);
-
-        // font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-        // margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;
-
-
-        var btnApprove = document.createElement("button");
-        btnApprove.className = "green";
-        btnApprove.innerHTML = "Record is not a duplicate";
-        btnApprove.id = "reject"
-        btnApprove.style.cursor = "pointer";
-        btnApprove.style.fontSize = "14px";
-        btnApprove.style.minWidth = "120px";
-        btnApprove.style.minHeight = "20px";
-        btnApprove.style.padding = "6px";
-        btnApprove.style.margin = "10px";
-        btnApprove.style.fontWeight = "bold !important";
-        btnApprove.setAttribute("act", 'true');
-
-        td2_2.appendChild(btnApprove);
-
-        var btnNo = document.createElement("button");
-        btnNo.className = "blue";
-        btnNo.innerHTML = "Record is a duplicate";
-        btnNo.id = "approve"
-        btnNo.style.cursor = "pointer";
-        btnNo.style.fontSize = "14px";
-        btnNo.style.minWidth = "120px";
-        btnNo.style.minHeight = "20px";
-        btnNo.style.padding = "6px";
-        btnNo.style.margin = "10px";
-        btnNo.style.fontWeight = "bold !important";
-
-        td2_2.appendChild(btnNo);
-
-        var btnCancel = document.createElement("button");
-        btnCancel.className = "red";
-        btnCancel.innerHTML = "Cancel";
-        btnCancel.id = "cancel"
-        btnCancel.style.cursor = "pointer";
-        btnCancel.style.fontSize = "14px";
-        btnCancel.style.minWidth = "120px";
-        btnCancel.style.minHeight = "20px";
-        btnCancel.style.padding = "6px";
-        btnCancel.style.margin = "10px";
-        btnCancel.style.fontWeight = "bold !important";
-
-        td2_2.appendChild(btnCancel);
-
-        btnNo.onmousedown = function () {
-
-            if (__$("popup")) {
-
-                document.body.removeChild(__$("popup"));
-
-            }
-
-            if (__$("shield")) {
-
-                document.body.removeChild(__$("shield"));
-
-            }
-
-            if (noAction != undefined) {
-              //window.location = "/resolve_duplicate_comment?"+params;
-                eval(noAction);
-
-            }
-
-        }
-
-        btnApprove.onmousedown = function () {
-
-            if (this.getAttribute('act') == 'true') {
-               eval(action);
-            }
-        }
-
-        btnCancel.onmousedown = function() {
-
-            if (__$("popup")) {
-
-                document.body.removeChild(__$("popup"));
-
-            }
-
-            if (__$("shield")) {
-
-                document.body.removeChild(__$("shield"));
-
-            }
-        }
-        if (__$("popup")) {
-
-            var c = checkCtrl(__$("popup"));
-
-            // [w, h, t, l]
-
-            if (c[1] > 240) {
-
-                __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
-
-            }
-
-            if (c[0] > 330) {
-
-                __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
-
-            }
-
-        }
-
+          noactionBTN.onmousedown = function(){
+              if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+              window.location.href = link
+          }
+    }else{
+          var noactionBTN = document.createElement("button");
+          noactionBTN.id = "noaction"
+          noactionBTN.className ="btn btn-primary pull-right"
+          noactionBTN.innerHTML ="Not Duplicate"
+          comment_footer.appendChild(noactionBTN);
+          noactionBTN.onmousedown = function(){
+              if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+              window.location.href = link
+          }
     }
 
-	function showMsgPop(msg,title,width,action) {
+    var actionBTN = __$("action");
 
-        showShield(undefined, true);
+    if(actionBTN){
+        actionBTN.onmousedown = function(){
+            if(__$("textarea").value.length ==0){
+                __$("textarea").placeholder = "Please add comment"
+                __$("textarea").focus();
+                return;
+            }
+            link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+            window.location.href = link
+        }
+    }else{
+        var actionBTN = document.createElement("button");
+        actionBTN.id = "action"
+        actionBTN.className = "btn btn-danger pull-right"
+        actionBTN.innerHTML ="Duplicate"
+        actionBTN.onmousedown = function(){
+            if(__$("textarea").value.length ==0){
+                __$("textarea").placeholder = "Please add comment"
+                __$("textarea").focus();
+                return;
+            }
+            link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+            window.location.href = link
+        }
+    }
+   
+    comment_footer.appendChild(actionBTN);
 
-        if (!__$("shield")) {
+	}
 
-            showShield(undefined, true);
+  function ajaxPullComments(mode){
+        jQuery("#comment-list").html("");
 
+        if (mode && mode == 'view'){
+            __$('textarea').value = ''
+            __$('textarea').style.display = 'none';
+            __$('submit_btn').style.display = 'none';
+            __$("comment-header").innerHTML = "Record comments"
+        }else{
+            __$('textarea').style.display = 'inline';
+            __$('submit_btn').style.display = 'inline';
+            __$("comment-header").innerHTML = "Add comment to proceed";
         }
 
-        var popup = document.createElement("div");
-        popup.id = "popup";
-        popup.style.position = "absolute";
-        popup.style.minHeight = "140px";
-        popup.style.top = "20%";
-        popup.style.width = (width == undefined ? "330px" : width);
-        popup.style.left = ((window.innerWidth - 330) / 2) + "px";
-        popup.style.backgroundColor = "#eee";
-        popup.style.zIndex = 1300;
-        popup.style.border = "2px outset #eee";
-        popup.style.borderRadius = "8px";
-        popup.style.padding = "3px";
+        jQuery.ajax(
+                {
+                    url: "/get_comments?person_id=<%= params[:person_id]%>",
+                    success: function(results){
+                        results = JSON.parse(results);
+                        var parent = document.getElementById("comments-list");
+                        parent.innerHTML = "";
+                        __$('textarea').value = ''
+                        var clone = document.getElementById("clone_me");
+                        for(var i = 0; i < results.length; i++){
+                            var dup = clone.cloneNode(true);
+                            dup.id = i;
+                            dup.style.display = "block";
+                            //set values
+                            dup.getElementsByClassName("name")[0].innerHTML = results[i]['user']
+                                    + " <small class='user_role'>" + results[i]['user_role'] + " - " + results[i]['date_added'] + " </small>";
+                            dup.getElementsByClassName("state")[0].innerHTML = results[i]['status'];
+                            dup.getElementsByClassName("comment")[0].innerHTML = results[i]['comment'];
 
-        document.body.appendChild(popup);
+                            parent.appendChild(dup);
+                        }
+                        console.log(jQuery("#comments"));
+                        jQuery("#comments").modal('show');
 
-        var table = document.createElement("table");
-        table.width = "100%";
-        table.style.fontSize = "24px";
+                        parent.scrollTop = parent.scrollHeight;
 
-        popup.appendChild(table);
-
-        var tbody = document.createElement("tbody");
-
-        table.appendChild(tbody);
-
-        var tr1 = document.createElement("tr");
-        tr1.id = "header_row";
-
-        tbody.appendChild(tr1);
-
-        var th = document.createElement("th");
-        th.innerHTML = (title == undefined ? "Info" : title);
-        th.style.backgroundColor = "#345d8c";
-        th.id = "header_data";
-        th.style.color = "#fff";
-        th.style.borderTopLeftRadius = "8px";
-        th.style.borderTopRightRadius = "8px";
-        th.style.border = "1px outset #23538a !important";
-        th.colSpan = "3";
-        th.style.padding = "5px";
-        th.style.fontSize = "16px";
-        th.style.textAlign = "center";
-
-        tr1.appendChild(th);
-
-        var tr2 = document.createElement("tr");
-        tr2.id = "content_row";
-
-        tbody.appendChild(tr2);
-
-        var td1_1 = document.createElement("td");
-        td1_1.id = "content_data";
-        td1_1.colSpan = "3";
-        td1_1.style.padding = "5px";
-        td1_1.style.paddingTop = "5px";
-        td1_1.style.paddingBottom = "5px";
-        td1_1.align = "center";
-        td1_1.innerHTML = msg;
-        td1_1.style.lineHeight = "120%";
-        td1_1.style.fontSize = "20px";
-
-        tr2.appendChild(td1_1);
-
-        var tr3 = document.createElement("tr");
-        tr3.id = "footer_row";
-
-        tbody.appendChild(tr3);
-
-        var td2_1 = document.createElement("td");
-        td2_1.align = "center";
-        td2_1.style.padding = "10px";
-
-        tr3.appendChild(td2_1);
-
-        var td2_2 = document.createElement("td");
-        td2_2.id = "footer_data";
-        td2_2.align = "center";
-        td2_2.style.padding = "10px";
-
-        tr3.appendChild(td2_2);
-
-        // font-size: 14px; min-width: 100px; min-height: 20px; padding: 6px;
-        // margin: 10px; margin-right: 0px; float: right; font-weight: bold !important;
-
-        var btnCancel = document.createElement("button");
-        btnCancel.className = "blue";
-        btnCancel.innerHTML = "OK";
-        btnCancel.id = "cancel"
-        btnCancel.style.cursor = "pointer";
-        btnCancel.style.fontSize = "14px";
-        btnCancel.style.minWidth = "120px";
-        btnCancel.style.minHeight = "20px";
-        btnCancel.style.padding = "6px";
-        btnCancel.style.margin = "10px";
-        btnCancel.style.fontWeight = "bold !important";
-
-        td2_2.appendChild(btnCancel);
-
-        btnCancel.onmousedown = function() {
-
-            if (__$("popup")) {
-
-                document.body.removeChild(__$("popup"));
-
-            }
-
-            if (__$("shield")) {
-
-                document.body.removeChild(__$("shield"));
-
-            }
-
-            if (action != undefined) {
-              //window.location = "/resolve_duplicate_comment?"+params;
-                eval(noAction);
-
-            }
-        }
-        if (__$("popup")) {
-
-            var c = checkCtrl(__$("popup"));
-
-            // [w, h, t, l]
-
-            if (c[1] > 240) {
-
-                __$("popup").style.top = ((window.innerHeight / 2) - (c[1] / 2)) + "px";
-
-            }
-
-            if (c[0] > 330) {
-
-                __$("popup").style.left = ((window.innerWidth / 2) - (c[0] / 2)) + "px";
-
-            }
-
-        }
-
+                    },
+                    error: function(e){
+                        alert("Something went wrong!");
+                    }
+                }
+        )
     }
 </script>
