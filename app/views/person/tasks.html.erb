@@ -31,7 +31,7 @@
 }
 
 .divbtn{
-    height: 80px;
+    height: 112px;
     padding: 0px;
     background: ghostwhite;
     text-align: left;
@@ -60,13 +60,18 @@
     </table>
   </div>
   <div class="panel-body" style="">
-           <%(@tasks || []).each do |title, desc, stauses, link, icon|%>
+           <%(@tasks || []).each do |title, desc, stauses, link, icon|
+            count = stauses.collect{|s| (@stats[s] || 0)}.sum()
+           %>
                   <% @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title%>
                   <span class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
-                    <span class="divbtn">
-                        <span class="icons">
-                            <img class="icon-attr" src="<%= icon %>">
-                            <p><%=title%></p>
+                    <span class="divbtn" style="padding-top: 0px;padding-bottom: 0px;">
+                       <span class="count-label pull-right" >
+                            <p style="padding-top: 5px;padding-right: 5px;font-weight: bold;color: black"><%= count%></p>
+                        </span>
+                        <span class="icons" >
+                            <img style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;" class="icon-attr" src="<%= icon %>">
+                            <p style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"><%=title%></p>
                         </span>
                     </span>
 

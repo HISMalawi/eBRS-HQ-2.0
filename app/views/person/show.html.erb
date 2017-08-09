@@ -166,12 +166,12 @@
         </button>
 
         <button class="btn btn-success pull-right"
-                onclick="ajaxify('HQ-DISPTACHED')">
+                onclick="ajaxify('HQ-DISPATCHED')">
           <span class="fa fa-truck"></span>
           Dispatch
         </button>
         <button class="btn btn-success pull-right"
-                onclick="preview()">
+                onclick="window.location = '/print_preview?person_ids=<%= params[:person_id]%>' ">
           <span class="fa fa-print"></span>
           Print
         </button>

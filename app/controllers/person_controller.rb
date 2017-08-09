@@ -482,30 +482,40 @@ class PersonController < ApplicationController
   def tasks
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Manage Cases","Manage Cases" , [],"/person/manage_cases","/assets/folder3.png"],
-              ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
+              ["Manage Cases","Manage Cases" , ["HQ-ACTIVE", "HQ-COMPLETE", "HQ-CONFLICT-TBA", "HQ-PRINTED", "HQ-DISPATCHED"],
+                "/person/manage_cases","/assets/folder3.png"],
+              ["Rejected Cases" , "Rejected Cases" , ["HQ-REJECTED"],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
-              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
+              ["Duplicate Cases" , "Duplicate cases" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_outs","/assets/folder3.png"],
               ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
             ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
     @section = "Task(s)"
   end
 
   def manage_cases
-     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-     @tasks = [
-              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-              ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
-              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
-              ["View printed records","Printed records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"],
-              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
-            ]
-      @section = "Manage Cases"
-      render :template => "/person/tasks"
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+            ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+            ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+            ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
+            ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+            ["View printed records","Printed records" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+            ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+          ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Manage Cases"
+
+    render :template => "/person/tasks"
   end
 
   def get_comments
@@ -546,6 +556,37 @@ class PersonController < ApplicationController
     render :text => 'ok'
   end
 
+
+  def multiple_status_change
+    params[:person_ids].split(',').each do |person_id|
+      PersonRecordStatus.new_record_state(person_id, params[:status])
+    end
+
+    render :text => 'ok'
+  end
+
+  def print_preview
+
+    @data = []
+    person_ids = params[:person_ids].split(',')
+    person_ids.each do |person_id|
+      data = {}
+      data['person'] = Person.find(person_id)
+      data['birth']  = PersonBirthDetail.where(person_id: person_id).last
+
+      barcode = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png") rescue nil
+      if barcode.nil?
+        p = Process.fork{`bin/generate_barcode #{ data['person'].id} #{ data['person'].id} #{SETTINGS['barcodes_path']}`}
+        Process.detach(p)
+      end
+      sleep(0.5)
+      data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png")
+
+      @data << data
+    end
+
+    render :layout => false, :template => 'person/birth_certificate'
+  end
   ########################### Duplicates ###############################
   def duplicates_menu
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
@@ -689,6 +730,5 @@ class PersonController < ApplicationController
               father_middle_name: (father_name.middle_name rescue nil)
     }
     return person
-    
   end
 end

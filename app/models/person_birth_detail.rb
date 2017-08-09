@@ -39,6 +39,10 @@ class PersonBirthDetail < ActiveRecord::Base
   end
 
   def fsn
-    return self.facility_serial_number
+    self.facility_serial_number
+  end
+
+  def birth_place
+    Location.find(self.place_of_birth)
   end
 end
