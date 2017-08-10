@@ -498,6 +498,22 @@ class PersonController < ApplicationController
     @section = "Task(s)"
   end
 
+  def amendments
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["Lost/Damaged", "Lost/Damaged", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Amendments", "Amendments", ["HQ-PRINTED"], "/person/view","/assets/folder3.png"],
+        ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+    ]
+
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Manage Cases"
+
+    render :template => "/person/tasks"
+  end
+
   def manage_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
@@ -505,6 +521,7 @@ class PersonController < ApplicationController
               ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
              # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Print Cases", "Printed records", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
@@ -832,8 +849,9 @@ class PersonController < ApplicationController
     return person
   end
 
-  def print_dispatched_certs
+  def print_dispatched_certificates
     person_ids = params[:person_ids].split(',')
+    @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN #{person_ids}")
   end
 
 end

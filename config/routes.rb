@@ -96,6 +96,8 @@ Rails.application.routes.draw do
   get "/person/rejected_cases"
   get "/person/special_cases"
   get "/person/print_out"
+  get "/person/amendments"
+  get "/person/print_dispatched_certificates"
   get "/person/view"
 
   ########################### (create record form) routes
