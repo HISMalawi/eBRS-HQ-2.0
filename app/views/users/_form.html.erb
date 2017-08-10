@@ -128,6 +128,9 @@ end%>
         <label id="shortpassword" class="label label-danger hidden">
           Password too short. Minimum of 6 characters allowed
         </label>
+      <label id="shortusername" class="label label-danger hidden">
+        Username too short. Minimum of 6 characters allowed
+      </label>
         <label id="validemail" class="label label-danger hidden">
             Invalid e-mail address
         </label>
@@ -175,6 +178,12 @@ end%>
             __$("required").className = "label label-danger";
               return;
           }
+      }
+
+      if (__$('post_username').value.length < 6){
+          jQuery('.label-danger').attr('class', 'label label-danger hidden')
+          __$("shortusername").className = "label label-danger";
+          return;
       }
 
       if (__$('post_password').value.length < 6){
