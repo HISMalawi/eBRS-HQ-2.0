@@ -93,6 +93,8 @@ Rails.application.routes.draw do
 
   ############################### Main Tasks routes #####################################
   get "/person/manage_cases"
+  get "/person/rejected_cases"
+  get "/person/special_cases"
   get "/person/print_out"
   get "/person/view"
 

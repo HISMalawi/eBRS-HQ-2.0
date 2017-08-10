@@ -49,7 +49,7 @@ class Person < ActiveRecord::Base
 
   def citizenship
     adr = PersonAddress.where(person_id: self.id).last
-    loc_name = Location.find(adr.citizenship).name  rescue nil
+    loc_name = Location.find(adr.citizenship).country  rescue nil
     loc_name
   end
 

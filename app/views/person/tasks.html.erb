@@ -60,14 +60,24 @@
     </table>
   </div>
   <div class="panel-body" style="">
-           <%(@tasks || []).each do |title, desc, stauses, link, icon|
+           <%(@tasks || []).each do |title, desc, stauses, link, icon, role|
             count = stauses.collect{|s| (@stats[s] || 0)}.sum()
-           %>
-                  <% @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title%>
+
+                  if role.present? && role != User.current.user_role.role.role && SETTINGS['enable_role_privileges'].to_s == 'true'
+                    next
+                  end
+
+                 if !link.match(/\?/)
+                    @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 else
+                   @link = link+"&" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 end
+            %>
+
                   <span class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
                     <span class="divbtn" style="padding-top: 0px;padding-bottom: 0px;">
                        <span class="count-label pull-right" >
-                            <p style="padding-top: 5px;padding-right: 5px;font-weight: bold;color: black"><%= count%></p>
+                            <p style="padding-top: 5px;padding-right: 5px;font-weight: bold;color: black"><%= (count == 0 ? '' : count)%></p>
                         </span>
                         <span class="icons" >
                             <img style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;" class="icon-attr" src="<%= icon %>">

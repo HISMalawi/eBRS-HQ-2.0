@@ -26,7 +26,9 @@
         }
     </script>
   </head>
-
+    <%
+        @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    %>
   <body>
   <style type="text/css">
       .divbtn {
@@ -136,41 +138,60 @@
                           <span>Home</span>
                       </a>
                   </li>
-                <li class="sub-menu">
-                  <a href="javascript:;" style="color: white;">
-                    <i class="fa fa-search"></i>
-                    <span>Search</span>
-                  </a>
-                  <ul class="sub">
-                    <li><a  href="lock_screen.html">By BRN</a></li>
-                    <li><a  href="lock_screen.html">By BEN</a></li>
-                    <li><a  href="/login">General Search</a></li>
-                    <li><a  href="lock_screen.html">Duplicates Scan</a></li>
-                  </ul>
-                </li>
+
+                <% if (['Search'] & @folders).length > 0%>
+                    <li class="sub-menu">
+                      <a href="javascript:;" style="color: white;">
+                        <i class="fa fa-search"></i>
+                        <span>Search</span>
+                      </a>
+                      <ul class="sub">
+                        <% if @folders.include?('By BRN')%>
+                            <li><a  href="lock_screen.html">By BRN</a></li>
+                        <% end %>
+                        <% if @folders.include?('By BEN')%>
+                            <li><a  href="lock_screen.html">By BEN</a></li>
+                        <% end %>
+                        <% if @folders.include?('General Search')%>
+                            <li><a  href="/login">General Search</a></li>
+                        <% end %>
+                      </ul>
+                    </li>
+                <% end %>
+
+                <% if (['Tasks'] & @folders).length > 0%>
                   <li class="">
                       <a href="/tasks" style="color: white;">
                           <i class="fa fa-desktop"></i>
                           <span >Tasks</span>
                       </a>
                   </li>
+                <% end %>
 
+                <% if (['Settings'] & @folders).length > 0%>
                   <li class="sub-menu">
                       <a href="javascript:;" style="color: white;">
                           <i class="fa fa-cogs"></i>
                           <span>Settings</span>
                       </a>
                       <ul class="sub">
+                         <% if @folders.include?('Manage Sites')%>
                           <li><a  href="/sites">Manage sites</a></li>
-                          <%if admin? %>
+                         <% end %>
+
+                          <%if @folders.include?('Manage Users') %>
                             <li><a  href="/users">Manage users</a></li>
                           <%end%>
+
+                        <%if @folders.include?('My Account') %>
                           <li><a  href="/user/<%=User.current.id%>">My account</a></li>
-                          <%if admin? %>
-                            <li><a  href="/deleted_users">Manage deleted users</a></li>
-                          <%end%>
+                        <% end %>
+
                       </ul>
-                  </li>
+                    </li>
+                  <% end %>
+
+                <% if (['Reports'] & @folders).length > 0%>
                   <li class="sub-menu">
                       <a href="javascript:;" style="color: white;">
                           <i class="fa fa-book"></i>
@@ -178,14 +199,15 @@
                       </a>
                       <ul class="sub">
                           <!--li class="active"><a  href="blank.html">Blank Page</a></li-->
-                          <li><a  href="/login">Printed certificates</a></li>
-                          <li><a  href="lock_screen.html">Reported births</a></li>
-                          <li><a  href="lock_screen.html">Rigistered births</a></li>
+                          <li><a  href="/login">Printed Certificates</a></li>
+                          <li><a  href="lock_screen.html">Reported Births</a></li>
+                          <li><a  href="lock_screen.html">Registered Births</a></li>
                           <li><a  href="lock_screen.html">Approved at HQ</a></li>
-                          <li><a  href="lock_screen.html">Voided records</a></li>
-                          <li><a  href="lock_screen.html">User audits</a></li>
+                          <li><a  href="lock_screen.html">Voided Records</a></li>
+                          <li><a  href="lock_screen.html">User Audits</a></li>
                       </ul>
                   </li>
+                <% end %>
 
               </ul>
               <!-- sidebar menu end-->
