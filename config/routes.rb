@@ -1,4 +1,16 @@
 Rails.application.routes.draw do
+  get 'global_property/paper'
+
+  get 'global_property/signature'
+
+  get 'global_property/set_paper'
+
+  get 'global_property/set_signature'
+
+  get 'global_property/update_paper'
+
+  get 'global_property/update_signature'
+
   get 'task/:task_id'  => 'person#task'
 
   get '/sites' => 'location#sites'
@@ -13,6 +25,8 @@ Rails.application.routes.draw do
 
   root 'person#index'
 
+  get '/show_person/:person_id' => 'person#show'
+
   get 'user/:user_id' => 'users#show'
 
   get '/users' => 'users#view'
@@ -24,6 +38,8 @@ Rails.application.routes.draw do
   get "unblock/:user_id" => "users#unblock"
 
   get "/void_user/:user_id" => "users#void_user"
+
+  get "/block_user/:user_id" => "users#block_user"
 
   get '/query_users' =>"users#query_users"
 
@@ -61,7 +77,11 @@ Rails.application.routes.draw do
 
   get "edit/:user_id" => "users#edit"
 
-  get '/username_availability' => 'users#username_availability'
+  get "change_password/:user_id" => "users#change_password"
+
+  get "update_password/:user_id" => "users#update_password"
+
+  post "update/:user_id" => "users#update"
 
   post '/create_user' => 'users#create'
 
@@ -71,11 +91,27 @@ Rails.application.routes.draw do
 
   get 'person/new'
 
+  get "person/duplicates_menu"
+
+  get "person/duplicate"
+
+  get "/duplicate_processing/:id" =>"person#duplicate_processing"
+
   post 'person/create'
 
   post '/application/get_registration_type'
 
   get 'records/:status' => 'person#records'
+
+  ############################### Main Tasks routes #####################################
+  get "/person/manage_cases"
+  get "/person/rejected_cases"
+  get "/person/special_cases"
+  get "/person/print_out"
+  get "/person/amendments"
+  get "/person/dispatch_certificates"
+  get "/person/dispatch_list"
+  get "/person/view"
 
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}
@@ -88,14 +124,17 @@ Rails.application.routes.draw do
   get '/search_by_hospital' => 'person#get_hospital'
   ########################### (create record form) routes end
 
+  get '/get_comments' => 'person#get_comments'
+  get '/ajax_status_change' => 'person#ajax_status_change'
+  post '/multiple_status_change' => 'person#multiple_status_change'
 
-
-
-
-
-
-
-
+  get '/print_preview' => 'person#print_preview'
+  post '/print_preview' => 'person#print_preview'
+  get '/birth_certificate' => 'person#birth_certificate'
+  get '/print' => 'person#print'
+  post '/print_dispatched_certs' => 'person#print_dispatched_certs'
+  get '/paper' => 'global_property#paper'
+  get '/signature' => 'global_property#signature'
 
   resources :person
 

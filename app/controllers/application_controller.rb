@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
   #protect_from_forgery	#with: :null_session
 
-  before_filter :check_if_logged_in, :except => ['login']
+  before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
 
   def icoFolder(required_image)
 
@@ -18,6 +18,10 @@ class ApplicationController < ActionController::Base
         return searchIcon
      end
 
+  end
+
+  def has_role(role)
+    true
   end
 
   def application_mode
