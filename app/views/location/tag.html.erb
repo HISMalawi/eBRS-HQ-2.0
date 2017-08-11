@@ -84,7 +84,7 @@ function addRows(data) {
     description      = locations[i]['description'];
     code             = locations[i]['code'];
 
-    dataTable.api().row.add([code, name, description, createBtn(location_id)]).draw();
+    dataTable.api().row.add([location_id, code, name, description, createBtn(location_id)]).draw();
 <%elsif params[:location_tag] == 'ta'%>
     location_id      = locations[i]['location_id'];
     name             = locations[i]['name'];
@@ -107,7 +107,7 @@ function addRows(data) {
     code             = locations[i]['code'];
     district         = locations[i]['district'];
 
-    dataTable.api().row.add([code, name, description, district, latitude, longitude, createBtn(location_id)]).draw();
+    dataTable.api().row.add([location_id, code, name, description, district, latitude, longitude, createBtn(location_id)]).draw();
 <%end%>
   }
   
