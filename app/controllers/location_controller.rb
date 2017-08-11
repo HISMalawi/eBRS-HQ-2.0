@@ -66,7 +66,8 @@ class LocationController < ApplicationController
       end
 
     end
-    render text: location.to_json && return
+
+    render text: location.to_json
   end
 
   def tag
