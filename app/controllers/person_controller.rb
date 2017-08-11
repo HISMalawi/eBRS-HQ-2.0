@@ -123,6 +123,9 @@ class PersonController < ApplicationController
     @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
+
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+
     @record = {
           "Details of Child" => [
               {
@@ -249,7 +252,7 @@ class PersonController < ApplicationController
               },
               {
                   "Phone Number" => "#{@informant_person.phone_number rescue ""}",
-                  "Informant Signed?" => "#{@birth_details.form_signed rescue ""}"
+                  "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
                   "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
@@ -849,9 +852,52 @@ class PersonController < ApplicationController
     return person
   end
 
-  def print_dispatched_certificates
-    person_ids = params[:person_ids].split(',')
-    @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN #{person_ids}")
+  def dispatch_certificates
+
+    @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN (#{params[:person_ids]}) ")
+    @people.each do |person|
+      PersonRecordStatus.new_record_state(person.id, 'HQ-DISPATCHED')
+    end
+
+    path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"
+
+    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?person_ids=#{params[:person_ids]} #{path}.pdf\n"
+
+    puts print_url
+    t4 = Thread.new {
+      Kernel.system print_url
+      sleep(4)
+      #Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+      sleep(5)
+    }
+    sleep(1)
+
+    redirect_to session[:list_url]
   end
 
+  def dispatch_list
+    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered FROM person p
+                                 INNER JOIN person_birth_details d ON d.person_id = p.person_id
+                                 INNER JOIN person_name n ON n.person_id = p.person_id
+                        WHERE d.person_id IN (#{params[:person_ids]}) ")
+    @district = (Location.find(@people.first.birth_location_id).district rescue nil)
+    if @district.blank?
+      @district = (Location.find(@people.first.birth_district_id).name rescue nil)
+    end
+
+    @data = []
+    @people.each do |p|
+      details = PersonBirthDetail.where(:person_id => p.person_id).last
+      @data << {
+          'name'                => p.name,
+          'brn'                 => details.brn,
+          'ben'                 => details.ben,
+          'dob'                 => p.birthdate.to_date.strftime('%d/%b/%Y'),
+          'sex'                 => p.gender,
+          'date_registered'     => p.date_registered.to_date.strftime('%d/%b/%Y')
+      }
+    end
+
+    render :layout => false
+  end
 end

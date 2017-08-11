@@ -109,7 +109,8 @@ Rails.application.routes.draw do
   get "/person/special_cases"
   get "/person/print_out"
   get "/person/amendments"
-  get "/person/print_dispatched_certificates"
+  get "/person/dispatch_certificates"
+  get "/person/dispatch_list"
   get "/person/view"
 
   ########################### (create record form) routes
