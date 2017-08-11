@@ -73,12 +73,14 @@ th{
         </td>
         <td colspan="8" style="width: 60%;">
             <div class="pull-right" style="height: 40px; margin-top: 0px;">
+              <% if User.current.user_role.role.role == "Administrator"%>
                <a class="btn btn-sm btn-primary"
                   style="position: relative;"
                   onclick="javascript:location='/users/new'">
                 <span class="fa fa-plus-square"></span>
                 Add User
               </a>
+             <% end %>
             </div>
         </td>
       </tr>

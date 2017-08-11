@@ -123,6 +123,9 @@ class PersonController < ApplicationController
     @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
+
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+
     @record = {
           "Details of Child" => [
               {
@@ -249,7 +252,7 @@ class PersonController < ApplicationController
               },
               {
                   "Phone Number" => "#{@informant_person.phone_number rescue ""}",
-                  "Informant Signed?" => "#{@birth_details.form_signed rescue ""}"
+                  "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
                   "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
@@ -318,7 +321,7 @@ class PersonController < ApplicationController
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
-    @records = PersonService.query_for_display(@states)
+    @records = PersonService.query_for_display(@states, params[:had])
     render :template => "/person/records"
   end
 
@@ -482,35 +485,51 @@ class PersonController < ApplicationController
   def tasks
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Manage Cases","Manage Cases" , ["HQ-ACTIVE", "HQ-COMPLETE", "HQ-CONFLICT-TBA", "HQ-PRINTED", "HQ-DISPATCHED"],
-                "/person/manage_cases","/assets/folder3.png"],
+              ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
               ["Rejected Cases" , "Rejected Cases" , ["HQ-REJECTED"],"/person/rejected_cases","/assets/folder3.png"],
-              ["Edited record from DC" , "Edited record from DC" , [],"/person/edited_fron_dc","/assets/folder3.png"],
+              ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"],
-              ["Birth Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
+              ["Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
             ]
 
-    @tasks.reject{|task| !@folders.include?(task[0]) }
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
     @section = "Task(s)"
   end
 
+  def amendments
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["Lost/Damaged", "Lost/Damaged", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Amendments", "Amendments", ["HQ-PRINTED"], "/person/view","/assets/folder3.png"],
+        ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+    ]
+
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Manage Cases"
+
+    render :template => "/person/tasks"
+  end
+
   def manage_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-            ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-            ["View Cases", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-            ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
-            ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
-            ["View printed records","Printed records" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
-            ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Checking Clerk'],
+              ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
+             # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Print Cases", "Printed records", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+              ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+              ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
 
-    @tasks.reject{|task| !@folders.include?(task[0]) }
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
@@ -521,17 +540,50 @@ class PersonController < ApplicationController
   def print_out
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Approve Printing " ,"All records pending Approval to generate  Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-        ["Print Certificate", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Approve Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Print Certificates", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
         ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Closed Re-printed Certificates","All reprinteed records, those didn’t pass QC, option to view comments" , ["HQ-REPRINTED"],"/person/view","/assets/folder3.png"]
+        ["Closed Re-printed Certificates","All reprinted records that didn’t pass QC" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"]
     ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
     @section = "Print Out"
+
+    render :template => "/person/tasks"
+  end
+
+  def rejected_cases
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks =
+      [
+        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+      ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Rejected Cases"
+
+    render :template => "/person/tasks"
+  end
+
+  def special_cases
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["Abandoned Cases" ,"All records that were registered as Abandoned ", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Adopted Cases", "All records that were registered as Adopted" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Orphaned cases", "All records that were registered as Orphaned" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Printed/Dispatched Certificates", "All approved and printed Special cases", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"]
+    ]
+
+    @tasks.reject{|task| !@folders.include?(task[0]) }
+
+    @stats = PersonRecordStatus.stats
+    @section = "Special Cases"
 
     render :template => "/person/tasks"
   end
@@ -659,10 +711,10 @@ class PersonController < ApplicationController
    
     @tasks = [
               ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE","HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Can Confirm Duplicate","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Confirmed Duplicate","Confirmed Duplicate" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"],
-              ["Resolve potential Duplicates","Resolve potential Duplicates" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Approved for printing","Approved for printing" , [],"/person/view","/assets/folder3.png"],
+              ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"],
+              ["Resolve Potential Duplicates","Resolve potential Duplicates" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Approved for Printing","Approved for printing" , ['HQ-CAN-PRINT'],"/person/view?had=HQ-POTENTIAL DUPLICATE-TBA","/assets/folder3.png"],
               ["Voided Records","Voided Records" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"]
             ]
     @section = "Manage duplicate"
@@ -800,8 +852,52 @@ class PersonController < ApplicationController
     return person
   end
 
-  def print_dispatched_certs
-    person_ids = params[:person_ids].split(',')
+  def dispatch_certificates
+
+    @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN (#{params[:person_ids]}) ")
+    @people.each do |person|
+      PersonRecordStatus.new_record_state(person.id, 'HQ-DISPATCHED')
+    end
+
+    path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"
+
+    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?person_ids=#{params[:person_ids]} #{path}.pdf\n"
+
+    puts print_url
+    t4 = Thread.new {
+      Kernel.system print_url
+      sleep(4)
+      #Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+      sleep(5)
+    }
+    sleep(1)
+
+    redirect_to session[:list_url]
   end
 
+  def dispatch_list
+    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered FROM person p
+                                 INNER JOIN person_birth_details d ON d.person_id = p.person_id
+                                 INNER JOIN person_name n ON n.person_id = p.person_id
+                        WHERE d.person_id IN (#{params[:person_ids]}) ")
+    @district = (Location.find(@people.first.birth_location_id).district rescue nil)
+    if @district.blank?
+      @district = (Location.find(@people.first.birth_district_id).name rescue nil)
+    end
+
+    @data = []
+    @people.each do |p|
+      details = PersonBirthDetail.where(:person_id => p.person_id).last
+      @data << {
+          'name'                => p.name,
+          'brn'                 => details.brn,
+          'ben'                 => details.ben,
+          'dob'                 => p.birthdate.to_date.strftime('%d/%b/%Y'),
+          'sex'                 => p.gender,
+          'date_registered'     => p.date_registered.to_date.strftime('%d/%b/%Y')
+      }
+    end
+
+    render :layout => false
+  end
 end

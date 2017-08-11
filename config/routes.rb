@@ -1,4 +1,16 @@
 Rails.application.routes.draw do
+  get 'global_property/paper'
+
+  get 'global_property/signature'
+
+  get 'global_property/set_paper'
+
+  get 'global_property/set_signature'
+
+  get 'global_property/update_paper'
+
+  get 'global_property/update_signature'
+
   get 'task/:task_id'  => 'person#task'
 
   get '/sites' => 'location#sites'
@@ -93,7 +105,12 @@ Rails.application.routes.draw do
 
   ############################### Main Tasks routes #####################################
   get "/person/manage_cases"
+  get "/person/rejected_cases"
+  get "/person/special_cases"
   get "/person/print_out"
+  get "/person/amendments"
+  get "/person/dispatch_certificates"
+  get "/person/dispatch_list"
   get "/person/view"
 
   ########################### (create record form) routes
@@ -116,6 +133,8 @@ Rails.application.routes.draw do
   get '/birth_certificate' => 'person#birth_certificate'
   get '/print' => 'person#print'
   post '/print_dispatched_certs' => 'person#print_dispatched_certs'
+  get '/paper' => 'global_property#paper'
+  get '/signature' => 'global_property#signature'
 
   resources :person
 

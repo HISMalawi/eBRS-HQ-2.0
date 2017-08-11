@@ -720,10 +720,16 @@ end
     result
   end
 
-  def self.query_for_display(states)
+  def self.query_for_display(states, prev_state=nil)
    
     state_ids = states.collect{|s| Status.find_by_name(s).id} + [-1]
-
+    prev_clause = ""
+    if false && prev_state.present? #Rework this later on
+      prev_state_id = Status.find_by_name(prev_state).id
+      prev_clause = "
+         AND  (SELECT COUNT(*) FROM person_record_statuses WHERE voided = 0 AND person_id = p.person_id AND status_id = #{prev_state_id}) > 0
+        "
+    end
     person_type = PersonType.where(name: 'Client').first
 
 
@@ -735,6 +741,7 @@ end
             INNER JOIN person_birth_details pbd ON p.person_id = pbd.person_id
           WHERE prs.status_id IN (#{state_ids.join(', ')})
             AND cp.person_type_id = #{person_type.id}
+            #{prev_clause}
           GROUP BY p.person_id
           ORDER BY p.updated_at DESC
            "
