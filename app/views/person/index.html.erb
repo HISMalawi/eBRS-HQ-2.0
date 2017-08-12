@@ -49,7 +49,7 @@
           ['Suspected Duplicate (HQ)', @stats['HQ-POTENTIAL DUPLICATE']],
           ['Incomplete Record (HQ)', @stats['HQ-INCOMPLETE']],
           ['Printed (HQ)', @stats['HQ-PRINTED']],
-          ['Printed and Dispatched(HQ)', @stats['HQ-DISPATCHED']],
+          ['Dispatched(HQ)', @stats['HQ-DISPATCHED']],
           ['Voided (HQ)', @stats['HQ-VOIDED']],
         ]
       %>
@@ -72,13 +72,13 @@
   <div class="row charts">
     <div class="col-lg-12"> 
       
-      <div class="col-md-6">
+      <div class="col-md-12">
         <%= render partial: 'person/charts/bar_statistics' %>
       </div>
        
-      <div class="col-md-6">
-        <%= render partial: 'person/charts/pie_statistics' %>
-      </div> 
+      <!--div class="col-md-6">
+        <%#= render partial: 'person/charts/pie_statistics' %>
+      </div--> 
 
     </div> 
   </div> 
