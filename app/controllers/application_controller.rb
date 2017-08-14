@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery	#with: :null_session
 
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
-  before_filter :check_last_sync_time
+  #  before_filter :check_last_sync_time
 
   def check_last_sync_time
     last_run_time = File.mtime("#{Rails.root}/public/sync_sentinel").to_time
