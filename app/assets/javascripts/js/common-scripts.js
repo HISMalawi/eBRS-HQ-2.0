@@ -1,6 +1,6 @@
 /*---LEFT BAR ACCORDION----*/
-jQuery(function() {
-    jQuery('#nav-accordion').dcAccordion({
+$i(function() {
+    $i('#nav-accordion').dcAccordion({
         eventType: 'click',
         autoClose: true,
         saveState: true,
@@ -18,99 +18,99 @@ var Script = function () {
 
 //    sidebar dropdown menu auto scrolling
 
-    jQuery('#sidebar .sub-menu > a').click(function () {
-        var o = (jQuery(this).offset());
+    $i('#sidebar .sub-menu > a').click(function () {
+        var o = ($i(this).offset());
         diff = 250 - o.top;
         if(diff>0)
-            jQuery("#sidebar").scrollTo("-="+Math.abs(diff),500);
+            $i("#sidebar").scrollTo("-="+Math.abs(diff),500);
         else
-            jQuery("#sidebar").scrollTo("+="+Math.abs(diff),500);
+            $i("#sidebar").scrollTo("+="+Math.abs(diff),500);
     });
 
 
 
 //    sidebar toggle
 
-    jQuery(function() {
+    $i(function() {
         function responsiveView() {
-            var wSize = jQuery(window).width();
+            var wSize = $i(window).width();
             if (wSize <= 768) {
-                jQuery('#container').addClass('sidebar-close');
-                jQuery('#sidebar > ul').hide();
+                $i('#container').addClass('sidebar-close');
+                $i('#sidebar > ul').hide();
             }
 
             if (wSize > 768) {
-                jQuery('#container').removeClass('sidebar-close');
-                jQuery('#sidebar > ul').show();
+                $i('#container').removeClass('sidebar-close');
+                $i('#sidebar > ul').show();
             }
         }
-        jQuery(window).on('load', responsiveView);
-        jQuery(window).on('resize', responsiveView);
+        $i(window).on('load', responsiveView);
+        $i(window).on('resize', responsiveView);
     });
 
-    jQuery('.fa-bars').click(function () {
-        if (jQuery('#sidebar > ul').is(":visible") === true) {
-            jQuery('#main-content').css({
+    $i('.fa-bars').click(function () {
+        if ($i('#sidebar > ul').is(":visible") === true) {
+            $i('#main-content').css({
                 'margin-left': '0px'
             });
-            jQuery('#sidebar').css({
+            $i('#sidebar').css({
                 'margin-left': '-210px'
             });
-            jQuery('#sidebar > ul').hide();
-            jQuery("#container").addClass("sidebar-closed");
+            $i('#sidebar > ul').hide();
+            $i("#container").addClass("sidebar-closed");
         } else {
-            jQuery('#main-content').css({
+            $i('#main-content').css({
                 'margin-left': '210px'
             });
-            jQuery('#sidebar > ul').show();
-            jQuery('#sidebar').css({
+            $i('#sidebar > ul').show();
+            $i('#sidebar').css({
                 'margin-left': '0'
             });
-            jQuery("#container").removeClass("sidebar-closed");
+            $i("#container").removeClass("sidebar-closed");
         }
     });
 
 // custom scrollbar
-    jQuery("#sidebar").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '3', cursorborderradius: '10px', background: '#404040', spacebarenabled:false, cursorborder: ''});
+    $i("#sidebar").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '3', cursorborderradius: '10px', background: '#404040', spacebarenabled:false, cursorborder: ''});
 
-    jQuery("html").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '6', cursorborderradius: '10px', background: '#404040', spacebarenabled:false,  cursorborder: '', zindex: '1000'});
+    $i("html").niceScroll({styler:"fb",cursorcolor:"#4ECDC4", cursorwidth: '6', cursorborderradius: '10px', background: '#404040', spacebarenabled:false,  cursorborder: '', zindex: '1000'});
 
 // widget tools
 
-    jQuery('.panel .tools .fa-chevron-down').click(function () {
-        var el = jQuery(this).parents(".panel").children(".panel-body");
-        if (jQuery(this).hasClass("fa-chevron-down")) {
-            jQuery(this).removeClass("fa-chevron-down").addClass("fa-chevron-up");
+    $i('.panel .tools .fa-chevron-down').click(function () {
+        var el = $i(this).parents(".panel").children(".panel-body");
+        if ($i(this).hasClass("fa-chevron-down")) {
+            $i(this).removeClass("fa-chevron-down").addClass("fa-chevron-up");
             el.slideUp(200);
         } else {
-            jQuery(this).removeClass("fa-chevron-up").addClass("fa-chevron-down");
+            $i(this).removeClass("fa-chevron-up").addClass("fa-chevron-down");
             el.slideDown(200);
         }
     });
 
-    jQuery('.panel .tools .fa-times').click(function () {
-        jQuery(this).parents(".panel").parent().remove();
+    $i('.panel .tools .fa-times').click(function () {
+        $i(this).parents(".panel").parent().remove();
     });
 
 
 //    tool tips
 
-    jQuery('.tooltips').tooltip();
+    $i('.tooltips').tooltip();
 
 //    popovers
     try{
-      jQuery('.popovers').popover();
+      $i('.popovers').popover();
     }catch(z){
     }
 
 
 // custom bar chart
 
-    if (jQuery(".custom-bar-chart")) {
-        jQuery(".bar").each(function () {
-            var i = jQuery(this).find(".value").html();
-            jQuery(this).find(".value").html("");
-            jQuery(this).find(".value").animate({
+    if ($i(".custom-bar-chart")) {
+        $i(".bar").each(function () {
+            var i = $i(this).find(".value").html();
+            $i(this).find(".value").html("");
+            $i(this).find(".value").animate({
                 height: i
             }, 2000)
         })

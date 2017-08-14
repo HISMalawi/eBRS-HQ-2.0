@@ -7,7 +7,7 @@ require 'rails'
 couch_mysql_path = Dir.pwd + "/config/couchdb.yml"
 db_settings = YAML.load_file(couch_mysql_path)
 
-couch_db_settings = db_settings["production"]
+couch_db_settings = db_settings[Rails.env]
 
 couch_protocol = couch_db_settings["protocol"]
 couch_username = couch_db_settings["username"]
@@ -19,7 +19,7 @@ couch_port = couch_db_settings["port"]
 
 couch_mysql_path = Dir.pwd + "/config/database.yml"
 db_settings = YAML.load_file(couch_mysql_path)
-mysql_db_settings = db_settings["production"]
+mysql_db_settings = db_settings[Rails.env]
 
 mysql_username = mysql_db_settings["username"]
 mysql_password = mysql_db_settings["password"]
@@ -41,6 +41,8 @@ class Methods
     table = doc['type']
     doc_id = doc['document_id']
     return nil if doc_id.blank?
+
+
     rows = client.query("SELECT * FROM #{table} WHERE document_id = '#{doc_id}' LIMIT 1").each(:as => :hash)
     data = doc.reject{|k, v| ['_id', '_rev', 'type'].include?(k)}
 
@@ -51,18 +53,24 @@ class Methods
           v = v.to_datetime.to_s(:db) rescue v
         end
 
-        update_query += " #{k} = \"#{v}\", "
+        unless ['national_serial_number', 'facility_serial_number', 'district_id_number'].include?(k) and (v.blank? || v == 'null')
+         update_query += " #{k} = \"#{v}\", "
+        end
       end
       update_query = update_query.strip.sub(/\,$/, '')
       update_query += " WHERE document_id = '#{doc_id}' "
-      out = client.query(update_query) rescue nil # (raise table.to_s)
+      out = client.query(update_query) rescue (raise table.to_s)
     else
       insert_query = "INSERT INTO #{table} ("
       keys = []
       values = []
 
       data.each do |k, v|
-        
+
+        if (['national_serial_number', 'facility_serial_number', 'district_id_number'].include?(k) and (v.blank? || v == 'null'))
+          next
+        end
+
         if k.match(/updated_at|created_at|changed_at|date/)
           v = v.to_datetime.to_s(:db) rescue v
         end
@@ -72,7 +80,7 @@ class Methods
 
       insert_query += (keys.join(', ') + " ) VALUES (" )
       insert_query += ( "\"" + values.join( "\", \"")) + "\")"
-      client.query(insert_query) rescue nil  # (raise insert_query.to_s)
+      client.query(insert_query) rescue (raise insert_query.to_s)
     end
     client.query("SET FOREIGN_KEY_CHECKS = 1")
   end
@@ -89,9 +97,6 @@ changes "http://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/
     output = Methods.update_doc(doc.document)
   end
   document 'type' => 'person_addresses' do |doc|
-    output = Methods.update_doc(doc.document)
-  end
-  document 'type' => 'guardianship' do |doc|
     output = Methods.update_doc(doc.document)
   end
   document 'type' => 'person_attributes' do |doc|
@@ -115,7 +120,13 @@ changes "http://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/
   document 'type' => 'person_attributes' do |doc|
     output = Methods.update_doc(doc.document)
   end
-  document 'type' => 'person_type' do |doc|
+  document 'type' => 'person_record_statuses' do |doc|
+    output = Methods.update_doc(doc.document)
+  end
+  document 'type' => 'users' do |doc|
+    output = Methods.update_doc(doc.document)
+  end
+  document 'type' => 'user_role' do |doc|
     output = Methods.update_doc(doc.document)
   end
 end

@@ -1,10 +1,5 @@
 <style>
 
-.panel-btns {
-  height: 120px;
-  width:  220px;
-  font-size: 15px;
-}
 
 .panel-btns-main-containers {
   width: 100%;
@@ -35,62 +30,62 @@
   padding: 10px;
 }
 
+.divbtn{
+    height: 112px;
+    padding: 0px;
+    background: ghostwhite;
+    text-align: left;
+    padding-left: 10px;
+}
+.icon-attr{
+    height: 70px;
+}
 
 </style>
 
 
-<div class='dashboard-title'><h3>Task(s)</h3></div>
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
 
-<div class='separator-line'>&nbsp;</div>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="panel-body" style="">
+           <%(@tasks || []).each do |title, desc, stauses, link, icon, role|
+            count = stauses.collect{|s| (@stats[s] || 0)}.sum()
 
+                  if role.present? && role != User.current.user_role.role.role && SETTINGS['enable_role_privileges'].to_s == 'true'
+                    next
+                  end
 
-<div id='button-container' class="panel-btns-main-containers"></div>
+                 if !link.match(/\?/)
+                    @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 else
+                   @link = link+"&" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 end
+            %>
 
+                  <span class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
+                    <span class="divbtn" style="padding-top: 0px;padding-bottom: 0px;">
+                       <span class="count-label pull-right" >
+                            <p style="padding-top: 5px;padding-right: 5px;font-weight: bold;color: black"><%= (count == 0 ? '' : count)%></p>
+                        </span>
+                        <span class="icons" >
+                            <img style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;" class="icon-attr" src="<%= icon %>">
+                            <p style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"><%=title%></p>
+                        </span>
+                    </span>
 
-
-    <%
-      attributes = []
-      (Status.where("name LIKE (?)", "HQ-%") || []).each do |s|
-        attributes << [s.name, s.id]
-      end
-    %>
-
-
-<script>
-  var container = document.getElementById('button-container');
-
-  var row_count = 1;
-  var attributes = [];
-  <%(attributes).each do |a, count|%>
-    attributes.push(["<%=a%>", "<%=count%>"]);  
-  <%end%>
-
-  var table = document.createElement('div');
-  table.setAttribute('class','table-container');
-  container.appendChild(table);
-
-  var table_row = document.createElement('div');
-  table_row.setAttribute('class','rows');
-  table.appendChild(table_row);
-
-  for(var i = 0; i < attributes.length; i++){
-    var cell = document.createElement('div');
-    cell.setAttribute('class','cells');
-    var btn = document.createElement('button');
-    btn.setAttribute('type','button');
-    btn.setAttribute('class','btn btn-primary btn-lg panel-btns');
-    btn.innerHTML = attributes[i][0];
-    btn.setAttribute('onclick','document.location="/task/' + attributes[i][1] + '"');
-    cell.appendChild(btn);
-    table_row.appendChild(cell);
-
-    if(row_count == 5) {
-      table_row = document.createElement('div');
-      table_row.setAttribute('class','rows') 
-      table.appendChild(table_row);
-      row_count = 0;
-    }
-    row_count++;
-  }
-
-</script>
+                  </span>
+            <%end%>
+    </div>
+</div>

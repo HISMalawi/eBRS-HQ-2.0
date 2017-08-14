@@ -70,6 +70,12 @@ gem 'passenger', '4.0.53'
 
 gem 'rb-readline'
 
+gem 'barby'
+
+gem 'rmagick'
+
+gem 'rqrcode'
+
 gem 'chronic', '0.10.2'
 
 gem 'whenever',  :require => false 

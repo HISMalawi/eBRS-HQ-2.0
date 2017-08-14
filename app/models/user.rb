@@ -10,10 +10,6 @@ class User < ActiveRecord::Base
   belongs_to :location
   has_one :user_role
 
-  after_create :create_audit
-
-  cattr_accessor :current
-
   def has_role?(role_name)
     self.current.role == role_name ? true : false
   end
@@ -25,7 +21,7 @@ class User < ActiveRecord::Base
   end
 
   def password_matches?(plain_password)
-    not plain_password.nil? and self.password_hash == password
+    !plain_password.nil? and BCrypt::Password.new(self.password_hash) == plain_password
   end
 
   def password

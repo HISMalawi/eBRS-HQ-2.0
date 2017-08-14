@@ -10,8 +10,8 @@ end
 module EbrsAttribute
 
   def send_data(hash)
-    if !hash['document_id'].blank?
-      h = Pusher.database.get(hash['document_id'])
+    h = Pusher.database.get(hash['document_id']) rescue nil
+    if !h.blank?
       hash.keys.each do |k|
         h[k] = hash[k]
       end
@@ -54,10 +54,11 @@ module EbrsAttribute
   end
 
   def next_primary_key
-    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key}) FROM #{self.class.table_name}").last.values.last.to_i rescue 0)
+    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
+    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
+      FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
     autoincpart = max.to_s.split('')[6 .. 1000].join('').to_i rescue 0
     auto_id = autoincpart + 1
-    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
     new_id = (location_pad + auto_id.to_s).to_i
     new_id
   end
