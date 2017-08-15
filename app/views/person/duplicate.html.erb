@@ -438,7 +438,7 @@
 		      onclick="resolveDuplicate('Resolve');">Resolve</button>
 <%end%>
 <% if User.current.user_role.role.role == "Data Supervisor" || !SETTINGS['enable_role_privileges']%>
-  <%= @potential_duplicate[:status] == "HQ-POTENTIAL DUPLICATE-TBA" %>
+  <%= @potential_duplicate[:status] == "HQ-POTENTIAL DUPLICATE-TBA" && false %>
     <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="resolveDuplicate('Re-Confirm-duplicate')">Confirm Record Duplicate</button>
