@@ -25,27 +25,40 @@ class PersonController < ApplicationController
     (0.upto(11)).each_with_index do |num, i|
       start_date  = Date.today.ago(num.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
       end_date    = start_date.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')
-      @stats_months << end_date.to_date.month
+      @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
 
       (@last_twelve_months_reported_births.keys || []).each do |code|
         details = PersonBirthDetail.where("created_at BETWEEN ? AND ? 
           AND LEFT(district_id_number,#{code.length}) = ?", 
           start_date, end_date, code).count
       
-        @last_twelve_months_reported_births[code][start_date.to_date.month] = details
+        @last_twelve_months_reported_births[code]["#{start_date.to_date.month}#{start_date.to_date.year}".to_i] = details
       end
     end
 
-    @districts_stats  = {}
-    #raise @stats_months.sort.reverse.inspect
 
-    @last_twelve_months_reported_births.sort_by{|x, y|}.each do |code, data|
-      @districts_stats[code] = []
-      (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
-        @districts_stats[code] << count
+    available_years = []
+    (@stats_months || []).each do |m|
+      available_years << m.to_s[-4..-1].to_i
+      available_years = available_years.sort.uniq
+    end
+
+    @sorted_months_years = []
+
+    (available_years || []).each do |y|
+      sorted_x = []
+      (@stats_months || []).each do |m|
+        next unless m.to_s.match(/#{y}/i)
+        sorted_x << m
+        sorted_x = sorted_x.sort
+      end
+     
+      (sorted_x || []).each do |s|
+        @sorted_months_years << s
       end
     end
 
+=begin
     ############################################
     @pie_stats = {}
     
@@ -58,6 +71,20 @@ class PersonController < ApplicationController
       code = d.district_id_number.split('/')[0]
       @pie_stats[code] = 0 if @pie_stats[code].blank?
       @pie_stats[code] += 1
+    end
+=end
+    
+    @districts_stats  = {}
+
+    (@sorted_months_years || []).each do |period|
+      @last_twelve_months_reported_births.sort_by{|x, y|}.each do |code, data|
+        @districts_stats[code] = [] if @districts_stats[code].blank?
+        (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
+          next unless m.to_i == period.to_i
+          @districts_stats[code] << count 
+        end
+      end
+
     end
 
     @stats = PersonRecordStatus.stats
@@ -159,7 +186,7 @@ class PersonController < ApplicationController
               },
               {
                   "Are the parents married to each other?" => "#{(@birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil}",
-                  "If yes, date of marriage" => "#{@birth_details.date_of_marriage rescue nil}"
+                  "If yes, date of marriage" => "#{@birth_details.date_of_marriage.to_date.strftime('%d/%b/%Y')  rescue nil}"
               },
 
               {
@@ -237,7 +264,7 @@ class PersonController < ApplicationController
                   "Family Name" => "#{@informant_name.last_name rescue nil}"
               },
               {
-                  "Relationship to child" => "#{@child.informant.relationship_to_child rescue ""}",
+                  "Relationship to child" => "#{@birth_details.informant_relationship_to_child rescue ""}",
                   "ID Number" => "#{@informant_person.id_number rescue ""}"
               },
               {
@@ -251,7 +278,7 @@ class PersonController < ApplicationController
                   "City" => "#{@informant_address.city rescue nil}"
               },
               {
-                  "Phone Number" => "#{@informant_person.phone_number rescue ""}",
+                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number')}",
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
@@ -739,16 +766,15 @@ class PersonController < ApplicationController
 
          if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
-              PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
+              PersonRecordStatus.new_record_state(params[:id], 'HQ-CAN-PRINT', params[:comment])
             else
-                potential_records.resolved = 1
-                potential_records.decision = params[:decision]
-                potential_records.comment = params[:comment]
-                potential_records.resolved_at = Time.now
-                potential_records.save
                 PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
-
             end
+            potential_records.resolved = 1
+            potential_records.decision = params[:decision]
+            potential_records.comment = params[:comment]
+            potential_records.resolved_at = Time.now
+            potential_records.save
         end
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Potential Duplicate"
 

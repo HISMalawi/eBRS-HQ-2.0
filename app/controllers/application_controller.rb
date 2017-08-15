@@ -5,6 +5,17 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery	#with: :null_session
 
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
+  #  before_filter :check_last_sync_time
+
+  def check_last_sync_time
+    last_run_time = File.mtime("#{Rails.root}/public/sync_sentinel").to_time
+    job_interval = 60
+    now = Time.now
+
+    if (now - last_run_time).to_f > 2*job_interval
+      SyncCheck.perform_in(2)
+    end
+  end
 
   def icoFolder(required_image)
 
