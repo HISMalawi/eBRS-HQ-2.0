@@ -53,9 +53,10 @@ function renderChart(stats) {
           categories: stats_months
       },
       yAxis: {
+          allowDecimals: false,
           min: 0,
           title: {
-              text: 'No. of births'
+              text: 'No.of reported births'
           },
           plotLines: [{
               value: 0,

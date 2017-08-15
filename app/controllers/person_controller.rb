@@ -75,20 +75,13 @@ class PersonController < ApplicationController
 =end
     
     @districts_stats  = {}
-    #raise @stats_months.sort.reverse.inspect
 
     (@sorted_months_years || []).each do |period|
-    
       @last_twelve_months_reported_births.sort_by{|x, y|}.each do |code, data|
-        @districts_stats[code] = []
+        @districts_stats[code] = [] if @districts_stats[code].blank?
         (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
           next unless m.to_i == period.to_i
-          raise "#{m} #{period}"
-          if m.to_s[0..0].match(/8/) #count
-            @districts_stats[code] << rand(0..50) 
-          else
-            @districts_stats[code] << count 
-          end
+          @districts_stats[code] << count 
         end
       end
 
