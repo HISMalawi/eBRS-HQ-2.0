@@ -773,16 +773,15 @@ class PersonController < ApplicationController
 
          if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
-              PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
+              PersonRecordStatus.new_record_state(params[:id], 'HQ-CAN-PRINT', params[:comment])
             else
-                potential_records.resolved = 1
-                potential_records.decision = params[:decision]
-                potential_records.comment = params[:comment]
-                potential_records.resolved_at = Time.now
-                potential_records.save
                 PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
-
             end
+            potential_records.resolved = 1
+            potential_records.decision = params[:decision]
+            potential_records.comment = params[:comment]
+            potential_records.resolved_at = Time.now
+            potential_records.save
         end
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Potential Duplicate"
 
