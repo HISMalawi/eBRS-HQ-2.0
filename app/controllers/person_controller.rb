@@ -926,4 +926,42 @@ class PersonController < ApplicationController
 
     render :layout => false
   end
+
+  def search
+  end
+
+  def search_by_identifier
+    
+    if params[:identifier_type] == 'BRN'
+      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    else
+      sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    end
+
+    people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
+      d.national_serial_number, d.district_id_number, 
+      d.date_registered FROM person p
+      INNER JOIN person_birth_details d ON d.person_id = p.person_id
+      INNER JOIN person_name n ON n.person_id = p.person_id
+      #{sql} AND n.voided = 0 GROUP BY n.person_id")
+
+    data = []
+    (people || []).each do |p|
+      data << {
+          person_id:           p.person_id,
+          first_name:          p.first_name,
+          middle_name:         (p.middle_name.blank? == true ? 'N/A' : p.middle_name),
+          last_name:           p.last_name,
+          brn:                 (p.national_serial_number.blank? == true ? 'N/A' : p.national_serial_number),
+          ben:                 p.district_id_number,
+          dob:                 (p.birthdate.to_date.strftime('%d/%b/%Y') rescue 'N/A'),
+          gender:              p.gender,
+          status:              PersonRecordStatus.status(p.person_id),
+          date_registered:     p.date_registered.to_date.strftime('%d/%b/%Y')
+      }
+    end
+
+    render text: data.to_json 
+  end
+
 end

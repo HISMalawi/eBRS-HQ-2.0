@@ -97,10 +97,12 @@
 
   </style>
 <script>
-   function alert(data){
-       __$('alert-msg').innerHTML = data;
-       jQuery('#alert-modal').modal('show');
-   }
+  function alert(data){
+    try {
+      __$('alert-msg').innerHTML = data;
+      jQuery('#alert-modal').modal('show');
+    }catch(q) {} ;
+  }
 </script>
   <section id="container" >
       <!-- **********************************************************************************************************************************************************
@@ -165,10 +167,10 @@
                       </a>
                       <ul class="sub">
                         <% if @folders.include?('By BRN')%>
-                            <li><a  href="lock_screen.html">By BRN</a></li>
+                            <li><a  href="/search/BRN">By BRN</a></li>
                         <% end %>
                         <% if @folders.include?('By BEN')%>
-                            <li><a  href="lock_screen.html">By BEN</a></li>
+                            <li><a  href="/search/BEN">By BEN</a></li>
                         <% end %>
                         <% if @folders.include?('General Search')%>
                             <li><a  href="/login">General Search</a></li>
