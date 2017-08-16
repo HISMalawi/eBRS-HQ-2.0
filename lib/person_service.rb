@@ -753,14 +753,14 @@ end
     main.each do |data|
       mother = self.mother(data.person_id)
       father = self.father(data.person_id)
-      next if mother.blank?
-      next if mother.first_name.blank?
+     # next if mother.blank?
+     # next if mother.first_name.blank?
       #The form treat Father as optional
       #next if father.blank?
       #next if father.first_name.blank?
-      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}")
-      mother_name   = ("#{mother.first_name} #{mother.middle_name} #{mother.last_name}")
-      father_name   = ("#{father.first_name rescue ''} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}") rescue nil
+      mother_name   = ("#{mother.first_name} #{mother.middle_name} #{mother.last_name}") rescue nil
+      father_name   = ("#{father.first_name rescue ''} #{father.middle_name rescue ''} #{father.last_name rescue ''}") rescue nil
 
       results << {
           'id' => data.person_id,
