@@ -727,7 +727,7 @@ end
     person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
 
     main = Person.find_by_sql(
-        "SELECT n.*, prs.status_id, pbd.district_id_number AS ben, pbd.national_serial_number AS brn FROM person p
+        "SELECT n.*, prs.status_id, pbd.district_id_number AS ben, p.gender, p.birthdate, pbd.national_serial_number AS brn FROM person p
             INNER JOIN core_person cp ON p.person_id = cp.person_id
             INNER JOIN person_name n ON p.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON p.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
@@ -742,6 +742,7 @@ end
     results = []
 
     main.each do |data|
+
       mother = self.mother(data.person_id)
       father = self.father(data.person_id)
       #For abandoned cases mother details may not be availabe
@@ -758,6 +759,8 @@ end
           'id' => data.person_id,
           'ben' => data.ben,
           'brn' => data.brn,
+          'gender' => data.gender,
+          'dob' => data.birthdate.strftime('%d/%b/%Y'),
           'name'        => name,
           'father_name'       => father_name,
           'mother_name'       => mother_name,
@@ -765,7 +768,6 @@ end
           'date_of_reporting' => data['created_at'].to_date.strftime("%d/%b/%Y"),
       }
     end
-
     results
 
   end
