@@ -121,7 +121,7 @@ function createBtn(person_id) {
 ...................... we can do better: code looks bad
 */
   var td = document.createElement('td');
-  td.innerHTML = '<button onclick="javascript:viewRecord(this)" id="' + person_id + '" class="btn btn-primary btn-xs"> <i class="fa fa-eye"></i></button>';
+  td.innerHTML = '<button onclick="javascript:viewRecord(this)" id="' + person_id + '" class="action-btn btn btn-success btn-xs"> <i class="fa fa-eye"></i></button>';
   tr.appendChild(td);
 
 /*
@@ -166,7 +166,7 @@ function fetchData(e) {
 dataT();
 
 function viewRecord(e) {
-  window.location = '#'
+  window.location = '/show_person/' + e.id
 }
 
 </script>
