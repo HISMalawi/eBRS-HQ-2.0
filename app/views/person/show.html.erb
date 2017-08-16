@@ -290,11 +290,11 @@
             </tr>
             <tr>
               <td class="labell">Mother</td>
-              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name %></td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name rescue nil %></td>
             </tr>
             <tr>
               <td class="labell">Nationality of Mother</td>
-              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship %></td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil %></td>
             </tr>
             <tr>
               <td class="labell">Father</td>
@@ -302,7 +302,7 @@
             </tr>
             <tr>
               <td class="labell">Nationality of Father</td>
-              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship  %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship  rescue nil %></td>
             </tr>
             <tr>
               <td class="labell">Parents Married to each Other?</td>
