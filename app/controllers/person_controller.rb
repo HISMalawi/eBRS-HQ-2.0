@@ -138,7 +138,8 @@ class PersonController < ApplicationController
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
-    
+    district = Location.find(@birth_details.district_of_birth)
+
     birth_location = birth_loc.name rescue nil
 
     @place_of_birth = birth_loc.name rescue nil
@@ -156,8 +157,8 @@ class PersonController < ApplicationController
     @record = {
           "Details of Child" => [
               {
-                  "District ID Number" => "#{@birth_details.ben rescue nil}",
-                  "Serial Number" => "#{@birth_details.brn  rescue nil}"
+                  "Birth Entry Number" => "#{@birth_details.ben rescue nil}",
+                  "Birth Registration Number" => "#{@birth_details.brn  rescue nil}"
               },
               {
                   ["First Name", "mandatory"] => "#{@name.first_name rescue nil}",
@@ -175,7 +176,7 @@ class PersonController < ApplicationController
                   "Address" => "#{@child.birth_address rescue nil}"
               },
               {
-                  "District" => "#{birth_loc.district}",
+                  "District" => "#{district.name}",
                   "T/A" => "#{birth_loc.ta}",
                   "Village" => "#{birth_loc.village rescue nil}"
               },
@@ -278,7 +279,7 @@ class PersonController < ApplicationController
                   "City" => "#{@informant_address.city rescue nil}"
               },
               {
-                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number')}",
+                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number') rescue nil}",
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
@@ -348,7 +349,7 @@ class PersonController < ApplicationController
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
-    @records = PersonService.query_for_display(@states, params[:had])
+    @records = PersonService.query_for_display(@states)
     render :template => "/person/records"
   end
 
@@ -359,8 +360,7 @@ class PersonController < ApplicationController
       person_type.id).joins("INNER JOIN core_person p ON person.person_id = p.person_id
       INNER JOIN person_name n 
       ON n.person_id = p.person_id").group('n.person_id').select("person.*, n.*").order('p.created_at DESC')
-      
-         
+
     render :layout => 'data_table'
   end
 
@@ -893,7 +893,7 @@ class PersonController < ApplicationController
     t4 = Thread.new {
       Kernel.system print_url
       sleep(4)
-      #Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+      Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
       sleep(5)
     }
     sleep(1)
@@ -926,4 +926,42 @@ class PersonController < ApplicationController
 
     render :layout => false
   end
+
+  def search
+  end
+
+  def search_by_identifier
+    
+    if params[:identifier_type] == 'BRN'
+      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    else
+      sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    end
+
+    people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
+      d.national_serial_number, d.district_id_number, 
+      d.date_registered FROM person p
+      INNER JOIN person_birth_details d ON d.person_id = p.person_id
+      INNER JOIN person_name n ON n.person_id = p.person_id
+      #{sql} AND n.voided = 0 GROUP BY n.person_id")
+
+    data = []
+    (people || []).each do |p|
+      data << {
+          person_id:           p.person_id,
+          first_name:          p.first_name,
+          middle_name:         (p.middle_name.blank? == true ? 'N/A' : p.middle_name),
+          last_name:           p.last_name,
+          brn:                 (p.national_serial_number.blank? == true ? 'N/A' : p.national_serial_number),
+          ben:                 p.district_id_number,
+          dob:                 (p.birthdate.to_date.strftime('%d/%b/%Y') rescue 'N/A'),
+          gender:              p.gender,
+          status:              PersonRecordStatus.status(p.person_id),
+          date_registered:     p.date_registered.to_date.strftime('%d/%b/%Y')
+      }
+    end
+
+    render text: data.to_json 
+  end
+
 end

@@ -97,10 +97,12 @@
 
   </style>
 <script>
-   function alert(data){
-       __$('alert-msg').innerHTML = data;
-       jQuery('#alert-modal').modal('show');
-   }
+  function alert(data){
+    try {
+      __$('alert-msg').innerHTML = data;
+      jQuery('#alert-modal').modal('show');
+    }catch(q) {} ;
+  }
 </script>
   <section id="container" >
       <!-- **********************************************************************************************************************************************************
@@ -130,7 +132,7 @@
             </div>
             <div class="top-menu">
             	<ul class="nav pull-right top-menu">
-                    <li><a style="color: black" class="logout" href="/logout">Logout</a></li>
+                    <li><a style="color: black; background: lightgray;" class="fa fa-sign-out logout" href="/logout">Logout</a></li>
             	</ul>
             </div>
         </header>
@@ -146,7 +148,7 @@
               <ul class="sidebar-menu" id="nav-accordion">
               
               	  <p class="centered"><a href="/">
-                    <%=image_tag 'coat-arms.png', class: 'img-circle', width: '60' %></a></p>
+                    <%=image_tag 'coa.png', class: '', width: '60' %></a></p>
               	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;" class="centered"><%=User.current.username%></h5>
 
               	  	
@@ -165,10 +167,10 @@
                       </a>
                       <ul class="sub">
                         <% if @folders.include?('By BRN')%>
-                            <li><a  href="lock_screen.html">By BRN</a></li>
+                            <li><a  href="/search/BRN">By BRN</a></li>
                         <% end %>
                         <% if @folders.include?('By BEN')%>
-                            <li><a  href="lock_screen.html">By BEN</a></li>
+                            <li><a  href="/search/BEN">By BEN</a></li>
                         <% end %>
                         <% if @folders.include?('General Search')%>
                             <li><a  href="/login">General Search</a></li>
