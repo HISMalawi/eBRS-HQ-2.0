@@ -278,7 +278,7 @@ class PersonController < ApplicationController
                   "City" => "#{@informant_address.city rescue nil}"
               },
               {
-                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number')}",
+                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number') rescue nil}",
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {

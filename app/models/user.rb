@@ -18,6 +18,7 @@ class User < ActiveRecord::Base
     check_password = BCrypt::Password.new(self.password_hash) rescue 'invalid hash'
     self.password_hash = BCrypt::Password.create(self.password_hash) if (check_password == 'invalid hash')
     self.creator = 'admin' if self.creator.blank?
+    self.location_id = SETTINGS['location_id']
   end
 
   def password_matches?(plain_password)
@@ -37,9 +38,11 @@ class User < ActiveRecord::Base
   end
 
   def self.get_active_user(username)
-    user = User.where(username: username)
-    return if user.blank? || (user.first.user_role.role.level != "HQ" rescue true)
-    return user.first
+    user = User.find_by_sql("SELECT u.* FROM users u
+               INNER JOIN user_role ur ON ur.user_id = u.user_id
+               INNER JOIN role r ON r.role_id = ur.role_id WHERE r.level = 'HQ' AND u.username = '#{username}' ").first rescue nil
+
+   return user
   end
 
   def confirm_password
