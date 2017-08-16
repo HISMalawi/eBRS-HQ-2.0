@@ -720,56 +720,46 @@ end
     result
   end
 
-  def self.query_for_display(states, prev_state=nil)
-   
-    state_ids = states.collect{|s| Status.find_by_name(s).id} + [-1]
-    prev_clause = ""
-    if false && prev_state.present? #Rework this later on
-      prev_state_id = Status.find_by_name(prev_state).id
-      prev_clause = "
-         AND  (SELECT COUNT(*) FROM person_record_statuses WHERE voided = 0 AND person_id = p.person_id AND status_id = #{prev_state_id}) > 0
-        "
-    end
-    person_type = PersonType.where(name: 'Client').first
+  def self.query_for_display(states, types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'])
 
+    state_ids = states.collect{|s| Status.find_by_name(s).id} + [-1]
+
+    person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
 
     main = Person.find_by_sql(
-          "SELECT n.*, p.birthdate AS dob, prs.status_id, pbd.district_id_number, p.gender FROM person p
+        "SELECT n.*, prs.status_id, pbd.district_id_number AS ben, pbd.national_serial_number AS brn FROM person p
             INNER JOIN core_person cp ON p.person_id = cp.person_id
             INNER JOIN person_name n ON p.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON p.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
             INNER JOIN person_birth_details pbd ON p.person_id = pbd.person_id
           WHERE prs.status_id IN (#{state_ids.join(', ')})
-            AND cp.person_type_id = #{person_type.id}
-            #{prev_clause}
+            AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
           GROUP BY p.person_id
           ORDER BY p.updated_at DESC
            "
     )
-    
 
     results = []
 
     main.each do |data|
       mother = self.mother(data.person_id)
       father = self.father(data.person_id)
-     # next if mother.blank?
-     # next if mother.first_name.blank?
+      #For abandoned cases mother details may not be availabe
+      #next if mother.blank?
+      #next if mother.first_name.blank?
       #The form treat Father as optional
       #next if father.blank?
       #next if father.first_name.blank?
-      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}") rescue nil
-      mother_name   = ("#{mother.first_name} #{mother.middle_name} #{mother.last_name}") rescue nil
-      father_name   = ("#{father.first_name rescue ''} #{father.middle_name rescue ''} #{father.last_name rescue ''}") rescue nil
+      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}")
+      mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+      father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
 
       results << {
           'id' => data.person_id,
-          "ben" => data.district_id_number,
-          "brn" => PersonBirthDetail.find_by_person_id(data.person_id).brn,
+          'ben' => data.ben,
+          'brn' => data.brn,
           'name'        => name,
-          'gender'        => {'M' => 'Male', 'F' => 'Female'}[data.gender],
           'father_name'       => father_name,
-          'dob' => data.dob.to_date.strftime('%d/%b/%Y'),
           'mother_name'       => mother_name,
           'status'            => Status.find(data.status_id).name, #.gsub(/DC\-|FC\-|HQ\-/, '')
           'date_of_reporting' => data['created_at'].to_date.strftime("%d/%b/%Y"),

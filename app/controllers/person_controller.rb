@@ -138,7 +138,8 @@ class PersonController < ApplicationController
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
-    
+    district = Location.find(@birth_details.district_of_birth)
+
     birth_location = birth_loc.name rescue nil
 
     @place_of_birth = birth_loc.name rescue nil
@@ -175,7 +176,7 @@ class PersonController < ApplicationController
                   "Address" => "#{@child.birth_address rescue nil}"
               },
               {
-                  "District" => "#{birth_loc.district}",
+                  "District" => "#{district.name}",
                   "T/A" => "#{birth_loc.ta}",
                   "Village" => "#{birth_loc.village rescue nil}"
               },
@@ -348,7 +349,7 @@ class PersonController < ApplicationController
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
-    @records = PersonService.query_for_display(@states, params[:had])
+    @records = PersonService.query_for_display(@states)
     render :template => "/person/records"
   end
 
@@ -359,8 +360,7 @@ class PersonController < ApplicationController
       person_type.id).joins("INNER JOIN core_person p ON person.person_id = p.person_id
       INNER JOIN person_name n 
       ON n.person_id = p.person_id").group('n.person_id').select("person.*, n.*").order('p.created_at DESC')
-      
-         
+
     render :layout => 'data_table'
   end
 
@@ -893,7 +893,7 @@ class PersonController < ApplicationController
     t4 = Thread.new {
       Kernel.system print_url
       sleep(4)
-      #Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+      Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
       sleep(5)
     }
     sleep(1)
