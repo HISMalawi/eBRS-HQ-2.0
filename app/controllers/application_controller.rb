@@ -63,14 +63,23 @@ class ApplicationController < ActionController::Base
   private
 
   def check_if_logged_in
-    if session[:user_id].blank?
+
+        if session[:user_id].blank?
       if request.filtered_parameters["action"] == 'create' and request.filtered_parameters["controller"] == 'logins'
         return
       end
       
       redirect_to '/login' and return
     else
-      User.current = User.find(session[:user_id])
+
+      user = User.find(session[:user_id]) rescue nil
+
+      if user.blank?
+        reset_session
+        redirect_to '/login' and return
+      end
+
+      User.current = user
     end
   end
 
