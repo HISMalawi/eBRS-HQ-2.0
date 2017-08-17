@@ -933,9 +933,9 @@ class PersonController < ApplicationController
   def search_by_identifier
     
     if params[:identifier_type] == 'BRN'
-      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
-    else
       sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    else
+      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
     end
 
     people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
