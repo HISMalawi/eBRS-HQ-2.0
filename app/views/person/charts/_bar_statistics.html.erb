@@ -28,8 +28,13 @@ var series = [];
 <%(@districts_stats || {}).each do |code, data|
   (data || []).each do |s|%>
     series.push(<%= s %>);
+  <%end
+  if code.match(/BT/i) || code.match(/ZA/i) || code.match(/LL/i) || code.match(/NU/i) || code.match(/CP/i) %>
+    var true_false = true;
+  <%else%>
+    var true_false = false;
   <%end%>
-  stats_series.push({name: "<%=code%>", data: series});
+  stats_series.push({name: "<%=code%>", data: series, visible: true_false });
   series = [];
 <%end%>
 
