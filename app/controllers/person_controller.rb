@@ -28,7 +28,7 @@ class PersonController < ApplicationController
       @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
 
       (@last_twelve_months_reported_births.keys || []).each do |code|
-        details = PersonBirthDetail.where("created_at BETWEEN ? AND ? 
+        details = PersonBirthDetail.where("acknowledgement_of_receipt_date BETWEEN ? AND ? 
           AND LEFT(district_id_number,#{code.length}) = ?", 
           start_date, end_date, code).count
       
@@ -933,9 +933,9 @@ class PersonController < ApplicationController
   def search_by_identifier
     
     if params[:identifier_type] == 'BRN'
-      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
-    else
       sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    else
+      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
     end
 
     people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
