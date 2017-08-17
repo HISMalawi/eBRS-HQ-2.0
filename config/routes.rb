@@ -122,6 +122,8 @@ Rails.application.routes.draw do
   get '/search_by_ta' => 'person#get_ta'
   get '/search_by_village' => 'person#get_village'
   get '/search_by_hospital' => 'person#get_hospital'
+  get 'search/:identifier_type' => 'person#search'
+  get 'search_by_identifier/:identifier_type/:identifier' => 'person#search_by_identifier'
   ########################### (create record form) routes end
 
   get '/get_comments' => 'person#get_comments'
