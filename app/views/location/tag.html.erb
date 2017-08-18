@@ -112,8 +112,10 @@ function addRows(data) {
   }
   
   if(locations.length > 0){
-    rec_limit += 400;
-    fetchData();       
+    rec_limit += 800;
+    sleep(2000000).then(() => {
+      fetchData();       
+    });
   }
                                                  
 }
@@ -185,7 +187,9 @@ var location_tag = "<%=LocationTag.where(name: location_tag_name).first.id%>";
 var rec_limit = 0;
 
 dataT();
-fetchData();
+<%unless params[:location_tag] == 'vl'%>
+  fetchData();
+<%end%>
 
 function editLoc(e) {
 }
