@@ -5,16 +5,10 @@ class LocationController < ApplicationController
   def get_location
     location = []
     from  = params[:record_limit].to_i
-    to    = 400
+    to    = 800
 
     location_tag = LocationTag.find(params[:location_tag_id])
     tag_name = location_tag.name
-
-    if from > 0 && tag_name.match(/village/i)
-      sleep 5 
-    elsif from > 0 && !tag_name.match(/village/i)
-      sleep 3
-    end
 
     locations = Location.group("location.location_id").where("t.location_tag_id = ?",
       location_tag.id).joins("INNER JOIN location_tag_map m 
@@ -71,6 +65,65 @@ class LocationController < ApplicationController
   end
 
   def tag
+    if params[:location_tag] == 'vl'
+      location_tag = LocationTag.where(name: 'District').first
+
+      @districts = Location.group("location.location_id").where("t.location_tag_id = ?",
+        location_tag.id).joins("INNER JOIN location_tag_map m 
+        ON m.location_id = location.location_id
+        INNER JOIN location_tag t 
+        ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
+    end
   end
+
+  def get_traditional_authorities
+    district = Location.find(params[:district_id])
+    location_tag = LocationTag.where(name: 'Traditional Authority').first
+
+    tas = Location.group("location.location_id").where("t.location_tag_id = ?
+      AND parent_location = ?", location_tag.id, district.id).joins("INNER JOIN location_tag_map m 
+        ON m.location_id = location.location_id
+        INNER JOIN location_tag t 
+        ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
+
+    traditional_authorities = []
+    
+    (tas || []).each do |l|
+      traditional_authorities << {
+        location_id:  l.id,
+        name:         l.name,
+        district:     district.name,
+        location_id:  l.id
+      } 
+    end 
+
+    render text: traditional_authorities.to_json
+  end
+
+  def get_villages
+    ta = Location.find(params[:ta_id])
+    district = Location.find(ta.parent_location).name
+    location_tag = LocationTag.where(name: 'Village').first
+
+    villages_fetched = Location.group("location.location_id").where("t.location_tag_id = ?
+      AND parent_location = ?", location_tag.id, ta.id).joins("INNER JOIN location_tag_map m 
+        ON m.location_id = location.location_id
+        INNER JOIN location_tag t 
+        ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
+
+    villages = []
+    
+    (villages_fetched || []).each do |l|
+      villages << {
+        location_id:  l.id,
+        name:         l.name,
+        ta:           ta.name,
+        district:     district
+      } 
+    end 
+
+    render text: villages.to_json
+  end
+
 
 end
