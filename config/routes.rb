@@ -19,6 +19,10 @@ Rails.application.routes.draw do
 
   get 'get_location/:location_tag_id/:record_limit' => 'location#get_location'
 
+  get 'get_tas/:district_id' => 'location#get_traditional_authorities'
+  
+  get 'get_villages/:ta_id' => 'location#get_villages'
+
   get '/tasks' => 'person#tasks'
 
   get 'users/index'

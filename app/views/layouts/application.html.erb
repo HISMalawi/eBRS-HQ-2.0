@@ -244,6 +244,11 @@
     <!-- js placed at the end of the document so the pages load faster -->
     <%=javascript_include_tag "datatables/jquery"%>
     <script>
+      // sleep time expects milliseconds
+      function sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+      }
+
       var $j = jQuery.noConflict();
     </script> 
     <%=javascript_include_tag "js/jquery"%>
