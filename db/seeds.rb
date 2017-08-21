@@ -26,7 +26,7 @@ def create_user
 
   puts "Creating Role for User"
  
-  role = Role.where(role: 'Administrator').first
+  role = Role.where(role: 'Administrator', :level => 'HQ').first
 
   puts "Creating User"
 

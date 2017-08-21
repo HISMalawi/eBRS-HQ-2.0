@@ -7,6 +7,11 @@ require 'rails'
 couch_mysql_path = Dir.pwd + "/config/couchdb.yml"
 db_settings = YAML.load_file(couch_mysql_path)
 
+settings_path = Dir.pwd + "/config/settings.yml"
+settings = YAML.load_file(settings_path)
+$app_mode = settings['application_mode']
+$app_mode = 'HQ' if $app_mode.blank?
+
 couch_db_settings = db_settings[Rails.env]
 
 couch_protocol = couch_db_settings["protocol"]
@@ -76,6 +81,7 @@ class Methods
         end
         keys << k
         values << v
+
       end
 
       insert_query += (keys.join(', ') + " ) VALUES (" )
