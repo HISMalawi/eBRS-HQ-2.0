@@ -10,6 +10,11 @@ end
 module EbrsAttribute
 
   def send_data(hash)
+
+    hash.each {|k, v|
+      hash[k] = v.to_s(:db) if (['Time', 'Date'].include?(v.class.name))
+    }
+
     if !hash['document_id'].blank?
       h = Pusher.database.get(hash['document_id'])
       hash.keys.each do |k|
@@ -18,10 +23,6 @@ module EbrsAttribute
     else
       h = Pusher.new(hash)
     end
-
-    h.keys.each {|k, v|
-      v = v.to_s(:db) if (['Time', 'Date'].include?(v.class.name))
-    }
 
     h.save
     h['document_id'] = h.id
