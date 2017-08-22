@@ -45,10 +45,11 @@ class Methods
     client.query("SET FOREIGN_KEY_CHECKS = 0")
     table = doc['type']
     doc_id = doc['document_id']
-    return nil if doc_id.blank?
+    p_key = doc.keys[2]
+    p_value = doc[p_key]
+    return nil if p_value.blank?
 
-
-    rows = client.query("SELECT * FROM #{table} WHERE document_id = '#{doc_id}' LIMIT 1").each(:as => :hash)
+    rows = client.query("SELECT * FROM #{table} WHERE #{p_key} = '#{p_value}' LIMIT 1").each(:as => :hash)
     data = doc.reject{|k, v| ['_id', '_rev', 'type'].include?(k)}
 
     if !rows.blank?
@@ -63,8 +64,8 @@ class Methods
         end
       end
       update_query = update_query.strip.sub(/\,$/, '')
-      update_query += " WHERE document_id = '#{doc_id}' "
-      out = client.query(update_query) rescue (raise table.to_s)
+      update_query += " WHERE #{p_key} = '#{p_value}' "
+      out = client.query(update_query) rescue (raise update_query.to_s)
     else
       insert_query = "INSERT INTO #{table} ("
       keys = []
