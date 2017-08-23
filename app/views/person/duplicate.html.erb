@@ -440,12 +440,11 @@
 
             <div class=" form-group">
               <div class="container">
-                <div class="row" style="width: 550px;">
+                <div id="main-row" class="row" style="width: 550px;">
 
                   <div id="comments-list">
 
                   </div>
-
                   <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
                     <form id="comment-form" action="/ajax_save_comment">
                       <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
@@ -493,11 +492,11 @@
     <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="resolveDuplicate('Confirm-duplicate')">Confirm Record Duplicate</button>
+    
+  <%else%>
     <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="otherDuplicateProcess('Verify-DC')">Verify with DC</button>
-    
-  <%else%>
     <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="otherDuplicateProcess('Void-duplicate')">Void Duplicate</button>
@@ -520,11 +519,12 @@
 
   function otherDuplicateProcess(operation){
       var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
-      ajaxPullComments("view")
+      ajaxPullComments()
       __$("comment-header").innerHTML = operation + " : Add comment to proceed"
       __$("submit_btn").style.display ="none";
       var proceed = document.createElement("button");
       proceed.setAttribute("class","btn btn-sm btn-primary pull-right");
+      proceed.innerHTML ="Proceed"
       __$("comment_footer").appendChild(proceed);
       proceed.onmousedown = function(){
                if(__$("textarea").value.length ==0){
