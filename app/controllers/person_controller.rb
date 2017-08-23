@@ -762,7 +762,7 @@ class PersonController < ApplicationController
 
   def duplicate_processing
     if params[:operation] == "System"
-      PersonRecordStatus.new_record_state(params[:id], "HQ-POTENTIAL DUPLICATE-TBA",  (params[:comment].present? ? params[:comment] : "System marked record as duplicate" ))
+      PersonRecordStatus.new_record_state(params[:id], "HQ-POTENTIAL DUPLICATE",  (params[:comment].present? ? params[:comment] : "System marked record as duplicate" ))
       redirect_to params[:next_url].to_s
     elsif params[:operation] =="Resolve"
          potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
@@ -771,7 +771,7 @@ class PersonController < ApplicationController
             if params[:decision] == "NOT DUPLICATE"
               PersonRecordStatus.new_record_state(params[:id], 'HQ-CAN-PRINT', params[:comment])
             else
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
             end
             potential_records.resolved = 1
             potential_records.decision = params[:decision]
@@ -785,33 +785,15 @@ class PersonController < ApplicationController
         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
         if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
-                potential_records.resolved = 1
-                potential_records.decision = params[:decision]
-                potential_records.comment = params[:comment]
-                potential_records.resolved_at = Time.now
-                potential_records.save
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-NOT DUPLICATE-TBA', params[:comment])
             else
-               PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
+               PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
             end
         end
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
 
-    elsif params[:operation] == "Re-Confirm-duplicate"
-        potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
-         if potential_records.present?
-            potential_records.resolved = 1
-            potential_records.decision = params[:decision]
-            potential_records.comment = params[:comment]
-            potential_records.resolved_at = Time.now
-            potential_records.save
-            if params[:decision] == "NOT DUPLICATE"
-              PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
-            else
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
-
-            end
-        end
+    elsif params[:operation] == "Void-duplicate"
+        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
 
     else
@@ -820,7 +802,7 @@ class PersonController < ApplicationController
     end
   end
 
-   def person_details(id)
+  def person_details(id)
 
     person_mother_id = PersonRelationType.find_by_name("Mother").id
     person_father_id = PersonRelationType.find_by_name("Father").id
