@@ -489,14 +489,18 @@
 		      onclick="resolveDuplicate('Resolve');">Resolve</button>
 <%end%>
 <% if User.current.user_role.role.role == "Data Supervisor" || !SETTINGS['enable_role_privileges']%>
-  <% if @potential_duplicate[:status] == "HQ-POTENTIAL DUPLICATE-TBA" && false %>
-    <button id="btnConfirm"
-          class="btn btn-primary pull-right"
-          onclick="resolveDuplicate('Re-Confirm-duplicate')">Confirm Record Duplicate</button>
-  <%else%>
+  <% if @potential_duplicate[:status] == "HQ-POTENTIAL DUPLICATE" %>
     <button id="btnConfirm"
           class="btn btn-primary pull-right"
           onclick="resolveDuplicate('Confirm-duplicate')">Confirm Record Duplicate</button>
+    <button id="btnConfirm"
+          class="btn btn-primary pull-right"
+          onclick="otherDuplicateProcess('Verify-DC')">Verify with DC</button>
+    
+  <%else%>
+    <button id="btnConfirm"
+          class="btn btn-primary pull-right"
+          onclick="otherDuplicateProcess('Void-duplicate')">Void Duplicate</button>
   <%end%>
 <%end%>
 <button class="btn btn-primary pull-right"
@@ -513,6 +517,25 @@
 		console.log(path);
 		window.location.href = path;
 	}
+
+  function otherDuplicateProcess(operation){
+      var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
+      ajaxPullComments("view")
+      __$("comment-header").innerHTML = operation + " : Add comment to proceed"
+      __$("submit_btn").style.display ="none";
+      var proceed = document.createElement("button");
+      proceed.setAttribute("class","btn btn-sm btn-primary pull-right");
+      __$("comment_footer").appendChild(proceed);
+      proceed.onmousedown = function(){
+               if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&comment="+__$("textarea").value
+              window.location.href = link
+      }
+  }
 
 	function resolveDuplicate(operation){
     var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
