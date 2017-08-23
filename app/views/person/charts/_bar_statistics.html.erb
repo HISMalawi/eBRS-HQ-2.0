@@ -16,16 +16,25 @@ var stats_months = [];
 var stats_series = [];
 var series = [];
 
-<%(@stats_months).each do |m|%>
-  var m = getMonthStr(<%= (m - 1) %>);
-  stats_months.push(m);
+<%(@sorted_months_years).each do |m|
+  year = m.to_s[-4..-1]
+  month = m.to_s.sub(year,'').to_i
+  %>
+  console.log("<%=year%>")
+  var m = getMonthStr(<%= (month - 1) %>);
+  stats_months.push(m + " <%=year%>");
 <%end%>
 
 <%(@districts_stats || {}).each do |code, data|
   (data || []).each do |s|%>
     series.push(<%= s %>);
+  <%end
+  if code.match(/BT/i) || code.match(/ZA/i) || code.match(/LL/i) || code.match(/NU/i) || code.match(/CP/i) %>
+    var true_false = true;
+  <%else%>
+    var true_false = false;
   <%end%>
-  stats_series.push({name: "<%=code%>", data: series});
+  stats_series.push({name: "<%=code%>", data: series, visible: true_false });
   series = [];
 <%end%>
 
@@ -49,9 +58,10 @@ function renderChart(stats) {
           categories: stats_months
       },
       yAxis: {
+          allowDecimals: false,
           min: 0,
           title: {
-              text: 'No. of births'
+              text: 'No.of reported births'
           },
           plotLines: [{
               value: 0,

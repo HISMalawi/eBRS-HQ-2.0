@@ -211,17 +211,28 @@
       <div class="modal-body">
         <span style="text-align:center;">
           <table align="center" id="printers">
+            <tr>
+                <th>BEN</th>
+                <th style="text-align: left; padding-left:50px;">Details</th>
+            </tr>
             <% @results.each do |result| %>
               <tr>
-                <td></td>
+                <td><%= PersonBirthDetail.find_by_person_id(result["_id"].to_i).district_id_number rescue ''%></td>
                 <td style="text-align: left; padding-left:50px;"><%=result["_source"]["content"] %></td>
               </tr>
             <% end %>
           </table>
+        <form id="duplicate_form" action="/duplicate_processing/<%=@person.id %>">
+              <input type="hidden" name="operation" value="System">
+              <label style="margin:2%; float:left"><h4>Enter comment</h4></label>
+              <input class="form-control" type="textarea" name="comment" required>
+              <input type="hidden" name="next_url" value="/person/view?statuses[]=HQ-ACTIVE&destination=Active Records">
+        </form>
         </span>
         <div class="modal-footer">
-          <button type="button" class="btn" onclick="window.location = '/person/view?statuses[]=HQ-ACTIVE&destination=Active Records'">Ok</button>
+          <button type="button" class="btn" type="submit" onclick="jQuery('#duplicate_form').submit()">Ok</button>
         </div>
+        
       </div>
     </div>
   </div>
@@ -286,23 +297,23 @@
             </tr>
             <tr>
               <td class="labell">Child Place of Birth</td>
-              <td style="text-align: left; padding-left:50px;"><%= @place_of_birth %></td>
+              <td style="text-align: left; padding-left:50px;"><%= @place_of_birth rescue nil%></td>
             </tr>
             <tr>
               <td class="labell">Mother</td>
-              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name %></td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.name rescue nil%></td>
             </tr>
             <tr>
               <td class="labell">Nationality of Mother</td>
-              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship %></td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil%></td>
             </tr>
             <tr>
               <td class="labell">Father</td>
-              <td style="text-align: left; padding-left:50px;"><%=@father_person.name rescue nil %></td>
+              <td style="text-align: left; padding-left:50px;"><%=@father_person.name rescue nil rescue nil %></td>
             </tr>
             <tr>
               <td class="labell">Nationality of Father</td>
-              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship  %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  @mother_person.citizenship rescue nil %></td>
             </tr>
             <tr>
               <td class="labell">Parents Married to each Other?</td>

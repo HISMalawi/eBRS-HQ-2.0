@@ -19,6 +19,10 @@ Rails.application.routes.draw do
 
   get 'get_location/:location_tag_id/:record_limit' => 'location#get_location'
 
+  get 'get_tas/:district_id' => 'location#get_traditional_authorities'
+  
+  get 'get_villages/:ta_id' => 'location#get_villages'
+
   get '/tasks' => 'person#tasks'
 
   get 'users/index'
@@ -122,6 +126,8 @@ Rails.application.routes.draw do
   get '/search_by_ta' => 'person#get_ta'
   get '/search_by_village' => 'person#get_village'
   get '/search_by_hospital' => 'person#get_hospital'
+  get 'search/:identifier_type' => 'person#search'
+  get 'search_by_identifier/:identifier_type/:identifier' => 'person#search_by_identifier'
   ########################### (create record form) routes end
 
   get '/get_comments' => 'person#get_comments'

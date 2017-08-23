@@ -25,27 +25,40 @@ class PersonController < ApplicationController
     (0.upto(11)).each_with_index do |num, i|
       start_date  = Date.today.ago(num.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
       end_date    = start_date.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')
-      @stats_months << end_date.to_date.month
+      @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
 
       (@last_twelve_months_reported_births.keys || []).each do |code|
-        details = PersonBirthDetail.where("created_at BETWEEN ? AND ? 
+        details = PersonBirthDetail.where("acknowledgement_of_receipt_date BETWEEN ? AND ? 
           AND LEFT(district_id_number,#{code.length}) = ?", 
           start_date, end_date, code).count
       
-        @last_twelve_months_reported_births[code][start_date.to_date.month] = details
+        @last_twelve_months_reported_births[code]["#{start_date.to_date.month}#{start_date.to_date.year}".to_i] = details
       end
     end
 
-    @districts_stats  = {}
-    #raise @stats_months.sort.reverse.inspect
 
-    @last_twelve_months_reported_births.sort_by{|x, y|}.each do |code, data|
-      @districts_stats[code] = []
-      (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
-        @districts_stats[code] << count
+    available_years = []
+    (@stats_months || []).each do |m|
+      available_years << m.to_s[-4..-1].to_i
+      available_years = available_years.sort.uniq
+    end
+
+    @sorted_months_years = []
+
+    (available_years || []).each do |y|
+      sorted_x = []
+      (@stats_months || []).each do |m|
+        next unless m.to_s.match(/#{y}/i)
+        sorted_x << m
+        sorted_x = sorted_x.sort
+      end
+     
+      (sorted_x || []).each do |s|
+        @sorted_months_years << s
       end
     end
 
+=begin
     ############################################
     @pie_stats = {}
     
@@ -58,6 +71,20 @@ class PersonController < ApplicationController
       code = d.district_id_number.split('/')[0]
       @pie_stats[code] = 0 if @pie_stats[code].blank?
       @pie_stats[code] += 1
+    end
+=end
+    
+    @districts_stats  = {}
+
+    (@sorted_months_years || []).each do |period|
+      @last_twelve_months_reported_births.sort_by{|x, y|}.each do |code, data|
+        @districts_stats[code] = [] if @districts_stats[code].blank?
+        (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
+          next unless m.to_i == period.to_i
+          @districts_stats[code] << count 
+        end
+      end
+
     end
 
     @stats = PersonRecordStatus.stats
@@ -111,7 +138,8 @@ class PersonController < ApplicationController
     location = Location.find(SETTINGS['location_id'])
     facility_code = location.code
     birth_loc = Location.find(@birth_details.birth_location_id)
-    
+    district = Location.find(@birth_details.district_of_birth)
+
     birth_location = birth_loc.name rescue nil
 
     @place_of_birth = birth_loc.name rescue nil
@@ -129,8 +157,8 @@ class PersonController < ApplicationController
     @record = {
           "Details of Child" => [
               {
-                  "District ID Number" => "#{@birth_details.ben rescue nil}",
-                  "Serial Number" => "#{@birth_details.brn  rescue nil}"
+                  "Birth Entry Number" => "#{@birth_details.ben rescue nil}",
+                  "Birth Registration Number" => "#{@birth_details.brn  rescue nil}"
               },
               {
                   ["First Name", "mandatory"] => "#{@name.first_name rescue nil}",
@@ -148,7 +176,7 @@ class PersonController < ApplicationController
                   "Address" => "#{@child.birth_address rescue nil}"
               },
               {
-                  "District" => "#{birth_loc.district}",
+                  "District" => "#{district.name}",
                   "T/A" => "#{birth_loc.ta}",
                   "Village" => "#{birth_loc.village rescue nil}"
               },
@@ -251,7 +279,7 @@ class PersonController < ApplicationController
                   "City" => "#{@informant_address.city rescue nil}"
               },
               {
-                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number')}",
+                  "Phone Number" =>"#{@informant_person.get_attribute('Cell Phone Number') rescue nil}",
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
@@ -295,8 +323,8 @@ class PersonController < ApplicationController
                     potential_duplicate.create_duplicate(result["_id"])
                  end
            end
-           PersonRecordStatus.new_record_state(@person.person_id, "HQ-POTENTIAL DUPLICATE-TBA", "System mark record as potential duplicate")
-           @status = PersonRecordStatus.status(@person.id)
+           #PersonRecordStatus.new_record_state(@person.person_id, "HQ-POTENTIAL DUPLICATE-TBA", "System mark record as potential duplicate")
+           @status = "HQ-POTENTIAL DUPLICATE-TBA" #PersonRecordStatus.status(@person.id)
         end      
       end
     else
@@ -321,7 +349,7 @@ class PersonController < ApplicationController
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
 
-    @records = PersonService.query_for_display(@states, params[:had])
+    @records = PersonService.query_for_display(@states)
     render :template => "/person/records"
   end
 
@@ -332,8 +360,7 @@ class PersonController < ApplicationController
       person_type.id).joins("INNER JOIN core_person p ON person.person_id = p.person_id
       INNER JOIN person_name n 
       ON n.person_id = p.person_id").group('n.person_id').select("person.*, n.*").order('p.created_at DESC')
-      
-         
+
     render :layout => 'data_table'
   end
 
@@ -734,14 +761,17 @@ class PersonController < ApplicationController
   end
 
   def duplicate_processing
-    if params[:operation] =="Resolve"
+    if params[:operation] == "System"
+      PersonRecordStatus.new_record_state(params[:id], "HQ-POTENTIAL DUPLICATE",  (params[:comment].present? ? params[:comment] : "System marked record as duplicate" ))
+      redirect_to params[:next_url].to_s
+    elsif params[:operation] =="Resolve"
          potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
 
          if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
               PersonRecordStatus.new_record_state(params[:id], 'HQ-CAN-PRINT', params[:comment])
             else
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
             end
             potential_records.resolved = 1
             potential_records.decision = params[:decision]
@@ -755,33 +785,15 @@ class PersonController < ApplicationController
         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
         if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
-                potential_records.resolved = 1
-                potential_records.decision = params[:decision]
-                potential_records.comment = params[:comment]
-                potential_records.resolved_at = Time.now
-                potential_records.save
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
+                PersonRecordStatus.new_record_state(params[:id], 'HQ-NOT DUPLICATE-TBA', params[:comment])
             else
-               PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
+               PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE-TBA', params[:comment])
             end
         end
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
 
-    elsif params[:operation] == "Re-Confirm-duplicate"
-        potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
-         if potential_records.present?
-            potential_records.resolved = 1
-            potential_records.decision = params[:decision]
-            potential_records.comment = params[:comment]
-            potential_records.resolved_at = Time.now
-            potential_records.save
-            if params[:decision] == "NOT DUPLICATE"
-              PersonRecordStatus.new_record_state(params[:id], 'HQ-COMPLETE', params[:comment])
-            else
-                PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
-
-            end
-        end
+    elsif params[:operation] == "Void-duplicate"
+        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
 
     else
@@ -819,12 +831,30 @@ class PersonController < ApplicationController
 
     mother = Person.find(mother_id)
     mother_name = PersonName.find_by_person_id(mother_id)
+    father = Person.find(father_id) rescue nil
     father_name = PersonName.find_by_person_id(father_id)
     mother_address = PersonAddress.find_by_person_id(mother_id)
+    father_address =  PersonAddress.find_by_person_id(father_id)
 
 
     informant = Person.find(informant_id)
     informant_name = PersonName.find_by_person_id(informant_id)
+
+    location_of_birth =""
+    place_of_birth = Location.find(birth_details.place_of_birth).name
+    case place_of_birth.downcase
+    when "hospital"
+      location_of_birth = Location.find(birth_details.birth_location_id).name
+    when "home"
+      village_of_birth = Location.find(birth_details.birth_location_id)
+      ta_of_birth  = Location.find(village_of_birth.parent_location)
+      district_of_birth = Location.find(ta_of_birth.parent_location)
+      location_of_birth = (village_of_birth.name rescue '') +" "+ (ta_of_birth.name rescue '') +" "+
+                          (district_of_birth.name rescue '')
+
+    when "other"
+      location_of_birth = birth_details.other_birth_location
+    end
 
     person = {
               id: person.id,
@@ -832,10 +862,12 @@ class PersonController < ApplicationController
               last_name: person_name.last_name,
               middle_name: person_name.middle_name,
               birth_entry_number: (birth_details.district_id_number rescue "XXXXXXXXXX"),
-              birth_registration_number: (birth_details.national_serial_number rescue "XXXXXXXXXX"),
+              birth_registration_number:( birth_details.national_serial_number rescue "XXXXXXXXXX"),
               birthdate: person.birthdate,
               gender: person.gender,
               status: person_status,
+              place_of_birth: (Location.find(birth_details.place_of_birth).name rescue nil),
+              location_of_birth: location_of_birth,
               hospital_of_birth: (Location.find(birth_details.birth_location_id).name rescue nil),
               birth_address: (person.birth_address rescue nil),
               village_of_birth: (person.birth_village rescue nil),
@@ -844,12 +876,20 @@ class PersonController < ApplicationController
               mother_first_name: (mother_name.first_name rescue nil),
               mother_last_name:(mother_name.last_name rescue nil),
               mother_middle_name: (mother_name.middle_name rescue nil),
+              mother_district: (Location.find(mother_address.current_district).name rescue nil),
+              mother_village:(Location.find(mother_address.current_village).name rescue nil),
+              mother_ta: (Location.find(mother_address.current_ta).name rescue nil),
               father_first_name: (father_name.first_name rescue nil),
               father_last_name: (father_name.last_name rescue nil),
-              father_middle_name: (father_name.middle_name rescue nil)
+              father_middle_name: (father_name.middle_name rescue nil),
+              father_district: (Location.find(father_address.current_district).name rescue nil),
+              father_ta: (Location.find(father_address.current_ta).name rescue nil),
+              father_village: (Location.find(father_address.current_village).name rescue nil)
     }
     return person
+    
   end
+  
 
   def dispatch_certificates
 
@@ -866,7 +906,7 @@ class PersonController < ApplicationController
     t4 = Thread.new {
       Kernel.system print_url
       sleep(4)
-      #Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+      Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
       sleep(5)
     }
     sleep(1)
@@ -899,4 +939,42 @@ class PersonController < ApplicationController
 
     render :layout => false
   end
+
+  def search
+  end
+
+  def search_by_identifier
+    
+    if params[:identifier_type] == 'BRN'
+      sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    else
+      sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
+    end
+
+    people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
+      d.national_serial_number, d.district_id_number, 
+      d.date_registered FROM person p
+      INNER JOIN person_birth_details d ON d.person_id = p.person_id
+      INNER JOIN person_name n ON n.person_id = p.person_id
+      #{sql} AND n.voided = 0 GROUP BY n.person_id")
+
+    data = []
+    (people || []).each do |p|
+      data << {
+          person_id:           p.person_id,
+          first_name:          p.first_name,
+          middle_name:         (p.middle_name.blank? == true ? 'N/A' : p.middle_name),
+          last_name:           p.last_name,
+          brn:                 (p.national_serial_number.blank? == true ? 'N/A' : p.national_serial_number),
+          ben:                 p.district_id_number,
+          dob:                 (p.birthdate.to_date.strftime('%d/%b/%Y') rescue 'N/A'),
+          gender:              p.gender,
+          status:              PersonRecordStatus.status(p.person_id),
+          date_registered:     p.date_registered.to_date.strftime('%d/%b/%Y')
+      }
+    end
+
+    render text: data.to_json 
+  end
+
 end
