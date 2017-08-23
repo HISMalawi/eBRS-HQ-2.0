@@ -795,7 +795,8 @@ class PersonController < ApplicationController
     elsif params[:operation] == "Void-duplicate"
         PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
-
+    elsif params[:operation] == "Verify-DC"
+        render :text => "Verify Duplicates with DC"
     else
       PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE', params[:comment])
       redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE-TBA&destination=Potential Duplicate"
