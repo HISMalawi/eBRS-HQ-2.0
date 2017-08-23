@@ -557,7 +557,6 @@ class PersonController < ApplicationController
           ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
-
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
 
@@ -587,7 +586,7 @@ class PersonController < ApplicationController
     @tasks =
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"],
       ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
