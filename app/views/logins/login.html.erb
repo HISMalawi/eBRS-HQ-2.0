@@ -9,21 +9,11 @@
 
     <%= favicon_link_tag 'fav.ico' %>
     <title>eBRS - HQ</title>
-
-    <!-- Bootstrap core CSS -->
-    <%= stylesheet_link_tag "bootstrap/bootstrap" %>                                         
-    <!--external css-->
-    <%= stylesheet_link_tag "extras/font-awesome.min" %>                                         
-        
-    <!-- Custom styles for this template -->
+    <%= stylesheet_link_tag "bootstrap/bootstrap" %>
+    <%= stylesheet_link_tag "extras/font-awesome.min" %>
     <%= stylesheet_link_tag "extras/style" %>                                         
     <%= stylesheet_link_tag "extras/style-responsive" %>                                         
 
-    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-    <![endif]-->
   </head>
 
   <body>
@@ -41,26 +31,10 @@
 		            <br>
                 <%= password_field(:user, :password, :placeholder => "password", :class => 'form-control', :tabindex => 2) %>
 		            <label class="checkbox">
-		                <!--span class="pull-right">
-		                    <a data-toggle="modal" href="login.html#myModal"> Forgot Password?</a>
-		
-		                </span-->
+
 		            </label>
-		            <button class="btn btn-theme btn-block" href="index.html" type="submit"><i class="fa fa-lock"></i> SIGN IN</button>
-		            <hr>
-		            
-		            <!--div class="login-social-link centered">
-		            <p>or you can sign in via your social network</p>
-		                <button class="btn btn-facebook" type="submit"><i class="fa fa-facebook"></i> Facebook</button>
-		                <button class="btn btn-twitter" type="submit"><i class="fa fa-twitter"></i> Twitter</button>
-		            </div>
-		            <div class="registration">
-		                Don't have an account yet?<br/>
-		                <a class="" href="#">
-		                    Create an account
-		                </a>
-		            </div-->
-		
+		            <button style='background: #006f95' class="btn btn-theme btn-block" href="index.html" type="submit"><i class="fa fa-lock"></i> SIGN IN</button>
+
 		        </div>
 		
 		          <!-- Modal -->
@@ -83,8 +57,7 @@
 		                  </div>
 		              </div>
 		          </div>
-		          <!-- modal -->
-		
+
 		      </form>	  	
 	  	
 	  	</div>

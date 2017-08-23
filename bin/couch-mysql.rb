@@ -37,12 +37,98 @@ mysql_adapter = mysql_db_settings["adapter"]
 $client = Mysql2::Client.new(:host => mysql_host,
                              :username => mysql_username,
                              :password => mysql_password,
-                             :database => mysql_db
+                             :database => mysql_db,
+                             :read_timeout => 60,
+                             :write_timeout => 60,
+                             :connect_timeout => 60,
+                             :reconnect => true
 )
+
 class Methods
+  def self.qry(runner, query)
+    query = runner.escape(query)
+    begin
+      data = runner.query(query)
+    rescue
+      sleep(2)
+      #reconnect to mysql
+      couch_mysql_path = Dir.pwd + "/config/database.yml"
+      db_settings = YAML.load_file(couch_mysql_path)
+      db_settings = YAML.load_file(couch_mysql_path)
+      mysql_db_settings = db_settings[Rails.env]
+      mysql_username = mysql_db_settings["username"]
+      mysql_password = mysql_db_settings["password"]
+      mysql_host = mysql_db_settings["host"] || '0.0.0.0'
+      mysql_db = mysql_db_settings["database"]
+
+      runner = Mysql2::Client.new(:host => mysql_host,
+                                  :username => mysql_username,
+                                  :password => mysql_password,
+                                  :database => mysql_db,
+                                  :read_timeout => 60,
+                                  :write_timeout => 60,
+                                  :connect_timeout => 60,
+                                  :reconnect => true
+      )
+
+      begin
+        data = runner.query(query)
+      rescue
+
+      end
+    end
+
+    data
+  end
+
   def self.update_doc(doc)
-    client = $client
-    `rails runner bin/save_from_couch.rb '#{doc.to_json}'`
+    client = $client; table = doc['type']; p_key = doc.keys[2]; p_value = doc[p_key]
+    return nil if p_value.blank?
+
+    self.qry(client, "SET FOREIGN_KEY_CHECKS = 0")
+    rows = self.qry(client, "SELECT * FROM #{table} WHERE #{p_key} = '#{p_value}' LIMIT 1").each(:as => :hash)
+    data = doc.reject{|k, v| ['_id', '_rev', 'type'].include?(k)}
+    if !rows.blank?
+      row = rows[0]
+      update_query = "UPDATE #{table} SET "
+      data.each do |k, v|
+        next if ['null', 'nil'].include?(v) && row[k].blank?
+
+        if !v.blank?
+          update_query += " #{k} = \"#{v}\", "
+        else
+          update_query += " #{k} = NULL, "
+        end
+      end
+      update_query = update_query.strip.sub(/\,$/, '')
+      update_query += " WHERE #{p_key} = '#{p_value}' "
+
+      self.qry(client, update_query)
+    else
+      insert_query = "INSERT INTO #{table} ("
+      keys = []
+      values = []
+
+      data.each do |k, v|
+
+        if !v.blank?
+          v = "\"#{v}\""
+        else
+          v = " NULL "
+        end
+
+        keys << k
+        values << v
+
+      end
+
+      insert_query += (keys.join(', ') + " ) VALUES (" )
+      insert_query += ( values.join(",")) + ")"
+
+      self.qry(client, insert_query)
+    end
+
+    self.qry(client, "SET FOREIGN_KEY_CHECKS = 1")
   end
 end
 
