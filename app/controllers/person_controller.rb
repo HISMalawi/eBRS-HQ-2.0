@@ -784,7 +784,7 @@ class PersonController < ApplicationController
     elsif params[:operation] == "Confirm-duplicate"
 
         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
-        if potential_records.present?Resolve Potential Duplicates
+        if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
                 PersonRecordStatus.new_record_state(params[:id], 'HQ-NOT DUPLICATE-TBA', params[:comment])
             else
