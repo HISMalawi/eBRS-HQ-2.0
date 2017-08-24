@@ -172,5 +172,11 @@ changes "http://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/
   document 'type' => 'user_role' do |doc|
     output = Methods.update_doc(doc.document)
   end
+  document 'type' => 'potential_duplicates' do |doc|
+    output = Methods.update_doc(doc.document)
+  end
+  document 'type' => 'duplicate_records' do |doc|
+    output = Methods.update_doc(doc.document)
+  end
 end
 
