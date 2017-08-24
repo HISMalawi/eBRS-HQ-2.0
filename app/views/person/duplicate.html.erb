@@ -523,8 +523,14 @@
       __$("comment-header").innerHTML = operation + " : Add comment to proceed"
       __$("submit_btn").style.display ="none";
       var proceed = document.createElement("button");
-      proceed.setAttribute("class","btn btn-sm btn-primary pull-right");
-      proceed.innerHTML ="Proceed"
+      if(__$("proceed")){
+          proceed = __$("proceed");
+      }else{
+          proceed.setAttribute("class","btn btn-sm btn-primary pull-right");
+          proceed.id = "proceed"
+          proceed.innerHTML ="Proceed"
+      }
+      
       __$("comment_footer").appendChild(proceed);
       proceed.onmousedown = function(){
                if(__$("textarea").value.length ==0){
