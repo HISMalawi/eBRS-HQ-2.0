@@ -344,10 +344,11 @@ class PersonController < ApplicationController
   end
 
   def view
+    params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.fullpath
     @states = params[:statuses]
     @section = params[:destination]
-    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
 
     @records = PersonService.query_for_display(@states)
     render :template => "/person/records"
@@ -548,6 +549,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Checking Clerk'],
+              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Supervisor'],
               ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
              # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
@@ -586,7 +588,7 @@ class PersonController < ApplicationController
     @tasks =
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-REJECTED"],"/person/view","/assets/folder3.png"],
       ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
@@ -600,10 +602,10 @@ class PersonController < ApplicationController
   def special_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Abandoned Cases" ,"All records that were registered as Abandoned ", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-        ["Adopted Cases", "All records that were registered as Adopted" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Orphaned cases", "All records that were registered as Orphaned" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Printed/Dispatched Certificates", "All approved and printed Special cases", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"]
+        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view","/assets/folder3.png"],
+        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view","/assets/folder3.png"],
+        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view","/assets/folder3.png"],
+        ["Printed/Dispatched Certificates", "All approved and printed Special cases", [],"/person/view","/assets/folder3.png", 'Quality Supervisor']
     ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
