@@ -50,6 +50,7 @@ Action Code,Description,Button Name,,,,,,,,"
 10,Re open record,Request Reprint,,,,,,,,
 11,Approve for RE-Printing,Approve for Re-printing,,,,,,,,
 12,,Re-print,,,,,,,,
+13,Confirm Completenes,Confirm,,,,,,,,
 END CODES,,,,,,,,,,
 ,,,,,,,,,,
 ,,,,,,,,,,

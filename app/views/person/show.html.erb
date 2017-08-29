@@ -161,6 +161,11 @@
           <span class="fa fa-check"></span>
           Check Completeness
         </button>
+        <button id="Confirm Completeness" class="btn btn-success pull-right" style="display:<%= display%>;"
+                onclick="jQuery('#completenessModal').modal('show')">
+          <span class="fa fa-check"></span>
+          Confirm
+        </button>
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="ajaxify('HQ-CAN-PRINT')">
           <span class="fa fa-thumbs-o-up"></span>
@@ -501,7 +506,8 @@
                 'Data Checking Clerk': 'HQ-INCOMPLETE-TBA',
                 'Administrator': 'HQ-INCOMPLETE-TBA',
                 'Data Supervisor': 'HQ-CONFLICT',
-                'Data Supervisor': 'HQ-REJECTED'
+                'Data Supervisor': 'HQ-INCOMPLETE',
+                'Data Manager': 'HQ-REJECTED'
             })[role];
         }
 
