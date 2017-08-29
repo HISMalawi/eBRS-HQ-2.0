@@ -745,6 +745,7 @@ end
 
       mother = self.mother(data.person_id)
       father = self.father(data.person_id)
+      details = PersonBirthDetail.find_by_person_id(data.person_id)
       #For abandoned cases mother details may not be availabe
       #next if mother.blank?
       #next if mother.first_name.blank?
@@ -754,11 +755,10 @@ end
       name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}")
       mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
       father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
-
       results << {
           'id' => data.person_id,
           'ben' => data.ben,
-          'brn' => data.brn,
+          'brn' => details.brn,
           'gender' => data.gender,
           'dob' => data.birthdate.strftime('%d/%b/%Y'),
           'name'        => name,
