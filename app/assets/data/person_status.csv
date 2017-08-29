@@ -40,6 +40,8 @@ HQ,DC OPEN,GRANTED,DC-GRANTED,Deprecated
 HQ,DC OPEN,REJECTED,DC-REJECTED,A record that has finally been rejected at HQ
 HQ,HQ OPEN,POTENTIAL DUPLICATE,HQ-POTENTIAL DUPLICATE,A record that has been marked as a potential duplicate at HQ
 HQ,,,HQ-DUPLICATE,A confirmed as a duplicate by DM
+HQ,,,HQ-VOIDED DUPLICATE,Record that is duplicate and voided by DS at HQ
 HQ,,,HQ-EXACT DUPLICATE,An exact duplicate at HQ
 HQ,,,HQ-NOT DUPLICATE-TBA,Record confirmed to be not duplicate by DS at HQ
 HQ,,,HQ-NOT DUPLICATE,Record confirmed to be not duplicate by DM at HQ
+HQ,,,DC-VERIFY DUPLICATE,Record sent to DC by DS after being caught as duplicate

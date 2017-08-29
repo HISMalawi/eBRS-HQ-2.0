@@ -344,10 +344,11 @@ class PersonController < ApplicationController
   end
 
   def view
+    params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.fullpath
     @states = params[:statuses]
     @section = params[:destination]
-    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states)
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
 
     @records = PersonService.query_for_display(@states)
     render :template => "/person/records"
@@ -516,7 +517,7 @@ class PersonController < ApplicationController
               ["Rejected Cases" , "Rejected Cases" , ["HQ-REJECTED"],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
-              ["Duplicate Cases" , "Duplicate cases" , ["HQ-POTENTIAL DUPLICATE-TBA"],"/person/duplicates_menu","/assets/folder3.png"],
+              ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"],
               ["Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
@@ -548,6 +549,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Checking Clerk'],
+              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Supervisor'],
               ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
              # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
@@ -557,7 +559,6 @@ class PersonController < ApplicationController
           ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
-
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
 
@@ -587,7 +588,7 @@ class PersonController < ApplicationController
     @tasks =
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-REJECTED"],"/person/view","/assets/folder3.png"],
       ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
@@ -601,10 +602,10 @@ class PersonController < ApplicationController
   def special_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Abandoned Cases" ,"All records that were registered as Abandoned ", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
-        ["Adopted Cases", "All records that were registered as Adopted" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Orphaned cases", "All records that were registered as Orphaned" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Printed/Dispatched Certificates", "All approved and printed Special cases", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"]
+        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view","/assets/folder3.png"],
+        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view","/assets/folder3.png"],
+        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view","/assets/folder3.png"],
+        ["Printed/Dispatched Certificates", "All approved and printed Special cases", [],"/person/view","/assets/folder3.png", 'Quality Supervisor']
     ]
 
     @tasks.reject{|task| !@folders.include?(task[0]) }
@@ -737,13 +738,14 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
    
     @tasks = [
-              ["Potential Duplicate","Potential Duplicate" , ["HQ-POTENTIAL DUPLICATE","HQ-POTENTIAL DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"],
-              ["Resolve Potential Duplicates","Resolve potential Duplicates" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Potential Duplicates","Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Resolve Potential Duplicates","Resolve Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
               ["Approved for Printing","Approved for printing" , ['HQ-CAN-PRINT'],"/person/view?had=HQ-POTENTIAL DUPLICATE-TBA","/assets/folder3.png"],
-              ["Voided Records","Voided Records" , ["HQ-VOIDED"],"/person/view","/assets/folder3.png"]
+              ["Voided Records","Voided Records" , ["HQ-VOIDED DUPLICATE"],"/person/view","/assets/folder3.png"]
             ]
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
     @section = "Manage duplicate"
     @stats = PersonRecordStatus.stats
     render :template => "/person/tasks"
@@ -779,9 +781,10 @@ class PersonController < ApplicationController
             potential_records.resolved_at = Time.now
             potential_records.save
         end
-        redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Potential Duplicate"
+        redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE-TBA&statuses[]=HQ-NOT DUPLICATE-TBA&destination=Resolve Potential Duplicates"
 
     elsif params[:operation] == "Confirm-duplicate"
+
         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
         if potential_records.present?
             if params[:decision] == "NOT DUPLICATE"
@@ -793,12 +796,20 @@ class PersonController < ApplicationController
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
 
     elsif params[:operation] == "Void-duplicate"
-        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
-        redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE&destination=Potential Duplicate"
+
+        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED DUPLICATE', params[:comment])
+        redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
+
+    elsif params[:operation] == "Verify-DC"
+
+        PersonRecordStatus.new_record_state(params[:id], 'DC-VERIFY DUPLICATE', params[:comment])
+        redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
 
     else
+
       PersonRecordStatus.new_record_state(params[:id], 'HQ-POTENTIAL DUPLICATE', params[:comment])
       redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE-TBA&destination=Potential Duplicate"
+
     end
   end
 
