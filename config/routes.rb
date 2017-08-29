@@ -1,4 +1,14 @@
 Rails.application.routes.draw do
+  
+  ####################### reports ################################
+
+  ### Printed certofocates
+  get '/printed_certificates' => 'report#printed_certificates'
+  get 'get_printed_certificates/:location_id/:start_date/:end_date' => 'report#get_printed_certificates'
+
+
+  ####################### reports end ################################
+
   get 'global_property/paper'
 
   get 'global_property/signature'
