@@ -1,5 +1,5 @@
 Rails.application.routes.draw do
-  
+
   ####################### reports ################################
 
   ### Printed certofocates
@@ -9,6 +9,18 @@ Rails.application.routes.draw do
 
   get '/reported_births' => 'report#reported_births'
   get 'get_reported_births/:location_id/:start_date/:end_date' => 'report#get_reported_births'
+  
+  get '/approved_at_hq' => 'report#approved_at_hq'
+  get 'get_approved_at_hq/:location_id/:start_date/:end_date' => 'report#get_approved_at_hq'
+
+  get '/voided_records' => 'report#voided_records'
+  get 'get_voided_records/:start_date/:end_date' => 'report#get_voided_records'
+
+  get '/registered_births' => 'report#registered_births'
+  get 'get_registered_births/:location_id/:start_date/:end_date' => 'report#get_registered_births'
+
+  get '/user_audit_trail' => 'report#user_audit_trail'
+  get 'get_user_audit_trail/:start_date/:end_date' => 'report#get_user_audit_trail'
   ####################### reports end ################################
 
   get 'global_property/paper'
