@@ -31,6 +31,11 @@
   display: none;
 }
 
+.numbers {
+  text-align: right; 
+  padding-right: 30px;
+}
+
 </style>
 
 <%#=stylesheet_link_tag "datepicker/wickedpicker" %>
@@ -79,7 +84,10 @@ function dataT(){
             'pdfHtml5'
         ],
       "pageLength": 10,
-      "processing": true
+      "processing": true,
+       "columnDefs": [
+         { className: "numbers", "targets": [ 1 ] }
+       ]
     });
 }
 
@@ -167,7 +175,7 @@ function fetchData() {
   <thead>
     <tr>
       <th style="width: 10%;">Gender</th>
-      <th style="text-align: right; padding-right: 25px;">Reported Births</th>
+      <th class="numbers">Reported Births</th>
     </tr>
   </thead>
   </tbody>

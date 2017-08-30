@@ -8,13 +8,15 @@ class ReportController < ApplicationController
     district_code     = Location.find(params[:location_id]).code
     district_code_len = district_code.length
     person_type       = PersonType.where(name: 'Client').first
-    status_id         = Status.where(name: 'HQ-ACTIVE').first.id
+    status_ids        = Status.where(name: ['HQ-DISPATCHED','HQ-PRINTED']).map(&id)
+    start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
+    end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
      
     data = Person.where("p.person_type_id = ? AND 
       LEFT(district_id_number, #{district_code_len}) = ?
-      AND status_id = ?", 
+      AND s.status_id IN(?) AND s.created_at BETWEEN ? AND ?", 
       person_type.id, district_code,
-      status_id).joins("INNER JOIN core_person p 
+      status_ids, start_date, end_date).joins("INNER JOIN core_person p 
       ON person.person_id = p.person_id
       INNER JOIN person_birth_details d 
       ON d.person_id = person.person_id
