@@ -1,22 +1,14 @@
 class ReportController < ApplicationController
 
   def printed_certificates
-    location_tag = LocationTag.where(name: 'District').first
-
-    @districts = Location.group("location.location_id").where("t.location_tag_id = ?
-      AND location.name NOT LIKE (?)", location_tag.id, 
-      "%city%").joins("INNER JOIN location_tag_map m 
-      ON m.location_id = location.location_id
-      INNER JOIN location_tag t 
-      ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
-
+    @districts = districts
   end
 
   def get_printed_certificates
     district_code     = Location.find(params[:location_id]).code
     district_code_len = district_code.length
     person_type       = PersonType.where(name: 'Client').first
-    status_id         = Status.where(name: 'HQ-DISPATCHED').first.id
+    status_id         = Status.where(name: 'HQ-ACTIVE').first.id
      
     data = Person.where("p.person_type_id = ? AND 
       LEFT(district_id_number, #{district_code_len}) = ?
@@ -44,12 +36,63 @@ class ReportController < ApplicationController
         last_name: p.last_name,
         birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
         gender: p.full_gender,
-        dispatch_date: dispatch_date.to_date.strftime('%d/%b/%Y'),
+        dispatch_date: r.dispatch_date.to_date.strftime('%d/%b/%Y'),
         person_id: p.person_id
       }
     end
 
     render text: records.to_json
+  end
+
+
+  def reported_births
+    @districts = districts
+  end
+
+  def get_reported_births
+    district_code     = Location.find(params[:location_id]).code
+    district_code_len = district_code.length
+    person_type       = PersonType.where(name: 'Client').first
+    status_id         = Status.where(name: 'HQ-ACTIVE').first.id
+     
+    start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
+    end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
+
+    data = Person.where("p.person_type_id = ? AND 
+      LEFT(district_id_number, #{district_code_len}) = ?
+      AND status_id = ? AND s.created_at BETWEEN ? AND ?", 
+      person_type.id, district_code,
+      status_id, start_date, end_date).joins("INNER JOIN core_person p 
+      ON person.person_id = p.person_id
+      INNER JOIN person_birth_details d 
+      ON d.person_id = person.person_id
+      INNER JOIN person_record_statuses s 
+      ON s.person_id = person.person_id AND s.voided = 0").group('d.person_id')\
+      .select("person.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      district_id_number ASC')
+
+    records = {}
+    (data || []).each do |r|
+      p = Person.find(r.person_id)
+      records[p.full_gender] = 0 if records[p.full_gender].blank?
+      records[p.full_gender] += 1
+    end
+
+    render text: records.to_json
+  end
+
+  private
+
+  def districts
+    location_tag = LocationTag.where(name: 'District').first
+
+    @districts = Location.group("location.location_id").where("t.location_tag_id = ?
+      AND location.name NOT LIKE (?)", location_tag.id, 
+      "%city%").joins("INNER JOIN location_tag_map m 
+      ON m.location_id = location.location_id
+      INNER JOIN location_tag t 
+      ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
+
   end
 
 end

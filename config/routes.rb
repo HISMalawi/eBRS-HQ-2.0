@@ -7,6 +7,8 @@ Rails.application.routes.draw do
   get 'get_printed_certificates/:location_id/:start_date/:end_date' => 'report#get_printed_certificates'
 
 
+  get '/reported_births' => 'report#reported_births'
+  get 'get_reported_births/:location_id/:start_date/:end_date' => 'report#get_reported_births'
   ####################### reports end ################################
 
   get 'global_property/paper'
