@@ -67,4 +67,19 @@ class Person < ActiveRecord::Base
     PersonAttribute.where(person_id: self.person_id, person_attribute_type_id: type_id, voided: 0).last.value rescue nil
   end
 
+  def first_name
+    name = self.person_names.last
+    name.first_name.gsub(/\s+/, ' ')
+  end
+
+  def middle_name
+    name = self.person_names.last
+    name.middle_name.gsub(/\s+/, ' ') rescue nil
+  end
+
+  def last_name
+    name = self.person_names.last
+    name.last_name.gsub(/\s+/, ' ')
+  end
+
 end
