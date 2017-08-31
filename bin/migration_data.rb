@@ -11,9 +11,10 @@ def save_record(params, district_id_number)
 
       if person.present? 
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        record_status.update_attributes(status_id: Status.where(name: 'DC-ACTIVE').last.id)
+        #record_status.update_attributes(status_id: Status.where(name: 'DC-ACTIVE').last.id)
+        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
         assign_district_id(person.person_id, district_id_number )
-        puts "Record Created ............. "
+        puts "Record for #{} Created ............. "
       end
 
 end
@@ -112,5 +113,43 @@ def start
 
 end
 
+
+def get_record_status(rec_status, req_status)
+
+	record_status = {"DC OPEN" => {"ACTIVE" =>["DC-ACTIVE"]},
+		"POTENTIAL DUPLICATE" => {"ACTIVE"=>["FC-POTENTIAL DUPLICATE"]},
+		"DC OPEN" =>{"IN-COMPLETE" =>["DC-INCOMPLETE"]},
+		"DC OPEN" =>{"COMPLETE" =>["DC-COMPLETE"]},
+		"DC OPEN" =>{"DUPLICATE" =>["DC-DUPLICATE"]},
+		"HQ OPEN" =>{"ACTIVE" =>["HQ-ACTIVE"]},
+		"HQ OPEN" =>{"RE-APPROVED" =>["HQ-RE-APPROVED"]},
+		"VOIDED" =>{"CLOSED" =>["DC-VOIDED"]},
+		"HQ OPEN" =>{"DC_ASK" =>["DC-ASK"]},
+		"POTENTIAL-DUPLICATE" =>{"VOIDED"=>["DC-VOIDED"]},
+		"DC OPEN" =>{"POTENTIAL DUPLICATE" =>["DC-POTENTIAL DUPLICATE"]},
+		"VOIDED" =>{"CLOSED" =>["HQ-VOIDED"]},
+		"HQ OPEN" =>{"GRANTED" =>["HQ-GRANTED"]},
+		"HQ OPEN" =>{"REJECTED" =>["HQ-REJECTED"]},
+		"PRINTED" =>{"CLOSED" =>["HQ-PRINTED"]},
+		"PRINTED" =>{"DISPATCHED" =>["HQ-DISPATCHED"]},
+		"HQ OPEN" =>{"COMPLETE" =>["HQ-INCOMPLETE-TBA"]},
+		"HQ OPEN" =>{"COMPLETE" =>["HQ-COMPLETE"]},
+		"HQ OPEN" =>{"CAN PRINT" =>["HQ-CAN-PRINT"]},
+		"HQ OPEN" =>{"CAN REJECT" =>["HQ-CAN-REJECT"]},
+		"HQ OPEN" =>{"APPROVED" =>["HQ-APPROVED"]},
+		"HQ OPEN" =>{"TBA-CONFLICT" =>["HQ-CONFLICT"]},
+		"HQ OPEN" =>{"TBA-POTENTIAL DUPLICATE" =>["HQ-POTENTIAL DUPLICATE-TBA"]},
+		"HQ OPEN" =>{"CAN VOID" =>["HQ-CAN-VOID"]},
+		"HQ OPEN" =>{"INCOMPLETE" =>["HQ-INCOMPLETE"]},
+		"HQ OPEN" =>{"RE-PRINT" =>["HQ-RE-PRINT"]},
+		"HQ OPEN" =>{"CAN RE_PRINT" =>["HQ-CAN-RE-PRINT"]},
+		"DUPLICATE" =>{"VOIDED" =>["HQ-VOIDED"]},
+		"DC OPEN" => {"GRANTED" =>["DC-GRANTED"]},
+		"DC OPEN" => {"REJECTED" =>["DC-REJECTED"]},
+		"HQ OPEN" => {"POTENTIAL DUPLICATE" =>["HQ-POTENTIAL DUPLICATE"]}}
+
+	return record_status[rec_status][req_status]
+
+end
 
 start
