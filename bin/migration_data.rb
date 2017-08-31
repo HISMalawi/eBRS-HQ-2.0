@@ -1,8 +1,12 @@
+require'migration-lib/lib'
+require'migration-lib/person_service'
+
 User.current = User.last
+
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
 def save_record(params, district_id_number)
-
+   
     person = PersonService.create_record(params)
 
       if person.present? 
@@ -11,6 +15,7 @@ def save_record(params, district_id_number)
         assign_district_id(person.person_id, district_id_number )
         puts "Record Created ............. "
       end
+
 end
 
 def assign_district_id(person_id, ben)
@@ -29,10 +34,9 @@ def assign_district_id(person_id, ben)
 end
 
 def start
-	
-	records = Child.all.each
 
-	#puts records.first_name
+  
+	records = Child.all.limit(5).each
 	
 	(records || []).each do |r|
 
@@ -41,7 +45,7 @@ def start
 		   last_name: r[:last_name], 
 		   first_name: r[:first_name], 
 		   middle_name: r[:middle_name], 
-		   birthdate: r[:birthdate].strftime('%d/%b/%Y'), 
+		   birthdate: r[:birthdate], 
 		   birth_district: r[:birth_district], 
 		   gender: r[:gender], 
 		   place_of_birth: r[:place_of_birth], 
@@ -56,9 +60,9 @@ def start
 		   mother:{
 		     last_name: r[:mother][:last_name], 
 		     first_name: r[:mother][:first_name], 
-		     middle_name: r[:mother][:middle_name] rescue nil, 
-		     birthdate: r[:mother][:birthdate].strftime('%d/%b/%Y'), 
-		     birthdate_estimated: r[:mother][:birthdate_estimated].strftime('%d/%b/%Y'), 
+		     middle_name: r[:mother][:middle_name], 
+		     birthdate: r[:mother][:birthdate], 
+		     birthdate_estimated: r[:mother][:birthdate_estimated], 
 		     citizenship: r[:mother][:citizenship], 
 		     residential_country: r[:mother][:residential_country], 
 		     current_district: r[:mother][:current_district], 
@@ -71,7 +75,7 @@ def start
 		   mode_of_delivery: r[:mode_of_delivery], 
 		   level_of_education: r[:level_of_education], 
 		   father: {
-		     birthdate_estimated: r[:father][:birthdate_estimated].strftime('%d/%b/%Y'), 
+		     birthdate_estimated: r[:father][:birthdate_estimated], 
 		     residential_country: r[:father][:residential_country]
 		  }, 
 		   informant: {
@@ -103,9 +107,10 @@ def start
 		   action: "create"
 		  }
 
-		 save_record(data, record.district_id_number)
+		 save_record(data, r.district_id_number)
     end
 
 end
+
 
 start
