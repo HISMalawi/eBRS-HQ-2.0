@@ -5,6 +5,8 @@ User.current = User.last
 
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
+
+
 def save_record(params, district_id_number)
    
     person = PersonService.create_record(params)
@@ -14,7 +16,7 @@ def save_record(params, district_id_number)
         #record_status.update_attributes(status_id: Status.where(name: 'DC-ACTIVE').last.id)
         record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
         assign_district_id(person.person_id, district_id_number )
-        puts "Record for #{} Created ............. "
+        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
       end
 
 end
@@ -37,7 +39,7 @@ end
 def start
 
   
-	records = Child.all.limit(5).each
+	records = Child.all.limit(50).each
 	
 	(records || []).each do |r|
 
@@ -102,13 +104,16 @@ def start
 		   number_of_children_born_still_alive: r[:number_of_children_born_still_alive], 
 		   same_address_with_mother: "", 
 		   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"), 
-		   registration_type: r[:relationship], 
+		   registration_type: r[:relationship],
+		   record_status: r[:record_status],
+		   request_status: r[:request_status], 
 		   copy_mother_name: "No", 
 		   controller: "person", 
 		   action: "create"
 		  }
-
+        
 		 save_record(data, r.district_id_number)
+
     end
 
 end
@@ -116,39 +121,41 @@ end
 
 def get_record_status(rec_status, req_status)
 
-	record_status = {"DC OPEN" => {"ACTIVE" =>["DC-ACTIVE"]},
-		"POTENTIAL DUPLICATE" => {"ACTIVE"=>["FC-POTENTIAL DUPLICATE"]},
-		"DC OPEN" =>{"IN-COMPLETE" =>["DC-INCOMPLETE"]},
-		"DC OPEN" =>{"COMPLETE" =>["DC-COMPLETE"]},
-		"DC OPEN" =>{"DUPLICATE" =>["DC-DUPLICATE"]},
-		"HQ OPEN" =>{"ACTIVE" =>["HQ-ACTIVE"]},
-		"HQ OPEN" =>{"RE-APPROVED" =>["HQ-RE-APPROVED"]},
-		"VOIDED" =>{"CLOSED" =>["DC-VOIDED"]},
-		"HQ OPEN" =>{"DC_ASK" =>["DC-ASK"]},
-		"POTENTIAL-DUPLICATE" =>{"VOIDED"=>["DC-VOIDED"]},
-		"DC OPEN" =>{"POTENTIAL DUPLICATE" =>["DC-POTENTIAL DUPLICATE"]},
-		"VOIDED" =>{"CLOSED" =>["HQ-VOIDED"]},
-		"HQ OPEN" =>{"GRANTED" =>["HQ-GRANTED"]},
-		"HQ OPEN" =>{"REJECTED" =>["HQ-REJECTED"]},
-		"PRINTED" =>{"CLOSED" =>["HQ-PRINTED"]},
-		"PRINTED" =>{"DISPATCHED" =>["HQ-DISPATCHED"]},
-		"HQ OPEN" =>{"COMPLETE" =>["HQ-INCOMPLETE-TBA"]},
-		"HQ OPEN" =>{"COMPLETE" =>["HQ-COMPLETE"]},
-		"HQ OPEN" =>{"CAN PRINT" =>["HQ-CAN-PRINT"]},
-		"HQ OPEN" =>{"CAN REJECT" =>["HQ-CAN-REJECT"]},
-		"HQ OPEN" =>{"APPROVED" =>["HQ-APPROVED"]},
-		"HQ OPEN" =>{"TBA-CONFLICT" =>["HQ-CONFLICT"]},
-		"HQ OPEN" =>{"TBA-POTENTIAL DUPLICATE" =>["HQ-POTENTIAL DUPLICATE-TBA"]},
-		"HQ OPEN" =>{"CAN VOID" =>["HQ-CAN-VOID"]},
-		"HQ OPEN" =>{"INCOMPLETE" =>["HQ-INCOMPLETE"]},
-		"HQ OPEN" =>{"RE-PRINT" =>["HQ-RE-PRINT"]},
-		"HQ OPEN" =>{"CAN RE_PRINT" =>["HQ-CAN-RE-PRINT"]},
-		"DUPLICATE" =>{"VOIDED" =>["HQ-VOIDED"]},
-		"DC OPEN" => {"GRANTED" =>["DC-GRANTED"]},
-		"DC OPEN" => {"REJECTED" =>["DC-REJECTED"]},
-		"HQ OPEN" => {"POTENTIAL DUPLICATE" =>["HQ-POTENTIAL DUPLICATE"]}}
 
-	return record_status[rec_status][req_status]
+ status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE', 
+      							'IN-COMPLETE' =>'DC-INCOMPLETE', 
+      							'COMPLETE' =>'DC-COMPLETE',
+      							'DUPLICATE' =>'DC-DUPLICATE',
+      							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
+      							'GRANTED' =>'DC-GRANTED',
+      							'REJECTED' =>'DC-REJECTED'},
+		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
+		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
+		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
+					'CLOSED' =>'HQ-VOIDED'},
+		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
+					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
+					'RE-APPROVED' =>'HQ-RE-APPROVED',
+					'DC_ASK' =>'DC-ASK',
+					'GRANTED' =>'HQ-GRANTED',
+					'REJECTED' =>'HQ-REJECTED',
+					'COMPLETE' =>'HQ-INCOMPLETE-TBA',
+					'COMPLETE' =>'HQ-COMPLETE',
+					'CAN PRINT' =>'HQ-CAN-PRINT',
+					'CAN REJECT' =>'HQ-CAN-REJECT',
+					'APPROVED' =>'HQ-APPROVED',
+					'TBA-CONFLICT' =>'HQ-CONFLICT',
+					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
+					'CAN VOID' =>'HQ-CAN-VOID',
+					'INCOMPLETE' =>'HQ-INCOMPLETE',
+					'RE-PRINT' =>'HQ-RE-PRINT',
+					'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
+					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
+		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
+
+
+   return status[rec_status][req_status]
 
 end
 
