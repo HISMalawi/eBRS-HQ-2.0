@@ -43,6 +43,7 @@ module Lib
         )
       
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
+        mother[:residential_country] = 'Malawi' if mother[:residential_country].blank?
         mother_person = Person.create(
             :person_id          => core_person.id,
             :gender             => 'F',
