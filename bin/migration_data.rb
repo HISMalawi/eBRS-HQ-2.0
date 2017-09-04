@@ -1,6 +1,6 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
-
+@file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
 User.current = User.last
 
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
@@ -8,24 +8,39 @@ Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').f
 
 
 def save_record(params, district_id_number)
+
    
     person = PersonService.create_record(params)
-
+    if !district_id_number.blank?
       if person.present? 
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        #record_status.update_attributes(status_id: Status.where(name: 'DC-ACTIVE').last.id)
         record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
-        assign_district_id(person.person_id, district_id_number )
+        assign_district_id(person.person_id, district_id_number)
+
         puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
       end
+    else
+    	if !File.exists?(@file_path)
+           file = File.new(@file_path, 'w')
+        else
 
+            File.open(@file_path, 'a') do |f|
+              f.puts "_rev: #{params[:_rev]}  _id: #{params[:_id]} \n"
+            end
+
+        end
+    end
 end
 
+
 def assign_district_id(person_id, ben)
+
 	ben_exist = PersonBirthDetail.where(district_id_number: ben)
+	
 	if ben_exist.blank?
 		birth_details = PersonBirthDetail.where(person_id: person_id).first
 	    birth_details.update_attributes(district_id_number: ben)
+        
 	else
 		PersonAttribute.create(value: ben, person_id: person_id, person_attribute_type_id: Duplicate_attribute_type_id )
 		(ben_exist || []).each do |r|
@@ -39,7 +54,7 @@ end
 def start
 
   
-	records = Child.all.limit(50).each
+	records = Child.all.limit(10).each
 	
 	(records || []).each do |r|
 
@@ -106,6 +121,8 @@ def start
 		   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"), 
 		   registration_type: r[:relationship],
 		   record_status: r[:record_status],
+		   _rev: r[:_rev],
+		   _id: r[:_id],
 		   request_status: r[:request_status], 
 		   copy_mother_name: "No", 
 		   controller: "person", 
