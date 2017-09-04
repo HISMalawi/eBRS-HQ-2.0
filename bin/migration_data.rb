@@ -9,9 +9,9 @@ Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').f
 
 def save_record(params, district_id_number)
 
-   
-    person = PersonService.create_record(params)
     if !district_id_number.blank?
+       person = PersonService.create_record(params)
+   
       if person.present? 
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
         record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
