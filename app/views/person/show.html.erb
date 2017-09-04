@@ -187,6 +187,11 @@
           <span class="fa"></span>
           Reject
         </button>
+        <button id="Reject to DC" class="btn btn-danger pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
+          <span class="fa"></span>
+          Reject to DC
+        </button>
         <button id="Void" class="btn btn-warning pull-right" style="display:<%= display%>;"
                 onclick="generalComment('Enter void reason to proceed', 'HQ-VOIDED')">
           <span class="fa fa-void"></span>
@@ -503,11 +508,11 @@
         var role = '<%= User.current.user_role.role.role%>';
         if (!status) {
             status = ({
-                'Data Checking Clerk': 'HQ-INCOMPLETE-TBA',
+                'Data Checking Clerk': 'HQ-INCOMPLETE',
                 'Administrator': 'HQ-INCOMPLETE-TBA',
                 'Data Supervisor': 'HQ-CONFLICT',
-                'Data Supervisor': 'HQ-INCOMPLETE',
-                'Data Manager': 'HQ-REJECTED'
+                'Data Supervisor': 'HQ-INCOMPLETE-TBA',
+                'Data Manager': 'HQ-CAN-REJECT'
             })[role];
         }
 
