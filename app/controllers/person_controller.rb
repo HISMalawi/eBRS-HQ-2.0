@@ -514,7 +514,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
-              ["Rejected Cases" , "Rejected Cases" , ["HQ-REJECTED"],"/person/rejected_cases","/assets/folder3.png"],
+              ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
@@ -552,7 +552,7 @@ class PersonController < ApplicationController
               ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Supervisor'],
               ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
              # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
-              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["Print Cases", "Printed records", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
@@ -588,11 +588,12 @@ class PersonController < ApplicationController
     @tasks =
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-REJECTED"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+        ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"]
       ]
-
+    
     @tasks.reject{|task| !@folders.include?(task[0]) }
-
+    
     @stats = PersonRecordStatus.stats
     @section = "Rejected Cases"
 
