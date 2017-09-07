@@ -141,6 +141,7 @@ Rails.application.routes.draw do
   post '/print_dispatched_certs' => 'person#print_dispatched_certs'
   get '/paper' => 'global_property#paper'
   get '/signature' => 'global_property#signature'
+  get '/update_person' => 'person#update_person'
 
   resources :person
 
