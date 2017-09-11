@@ -9,6 +9,7 @@ Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').f
 
 
 def save_record(params, district_id_number, type_of_birth)
+    puts district_id_number.inspect
 
     if !district_id_number.blank?
        person = PersonService.create_record(params)
@@ -21,16 +22,17 @@ def save_record(params, district_id_number, type_of_birth)
         puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
       end
     else
-     if ["Twin", "Triplet", "Second Twin", "Second Triplet", "Third Triplet"].include? type_of_birth && !type_of_birth.blank?
-    	if !File.exists?(@suspects)
+        puts type_of_birth.inspect
+         if (["Twin", "Triplet", "Second Twin", "Second Triplet", "Third Triplet"].include? type_of_birth) && !type_of_birth.blank?
+    	    if !File.exists?(@suspects)
            file = File.new(@suspects, 'w')
-        else
+            else
 
             File.open(@suspects, 'a') do |f|
-              f.puts "_rev: #{params[:_rev]}  _id: #{params[:_id]} #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]}\n"
+              f.puts "_rev: #{params[:_rev]}  _id: #{params[:_id]} #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} \n"
             end
 
-        end
+            end
      end
     end
 end
