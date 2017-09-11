@@ -11,13 +11,14 @@ Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').f
 
 def write_log(file, content)
 
-	if !File.exists?(@file_path)
-           file = File.new(@file_path, 'w')
+	if !File.exists?(file)
+           file = File.new(file, 'w')
     else
 
 
-       File.open(@file_path, 'a') do |f|
-          f.puts "_rev: #{params[:_rev]}  _id: #{params[:_id]} \n"
+       File.open(file, 'a') do |f|
+          f.puts "#{content}"
+
       end
 
 
@@ -345,10 +346,5 @@ def func
 
 end
 
-#start
-func
-#output = func
-#puts output[:person][:first_name]
 
-#mother_record_exist
-#mother_records
+func
