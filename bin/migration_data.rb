@@ -53,7 +53,7 @@ def save_full_record(params, district_id_number)
         record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
         assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
 
-        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
+        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
       end
 
     #else
