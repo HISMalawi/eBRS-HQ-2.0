@@ -161,6 +161,11 @@
           <span class="fa fa-check"></span>
           Check Completeness
         </button>
+        <button id="Confirm Completeness" class="btn btn-success pull-right" style="display:<%= display%>;"
+                onclick="jQuery('#completenessModal').modal('show')">
+          <span class="fa fa-check"></span>
+          Confirm
+        </button>
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="ajaxify('HQ-CAN-PRINT')">
           <span class="fa fa-thumbs-o-up"></span>
@@ -181,6 +186,11 @@
                 onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
           <span class="fa"></span>
           Reject
+        </button>
+        <button id="Reject to DC" class="btn btn-danger pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
+          <span class="fa"></span>
+          Reject to DC
         </button>
         <button id="Void" class="btn btn-warning pull-right" style="display:<%= display%>;"
                 onclick="generalComment('Enter void reason to proceed', 'HQ-VOIDED')">
@@ -498,10 +508,11 @@
         var role = '<%= User.current.user_role.role.role%>';
         if (!status) {
             status = ({
-                'Data Checking Clerk': 'HQ-INCOMPLETE-TBA',
+                'Data Checking Clerk': 'HQ-INCOMPLETE',
                 'Administrator': 'HQ-INCOMPLETE-TBA',
                 'Data Supervisor': 'HQ-CONFLICT',
-                'Data Supervisor': 'HQ-REJECTED'
+                'Data Supervisor': 'HQ-INCOMPLETE-TBA',
+                'Data Manager': 'HQ-CAN-REJECT'
             })[role];
         }
 
