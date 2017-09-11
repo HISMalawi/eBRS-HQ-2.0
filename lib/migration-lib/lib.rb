@@ -44,6 +44,7 @@ module Lib
       
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
         mother[:residential_country] = 'Malawi' if mother[:residential_country].blank?
+        
         mother_person = Person.create(
             :person_id          => core_person.id,
             :gender             => 'F',
@@ -256,6 +257,9 @@ module Lib
   end
 
   def self.new_birth_details(person, params)
+
+  
+
     if self.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
       return self.birth_details_multiple(person,params)
     end
@@ -299,13 +303,25 @@ module Lib
 
     reg_type = SETTINGS['application_mode'] =='FC' ? BirthRegistrationType.where(name: 'Normal').first.birth_registration_type_id :
         BirthRegistrationType.where(name: params[:person][:relationship]).last.birth_registration_type_id
+    
+    puts "creating new birth details... Type of birth #{person[:type_of_birth]}"
 
     unless person[:type_of_birth].blank?
+
+      if person[:type_of_birth]=='Twin'
+
+         person[:type_of_birth] ='First Twin'
+      end
+      if person[:type_of_birth]=='Triplet'
+
+         person[:type_of_birth] ='First Triplet'
+      end
 
       type_of_birth_id = PersonTypeOfBirth.where(name: person[:type_of_birth]).last.id
     else
       type_of_birth_id = PersonTypeOfBirth.where(name:  'Single').last.id
     end
+
 
     rel = nil
     if params[:informant_same_as_mother] == 'Yes'
