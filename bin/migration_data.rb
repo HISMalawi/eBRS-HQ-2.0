@@ -1,10 +1,11 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
-@missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
-@loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
+
+@file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
 @multiple_birth_file = "#{Rails.root}/app/assets/data/multiple_birth_children.json"
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
+
 User.current = User.last
 
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
@@ -15,9 +16,12 @@ def write_log(file, content)
            file = File.new(file, 'w')
     else
 
+
        File.open(file, 'a') do |f|
           f.puts "#{content}"
+
       end
+
 
     end
 end
@@ -40,28 +44,17 @@ end
 
 def save_full_record(params, district_id_number)
 
-	if !district_id_number.blank?
-	   	
-    	person = PersonService.create_record(params)
+      person = PersonService.create_record(params)
 
-	      if person.present? 
 
-	      	begin
-	      	write_log(@loaded_data, params)
-	        record_status = PersonRecordStatus.where(person_id: person.person_id).first
-	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
-	        assign_district_id(person.person_id, (district_id_number.blank? ? nil : district_id_number))
-             write_log(@loaded_data, params)
-	        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
-	        
-	        rescue
-	           write_log(@failed_to_save, params)
-	        end
-	      end
-	   
-	 else
-	 	 write_log(@suspected,params)
-	 end
+      if person.present?
+
+        record_status = PersonRecordStatus.where(person_id: person.person_id).first
+        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
+        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
+
+        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
+      end
 
 end
 
@@ -84,7 +77,7 @@ def precision_level(mothers, record)
 
 	match_count = 0
 
-	mothers.each do |x| 
+	mothers.each do |x|
 
 		fnames << x['first_name']
 		lnames << x['last_name']
@@ -93,7 +86,7 @@ def precision_level(mothers, record)
         birthdates << x['birthdate']
         citizenships << x['citizenship']
         home_ta << x['home_ta']
-		
+
 	end
 
     if fnames.include? record[:person][:mother][:first_name]
@@ -125,6 +118,7 @@ def precision_level(mothers, record)
     	File.open(@suspected, 'a')do |f|
            f.puts "match count: #{match_count} Name: #{record[:person][:mother][:first_name]}"
         end
+
     end
    end
 
@@ -135,12 +129,12 @@ end
 def mother_records
 
 	 mothers = []
-	 
-	 records = PersonName.find_by_sql("SELECT P.person_id,first_name,last_name,birthdate,birthdate_estimated,home_village,home_ta,citizenship,home_district 
-	 	                               FROM person_name PN INNER JOIN person P ON P.person_id = PN.person_id 
-	 	                               INNER JOIN person_addresses PA ON PA.person_id = P.person_id WHERE PN.person_id 
+
+	 records = PersonName.find_by_sql("SELECT P.person_id,first_name,last_name,birthdate,birthdate_estimated,home_village,home_ta,citizenship,home_district
+	 	                               FROM person_name PN INNER JOIN person P ON P.person_id = PN.person_id
+	 	                               INNER JOIN person_addresses PA ON PA.person_id = P.person_id WHERE PN.person_id
 	 	                               IN (select person_b from person_relationship where person_relationship_type_id = 6)")
-     
+
      (records || []).each do |rec|
          mothers << {'person_id' => rec.person_id,
          	        'first_name' => rec.first_name,
@@ -152,18 +146,18 @@ def mother_records
                    'citizenship'=> rec.citizenship,
                    'home_district' => rec.home_district }
      end
-     
+
      return mothers
 end
 
 def assign_district_id(person_id, ben)
 
 	ben_exist = PersonBirthDetail.where(district_id_number: ben)
-	
+
 	if ben_exist.blank?
 		birth_details = PersonBirthDetail.where(person_id: person_id).first
 	    birth_details.update_attributes(district_id_number: ben)
-        
+
 	else
 		PersonAttribute.create(value: ben, person_id: person_id, person_attribute_type_id: Duplicate_attribute_type_id )
 		(ben_exist || []).each do |r|
@@ -173,6 +167,7 @@ def assign_district_id(person_id, ben)
 	end
 
 end
+
 
 
 def transform_record(data)
@@ -207,7 +202,7 @@ def transform_record(data)
 
 
     if data[:person][:type_of_birth]== 'Single'
-    	
+
     	if precision_level(mother_records, data) == 7
     		puts "registration type: #{data[:registration_type]} \n"
             puts "Saving partial record for #{data[:person][:first_name]} #{data[:person][:last_name]} ..."
@@ -218,14 +213,14 @@ def transform_record(data)
             save_full_record(data,data[:person][:district_id_number])
     	end
     end
-    
+
 end
 
 def get_record_status(rec_status, req_status)
 
 
- status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE', 
-      							'IN-COMPLETE' =>'DC-INCOMPLETE', 
+ status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
+      							'IN-COMPLETE' =>'DC-INCOMPLETE',
       							'COMPLETE' =>'DC-COMPLETE',
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
@@ -261,22 +256,7 @@ def get_record_status(rec_status, req_status)
 
 end
 
-def test_method
-	data ={}
-	data ={person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Jelad", 
-		  first_name:"Princess", middle_name:"", birthdate:"16/Jun/2016", birth_district:"Ntcheu", 
-		  gender:"Female", place_of_birth:"Hospital", hospital_of_birth:"Lizulu Health Centre", 
-		  birth_weight:"3.100", type_of_birth:"Single", parents_married_to_each_other:"Yes", 
-		  court_order_attached:"", parents_signed:"", national_serial_number:"00000173512", 
-		  district_id_number:"NU/0002436/2017", mother:{last_name:"Mateyo", first_name:"Emily", 
-		  middle_name:"", birthdate:"15/Oct/1994", birthdate_estimated:"", citizenship:"Mozambique", 
-		  residential_country:"Mozambique", current_district:nil, current_ta:nil, current_village:nil, 
-		  home_district:nil, home_ta:nil, home_village:nil}, mode_of_delivery:"SVD", level_of_education:"None", 
-		  father:{birthdate_estimated:"", residential_country:"Mozambique"}, informant:{last_name:"Mateyo", 
-		  first_name:"Emily", middle_name:"", relationship_to_person:"Mother", current_district:"Mozambique", 
-		  current_ta:"Majawa", current_village:"Dzakhala", addressline1:"", addressline2:"", phone_number:""}, form_signed:"Yes", acknowledgement_of_receipt_date:"2016-06-16 115235 -1000".to_date.strftime("%d/%b/%Y")}, home_address_same_as_physical:"Yes", gestation_at_birth:"38", number_of_prenatal_visits:"3", month_prenatal_care_started:"6", number_of_children_born_alive_inclusive:"3", number_of_children_born_still_alive:"3", same_address_with_mother:"", informant_same_as_mother:"Yes", registration_type:"normal", record_status:"PRINTED", _rev:"6-9bbd6aad033c176a268185379fdf4e1e", _id:"0131a09317b89e4705a8ebf304ca1fab", request_status:"CLOSED", biological_parents:"", foster_parents:"", parents_details_available:"", copy_mother_name:"No", controller:"person", action:"create"}
-    transform_record(data)
-end
+
 
 def func
 
@@ -286,84 +266,84 @@ def func
 
   (records || []).each do |r|
 
-	  data = { person: {duplicate: "", is_exact_duplicate: "", 
-					   relationship: r[:relationship], 
-					   last_name: r[:last_name], 
-					   first_name: r[:first_name], 
-					   middle_name: r[:middle_name], 
-					   birthdate: r[:birthdate], 
-					   birth_district: r[:birth_district], 
-					   gender: r[:gender], 
-					   place_of_birth: r[:place_of_birth], 
-					   hospital_of_birth: r[:hospital_of_birth], 
-					   birth_weight: r[:birth_weight], 
-					   type_of_birth: r[:type_of_birth], 
-					   parents_married_to_each_other: r[:parents_married_to_each_other], 
-					   court_order_attached: r[:court_order_attached], 
+	  data = { person: {duplicate: "", is_exact_duplicate: "",
+					   relationship: r[:relationship],
+					   last_name: r[:last_name],
+					   first_name: r[:first_name],
+					   middle_name: r[:middle_name],
+					   birthdate: r[:birthdate],
+					   birth_district: r[:birth_district],
+					   gender: r[:gender],
+					   place_of_birth: r[:place_of_birth],
+					   hospital_of_birth: r[:hospital_of_birth],
+					   birth_weight: r[:birth_weight],
+					   type_of_birth: r[:type_of_birth],
+					   parents_married_to_each_other: r[:parents_married_to_each_other],
+					   court_order_attached: r[:court_order_attached],
 					   parents_signed: "",
 					   national_serial_number: r[:national_serial_number],
-					   district_id_number: r[:district_id_number], 
+					   district_id_number: r[:district_id_number],
 					   mother:{
-					     last_name: r[:mother][:last_name], 
-					     first_name: r[:mother][:first_name], 
-					     middle_name: r[:mother][:middle_name], 
-					     birthdate: r[:mother][:birthdate], 
-					     birthdate_estimated: r[:mother][:birthdate_estimated], 
-					     citizenship: r[:mother][:citizenship], 
-					     residential_country: r[:mother][:residential_country], 
-					     current_district: r[:mother][:current_district], 
-					     current_ta: r[:mother][:current_ta], 
-					     current_village: r[:mother][:current_village], 
-					     home_district: r[:mother][:home_district], 
-					     home_ta: r[:mother][:home_ta], 
+					     last_name: r[:mother][:last_name],
+					     first_name: r[:mother][:first_name],
+					     middle_name: r[:mother][:middle_name],
+					     birthdate: r[:mother][:birthdate],
+					     birthdate_estimated: r[:mother][:birthdate_estimated],
+					     citizenship: r[:mother][:citizenship],
+					     residential_country: r[:mother][:residential_country],
+					     current_district: r[:mother][:current_district],
+					     current_ta: r[:mother][:current_ta],
+					     current_village: r[:mother][:current_village],
+					     home_district: r[:mother][:home_district],
+					     home_ta: r[:mother][:home_ta],
 					     home_village: r[:mother][:home_village]
-					  }, 
-					   mode_of_delivery: r[:mode_of_delivery], 
-					   level_of_education: r[:level_of_education], 
+					  },
+					   mode_of_delivery: r[:mode_of_delivery],
+					   level_of_education: r[:level_of_education],
 					   father: {
-					     birthdate_estimated: r[:father][:birthdate_estimated], 
+					     birthdate_estimated: r[:father][:birthdate_estimated],
 					     residential_country: r[:father][:residential_country]
-					  }, 
+					  },
 					   informant: {
-					     last_name: r[:informant][:last_name], 
-					     first_name: r[:informant][:first_name], 
-					     middle_name: r[:informant][:middle_name], 
-					     relationship_to_person: r[:informant][:relationship_to_child], 
-					     current_district: r[:informant][:current_district],  
-					     current_ta: r[:informant][:current_ta], 
-					     current_village: r[:informant][:current_village], 
-					     addressline1: r[:informant][:addressline1], 
-					     addressline2: r[:informant][:addressline2], 
+					     last_name: r[:informant][:last_name],
+					     first_name: r[:informant][:first_name],
+					     middle_name: r[:informant][:middle_name],
+					     relationship_to_person: r[:informant][:relationship_to_child],
+					     current_district: r[:informant][:current_district],
+					     current_ta: r[:informant][:current_ta],
+					     current_village: r[:informant][:current_village],
+					     addressline1: r[:informant][:addressline1],
+					     addressline2: r[:informant][:addressline2],
 					     phone_number: r[:informant][:phone_number]
-					  }, 
-					   form_signed: r[:form_signed], 
+					  },
+					   form_signed: r[:form_signed],
 					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
-					  }, 
-					   home_address_same_as_physical: "Yes", 
-					   gestation_at_birth: r[:gestation_at_birth], 
-					   number_of_prenatal_visits: r[:number_of_prenatal_visits], 
-					   month_prenatal_care_started: r[:month_prenatal_care_started], 
-					   number_of_children_born_alive_inclusive: r[:number_of_children_born_alive_inclusive], 
-					   number_of_children_born_still_alive: r[:number_of_children_born_still_alive], 
-					   same_address_with_mother: "", 
-					   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"), 
+					  },
+					   home_address_same_as_physical: "Yes",
+					   gestation_at_birth: r[:gestation_at_birth],
+					   number_of_prenatal_visits: r[:number_of_prenatal_visits],
+					   month_prenatal_care_started: r[:month_prenatal_care_started],
+					   number_of_children_born_alive_inclusive: r[:number_of_children_born_alive_inclusive],
+					   number_of_children_born_still_alive: r[:number_of_children_born_still_alive],
+					   same_address_with_mother: "",
+					   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"),
 					   registration_type: r[:relationship],
 					   record_status: r[:record_status],
 					   _rev: r[:_rev],
 					   _id: r[:_id],
-					   request_status: r[:request_status], 
+					   request_status: r[:request_status],
 					   biological_parents: "",
 					   foster_parents: "",
 					   parents_details_available: "",
-					   copy_mother_name: "No", 
-					   controller: "person", 
+					   copy_mother_name: "No",
+					   controller: "person",
 					   action: "create"
 					  }
 
 			transform_record(data)
-			#write_log(@missing_district_ids, data)
-		     
-                 
+
+
+
    end
 
 end
