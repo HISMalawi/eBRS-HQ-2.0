@@ -40,6 +40,7 @@ module Lib
           return nil
         end
 
+     begin
         core_person = CorePerson.create(
             :person_type_id     => PersonType.where(name: mother_type).last.id,
         )
@@ -74,7 +75,7 @@ module Lib
         home_village_id         = Location.locate_id(mother[:home_village], 'Village', home_ta_id)
         
         puts "Creating personAddress for #{core_person.id}...\n"
-      begin
+      
         person_address = PersonAddress.create(
             :person_id          => core_person.id,
             :current_district   => cur_district_id,
@@ -111,6 +112,7 @@ module Lib
       )
     end
     puts "Mother record created..."
+
     mother_person
   end
 
@@ -130,10 +132,12 @@ module Lib
         return nil
       end
 
+     begin
+
       core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: father_type).last.id,
       )
-
+    
       father_person = Person.create(
           :person_id          => core_person.id,
           :gender             => 'F',
@@ -156,7 +160,7 @@ module Lib
       home_ta_id              = Location.locate_id(father[:home_ta], 'Traditional Authority', home_district_id)
       home_village_id         = Location.locate_id(father[:home_village], 'Village', home_ta_id)
     
-     begin
+     
       PersonAddress.create(
           :person_id          => core_person.id,
           :current_district   => cur_district_id,
@@ -216,7 +220,8 @@ module Lib
          informant_person = person.father
       end
     else
-
+    
+    begin
       core_person = CorePerson.create(
           :person_type_id => PersonType.where(:name => 'Informant').last.id
       )
@@ -242,7 +247,7 @@ module Lib
       home_district_id        = Location.locate_id_by_tag(informant[:home_district], 'District')
       home_ta_id              = Location.locate_id(informant[:home_ta], 'Traditional Authority', home_district_id)
       home_village_id         = Location.locate_id(informant[:home_village], 'Village', home_ta_id)
-     begin
+     
       PersonAddress.create(
           :person_id          => core_person.id,
           :current_district   => cur_district_id,
