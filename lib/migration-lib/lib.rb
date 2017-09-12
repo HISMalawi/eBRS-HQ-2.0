@@ -362,6 +362,7 @@ module Lib
       rel = params[:person][:informant][:relationship_to_person] rescue nil
     end
 
+  begin
 
     details = PersonBirthDetail.create(
         person_id:                                person_id,
@@ -391,9 +392,13 @@ module Lib
         location_created_at:                      SETTINGS['location_id'],
         date_registered:                          (Date.today.to_s)
     )
+    
+  rescue StandardError => e
+    self.log_error(e.message, params)
+  end
 
     return details
-  
+
   end
 
   def self.birth_details_multiple(person,params)

@@ -1,3 +1,35 @@
+require 'csv'
+@file_path = "#{Rails.root}/app/assets/data/"
+@multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
+
+def write_log(file, content)
+
+	if !File.exists?(file)
+           file = File.new(file, 'w')
+    else
+
+
+       File.open(file, 'a') do |f|
+          f.puts "#{content}"
+
+      end
+
+
+    end
+end
+
+def get_prev_child_id
+
+   data = {}
+
+    CSV.foreach("#{@file_path}/multiple_births.csv") do |row|
+         data[row[0]] = row[1]
+        
+    end
+
+  return data
+end
+
 def get_record_status(rec_status, req_status)
   
     puts "<<<<<<<<<<< #{rec_status}   #{req_status}"
@@ -39,15 +71,12 @@ def get_record_status(rec_status, req_status)
 end
 
 def func
+  
   data ={}
-  records = Child.all.limit(20).each
+  records = Child.all.limit(500).each
 
   (records || []).each do |r|
-=begin   
-     puts get_record_status(x[:record_status], x[:request_status])
 
-  end
-=end
   data = { person: {duplicate: "", is_exact_duplicate: "", 
 				   relationship: r[:relationship], 
 				   last_name: r[:last_name], 
@@ -119,9 +148,28 @@ def func
 				   action: "create"
 				  }
             
-            puts data
+            if ["Twin","Triplet","Second Twin","Second Triplet","Third Triplet"].include? data[:person][:type_of_birth]
+            	if data[:person][:type_of_birth] == "Twin" || data[:person][:type_of_birth] == "Triplet"
+            		 row = "#{data[:person][:type_of_birth]},#{data[:_id]},"
+            	     write_log(@multiple_births, row)
+            	else
+            	    #1. build a json object
+            	    #2. read the multiple_birth csv and populate the hash
+            	    #3. fetch records filter them by type_of_birth. Type of birth should be equal
+            	    #   Second Twin,Second Triplet or Third Triplet
+            	    #4. from each record filtered, use the multiple_birth_id to lookup in the hash
+            	    #   and pick the person_id
+            	    #5. change the value of data[:person][:prev_child_id]= person_id
+            	    #6. call the PersonService.create_record method...
+            	    #7. change the PersonAttribute
+
+            	end
+
+               
+            end
    end
    
 end
 
-func
+#func
+#get_prev_child_id
