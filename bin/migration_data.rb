@@ -1,7 +1,9 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
-@file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
+@missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
+@loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
 @multiple_birth_file = "#{Rails.root}/app/assets/data/multiple_birth_children.json"
+@failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 User.current = User.last
 
@@ -38,20 +40,25 @@ end
 
 def save_full_record(params, district_id_number)
 
-  
-    #if !district_id_number.blank? && params[:req_status] != "APPROVED"
-       person = PersonService.create_record(params)
-       
-      if person.present? 
-        record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
-        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
+	if !district_id_number.blank?
+	   	
+    	person = PersonService.create_record(params)
 
-        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
-      end
-    #else
-       #log this record for further analysis
-    #end
+	      if person.present? 
+	      	begin
+	        record_status = PersonRecordStatus.where(person_id: person.person_id).first
+	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
+	        assign_district_id(person.person_id, (district_id_number.blank? ? nil : district_id_number))
+             write_log(@loaded_data, params)
+	        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
+	        rescue
+	           write_log(@failed_to_save, params)
+	        end
+	      end
+	   
+	 else
+	 	 write_log(@suspected,params)
+	 end
 
 end
 
@@ -190,6 +197,11 @@ def transform_record(data)
        	end
     else
     end
+    
+    #==================== Transform the citizenship if not complying with those specified in the metadata
+    data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
+    data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
+
 
     if data[:person][:type_of_birth]== 'Single'
     	
@@ -246,11 +258,28 @@ def get_record_status(rec_status, req_status)
 
 end
 
+def test_method
+	data ={}
+	data ={person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Jelad", 
+		  first_name:"Princess", middle_name:"", birthdate:"16/Jun/2016", birth_district:"Ntcheu", 
+		  gender:"Female", place_of_birth:"Hospital", hospital_of_birth:"Lizulu Health Centre", 
+		  birth_weight:"3.100", type_of_birth:"Single", parents_married_to_each_other:"Yes", 
+		  court_order_attached:"", parents_signed:"", national_serial_number:"00000173512", 
+		  district_id_number:"NU/0002436/2017", mother:{last_name:"Mateyo", first_name:"Emily", 
+		  middle_name:"", birthdate:"15/Oct/1994", birthdate_estimated:"", citizenship:"Mozambique", 
+		  residential_country:"Mozambique", current_district:nil, current_ta:nil, current_village:nil, 
+		  home_district:nil, home_ta:nil, home_village:nil}, mode_of_delivery:"SVD", level_of_education:"None", 
+		  father:{birthdate_estimated:"", residential_country:"Mozambique"}, informant:{last_name:"Mateyo", 
+		  first_name:"Emily", middle_name:"", relationship_to_person:"Mother", current_district:"Mozambique", 
+		  current_ta:"Majawa", current_village:"Dzakhala", addressline1:"", addressline2:"", phone_number:""}, form_signed:"Yes", acknowledgement_of_receipt_date:"2016-06-16 115235 -1000".to_date.strftime("%d/%b/%Y")}, home_address_same_as_physical:"Yes", gestation_at_birth:"38", number_of_prenatal_visits:"3", month_prenatal_care_started:"6", number_of_children_born_alive_inclusive:"3", number_of_children_born_still_alive:"3", same_address_with_mother:"", informant_same_as_mother:"Yes", registration_type:"normal", record_status:"PRINTED", _rev:"6-9bbd6aad033c176a268185379fdf4e1e", _id:"0131a09317b89e4705a8ebf304ca1fab", request_status:"CLOSED", biological_parents:"", foster_parents:"", parents_details_available:"", copy_mother_name:"No", controller:"person", action:"create"}
+    transform_record(data)
+end
+
 def func
 
   data ={}
 
-  records = Child.all.limit(3).each
+  records = Child.all.limit(1000).each
 
   (records || []).each do |r|
 
@@ -329,11 +358,14 @@ def func
 					  }
 
 			transform_record(data)
-      
-            
+			#write_log(@missing_district_ids, data)
+		     
+                 
    end
 
 end
 
+#test_method
 
 func
+

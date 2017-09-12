@@ -34,6 +34,7 @@ module Lib
         else
           mother = params[:person][:mother]
         end
+
         if mother[:first_name].blank?
           return nil
         end
@@ -44,22 +45,25 @@ module Lib
       
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
         mother[:residential_country] = 'Malawi' if mother[:residential_country].blank?
-        
+
+      puts "Creating mother for: #{person.person_id} Mother_id: #{core_person.id} >>>>"
         mother_person = Person.create(
             :person_id          => core_person.id,
             :gender             => 'F',
             :birthdate          => ((mother[:birthdate].to_date.present? rescue false) ? mother[:birthdate].to_date : "1900-01-01"),
             :birthdate_estimated => ((mother[:birthdate].to_date.present? rescue false) ? 0 : 1)
         )
-      
-        PersonName.create(
+      puts " Person created...\n"
+
+      puts "Creating PersonName for #{core_person.id} ....\n"
+        person_name = PersonName.create(
             :person_id          => core_person.id,
             :first_name         => mother[:first_name],
             :middle_name        => mother[:middle_name],
             :last_name          => mother[:last_name]
         )
-       
-
+       puts " PersonName created...\n"
+      
         cur_district_id         = Location.locate_id_by_tag(mother[:current_district], 'District')
         cur_ta_id               = Location.locate_id(mother[:current_ta], 'Traditional Authority', cur_district_id)
         cur_village_id          = Location.locate_id(mother[:current_village], 'Village', cur_ta_id)
@@ -67,8 +71,10 @@ module Lib
         home_district_id        = Location.locate_id_by_tag(mother[:home_district], 'District')
         home_ta_id              = Location.locate_id(mother[:home_ta], 'Traditional Authority', home_district_id)
         home_village_id         = Location.locate_id(mother[:home_village], 'Village', home_ta_id)
-
-        PersonAddress.create(
+        
+        puts "Creating personAddress for #{core_person.id}...\n"
+        
+        person_address = PersonAddress.create(
             :person_id          => core_person.id,
             :current_district   => cur_district_id,
             :current_ta         => cur_ta_id,
@@ -89,13 +95,17 @@ module Lib
             :address_line_1         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline1] : nil),
             :address_line_2         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline2] : nil)
         )
+       puts " PersonAddress created...\n" 
+
     end
+
     unless mother_person.blank?
       PersonRelationship.create(
               person_a: person.id, person_b: mother_person.person_id,
               person_relationship_type_id: PersonRelationType.where(name: mother_type).last.id
       )
     end
+    puts "Mother record created..."
     mother_person
   end
 
