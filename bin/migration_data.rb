@@ -1,6 +1,7 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
-
+@missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
+@loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
 @file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
 @multiple_birth_file = "#{Rails.root}/app/assets/data/multiple_birth_children.json"
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
@@ -44,18 +45,22 @@ end
 
 def save_full_record(params, district_id_number)
 
-      person = PersonService.create_record(params)
+    if !district_id_number.blank?
 
+        write_log(@loaded_data,params)
+    	person = PersonService.create_record(params)
 
       if person.present?
-
+        
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
         record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
         assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
 
         puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
       end
-
+    else
+    	 write_log(@suspected,params)
+    end
 end
 
 def mother_record_exist
@@ -262,7 +267,7 @@ def func
 
   data ={}
 
-  records = Child.all.limit(1000).each
+  records = Child.all.each
 
   (records || []).each do |r|
 
@@ -342,13 +347,10 @@ def func
 
 			transform_record(data)
 
-
-
    end
 
 end
 
-#test_method
 
 func
 
