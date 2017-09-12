@@ -267,7 +267,7 @@ def func
 
   data ={}
 
-  records = Child.all.each
+  records = Child.all.limit(5000).each
 
   (records || []).each do |r|
 

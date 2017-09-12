@@ -1,6 +1,7 @@
 module Lib
   require 'bean'
   require 'json'
+  
 
   def self.new_child(params)
    core_person = CorePerson.create(
@@ -97,8 +98,8 @@ module Lib
         )
        puts " PersonAddress created...\n" 
      rescue StandardError => e
-          puts "#{e.message} \n"
-          puts "#{params}"
+
+          self.log_error(e.message, params)
      end
 
     end
@@ -178,8 +179,8 @@ module Lib
           :address_line_2         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline2] : nil)
       )
      rescue StandardError => e
-          puts "#{e.message} \n"
-          puts "#{params}"
+
+          self.log_error(e.message, params)
      end
     end
     unless father_person.blank?
@@ -256,8 +257,9 @@ module Lib
           :address_line_2         => informant[:addressline2]
       )
       rescue StandardError => e
-          puts "#{e.message} \n"
-          puts "#{params}"
+          
+          self.log_error(e.message, params)
+          
       end
 
     end
@@ -437,6 +439,21 @@ module Lib
        status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
     end
     return status
+  end
+
+  def self.log_error(error_msge, content)
+
+    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+    if !File.exists?(file_path)
+           file = File.new(file_path, 'w')
+    else
+
+       File.open(file_path, 'a') do |f|
+          f.puts "#{error_msge} >>>>>> #{content}"
+
+      end
+    end
+
   end
   
   def self.is_twin_or_triplet(type_of_birth)
