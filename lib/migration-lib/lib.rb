@@ -73,7 +73,7 @@ module Lib
         home_village_id         = Location.locate_id(mother[:home_village], 'Village', home_ta_id)
         
         puts "Creating personAddress for #{core_person.id}...\n"
-        
+      begin
         person_address = PersonAddress.create(
             :person_id          => core_person.id,
             :current_district   => cur_district_id,
@@ -96,6 +96,10 @@ module Lib
             :address_line_2         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline2] : nil)
         )
        puts " PersonAddress created...\n" 
+     rescue StandardError => e
+          puts "#{e.message} \n"
+          puts "#{params}"
+     end
 
     end
 
@@ -150,7 +154,8 @@ module Lib
       home_district_id        = Location.locate_id_by_tag(father[:home_district], 'District')
       home_ta_id              = Location.locate_id(father[:home_ta], 'Traditional Authority', home_district_id)
       home_village_id         = Location.locate_id(father[:home_village], 'Village', home_ta_id)
-
+    
+     begin
       PersonAddress.create(
           :person_id          => core_person.id,
           :current_district   => cur_district_id,
@@ -172,6 +177,10 @@ module Lib
           :address_line_1         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline1] : nil),
           :address_line_2         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline2] : nil)
       )
+     rescue StandardError => e
+          puts "#{e.message} \n"
+          puts "#{params}"
+     end
     end
     unless father_person.blank?
       PersonRelationship.create(
@@ -232,7 +241,7 @@ module Lib
       home_district_id        = Location.locate_id_by_tag(informant[:home_district], 'District')
       home_ta_id              = Location.locate_id(informant[:home_ta], 'Traditional Authority', home_district_id)
       home_village_id         = Location.locate_id(informant[:home_village], 'Village', home_ta_id)
-
+     begin
       PersonAddress.create(
           :person_id          => core_person.id,
           :current_district   => cur_district_id,
@@ -246,6 +255,10 @@ module Lib
           :address_line_1         => informant[:addressline1],
           :address_line_2         => informant[:addressline2]
       )
+      rescue StandardError => e
+          puts "#{e.message} \n"
+          puts "#{params}"
+      end
 
     end
 

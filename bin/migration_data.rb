@@ -45,12 +45,15 @@ def save_full_record(params, district_id_number)
     	person = PersonService.create_record(params)
 
 	      if person.present? 
+
 	      	begin
+	      	write_log(@loaded_data, params)
 	        record_status = PersonRecordStatus.where(person_id: person.person_id).first
 	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
 	        assign_district_id(person.person_id, (district_id_number.blank? ? nil : district_id_number))
              write_log(@loaded_data, params)
 	        puts "Record for #{params[:person][:first_name]} #{params[:person][:last_name]} #{params[:person][:middle_name]} Created ............. "
+	        
 	        rescue
 	           write_log(@failed_to_save, params)
 	        end
