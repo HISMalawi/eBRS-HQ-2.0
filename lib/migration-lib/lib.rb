@@ -6,19 +6,25 @@ module Lib
   def self.new_child(params)
    core_person = CorePerson.create(
         :person_type_id     => PersonType.where(name: 'Client').last.id,
+        :created_at         => params[:person][:created_at].to_date.to_s,
+        :updated_at         => params[:person][:updated_at].to_date.to_s
     )
    
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
-        :birthdate          => params[:person][:birthdate].to_date.to_s
+        :birthdate          => params[:person][:birthdate].to_date.to_s,
+        :created_at         => params[:person][:created_at].to_date.to_s,
+        :updated_at         => params[:person][:updated_at].to_date.to_s
      )
 
     PersonName.create(
         :person_id          => core_person.id,
         :first_name         => params[:person][:first_name],
         :middle_name        => params[:person][:middle_name],
-        :last_name          => params[:person][:last_name]
+        :last_name          => params[:person][:last_name],
+        :created_at         => params[:person][:created_at].to_date.to_s,
+        :updated_at         => params[:person][:updated_at].to_date.to_s
     )
     
     person
@@ -53,7 +59,9 @@ module Lib
             :person_id          => core_person.id,
             :gender             => 'F',
             :birthdate          => ((mother[:birthdate].to_date.present? rescue false) ? mother[:birthdate].to_date : "1900-01-01"),
-            :birthdate_estimated => ((mother[:birthdate].to_date.present? rescue false) ? 0 : 1)
+            :birthdate_estimated => ((mother[:birthdate].to_date.present? rescue false) ? 0 : 1),
+            :created_at         => params[:person][:created_at].to_date.to_s,
+            :updated_at         => params[:person][:updated_at].to_date.to_s
         )
       puts " Person created...\n"
 
@@ -62,7 +70,9 @@ module Lib
             :person_id          => core_person.id,
             :first_name         => mother[:first_name],
             :middle_name        => mother[:middle_name],
-            :last_name          => mother[:last_name]
+            :last_name          => mother[:last_name],
+            :created_at         => params[:person][:created_at].to_date.to_s,
+            :updated_at         => params[:person][:updated_at].to_date.to_s
         )
        puts " PersonName created...\n"
       
@@ -95,7 +105,9 @@ module Lib
             :citizenship            => Location.where(country: mother[:citizenship]).last.id,
             :residential_country    => Location.locate_id_by_tag(mother[:residential_country], 'Country'),
             :address_line_1         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline1] : nil),
-            :address_line_2         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline2] : nil)
+            :address_line_2         => (params[:informant_same_as_mother].present? && params[:informant_same_as_mother] == "Yes" ? params[:person][:informant][:addressline2] : nil),
+            :created_at         => params[:person][:created_at].to_date.to_s,
+            :updated_at         => params[:person][:updated_at].to_date.to_s
         )
        puts " PersonAddress created...\n" 
      rescue StandardError => e
@@ -108,7 +120,9 @@ module Lib
     unless mother_person.blank?
       PersonRelationship.create(
               person_a: person.id, person_b: mother_person.person_id,
-              person_relationship_type_id: PersonRelationType.where(name: mother_type).last.id
+              person_relationship_type_id: PersonRelationType.where(name: mother_type).last.id,
+              created_at: params[:person][:created_at].to_date.to_s,
+              updated_at: params[:person][:updated_at].to_date.to_s
       )
     end
 
@@ -143,14 +157,18 @@ module Lib
           :person_id          => core_person.id,
           :gender             => 'F',
           :birthdate          => (father[:birthdate].blank? ? "1900-01-01" : father[:birthdate].to_date),
-          :birthdate_estimated => (father[:birthdate].blank? ? 1 : 0)
+          :birthdate_estimated => (father[:birthdate].blank? ? 1 : 0),
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
 
       PersonName.create(
           :person_id          => core_person.id,
           :first_name         => father[:first_name],
           :middle_name        => father[:middle_name],
-          :last_name          => father[:last_name]
+          :last_name          => father[:last_name],
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
 
       cur_district_id         = Location.locate_id_by_tag(father[:current_district], 'District')
@@ -181,7 +199,9 @@ module Lib
           :citizenship            => Location.where(country: father[:citizenship]).last.id,
           :residential_country    => Location.locate_id_by_tag(father[:residential_country], 'Country'),
           :address_line_1         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline1] : nil),
-          :address_line_2         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline2] : nil)
+          :address_line_2         => (params[:informant_same_as_father].present? && params[:informant_same_as_father] == "Yes" ? params[:person][:informant][:addressline2] : nil),
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
      rescue StandardError => e
 
@@ -192,7 +212,9 @@ module Lib
     unless father_person.blank?
       PersonRelationship.create(
               person_a: person.id, person_b: father_person.person_id,
-              person_relationship_type_id: PersonRelationType.where(name: father_type).last.id
+              person_relationship_type_id: PersonRelationType.where(name: father_type).last.id,
+              created_at: params[:person][:created_at].to_date.to_s,
+              updated_at: params[:person][:updated_at].to_date.to_s
       )
     end
     
@@ -229,7 +251,9 @@ def self.new_informant(person, params)
     
     
       core_person = CorePerson.create(
-          :person_type_id => PersonType.where(:name => 'Informant').last.id
+          :person_type_id => PersonType.where(:name => 'Informant').last.id,
+          :created_at     => params[:person][:created_at].to_date.to_s,
+          :updated_at     => params[:person][:updated_at].to_date.to_s
       )
 
       informant_person = Person.create(
@@ -237,13 +261,17 @@ def self.new_informant(person, params)
           :gender             => "N/A",
           :birthdate          => (informant[:birthdate].blank? ? "1900-01-01" : informant[:birthdate].to_date),
           :birthdate_estimated => (informant[:birthdate].blank? ? 1 : 0),
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
 
       PersonName.create(
           :person_id   => informant_person.id,
           :first_name  => informant[:first_name],
           :middle_name => informant[:middle_name],
-          :last_name   => informant[:last_name]
+          :last_name   => informant[:last_name],
+          :created_at  => params[:person][:created_at].to_date.to_s,
+          :updated_at  => params[:person][:updated_at].to_date.to_s
       )
 
       cur_district_id         = Location.locate_id_by_tag(informant[:current_district], 'District')
@@ -265,7 +293,9 @@ def self.new_informant(person, params)
           :citizenship            => Location.where(country: informant[:citizenship]).last.id,
           :residential_country    => Location.locate_id_by_tag(informant[:residential_country], 'Country'),
           :address_line_1         => informant[:addressline1],
-          :address_line_2         => informant[:addressline2]
+          :address_line_2         => informant[:addressline2],
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
   
 
@@ -273,7 +303,9 @@ def self.new_informant(person, params)
 
     PersonRelationship.create(
         person_a: person.id, person_b: informant_person.id,
-        person_relationship_type_id: PersonRelationType.where(name: 'Informant').last.id
+        person_relationship_type_id: PersonRelationType.where(name: 'Informant').last.id,
+        created_at: params[:person][:created_at].to_date.to_s,
+        updated_at: params[:person][:updated_at].to_date.to_s
     )
 
     puts "Informant record for client: #{person.person_id} created..."
@@ -283,7 +315,9 @@ def self.new_informant(person, params)
           :person_id                => informant_person.id,
           :person_attribute_type_id => PersonAttributeType.where(name: 'cell phone number').last.id,
           :value                    => informant[:phone_number],
-          :voided                   => 0
+          :voided                   => 0,
+          :created_at               => params[:person][:created_at].to_date.to_s,
+          :updated_at               => params[:person][:updated_at].to_date.to_s
       )
     end
 
@@ -398,7 +432,9 @@ def self.new_birth_details(person, params)
         other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
         acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
         location_created_at:                      SETTINGS['location_id'],
-        date_registered:                          (Date.today.to_s)
+        date_registered:                          (Date.today.to_s),
+        created_at:                               params[:person][:created_at].to_date.to_s,
+        updated_at:                               params[:person][:updated_at].to_date.to_s
     )
     
   rescue StandardError => e

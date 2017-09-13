@@ -312,7 +312,7 @@ def func
 
   data ={}
 
-  records = Child.all.limit(5000).each
+  records = Child.all.limit(50).each
 
   (records || []).each do |r|
 
@@ -332,7 +332,7 @@ def func
 					   court_order_attached: r[:court_order_attached],
 					   created_at: r[:created_at],
 					   created_by: r[:created_by],
-					   updated_at: r[:updated_by],
+					   updated_at: r[:updated_at],
 					   parents_signed: "",
 					   national_serial_number: r[:national_serial_number],
 					   district_id_number: r[:district_id_number],
