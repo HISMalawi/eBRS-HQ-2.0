@@ -21,7 +21,6 @@ def log_error(error_msge, content)
     if !File.exists?(file_path)
            file = File.new(file_path, 'w')
     else
-
        File.open(file_path, 'a') do |f|
           f.puts "#{error_msge} >>>>>> #{content}"
 
@@ -31,43 +30,13 @@ def log_error(error_msge, content)
  end
 
 def transform_data(data, ids)
-
-	case data[:registration_type]
-       when "adopted"
-       	if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
-       		data[:biological_parents] = "Both"
-       	end
-       	if !data[:person][:mother][:first_name].blank? && data[:person][:father][:first_name].blank?
-       		data[:biological_parents] = "Mother"
-       	end
-       	if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
-       		data[:biological_parents] = "Father"
-       	end
-       when "abandoned"
-       	if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
-       	    data[:parents_details_available] = "Both"
-       	end
-        if !data[:person][:mother][:first_name].blank? && data[:person][:father][:first_name].blank?
-       		data[:parents_details_available] = "Mother"
-       	end
-       	if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
-       		data[:parents_details_available] = "Father"
-       	end
-    else
-    end
-    
-    #==================== Transform the citizenship if not complying with those specified in the metadata
-    data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
-    data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
     
 	if !data[:person][:multiple_birth_id].blank?
 	    data[:person][:prev_child_id] = ids[data[:person][:multiple_birth_id]]
 	    save_full_record(data, data[:person][:district_id_number])	
 	else
 		 #multiple_birth_id missing, log this record to suspected file for further analysis
-	end
-
-    return record
+	end    
 end
 
 def assign_district_id(person_id, ben)
@@ -131,7 +100,10 @@ def build_client_record
 				   birth_weight: r[:birth_weight], 
 				   type_of_birth: r[:type_of_birth], 
 				   parents_married_to_each_other: r[:parents_married_to_each_other], 
-				   court_order_attached: r[:court_order_attached], 
+				   court_order_attached: r[:court_order_attached],
+				   created_at: r[:created_at],
+				   created_by: r[:created_by],
+				   updated_at: r[:updated_at], 
 				   parents_signed: "",
 				   national_serial_number: r[:national_serial_number],
 				   district_id_number: r[:district_id_number],

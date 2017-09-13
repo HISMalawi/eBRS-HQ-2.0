@@ -2,6 +2,9 @@ require'migration-lib/lib'
 require'migration-lib/person_service'
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
+@suspected = "#{Rails.root}/app/assets/data/suspected.txt"
+
+User.current = User.last
 
 def get_record_status(rec_status, req_status)
 
@@ -82,30 +85,17 @@ def log_error(error_msge, content)
 
  end
 
-def write_log(file, content)
-
-	if !File.exists?(file)
-           file = File.new(file, 'w')
+def write_log(filename,content)
+  
+    if !File.exists?(filename)
+           file = File.new(filename, 'w')
     else
-
-       File.open(file, 'a') do |f|
+       File.open(filename, 'a') do |f|
           f.puts "#{content}"
 
       end
-
-
-    end
-end
-
-def get_prev_child_id
-
-   data = {}
-
-    CSV.foreach("#{@file_path}/multiple_births.csv") do |row|
-         data[row[0]] = row[1]     
     end
 
-  return data
 end
 
 def save_full_record(params, district_id_number)
@@ -113,8 +103,8 @@ def save_full_record(params, district_id_number)
     if !district_id_number.blank?
 
     	person = PersonService.create_record(params)
-    	row = "#{data[:_id]},#{person.person_id}"
-    	write_log(@multiple_births, row)
+    	row = "#{params[:_id]},#{person.person_id}"
+    	write_log(@multiple_births,row)
 
       if person.present?
         
@@ -128,9 +118,11 @@ def save_full_record(params, district_id_number)
         end
         
       end
+
     else
     	 write_log(@suspected,params)
     end
+
 end
 
 
@@ -217,7 +209,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(10).each
+  records = Child.all.limit(5000).each
 
   (records || []).each do |r|
 
@@ -234,7 +226,10 @@ def build_client_record
 				   birth_weight: r[:birth_weight], 
 				   type_of_birth: r[:type_of_birth], 
 				   parents_married_to_each_other: r[:parents_married_to_each_other], 
-				   court_order_attached: r[:court_order_attached], 
+				   court_order_attached: r[:court_order_attached],
+				   created_at: r[:created_at],
+				   created_by: r[:created_by],
+				   updated_at: r[:updated_at], 
 				   parents_signed: "",
 				   national_serial_number: r[:national_serial_number],
 				   district_id_number: r[:district_id_number],
@@ -282,7 +277,8 @@ def build_client_record
 				   number_of_children_born_alive_inclusive: r[:number_of_children_born_alive_inclusive], 
 				   number_of_children_born_still_alive: r[:number_of_children_born_still_alive], 
 				   same_address_with_mother: "", 
-				   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"), 
+				   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"),
+				   informant_same_as_father: (r[:informant][:relationship_to_child] == "Father" ? "Yes" : "No"), 
 				   registration_type: r[:relationship],
 				   record_status: r[:record_status],
 				   _rev: r[:_rev],
@@ -293,7 +289,6 @@ def build_client_record
 				   action: "create"
 				  }
 
-			#puts "#{data[:person][:first_name]} #{data[:person][:first_name]}"
 			if data[:person][:type_of_birth] == "Twin" || data[:person][:type_of_birth] == "Triplet"
 				if precision_level(mother_records, data) == 7
             	   #potential duplicate for the mother exist...

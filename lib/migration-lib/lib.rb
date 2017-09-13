@@ -196,14 +196,14 @@ module Lib
     father_person
   end
 
-  def self.new_informant(person, params)
+def self.new_informant(person, params)
 
     informant_person = nil; core_person = nil
 
     informant = params[:person][:informant]
     informant[:citizenship] = 'Malawian' if informant[:citizenship].blank?
     informant[:residential_country] = 'Malawi' if informant[:residential_country].blank?
-
+  begin
     if self.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
       informant_person = Person.find(params[:person][:prev_child_id]).informant
     elsif params[:informant_same_as_mother] == 'Yes'
@@ -221,7 +221,7 @@ module Lib
       end
     else
     
-    begin
+    
       core_person = CorePerson.create(
           :person_type_id => PersonType.where(:name => 'Informant').last.id
       )
@@ -261,11 +261,7 @@ module Lib
           :address_line_1         => informant[:addressline1],
           :address_line_2         => informant[:addressline2]
       )
-      rescue StandardError => e
-          
-          self.log_error(e.message, params)
-          
-      end
+  
 
     end
 
@@ -283,8 +279,13 @@ module Lib
       )
     end
 
-    informant_person
+  rescue StandardError => e
+          
+          self.log_error(e.message, params)        
   end
+  
+    informant_person
+end
 
   def self.new_birth_details(person, params)
 
@@ -348,11 +349,12 @@ module Lib
       end
 
       type_of_birth_id = PersonTypeOfBirth.where(name: person[:type_of_birth]).last.id
+
     else
       type_of_birth_id = PersonTypeOfBirth.where(name:  'Single').last.id
     end
 
-
+    
     rel = nil
     if params[:informant_same_as_mother] == 'Yes'
       rel = 'Mother'
@@ -361,7 +363,7 @@ module Lib
     else
       rel = params[:person][:informant][:relationship_to_person] rescue nil
     end
-
+   
   begin
 
     details = PersonBirthDetail.create(
@@ -427,8 +429,10 @@ module Lib
   end
 
   def self.workflow_init(person,params)
+    
     status = nil
     is_record_a_duplicate = params[:person][:duplicate] rescue nil
+    begin
     if is_record_a_duplicate.present?
         if params[:person][:is_exact_duplicate].present? && eval(params[:person][:is_exact_duplicate].to_s)
             status = PersonRecordStatus.new_record_state(person.id, 'DC-DUPLICATE')
@@ -448,6 +452,11 @@ module Lib
     else
        status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
     end
+    rescue StandardError =>e
+
+        self.log_error(e.message, params)
+    end
+
     return status
   end
 

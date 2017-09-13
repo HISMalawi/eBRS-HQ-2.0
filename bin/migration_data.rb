@@ -330,6 +330,9 @@ def func
 					   type_of_birth: r[:type_of_birth],
 					   parents_married_to_each_other: r[:parents_married_to_each_other],
 					   court_order_attached: r[:court_order_attached],
+					   created_at: r[:created_at],
+					   created_by: r[:created_by],
+					   updated_at: r[:updated_by],
 					   parents_signed: "",
 					   national_serial_number: r[:national_serial_number],
 					   district_id_number: r[:district_id_number],
@@ -391,8 +394,6 @@ def func
 					  }
 
 			transform_record(data)
-			#write_log(@analysis, data)
-
    end
 
 end
