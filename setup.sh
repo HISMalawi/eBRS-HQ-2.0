@@ -41,6 +41,7 @@ export RAILS_ENV=$ENV
 
 bundle exec rake db:create
 bundle exec rake db:schema:load
+bundle exec rake db:migrate
 bundle exec rake db:seed
 
 ./build_metadata.sh $ENV

@@ -166,6 +166,10 @@ Rails.application.routes.draw do
   get '/paper' => 'global_property#paper'
   get '/signature' => 'global_property#signature'
 
+  get '/search' => "search#general_search"
+  get '/search_cases' => "search#search_cases"
+  post '/search_cases' => "search#search_cases"
+
   resources :person
 
   resources :users

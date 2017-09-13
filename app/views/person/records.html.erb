@@ -80,7 +80,7 @@
   <thead>
     <tr>
       <th style="text-align: left;">BEN</th>
-      <% if @records.length > 0 && @records[0]['brn'].present? %>
+      <% if true %>
         <th style="text-align: left;">BRN</th>
       <% end %>
       <th style="text-align: left;">Name</th>
@@ -99,10 +99,11 @@
   </tr>
   </thead>
     <%(@records || []).each do |record|
+       next
     %>
       <tr>
         <td style="text-align: left;width: 15%"><%= record['ben'] %>&nbsp;</td>
-        <% if @records.length > 0 && @records[0]['brn'].present? %>
+        <% if true%>
             <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
       <% end %>
         <td style="text-align: left;width: 15%"><%= record['name']%></td>
@@ -227,12 +228,40 @@
   </div>
 </div>
 
+<select id="birth_type" label="Birth Type" onchange="reloadDataTable()">
+  <option value="All">Select Birth Type</option>
+  <option>Normal</option>
+  <option>Abandoned</option>
+  <option>Adopted</option>
+  <option>Orphaned</option>
+</select>
+
 <script>
     selected = [];
+    var table;
+
+    var url = "<%= request.url%>";
 
     $i(document).ready(function() {
-        $i('#example').DataTable();
+        table =  $i('#example').DataTable(
+                {
+                    "processing": true,
+                    "serverSide": true,
+                    "ajax": {
+                        "url": url,
+                        "data": function(d){
+                            d.type = __$('birth_type').value;
+                        }
+                }}
+        );
+
+        var holder = __$('example_filter').parentNode;
+        holder.appendChild(__$('birth_type'));
     } );
+
+    function reloadDataTable(){
+
+    }
 
     function printAll() {
         jQuery("#printerModal").modal("show");
