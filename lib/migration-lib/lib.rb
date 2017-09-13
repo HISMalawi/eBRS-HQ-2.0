@@ -111,7 +111,8 @@ module Lib
               person_relationship_type_id: PersonRelationType.where(name: mother_type).last.id
       )
     end
-    puts "Mother record created..."
+
+    puts "Mother record for client: #{person.person_id} created..."
 
     mother_person
   end
@@ -187,13 +188,18 @@ module Lib
           self.log_error(e.message, params)
      end
     end
+
     unless father_person.blank?
       PersonRelationship.create(
               person_a: person.id, person_b: father_person.person_id,
               person_relationship_type_id: PersonRelationType.where(name: father_type).last.id
       )
     end
+    
+    puts "Father record for client: #{person.person_id} created..."
+
     father_person
+
   end
 
 def self.new_informant(person, params)
@@ -270,6 +276,8 @@ def self.new_informant(person, params)
         person_relationship_type_id: PersonRelationType.where(name: 'Informant').last.id
     )
 
+    puts "Informant record for client: #{person.person_id} created..."
+
     if informant[:phone_number].present?
       PersonAttribute.create(
           :person_id                => informant_person.id,
@@ -283,13 +291,11 @@ def self.new_informant(person, params)
           
           self.log_error(e.message, params)        
   end
-  
+
     informant_person
 end
 
-  def self.new_birth_details(person, params)
-
-  
+def self.new_birth_details(person, params)
 
     if self.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
       return self.birth_details_multiple(person,params)
@@ -401,12 +407,13 @@ end
 
     return details
 
-  end
+end
 
   def self.birth_details_multiple(person,params)
     
     prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
     
+    begin
     prev_details_keys = prev_details.attributes.keys
     exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id"]
     prev_details_keys = prev_details_keys - exclude_these
@@ -424,7 +431,13 @@ end
         details[field] = prev_details[field]
     end
     details.save!
-    
+
+    rescue StandardError =>e
+
+      self.log_error(e.message,person)
+
+    end
+
     return details
   end
 
@@ -450,7 +463,7 @@ end
              end
         end
     else
-       status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
+       #status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
     end
     rescue StandardError =>e
 

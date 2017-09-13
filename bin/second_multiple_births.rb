@@ -3,6 +3,8 @@ require'migration-lib/lib'
 require'migration-lib/person_service'
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
+@missing_prev_child_id = "#{Rails.root}/app/assets/data/missing_previous_child_id.txt"
+@suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 
 def get_prev_child_id
 
@@ -18,6 +20,7 @@ end
 def log_error(error_msge, content)
 
     file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+
     if !File.exists?(file_path)
            file = File.new(file_path, 'w')
     else
@@ -29,13 +32,30 @@ def log_error(error_msge, content)
 
  end
 
+def write_log(file_path,content)
+
+	if !File.exists?(file_path)
+           file = File.new(file_path, 'w')
+    else
+       File.open(file_path, 'a') do |f|
+          f.puts "#{content}"
+      end
+    end
+end
+
 def transform_data(data, ids)
     
-	if !data[:person][:multiple_birth_id].blank?
+	unless data[:person][:multiple_birth_id].blank?
 	    data[:person][:prev_child_id] = ids[data[:person][:multiple_birth_id]]
-	    save_full_record(data, data[:person][:district_id_number])	
+	    
+	      if !data[:person][:prev_child_id].blank?
+              save_full_record(data, data[:person][:district_id_number])	
+	      else
+              write_log(@missing_prev_child_id,data)
+	      end
 	else
 		 #multiple_birth_id missing, log this record to suspected file for further analysis
+		 write_log(@suspected,data)
 	end    
 end
 
@@ -83,7 +103,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(10).each
+  records = Child.all.limit(500).each
 
   (records || []).each do |r|
 
@@ -107,7 +127,8 @@ def build_client_record
 				   parents_signed: "",
 				   national_serial_number: r[:national_serial_number],
 				   district_id_number: r[:district_id_number],
-				   prev_child_id: "", 
+				   prev_child_id: "",
+				   multiple_birth_id: r[:multiple_birth_id],
 				   mother:{
 				     last_name: r[:mother][:last_name], 
 				     first_name: r[:mother][:first_name], 
@@ -162,10 +183,12 @@ def build_client_record
 				   action: "create"
 				  }
 
-			
 			if ["Second Twin","Second Triplet","Third Triplet"].include? data[:person][:type_of_birth]
+              
             	transform_data(data, get_prev_child_id)
 			end
 	end
             
 end
+
+build_client_record
