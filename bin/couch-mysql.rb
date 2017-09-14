@@ -88,6 +88,7 @@ class Methods
 
     self.qry(client, "SET FOREIGN_KEY_CHECKS = 0", person_id)
     table = doc['change_agent']
+    return nil if table.blank?
     doc = doc.reject{|k, v| ['_id', '_rev', 'type', 'change_agent', 'location_id', 'district_id'].include?(k)}
     data = doc[table]
 

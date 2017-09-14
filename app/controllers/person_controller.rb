@@ -373,13 +373,16 @@ class PersonController < ApplicationController
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
       .where(" prs.status_id IN (#{state_ids.join(', ')})
               AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
+
+      total = d.select(" count(*) c ")[0]['c'] rescue 0
+
       data = d.group(" prs.person_id ")
 
       data = data.select(" n.*, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn ")
       data = data.page(start)
       .per_page(length)
 
-      total = d.select(" count(*) c ")[0]['c'] rescue 0
+
       @records = []
       data.each do |p|
         mother = PersonService.mother(p.person_id)
