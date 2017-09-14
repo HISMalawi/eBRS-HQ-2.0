@@ -428,6 +428,8 @@ class Child < CouchRest::Model::Base
     view :by_record_status_code
     
     view :by_request_status_code
+
+    view :by_type_of_birth
     
     view :by_date_registered,
          :map => "function(doc) {
