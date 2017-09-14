@@ -18,10 +18,9 @@
         padding: 7px;
     }
 
-    .act-btn .fa{
+    .action-btn .fa{
         min-width: 35px;
-        padding: 5px;
-        border-radius: 10px !important;
+        font-size: 18px;
     }
 
     th{
@@ -36,6 +35,8 @@
     .action-btn{
         border: none !important;
         margin-top: 0px;
+        min-width: 50px;
+        padding: 3px;
     }
 
     .fix-middle{
@@ -228,7 +229,7 @@
   </div>
 </div>
 
-<select id="birth_type" label="Birth Type" onchange="reloadDataTable()">
+<select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
   <option value="All">Select Birth Type</option>
   <option>Normal</option>
   <option>Abandoned</option>
@@ -239,28 +240,42 @@
 <script>
     selected = [];
     var table;
-
     var url = "<%= request.url%>";
 
     $i(document).ready(function() {
-        table =  $i('#example').DataTable(
-                {
-                    "processing": true,
-                    "serverSide": true,
-                    "ajax": {
-                        "url": url,
-                        "data": function(d){
-                            d.type = __$('birth_type').value;
-                        }
-                }}
-        );
-
+        initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
     } );
 
-    function reloadDataTable(){
+    function initTable(){
+        table =  $i('#example').DataTable(
+                {
+                    "processing": true,
+                    "serverSide": true,
+                    "ordering": false,
+                    "ajax": {
+                        "url": url,
+                        "data": function(d){
+                            d.type = __$('birth_type').value;
+                        },
+                        dataFilter: function(data){
+                            var json = jQuery.parseJSON( data );
+                            for(var i = 0; i < json['data'].length; i ++){
+                                var last_index = json['data'][i].length - 1;
+                                var person_id = json['data'][i][last_index]
+                                json['data'][i][last_index] =   '<td class="act-btn"> ' +
+                                        '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>'
+                            }
+                            return JSON.stringify( json );
+                        }
+                    }}
+        );
+    }
 
+    function reloadDataTable(node){
+        table.ajax.reload();
     }
 
     function printAll() {
