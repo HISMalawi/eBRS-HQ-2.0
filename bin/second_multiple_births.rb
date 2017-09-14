@@ -6,6 +6,11 @@ require'migration-lib/person_service'
 @missing_prev_child_id = "#{Rails.root}/app/assets/data/missing_previous_child_id.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 
+
+User.current = User.last
+
+Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
+
 def get_prev_child_id
 
    data = {}
@@ -77,6 +82,63 @@ def assign_district_id(person_id, ben)
 
 end
 
+def get_record_status(rec_status, req_status)
+
+
+ status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
+      							'IN-COMPLETE' =>'DC-INCOMPLETE',
+      							'COMPLETE' =>'DC-COMPLETE',
+      							'DUPLICATE' =>'DC-DUPLICATE',
+      							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
+      							'GRANTED' =>'DC-GRANTED',
+      							'REJECTED' =>'DC-REJECTED'},
+		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
+		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
+		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
+					'CLOSED' =>'HQ-VOIDED'},
+		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
+					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
+					'RE-APPROVED' =>'HQ-RE-APPROVED',
+					'DC_ASK' =>'DC-ASK',
+					'GRANTED' =>'HQ-GRANTED',
+					'REJECTED' =>'HQ-REJECTED',
+					'COMPLETE' =>'HQ-INCOMPLETE-TBA',
+					'COMPLETE' =>'HQ-COMPLETE',
+					'CAN PRINT' =>'HQ-CAN-PRINT',
+					'CAN REJECT' =>'HQ-CAN-REJECT',
+					'APPROVED' =>'HQ-APPROVED',
+					'TBA-CONFLICT' =>'HQ-CONFLICT',
+					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
+					'CAN VOID' =>'HQ-CAN-VOID',
+					'INCOMPLETE' =>'HQ-INCOMPLETE',
+					'RE-PRINT' =>'HQ-RE-PRINT',
+					'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
+					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
+		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
+
+
+   return status[rec_status][req_status]
+end
+
+def assign_district_id(person_id, ben)
+
+	ben_exist = PersonBirthDetail.where(district_id_number: ben)
+
+	if ben_exist.blank?
+		birth_details = PersonBirthDetail.where(person_id: person_id).first
+	    birth_details.update_attributes(district_id_number: ben)
+
+	else
+		PersonAttribute.create(value: ben, person_id: person_id, person_attribute_type_id: Duplicate_attribute_type_id )
+		(ben_exist || []).each do |r|
+			r.update_attributes(district_id_number: nil)
+			PersonAttribute.create(value: ben, person_id: r.person_id, person_attribute_type_id: Duplicate_attribute_type_id)
+		 end
+	end
+
+end
+
 def save_full_record(params, district_id_number)
 
     if !district_id_number.blank?
@@ -87,7 +149,7 @@ def save_full_record(params, district_id_number)
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
         begin
-	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status])).last.id)
+	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status]).upcase.squish!).last.id)
 	        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
 	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
         rescue StandardError => e
@@ -103,7 +165,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(500).each
+  records = Child.all.limit(10000).each
 
   (records || []).each do |r|
 

@@ -6,6 +6,8 @@ require'migration-lib/person_service'
 
 User.current = User.last
 
+Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
+
 def get_record_status(rec_status, req_status)
 
 
@@ -209,7 +211,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(5000).each
+  records = Child.all.limit(10000).each
 
   (records || []).each do |r|
 
