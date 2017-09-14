@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(version: 0) do
     t.datetime "updated_at",                null: false
   end
 
+  change_column :core_person, :person_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
   add_index "core_person", ["document_id"], name: "document_id_UNIQUE", unique: true, using: :btree
   add_index "core_person", ["person_id"], name: "person_id_UNIQUE", unique: true, using: :btree
   add_index "core_person", ["person_type_id"], name: "fk_core_person_1_idx", using: :btree
@@ -47,7 +48,7 @@ ActiveRecord::Schema.define(version: 0) do
   add_index "couchdb_changes", ["last_seq"], name: "last_seq_UNIQUE", unique: true, using: :btree
 
   create_table "identifier_allocation_queue", primary_key: "identifier_allocation_queue_id", force: :cascade do |t|
-    t.integer  "person_id",       limit: 4,               null: false
+    t.bigint  "person_id",       limit: 4,               null: false
     t.integer  "person_identifier_type_id", limit: 4,             null: false
     t.integer  "assigned",        limit: 1,   default: 0, null: false
     t.integer  "creator",         limit: 4,               null: false
@@ -143,9 +144,11 @@ end
     t.datetime "updated_at",                                null: false
     t.string   "document_id", limit: 100
   end
+  
+  change_column  :person, :person_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   create_table "person_addresses", primary_key: "person_addresses_id", force: :cascade do |t|
-    t.integer  "person_id",              limit: 4,   null: false
+    t.bigint  "person_id",              limit: 4,   null: false
     t.integer  "current_village",        limit: 4
     t.string   "current_village_other",  limit: 255
     t.integer  "current_ta",             limit: 4
@@ -188,7 +191,7 @@ end
   end
 
   create_table "person_attributes", primary_key: "person_attribute_id", force: :cascade do |t|
-    t.integer  "person_id",                limit: 4,               null: false
+    t.bigint  "person_id",                limit: 4,               null: false
     t.integer  "person_attribute_type_id", limit: 4,               null: false
     t.integer  "voided",                   limit: 1,   default: 0, null: false
     t.string   "value",                    limit: 100,             null: false
@@ -214,7 +217,7 @@ end
   end
 
   create_table "person_identifiers", primary_key: "person_identifier_id", force: :cascade do |t|
-    t.integer  "person_id",                limit: 4,               null: false
+    t.bigint  "person_id",                limit: 4,               null: false
     t.integer  "person_identifier_type_id", limit: 4,               null: false
     t.integer  "voided",                   limit: 1,   default: 0, null: false
     t.string   "value",                    limit: 100,             null: false
@@ -229,7 +232,7 @@ end
   add_index "person_identifiers", ["person_id"], name: "fk_person_identifiers_1_idx", using: :btree
 
   create_table "person_birth_details", primary_key: "person_birth_details_id", force: :cascade do |t|
-    t.integer  "person_id",                               limit: 4,              null: false
+    t.bigint  "person_id",                               limit: 4,              null: false
     t.integer  "place_of_birth",                          limit: 4,              null: false
     t.integer  "district_of_birth",                       limit: 4,              null: false
     t.integer  "birth_location_id",                       limit: 4,              null: false
@@ -279,7 +282,7 @@ end
   add_index "person_birth_details", ["type_of_birth"], name: "fk_person_birth_details_2_idx", using: :btree
 
   create_table "person_name", primary_key: "person_name_id", force: :cascade do |t|
-    t.integer  "person_id",   limit: 4,               null: false
+    t.bigint  "person_id",   limit: 4,               null: false
     t.string   "first_name",  limit: 50,              null: false
     t.string   "middle_name", limit: 50
     t.string   "last_name",   limit: 50,              null: false
@@ -309,7 +312,7 @@ end
 
   create_table "person_record_statuses", primary_key: "person_record_status_id", force: :cascade do |t|
     t.integer  "status_id",   limit: 4,     null: false
-    t.integer  "person_id",   limit: 4,     null: false
+    t.bigint  "person_id",   limit: 4,     null: false
     t.integer  "creator",     limit: 4,     null: false
     t.integer  "voided",      limit: 1
     t.string   "void_reason", limit: 100
@@ -326,8 +329,8 @@ end
   add_index "person_record_statuses", ["voided_by"], name: "fk_person_record_statuses_3_idx", using: :btree
 
   create_table "person_relationship", primary_key: "person_relationship_id", force: :cascade do |t|
-    t.integer  "person_a",                    limit: 4, null: false
-    t.integer  "person_b",                    limit: 4, null: false
+    t.bigint  "person_a",                    limit: 4, null: false
+    t.bigint  "person_b",                    limit: 4, null: false
     t.integer  "person_relationship_type_id", limit: 4, null: false
     t.string   "document_id", limit: 100
     t.datetime "created_at",                            null: false
@@ -396,7 +399,7 @@ end
     t.string   "plain_password",     limit: 255
     t.string   "password_hash",      limit: 255
     t.integer  "creator",            limit: 4,   default: 0,     null: false
-    t.integer  "person_id",          limit: 4
+    t.bigint  "person_id",          limit: 4
     t.integer  "active",             limit: 1,   default: 1,     null: false
     t.string   "un_or_block_reason", limit: 225
     t.integer  "voided",             limit: 1,   default: 0,     null: false
@@ -417,7 +420,7 @@ end
   ############################ Resoving Potential Duplicate tables ##########################################################
 
   create_table "potential_duplicates", primary_key: "potential_duplicate_id", force: :cascade do |t|
-    t.integer  "person_id", limit: 4, null: false
+    t.bigint  "person_id", limit: 4, null: false
     t.string   "document_id", limit: 100
     t.string   "resolved",      limit: 1,   default: 0,     null: false
     t.string   "decision",      limit: 255
@@ -429,7 +432,7 @@ end
   add_foreign_key "potential_duplicates", "person", primary_key: "person_id", name: "fk_potential_duplicates_1"
 
   create_table "duplicate_records", primary_key: "duplicate_record_id", force: :cascade do |t|
-    t.integer  "person_id", limit: 4
+    t.bigint  "person_id", limit: 4
     t.integer   "potential_duplicate_id",      limit: 4
     t.string   "document_id", limit: 100
     t.datetime "created_at"

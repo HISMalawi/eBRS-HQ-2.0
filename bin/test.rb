@@ -1,4 +1,3 @@
-require 'csv'
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
 
@@ -23,11 +22,25 @@ def get_prev_child_id
    data = {}
 
     CSV.foreach("#{@file_path}/multiple_births.csv") do |row|
-         data[row[0]] = row[1]
-        
+         data[row[0]] = row[1]     
     end
 
   return data
+end
+
+def save_record(record, district_id_number)
+
+end
+
+def transform_data(record, ids)
+
+	if !record[:person][:multiple_birth_id].blank?
+	  record[:person][:prev_child_id] = ids[record[:person][:multiple_birth_id]]	
+	else
+		 #multiple_birth_id missing, log this record to suspected file for further analysis
+	end
+
+    return record
 end
 
 def get_record_status(rec_status, req_status)
@@ -93,7 +106,8 @@ def func
 				   court_order_attached: r[:court_order_attached], 
 				   parents_signed: "",
 				   national_serial_number: r[:national_serial_number],
-				   district_id_number: r[:district_id_number], 
+				   district_id_number: r[:district_id_number],
+				   prev_child_id: "", 
 				   mother:{
 				     last_name: r[:mother][:last_name], 
 				     first_name: r[:mother][:first_name], 
