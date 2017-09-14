@@ -97,4 +97,10 @@ module EbrsAttribute
     transformed_data = data.as_json
     send_data(transformed_data)
   end
+
+  def create_audit_trail
+    if self.table_name != "audit_trails"
+        AuditTrail.create(table_name: self.table_name , person_id: self.person_id)
+    end
+  end
 end
