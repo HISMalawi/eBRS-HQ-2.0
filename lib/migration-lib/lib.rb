@@ -500,6 +500,7 @@ end
         end
     else
        #status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
+       status = PersonRecordStatus.new_record_state(person.id, params[:record_status])
     end
     rescue StandardError =>e
 

@@ -113,7 +113,7 @@ def save_full_record(params, district_id_number)
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
         begin
 	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status]).upcase.squish!).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
+	        assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
 	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
         rescue StandardError => e
             log_error(e.message, params)
@@ -303,4 +303,4 @@ def build_client_record
             
 end
 
-build_client_record
+#build_client_record

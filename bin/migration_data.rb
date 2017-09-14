@@ -60,26 +60,27 @@ end
 
 def save_full_record(params, district_id_number)
 
-    if !district_id_number.blank?
+    #if !district_id_number.blank? && params[:request_status] != 'APPROVED'
 
+        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
 
-      if person.present?
+      if !person.blank?
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
         begin
-        	status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-	        record_status.update_attributes(status_id: Status.where(name: status).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
+        	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
+	        assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
 	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
         rescue StandardError => e
             log_error(e.message, params)
         end
         
       end
-    else
+    #else
     	 write_log(@suspected,params)
-    end
+    #end
 end
 
 def mother_record_exist
@@ -400,5 +401,5 @@ def func
 end
 
 #test_method
-#func
+func
 

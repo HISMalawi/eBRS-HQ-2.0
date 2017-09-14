@@ -169,6 +169,8 @@ end
     t.datetime "created_at",                         null: false
     t.datetime "updated_at",                         null: false
   end
+  
+  change_column  :person_addresses, :person_addresses_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_index "person_addresses", ["citizenship"], name: "fk_person_addresses_8_idx", using: :btree
   add_index "person_addresses", ["current_district"], name: "fk_person_addresses_4_idx", using: :btree
@@ -201,6 +203,8 @@ end
     t.datetime "created_at",                                       null: false
     t.datetime "updated_at",                                       null: false
   end
+  
+  change_column  :person_attributes, :person_attribute_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_index "person_attributes", ["person_attribute_type_id"], name: "fk_person_attributes_2_idx", using: :btree
   add_index "person_attributes", ["person_id"], name: "fk_person_attributes_1_idx", using: :btree
@@ -227,6 +231,8 @@ end
     t.datetime "created_at",                                       null: false
     t.datetime "updated_at",                                       null: false
   end
+
+  change_column  :person_identifiers, :person_identifier_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_index "person_identifiers", ["person_identifier_type_id"], name: "fk_person_identifiers_2_idx", using: :btree
   add_index "person_identifiers", ["person_id"], name: "fk_person_identifiers_1_idx", using: :btree
@@ -268,6 +274,8 @@ end
     t.datetime "created_at",                                                     null: false
     t.datetime "updated_at",                                                     null: false
   end
+  
+  change_column  :person_birth_details, :person_birth_details_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_index "person_birth_details", ["birth_location_id"], name: "fk_person_birth_details_3_idx", using: :btree
   add_index "person_birth_details", ["birth_registration_type_id"], name: "fk_person_birth_details_8_idx", using: :btree
@@ -295,11 +303,13 @@ end
     t.datetime "updated_at",                          null: false
   end
 
+  change_column  :person_name, :person_name_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+
   add_index "person_name", ["person_id"], name: "fk_person_name_1_idx", using: :btree
   add_index "person_name", ["voided_by"], name: "fk_person_name_2_idx", using: :btree
 
   create_table "person_name_code", primary_key: "person_name_code_id", force: :cascade do |t|
-    t.integer  "person_name_id",   limit: 4,  null: false
+    t.bigint  "person_name_id",   limit: 4,  null: false
     t.string   "first_name_code",  limit: 10, null: false
     t.string   "middle_name_code", limit: 10
     t.string   "last_name_code",   limit: 10, null: false
@@ -324,6 +334,8 @@ end
     t.datetime "updated_at",                null: false
   end
 
+  change_column  :person_record_statuses, :person_record_status_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+
   add_index "person_record_statuses", ["person_id"], name: "fk_person_record_statuses_1_idx", using: :btree
   add_index "person_record_statuses", ["status_id"], name: "fk_person_record_statuses_2_idx", using: :btree
   add_index "person_record_statuses", ["voided_by"], name: "fk_person_record_statuses_3_idx", using: :btree
@@ -336,6 +348,8 @@ end
     t.datetime "created_at",                            null: false
     t.datetime "updated_at",                            null: false
   end
+  
+  change_column  :person_relationship, :person_relationship_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_index "person_relationship", ["person_a"], name: "fk_person_relationship_1_idx", using: :btree
   add_index "person_relationship", ["person_b"], name: "fk_person_relationship_2_idx", using: :btree
@@ -349,7 +363,7 @@ end
     t.string   "document_id", limit: 100
     t.datetime "date_voided"
   end
-
+  
   create_table "person_type", primary_key: "person_type_id", force: :cascade do |t|
     t.string "name",        limit: 45, null: false
     t.string   "document_id", limit: 100
