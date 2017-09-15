@@ -6,16 +6,16 @@ module Lib
   def self.new_child(params)
    core_person = CorePerson.create(
         :person_type_id     => PersonType.where(name: 'Client').last.id,
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
+        :created_at         => params[:person][:created_at].to_date,
+        :updated_at         => params[:person][:updated_at].to_date
     )
    
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
-        :birthdate          => params[:person][:birthdate].to_date.to_s,
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
+        :birthdate          => params[:person][:birthdate].to_date,
+        :created_at         => params[:person][:created_at].to_date,
+        :updated_at         => params[:person][:updated_at].to_date
      )
 
     PersonName.create(
@@ -23,8 +23,8 @@ module Lib
         :first_name         => params[:person][:first_name],
         :middle_name        => params[:person][:middle_name],
         :last_name          => params[:person][:last_name],
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
+        :created_at         => params[:person][:created_at].to_date,
+        :updated_at         => params[:person][:updated_at].to_date
     )
     
     person
@@ -49,6 +49,8 @@ module Lib
      begin
         core_person = CorePerson.create(
             :person_type_id     => PersonType.where(name: mother_type).last.id,
+            :created_at         => params[:person][:created_at].to_date.to_s,
+            :updated_at         => params[:person][:updated_at].to_date.to_s
         )
       
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
@@ -151,6 +153,8 @@ module Lib
 
       core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: father_type).last.id,
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
     
       father_person = Person.create(

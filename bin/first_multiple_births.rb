@@ -102,28 +102,25 @@ end
 
 def save_full_record(params, district_id_number)
 
-    if !district_id_number.blank?
-
+   begin
+        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
-    	row = "#{params[:_id]},#{person.person_id}"
-    	write_log(@multiple_births,row)
 
-      if person.present?
+      if !person.blank?
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        begin
-	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status]).upcase.squish!).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
-	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-        rescue StandardError => e
-            log_error(e.message, params)
-        end
+        
+        	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
+	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
+	    puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
+
         
       end
 
-    else
-    	 write_log(@suspected,params)
-    end
+   rescue StandardError => e
+          log_error(e.message, params)
+   end
 
 end
 
@@ -211,7 +208,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(1000).each
+  records = Child.all.limit(10000).each
 
   (records || []).each do |r|
 

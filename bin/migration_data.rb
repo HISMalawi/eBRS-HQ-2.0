@@ -27,17 +27,6 @@ def write_log(file, content)
     end
 end
 
-def record_multiple_birth(params)
-
-	puts "Recording multiple birth instance for #{params[:person][:first_name]} #{params[:person][:last_name]} ..."
-    if !File.exists?(@multiple_birth_file)
-    	file = File.new(@multiple_birth_file, 'w')
-    else
-    	File.open(@multiple_birth_file, 'a')do |f|
-           #f.puts "{'_id' => {'#{params['_id']'=> {#{params['person']}},"
-        end
-    end
-end
 
 def log_error(error_msge, content)
 
@@ -54,33 +43,29 @@ def log_error(error_msge, content)
 
  end
 
-def save_partial_record(params, district_id_number)
-
-end
 
 def save_full_record(params, district_id_number)
 
-    #if !district_id_number.blank? && params[:request_status] != 'APPROVED'
-
+   begin
         params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
 
       if !person.blank?
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        begin
+        
         	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
 	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
-	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-        rescue StandardError => e
-            log_error(e.message, params)
-        end
+	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
+	    puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
+
         
       end
-    #else
-    	 write_log(@suspected,params)
-    #end
+
+   rescue StandardError => e
+          log_error(e.message, params)
+   end
+
 end
 
 def mother_record_exist
