@@ -300,4 +300,4 @@ def build_client_record
             
 end
 
-#build_client_record
+build_client_record
