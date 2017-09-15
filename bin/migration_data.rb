@@ -295,7 +295,7 @@ def test_method
     transform_record(data)
 end
 
-def func
+def build_client_record
 
   data ={}
 
@@ -385,6 +385,11 @@ def func
 
 end
 
-#test_method
-func
+
+def initiate_migration
+	 build_client_record
+	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
+end
+
+initiate_migration
 

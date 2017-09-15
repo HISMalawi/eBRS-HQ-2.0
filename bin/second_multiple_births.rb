@@ -59,7 +59,7 @@ def transform_data(data, ids)
               write_log(@missing_prev_child_id,data)
 	      end
 	else
-		 #multiple_birth_id missing, log this record to suspected file for further analysis
+		 #=============== multiple_birth_id missing, log this record to suspected file for further analysis
 		 write_log(@suspected,data)
 	end    
 end
@@ -254,4 +254,9 @@ def build_client_record
             
 end
 
-build_client_record
+def initiate_migration
+  build_client_record
+  puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
+end
+
+initiate_migration

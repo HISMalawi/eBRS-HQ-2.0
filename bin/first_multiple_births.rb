@@ -48,6 +48,15 @@ def get_record_status(rec_status, req_status)
 
 end
 
+def format_csv_file(file)
+
+    raw_csv = File.read("#{file_path}")[0...-1]
+
+    File.open("#{file_path}", "w") {|csv| csv.puts raw_csv << ";"}
+
+end
+
+
 def mother_records
 
 	 mothers = []
@@ -105,6 +114,10 @@ def save_full_record(params, district_id_number)
    begin
         params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
+
+    	row = "#{params[:id]},#{person.person_id},"
+
+        write_log(@multiple_births,row)
 
       if !person.blank?
         
@@ -300,4 +313,10 @@ def build_client_record
             
 end
 
-build_client_record
+def initiate_migration
+	 build_client_record
+	 format_csv_file(@multiple_births)
+	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
+end
+
+initiate_migration
