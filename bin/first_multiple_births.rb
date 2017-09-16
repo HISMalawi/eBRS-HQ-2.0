@@ -51,9 +51,9 @@ end
 
 def format_csv_file(file)
 
-    raw_csv = File.read("#{file}")[0...-1]
+    raw_csv = File.read("#{file}")[0...-2]
 
-    File.open("#{file}", "w") {|csv| csv.puts raw_csv << ";"}
+    File.open("#{file}", "w") {|csv| csv.puts raw_csv << ""}
 
 end
 
