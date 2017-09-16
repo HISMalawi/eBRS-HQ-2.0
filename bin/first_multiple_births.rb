@@ -1,6 +1,7 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
 @file_path = "#{Rails.root}/app/assets/data/"
+@error_log = "#{Rails.root}/app/assets/data/error_log.txt"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 
@@ -50,9 +51,9 @@ end
 
 def format_csv_file(file)
 
-    raw_csv = File.read("#{file_path}")[0...-1]
+    raw_csv = File.read("#{file}")[0...-1]
 
-    File.open("#{file_path}", "w") {|csv| csv.puts raw_csv << ";"}
+    File.open("#{file}", "w") {|csv| csv.puts raw_csv << ";"}
 
 end
 
@@ -83,12 +84,12 @@ end
 
 def log_error(error_msge, content)
 
-    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
-    if !File.exists?(file_path)
-           file = File.new(file_path, 'w')
+    
+    if !File.exists?(@error_log)
+           file = File.new(@error_log, 'w')
     else
 
-       File.open(file_path, 'a') do |f|
+       File.open(@error_log, 'a') do |f|
           f.puts "#{error_msge} >>>>>> #{content}"
 
       end
@@ -97,7 +98,7 @@ def log_error(error_msge, content)
  end
 
 def write_log(filename,content)
-  
+
     if !File.exists?(filename)
            file = File.new(filename, 'w')
     else
@@ -316,6 +317,7 @@ end
 def initiate_migration
 	 build_client_record
 	 format_csv_file(@multiple_births)
+	 puts "\n"
 	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
 end
 

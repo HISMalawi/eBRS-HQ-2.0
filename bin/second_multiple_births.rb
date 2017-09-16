@@ -256,6 +256,7 @@ end
 
 def initiate_migration
   build_client_record
+  puts "\n"
   puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
 end
 

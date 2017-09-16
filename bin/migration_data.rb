@@ -388,6 +388,7 @@ end
 
 def initiate_migration
 	 build_client_record
+	 puts "\n"
 	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 end
 
