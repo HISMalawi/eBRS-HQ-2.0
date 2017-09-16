@@ -116,7 +116,7 @@ def save_full_record(params, district_id_number)
         params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
 
-    	row = "#{params[:id]},#{person.person_id},"
+    	row = "#{params[:_id]},#{person.person_id},"
 
         write_log(@multiple_births,row)
 
