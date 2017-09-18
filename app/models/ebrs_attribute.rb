@@ -55,7 +55,7 @@ module EbrsAttribute
       before_save :check_record_complteness_before_updating
       before_create :generate_key
       #after_create :create_or_update_in_couch
-      after_save :create_or_update_in_couch
+      after_save :create_or_update_in_couch, :create_audit_trail
     end
   end
 
@@ -74,6 +74,37 @@ module EbrsAttribute
   def check_record_complteness_before_updating
     self.changed_by = User.current.id if self.attribute_names.include?("changed_by") and (self.creator.blank? || self.creator == 0)and User.current != nil
     self.changed_at = Time.now if self.attribute_names.include?("changed_at")
+  end
+
+  def create_audit_trail
+    if !["audit_trails","person_name_code"].include? self.class.table_name 
+      if self.prev.present?
+          fields = self.attributes.keys
+          prev = self.prev
+          fields.each do |key|
+              next if ["created_at"].include? key
+              next if key.include? "password"
+              if prev[key] != self.attributes[key]
+                 AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
+                          previous_value: prev[key],
+                          field: key,
+                          current_value: self.attributes[key],
+                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                          comment: "#{self.class.table_name.humanize} record updated")
+              else
+                next
+              end
+          end
+      else
+        AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
+                          audit_trail_type_id: AuditTrailType.find_by_name("CREATE").id,
+                          comment: "#{self.class.table_name.humanize} record created")
+      end
+    end
   end
 
   def next_primary_key
@@ -98,9 +129,13 @@ module EbrsAttribute
     send_data(transformed_data)
   end
 
-  def create_audit_trail
-    if self.table_name != "audit_trails"
-        AuditTrail.create(table_name: self.table_name , person_id: self.person_id)
+  def create_audit_trail_after_update
+    if self.class.table_name != "audit_trails"
+        AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue self.user_id)),
+                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                          comment: "#{self.class.table_name.humanize} record created")
     end
   end
 end

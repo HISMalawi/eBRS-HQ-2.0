@@ -592,8 +592,8 @@ class PersonController < ApplicationController
   def amendments
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Lost/Damaged", "Lost/Damaged", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Amendments", "Amendments", ["HQ-PRINTED"], "/person/view","/assets/folder3.png"],
+        ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"],
+        ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"],
         ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
     ]
 
