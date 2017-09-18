@@ -222,7 +222,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(10000).each
+  records = Child.all
 
   (records || []).each do |r|
 
@@ -319,6 +319,7 @@ def initiate_migration
 	 format_csv_file(@multiple_births)
 	 puts "\n"
 	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
+     puts "\n"
 end
 
 initiate_migration

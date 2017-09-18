@@ -299,10 +299,11 @@ def build_client_record
 
   data ={}
 
-  records = Child.all.limit(10000).each
+  records = Child.all
+ 
 
   (records || []).each do |r|
-
+     
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -390,6 +391,7 @@ def initiate_migration
 	 build_client_record
 	 puts "\n"
 	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
+	 puts "\n"
 end
 
 initiate_migration

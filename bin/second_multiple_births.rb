@@ -166,7 +166,7 @@ end
 def build_client_record
 
   data ={}
-  records = Child.all.limit(10000).each
+  records = Child.all
 
   (records || []).each do |r|
 
@@ -258,6 +258,7 @@ def initiate_migration
   build_client_record
   puts "\n"
   puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
+  puts "\n"
 end
 
 initiate_migration
