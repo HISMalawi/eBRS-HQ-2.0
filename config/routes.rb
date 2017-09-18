@@ -137,6 +137,7 @@ Rails.application.routes.draw do
   get "/person/special_cases"
   get "/person/print_out"
   get "/person/amendments"
+  get "/person/ammend_case"
   get "/person/dispatch_certificates"
   get "/person/dispatch_list"
   get "/person/view"
