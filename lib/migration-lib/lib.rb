@@ -4,11 +4,12 @@ module Lib
   
 
   def self.new_child(params)
-   core_person = CorePerson.create(
-        :person_type_id     => PersonType.where(name: 'Client').last.id,
-        :created_at         => params[:person][:created_at].to_date,
-        :updated_at         => params[:person][:updated_at].to_date
-    )
+        core_person = CorePerson.new
+        core_person.person_type_id = PersonType.where(name: 'Client').last.id
+        core_person.created_at = params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00")
+        core_person.updated_at = params[:person][:updated_at].to_date
+        core_person.save
+    
    
     person = Person.create(
         :person_id          => core_person.id,
