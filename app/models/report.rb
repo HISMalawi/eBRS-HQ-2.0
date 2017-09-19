@@ -1,13 +1,22 @@
 class Report < ActiveRecord::Base
-  def self.births_report(start_date, end_date, status="Reported")
+  def self.births_report(location, start_date, end_date, status="Reported")
 
     start_date = start_date.to_date.to_s rescue Date.today.to_s
     end_date = end_date.to_date.to_s rescue Date.today.to_s
+
     if status == "Reported"
       status_ids = Status.all.map{|m| m.status_id}.join(",")
     else
       status_ids = Status.where(name: status).map{|m| m.status_id}.join(",")
     end
+
+    if location.present?
+       locations = Location.find(location).children << Location.find(location).id
+    else
+      locations = []
+    end
+
+    raise locations.inspect
 
     total_male   =  0
     total_female =  0

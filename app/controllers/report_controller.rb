@@ -241,8 +241,9 @@ class ReportController < ApplicationController
   end
 
   def birth_reports
+    @districts = districts
     status = (params[:status].present? ? params[:status] : "Reported")
-    @data = Report.births_report(params[:start_date], params[:end_date],status)
+    @data = Report.births_report(params[:district],params[:start_date], params[:end_date],status)
   end
 
   private
