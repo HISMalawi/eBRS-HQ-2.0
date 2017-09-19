@@ -21,6 +21,8 @@ Rails.application.routes.draw do
 
   get '/user_audit_trail' => 'report#user_audit_trail'
   get 'get_user_audit_trail/:start_date/:end_date' => 'report#get_user_audit_trail'
+
+  get "/report/birth_reports"
   ####################### reports end ################################
 
   get 'global_property/paper'

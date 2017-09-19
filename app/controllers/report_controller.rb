@@ -240,6 +240,11 @@ class ReportController < ApplicationController
     render text: records.to_json
   end
 
+  def birth_reports
+    status = (params[:status].present? ? params[:status] : "Reported")
+    @data = Report.births_report(params[:start_date], params[:end_date],status)
+  end
+
   private
 
   def districts
