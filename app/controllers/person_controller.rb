@@ -113,6 +113,8 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
+    elsif ['DC-AMEND','HQ-AMEND'].include? @status 
+        redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
@@ -599,12 +601,21 @@ class PersonController < ApplicationController
 
   def amendments
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-    @tasks = [
-        ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"],
-        ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"],
-        ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
-    ]
+    @tasks = []
 
+    if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"]
+    elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
+
+    else
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED","HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["DC-AMEND","HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
+    end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
@@ -637,7 +648,7 @@ class PersonController < ApplicationController
     @person = Person.find(params[:id])
     @prev_details = {}
     @birth_details = PersonBirthDetail.where(person_id: params[:id]).last
-
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
     @name = @person.person_names.last
     @person_prev_values = {}
     name_fields = ['first_name','last_name','middle_name',"gender","birthdate"]
@@ -700,7 +711,7 @@ class PersonController < ApplicationController
     @tasks = [
         ["Approve Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
         ["Print Certificates", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT","HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates","All reprinted records that didn’t pass QC" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"]
     ]

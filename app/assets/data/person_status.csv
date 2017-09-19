@@ -20,6 +20,12 @@ DC,,,DC-AMEND,A record that has been ammended at DC
 DC,,,DC-EXACT DUPLICATE,Exact duplicate record at DC
 HQ,VOIDED,CLOSED,HQ-VOIDED,A voided record at HQ
 HQ,HQ OPEN,GRANTED,HQ-GRANTED,Deprecated
+HQ,,,HQ-AMEND,Amended Records approved by DS
+HQ,,,HQ-CAN-REPRINT-AMEND,Amended Records approved by DM
+HQ,,,HQ-LOST, Lost Records approved by DS after reprint request
+HQ,,,HQ-DAMAGED,Damanged Records approved by DS after reprint request
+HQ,,,HQ-CAN-REPRINT-LOST, Lost Records approved by DM after reprint request
+HQ,,,HQ-CAN-REPRINT-DAMAGED,Lost Records approved by DM after reprint request
 HQ,HQ OPEN,REJECTED,HQ-REJECTED,Deprecated
 HQ,PRINTED,CLOSED,HQ-PRINTED,A printed record at HQ
 HQ,PRINTED,DISPATCHED,HQ-DISPATCHED,A dispatched record at HQ
