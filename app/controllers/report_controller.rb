@@ -206,7 +206,7 @@ class ReportController < ApplicationController
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00') rescue nil
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59') rescue nil
 
-    records = Report.user_audits
+    records = Report.user_audits(nil,nil,start_date,end_date)
 
     render text: records.to_json
   end
