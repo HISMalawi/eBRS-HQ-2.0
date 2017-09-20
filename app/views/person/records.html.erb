@@ -23,6 +23,10 @@
         font-size: 18px;
     }
 
+    .checkbox{
+        margin-left: 5px;
+    }
+
     th{
         background: lightsteelblue;
         color: black;
@@ -37,6 +41,7 @@
         margin-top: 0px;
         min-width: 50px;
         padding: 3px;
+        margin-left: 5px;
     }
 
     .fix-middle{
@@ -44,6 +49,10 @@
         z-index: 2000;
         left: 55%;
         top: 40%;
+    }
+    #birth_type, #example_filter{
+        margin-left: 15px;
+        float: right;
     }
 
 </style>
@@ -116,28 +125,7 @@
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
             <tr>
-              <td class="act-btn">
-                <button onclick="javascript:location='/show_person/<%= record['id']%>'"
-                        class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
-              </td>
-              <%if admin?%>
-                  <td class="act-btn">
-                    <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
-                            class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
-                  </td>
-                  <td class="act-btn">
-                    <button onclick="javascript:location='/void/<%= record['id']%>'"
-                            class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
-                  </td>
-              <%end%>
 
-              <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
-                  <td class="act-btn">
-                    <div class="checkbox">
-                      <label><input class='multi-check' person_id = "<%= record['id']%>" onchange="checkSelections();" type="checkbox" value=""></label>
-                    </div>
-                  </td>
-              <% end %>
             </tr>
           </table>
         </td>
@@ -266,7 +254,20 @@
                                 var person_id = json['data'][i][last_index]
                                 json['data'][i][last_index] =   '<td class="act-btn"> ' +
                                         '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
-                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>'
+                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+
+                                 <% if admin? %>
+                                    json['data'][i][last_index] += '<td class="act-btn">' +
+                                        '<button onclick="javascript:location=\'/edit/' + person_id + ' \'"' +
+                                        'class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button></td>' +
+                                        '<td class="act-btn"><button onclick="javascript:location=\'/void/' + person_id + '\'"' +
+                                        'class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button></td>'
+                                <% end %>
+
+                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                                json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
+                                    '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
+                                <% end %>
                             }
                             return JSON.stringify( json );
                         }
