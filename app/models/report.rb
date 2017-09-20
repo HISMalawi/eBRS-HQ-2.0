@@ -16,8 +16,6 @@ class Report < ActiveRecord::Base
       locations = []
     end
 
-    raise locations.inspect
-
     total_male   =  0
     total_female =  0
 
@@ -32,7 +30,7 @@ class Report < ActiveRecord::Base
                   INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                   INNER JOIN birth_registration_type t ON t.birth_registration_type_id = pbd.birth_registration_type_id AND t.name = '#{type}'
                 WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'M'
-                AND prs.status_id IN (#{status_ids})
+                AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                 GROUP BY p.gender, pbd.birth_registration_type_id
               "
       ).as_json.last['total'] rescue 0
@@ -45,7 +43,7 @@ class Report < ActiveRecord::Base
                   INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                   INNER JOIN birth_registration_type t ON t.birth_registration_type_id = pbd.birth_registration_type_id AND t.name = '#{type}'
                   WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'F'
-                  AND prs.status_id IN (#{status_ids})
+                  AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                   GROUP BY p.gender, pbd.birth_registration_type_id
               "
       ).as_json.last['total'] rescue 0
@@ -66,7 +64,7 @@ class Report < ActiveRecord::Base
                     INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                     WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}'
                     AND pbd.parents_married_to_each_other = #{k} AND p.gender = 'M'
-                    AND prs.status_id IN (#{status_ids})
+                    AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                     GROUP BY p.gender, pbd.parents_married_to_each_other
                 "
       ).as_json.last['total'] rescue 0
@@ -77,7 +75,7 @@ class Report < ActiveRecord::Base
                     INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                     WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}'
                     AND pbd.parents_married_to_each_other = #{k} AND p.gender = 'F'
-                    AND prs.status_id IN (#{status_ids})
+                    AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                 "
       ).as_json.last['total'] rescue 0
     end
@@ -93,7 +91,7 @@ class Report < ActiveRecord::Base
                     INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                   WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'M'
                   AND DATEDIFF(pbd.date_registered, p.birthdate) #{c} 42
-                  AND prs.status_id IN (#{status_ids})
+                  AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                 "
       ).as_json.last['total'] rescue 0
 
@@ -103,7 +101,7 @@ class Report < ActiveRecord::Base
                     INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                   WHERE DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'F'
                   AND DATEDIFF(pbd.date_registered, p.birthdate) #{c} 42
-                  AND prs.status_id IN (#{status_ids})
+                  AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                 "
       ).as_json.last['total'] rescue 0
     end
@@ -119,7 +117,7 @@ class Report < ActiveRecord::Base
                       INNER JOIN person p ON p.person_id = pbd.person_id
                       INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                     WHERE  pbd.place_of_birth = (SELECT location_id FROM location WHERE name = '#{k}') AND DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'M'
-                    AND prs.status_id IN (#{status_ids})
+                    AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                     GROUP BY p.gender, pbd.birth_registration_type_id
                   "
         ).as_json.last['total'] rescue 0
@@ -131,7 +129,7 @@ class Report < ActiveRecord::Base
                       INNER JOIN person p ON p.person_id = pbd.person_id
                       INNER JOIN person_record_statuses prs ON prs.person_id = p.person_id AND prs.voided = 0
                     WHERE  pbd.place_of_birth = (SELECT location_id FROM location WHERE name = '#{k}') AND DATE(pbd.date_registered) BETWEEN '#{start_date}' AND '#{end_date}' AND p.gender = 'F'
-                    AND prs.status_id IN (#{status_ids})
+                    AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_created_at IN('+locations.join(',')+')' : ''}
                     GROUP BY p.gender, pbd.birth_registration_type_id
                   "
         ).as_json.last['total'] rescue 0
@@ -153,5 +151,19 @@ class Report < ActiveRecord::Base
   def self.by_status(status, start_date,end_date)
     
 
+  end
+
+  def self.user_audits(user = nil ,person = nil, start_date =nil,end_date = nil)
+      start_date = Date.today.to_s if start_date.blank?
+      end_date = DateTime.now.to_s if end_date.blank?
+      query = "SELECT CONCAT(first_name,\" \", last_name) as name,username, table_name, comment, 
+              (SELECT CONCAT(first_name, \" \", last_name) FROM person_name a 
+              WHERE a.person_id = audit_trails.person_id AND a.voided =0) as client,
+              (SELECT name FROM location l WHERE l.location_id = audit_trails.location_id) 
+              as location,DATE_FORMAT(audit_trails.created_at,\"%Y-%m-%d %H:%i:%s\")as created_at
+              FROM audit_trails INNER JOIN person_name ON audit_trails.creator = person_name.person_id
+              INNER JOIN users ON users.user_id = audit_trails.creator WHERE 
+              DATE(audit_trails.created_at) BETWEEN #{start_date} AND #{end_date}  ORDER BY audit_trails.created_at"
+      return ActiveRecord::Base.connection.select_all(query).as_json
   end
 end
