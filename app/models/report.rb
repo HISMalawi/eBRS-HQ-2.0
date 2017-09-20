@@ -154,8 +154,13 @@ class Report < ActiveRecord::Base
   end
 
   def self.user_audits(user = nil ,person = nil, start_date =nil,end_date = nil)
-      start_date = Date.today.to_s if start_date.blank?
-      end_date = DateTime.now.to_s if end_date.blank?
+      
+      start_date  = start_date.to_date.strftime('%Y-%m-%d 00:00:00') rescue nil
+      end_date    = end_date.to_date.strftime('%Y-%m-%d 23:59:59') rescue nil
+
+      start_date = Date.today.strftime('%Y-%m-%d 00:00:00') if start_date.blank?
+      end_date = Date.today.strftime('%Y-%m-%d 23:59:59') if end_date.blank?
+
       query = "SELECT CONCAT(first_name,\" \", last_name) as name,username, table_name, comment, 
               (SELECT CONCAT(first_name, \" \", last_name) FROM person_name a 
               WHERE a.person_id = audit_trails.person_id AND a.voided =0) as client,
@@ -163,7 +168,9 @@ class Report < ActiveRecord::Base
               as location,DATE_FORMAT(audit_trails.created_at,\"%Y-%m-%d %H:%i:%s\")as created_at
               FROM audit_trails INNER JOIN person_name ON audit_trails.creator = person_name.person_id
               INNER JOIN users ON users.user_id = audit_trails.creator WHERE 
-              DATE(audit_trails.created_at) BETWEEN #{start_date} AND #{end_date}  ORDER BY audit_trails.created_at"
+              audit_trails.created_at BETWEEN '#{start_date}' AND '#{end_date}' 
+              ORDER BY audit_trails.created_at;"
+
       return ActiveRecord::Base.connection.select_all(query).as_json
   end
 end
