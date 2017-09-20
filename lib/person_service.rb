@@ -824,4 +824,101 @@ end
 
   end
 
+
+  def self.search_results(filters={})
+
+    if filters.blank?
+      return []
+    end
+    entry_num_query = ''; fac_serial_query = ''; name_query = ''; limit = ' '
+    limit = ' LIMIT 10 ' if filters.blank?
+    gender_query = ''; place_of_birth_query = ''; status_query=''
+
+    filters.each do |k, v|
+      case k
+        when 'ben'
+          entry_num_query = " AND pbd.district_id_number = '#{v}' " unless v.blank?
+        when 'brn'
+          serial_num_query = " AND pbd.national_serial_number = '#{v}' " unless v.blank?
+        when 'serial_num'
+          fac_serial_query =  " AND pbd.facility_serial_number = '#{v}' " unless v.blank?
+        when 'names'
+          if v["last_name"].present?
+            name_query += " AND  n.last_name = '#{v["last_name"]}'"
+          end
+          if v["middle_name"].present?
+            name_query += " AND n.middle_name = '#{v["last_name"]}'"
+          end
+          if v["first_name"].present?
+            name_query += " AND n.first_name = '#{v["first_name"]}'"
+          end
+        when 'gender'
+          gender_query = " AND p.gender = '#{v}' "  unless v.blank?
+        when 'place'
+          place_id = Location.locate_id_by_tag(v, 'Place of Birth')
+          if place_id.present?
+            place_of_birth_query = " AND  place_of_birth = #{place_id} "
+          end
+          district_id = Location.locate_id_by_tag(filters['district_of_birth'], 'District')
+          if district_id.present?
+            place_of_birth_query += " AND  district_of_birth = #{district_id} "
+          end
+          ta_id = Location.locate_id(filters['ta_of_birth'], 'Traditional Authority', district_id)
+          if ta_id.present?
+            village_id = Location.locate_id(filters['village_of_birth'], 'Village', ta_id)
+            place_of_birth_query += " AND  birth_location_id = #{village_id} "
+          end
+
+          hospital_id = Location.locate_id(filters['hospital_of_birth'], 'Health Facility', district_id)
+          if hospital_id.present?
+            place_of_birth_query += " AND  birth_location_id = #{hospital_id} "
+          end
+
+          if filters["other_birth_place"].present?
+            place_of_birth_query += " AND  other_birth_location = '#{v["other_birth_place"].strip}' "
+          end
+        when 'status'
+          status_query = " AND prs.status_id = #{v} "  unless v.blank?
+      end
+    end
+
+    main = Person.find_by_sql(
+        "SELECT n.*, prs.status_id, pbd.district_id_number AS ben, pbd.national_serial_number AS brn, p.birthdate, p.gender FROM person p
+            INNER JOIN core_person cp ON p.person_id = cp.person_id
+            INNER JOIN person_name n ON p.person_id = n.person_id
+            INNER JOIN person_record_statuses prs ON p.person_id = prs.person_id
+            INNER JOIN person_birth_details pbd ON p.person_id = pbd.person_id
+          WHERE COALESCE(prs.voided, 0) = 0
+            #{entry_num_query} #{fac_serial_query} #{name_query} #{gender_query} #{place_of_birth_query} #{status_query}
+          GROUP BY p.person_id
+          ORDER BY p.updated_at DESC
+            #{limit}
+        "
+    )
+
+    results = []
+
+    main.each do |data|
+      mother = self.mother(data.person_id)
+      father = self.father(data.person_id)
+      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}")
+      mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+      father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+
+      results << {
+          'id' => data.person_id,
+          'ben' => data.ben,
+          'dob' => data.birthdate.strftime("%d/%b/%Y"),
+          'name'        => name,
+          'gender'        => {'M' => 'Male', 'F' => 'Female'}[data.gender],
+          'father_name'       => father_name,
+          'mother_name'       => mother_name,
+          'status'            => Status.find(data.status_id).name, #.gsub(/DC\-|FC\-|HQ\-/, '')
+          'date_of_reporting' => data['created_at'].to_date.strftime("%d/%b/%Y"),
+      }
+    end
+
+    results
+  end
+
 end
