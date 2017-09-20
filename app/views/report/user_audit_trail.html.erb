@@ -92,9 +92,10 @@ function addRows(data) {
 
 function fetchData() { 
   var url = "get_user_audit_trail";
-  var start_date = jQuery("#start_date").val();
-  var end_date   = jQuery("#end_date").val();
-  url = url + "?start_date="+new Date(start_date)+"&end_date="+new Date(end_date);
+  var start_date = jQuery("#start_date").val().split("/");
+  var end_date   = jQuery("#end_date").val().split("/");
+  url = url + "?start_date="+start_date[2]+"-"+start_date[1]+"-"+start_date[0]+
+              "&end_date="+end_date[2]+"-"+end_date[1]+"-"+end_date[0];
 
   jQuery.getJSON(url,function(results){
       if(results.length > 0){
