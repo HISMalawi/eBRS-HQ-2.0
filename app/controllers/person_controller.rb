@@ -113,6 +113,8 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
+    elsif ['DC-AMEND','HQ-AMEND'].include? @status 
+        redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
@@ -599,12 +601,21 @@ class PersonController < ApplicationController
 
   def amendments
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-    @tasks = [
-        ["Lost/Damaged", "Lost/Damaged", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Amendments", "Amendments", ["HQ-PRINTED"], "/person/view","/assets/folder3.png"],
-        ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
-    ]
+    @tasks = []
 
+    if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"]
+    elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
+
+    else
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED","HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["DC-AMEND","HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
+    end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
@@ -633,12 +644,74 @@ class PersonController < ApplicationController
     render :template => "/person/tasks"
   end
 
+  def ammend_case
+    @person = Person.find(params[:id])
+    @prev_details = {}
+    @birth_details = PersonBirthDetail.where(person_id: params[:id]).last
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
+    @name = @person.person_names.last
+    @person_prev_values = {}
+    name_fields = ['first_name','last_name','middle_name',"gender","birthdate"]
+    name_fields.each do |field|
+        trail = AuditTrail.where(person_id: params[:id], field: field).order('created_at').last
+        if trail.present?
+            @person_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @person_prev_values['first_name'].present? || @person_prev_values['last_name'].present?
+        name = "#{@person_prev_values['first_name'].present? ? @person_prev_values['first_name'] : @name.first_name} "+
+               "#{@person_prev_values['middle_name'].present? ? @person_prev_values['middle_name'] : (@name.middle_name rescue '')}" +
+               "#{@person_prev_values['last_name'].present? ? @person_prev_values['last_name'] : @name.last_name}"
+        @person_prev_values["person_name"] = name
+    end
+    @address = @person.addresses.last
+
+    @mother_person = @person.mother
+    @mother_name = @mother_person.person_names.last rescue nil
+    @mother_prev_values = {}
+    name_fields.each do |field|
+        trail = AuditTrail.where(person_id: @mother_person.id, field: field).order('created_at').last
+        if trail.present?
+            @mother_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @mother_prev_values['first_name'].present? || @mother_prev_values['last_name'].present?
+        mother_name = "#{@mother_prev_values['first_name'].present? ? @mother_prev_values['first_name'] : @mother_name.first_name} "+
+               "#{@mother_prev_values['middle_name'].present? ? @mother_prev_values['middle_name'] : (@mother_name.middle_name rescue '')}" +
+               "#{@mother_prev_values['last_name'].present? ? @mother_prev_values['last_name'] : @mother_name.last_name}"
+        @person_prev_values["mother_name"] = mother_name
+    end
+
+    @father_person = @person.father
+    @father_name = @father_person.person_names.last rescue nil
+    @father_prev_values = {}
+    name_fields.each do |field|
+        break if @father_person.blank?
+        trail = AuditTrail.where(person_id: @father_person.id, field: field).order('created_at').last
+        if trail.present?
+            @father_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @father_prev_values['first_name'].present? || @father_prev_values['last_name'].present?
+        father_name = "#{@father_prev_values['first_name'].present? ? @father_prev_values['first_name'] : @father_name.first_name} "+
+               "#{@father_prev_values['middle_name'].present? ? @father_prev_values['middle_name'] : (@father_name.middle_name rescue '')}" +
+               "#{@father_prev_values['last_name'].present? ? @father_prev_values['last_name'] : @father_name.last_name}"
+        @person_prev_values["father_name"] = mother_name
+    end 
+
+    @section = 'Ammend Case'
+   
+  end
+
   def print_out
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
         ["Approve Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
         ["Print Certificates", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT","HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates","All reprinted records that didn’t pass QC" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"]
     ]

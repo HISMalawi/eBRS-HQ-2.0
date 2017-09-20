@@ -85,48 +85,24 @@ function dataT(){
 
 
 function addRows(data) {
-  var records = JSON.parse(data);
-  counter = 0;
-  for (var username in records) {
-    for (var action_date in records[username]) {
-      for(var i = 0 ; i < records[username][action_date].length ; i++) {
-        console.log(records[username][action_date][i]['action']) 
-        var action_datetime   = records[username][action_date][i]['action_datetime'];
-        var action            = records[username][action_date][i]['action'];
-        var first_name        = records[username][action_date][i]['first_name'];
-        var middle_name       = records[username][action_date][i]['middle_name'];
-        var last_name         = records[username][action_date][i]['last_name'];
-
-        dataTable.api().row.add([action_datetime, username, first_name, middle_name, last_name, action]).draw();
-      }
-    }
+  for(var i = 0 ; i < data.length ; i++){
+    dataTable.api().row.add([data[i].created_at, data[i].username, data[i].name, data[i].comment, data[i].client, data[i].location]).draw();
   }
 }
 
-function fetchData() {                                                       
-                                                                            
-  if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari  
-    xmlhttp=new XMLHttpRequest();                                             
-  }else{// code for IE6, IE5                                                  
-    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");                           
-  }                                                                           
-  xmlhttp.onreadystatechange=function() {                                     
-    if (xmlhttp.readyState==4 && xmlhttp.status==200) {                       
-      var results = xmlhttp.responseText;                                     
-      if(results == 'undefined' || results == '' || results == '"not validate"') {                           
-        return;                                                               
-      }else{                                                                  
-        dataTable.fnClearTable();
-        addRows(results);    
-      }                                                                       
-    }                                                                         
-  }      
+function fetchData() { 
+  var url = "get_user_audit_trail";
+  var start_date = jQuery("#start_date").val().split("/");
+  var end_date   = jQuery("#end_date").val().split("/");
+  url = url + "?start_date="+start_date[2]+"-"+start_date[1]+"-"+start_date[0]+
+              "&end_date="+end_date[2]+"-"+end_date[1]+"-"+end_date[0];
 
-  var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
-  var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
-                                                                     
-  xmlhttp.open("GET","/get_user_audit_trail/" + start_date + "/" + end_date, true);           
-  xmlhttp.send();                                                             
+  jQuery.getJSON(url,function(results){
+      if(results.length > 0){
+          dataTable.fnClearTable();
+          addRows(results); 
+      }
+  })                                                                                                                                   
 }
 
 
@@ -167,12 +143,12 @@ function fetchData() {
 <table style="width:100%" id="report" class="table table-striped table-advance table-hover">
   <thead>
     <tr>
-      <th style="width: 20%;">DateTime</th>
-      <th>Username</th>
-      <th>First name</th>
-      <th>Middle name</th>
-      <th>Last name</th>
-      <th>Action</th>
+      <th style="width: 15%;">DateTime</th>
+      <th style="width: 15%;">Username</th>
+      <th >Name</th>
+      <th style="width: 25%;">Action</th>
+      <th>Client</th>
+      <th>Location</th>
     </tr>
   </thead>
   </tbody>
@@ -195,4 +171,7 @@ function activeDate() {
 
 activeDate();
 dataT();
+jQuery(document).ready(function(){
+      fetchData();
+})
 </script>

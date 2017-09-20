@@ -197,8 +197,20 @@
           <span class="fa fa-void"></span>
           Void
         </button>
+        <button id="DM Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REPRINT-AMEND')">
+          <span class="fa"></span>
+          Approve for Re-print Amendment
+          </button>
+        <button id="DS Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-AMEND')">
+          <span class="fa"></span>
+          Approve Amendments
+        </button>
+        
         <%end%>
       </div>
+
 
       <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
               onclick= 'ajaxPullComments("view")' >
