@@ -27,7 +27,8 @@ class PersonRecordStatus < ActiveRecord::Base
           comments: change_reason
       )
 
-
+      begin
+        
         birth_details = PersonBirthDetail.where(person_id: person_id).last
 
         if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
