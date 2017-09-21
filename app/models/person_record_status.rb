@@ -7,7 +7,9 @@ class PersonRecordStatus < ActiveRecord::Base
     belongs_to :status, foreign_key: "status_id"
 
 
-    def self.new_record_state(person_id, state, change_reason='', user_id=nil)
+  def self.new_record_state(person_id, state, change_reason='', user_id=nil)
+    
+    begin
       user_id = User.current.id if user_id.blank?
       state_id = Status.where(:name => state).first.id
       trail = self.where(:person_id => person_id, :voided => 0)
@@ -44,13 +46,13 @@ class PersonRecordStatus < ActiveRecord::Base
          self.log_error(e.message,person_id)
       end
 
-    end
+  end
 
-    def self.status(person_id)
+  def self.status(person_id)
       self.where(:person_id => person_id, :voided => 0).last.status.name
-    end
+  end
 
-    def self.log_error(error_msge, content)
+  def self.log_error(error_msge, content)
 
       file_path = "#{Rails.root}/app/assets/data/error_log.txt"
       if !File.exists?(file_path)
@@ -61,9 +63,9 @@ class PersonRecordStatus < ActiveRecord::Base
         end
       end
 
-    end
+  end
 
-    def self.stats(types=['Normal', 'Adopted', 'Orphaned', 'Abandoned'], approved=true)
+  def self.stats(types=['Normal', 'Adopted', 'Orphaned', 'Abandoned'], approved=true)
       result = {}
       birth_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
 
@@ -83,5 +85,5 @@ class PersonRecordStatus < ActiveRecord::Base
         WHERE voided = 0 AND status_id NOT IN (#{excluded_states.join(', ')}) AND status_id IN (#{included_states.join(', ')})")[0]['c']
       end
       result
-    end
+  end
 end
