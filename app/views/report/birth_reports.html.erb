@@ -2,6 +2,7 @@
     #table{
         font-size: 1em;
         color: darkslategray;
+        margin-top:1%;
     }
     #table th{
         border: 1px solid #d3d3d3;
@@ -28,6 +29,9 @@
         text-align: right;
         padding-right: 10%;
     }
+    input , select{
+        width: 70%;
+    }
 </style>
 <%=javascript_include_tag "bootstrap/bootstrap.min" %>
 <div class="panel panel-default">
@@ -46,37 +50,67 @@
       </table>
     </div>
     <div class="search-params"  style="width: 100%;margin:1%">
-      <label>Select district:</label>
-      <select id="selected_dc" style="margin-right: 3%; margin-bottom: 3%;" load="<%=params[:district] rescue ''%>">
-        <option></option>
-        <%(@districts || []).each do |district|%>
-          <option value="<%=district.id%>"><%=district.name%></option>
-        <%end%>
-      </select>
-      <label>Record status:</label>
-      <select id="selected_status" style="margin-right: 3%;margin-bottom: 3%;">
-        <option></option>
-        <%@statuses.each do |status|%>
-          <option value="<%=status%>"><%=status%></option>
-        <%end%>
-      </select>
-      <br/>
-      <label>Select <b>start date</b>:</label>
-      <input type="text" id="start_date" 
-        data-date-format="dd/mm//yyyy" onkeypress="return false;"  
-        value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
-        class = "dates date" />
-        <i class="fa fa-calendar"></i>
-      <label>Select <b>end date</b>:</label>
-      <input type="text" id="end_date" 
-        data-date-format="dd/mm//yyyy" onkeypress="return false;"  
-        value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
-        class = "dates date" />
-        <i class="fa fa-calendar"></i>
+      <table style="width: 90%;">
+          <tr><th>Filter</th><th></th></tr>
+          <tr>
+              <td></td>
+              <td>District :</td>
+              <td><select id="selected_dc" style="margin-right: 3%; margin-bottom: 3%;" load="<%=params[:district] rescue ''%>">
+                  <option></option>
+                  <%(@districts || []).each do |district|%>
+                    <option value="<%=district.id%>"><%=district.name%></option>
+                  <%end%>
+                </select>
+              </td>
+          </tr>
+          <tr>
+              <td></td>
+              <td>Record status</td>
+              <td><select id="selected_status" style="margin-right: 3%;margin-bottom: 3%;">
+                    <option></option>
+                    <%@statuses.each do |status|%>
+                      <option value="<%=status%>"><%=status%></option>
+                    <%end%>
+                  </select>
+              </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td>Select Age</td>
+            <td>
+              <select id="operator">
+                  <option> = </option>
+                  <option> < </option>
+                  <option> <= </option>
+                  <option> > </option>
+                  <option> >= </option>
+                  <option> >= </option>
+                  <option>>= Age <=</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+              <td></td>
+              <td> Date Registered : Start date </td>
+              <td><input type="text" id="start_date" 
+                    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+                    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+                    class = "dates date" />
+                    <i class="fa fa-calendar"></i>
+              </td>
+              <td>Date Registered : End date</td>
+              <td><input type="text" id="end_date" 
+                    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+                    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+                    class = "dates date" />
+                    <i class="fa fa-calendar"></i>
+              </td>
+              <td> <input type='button' class='btn btn-success pull-right' style="margin-right: 2%;" value='Load Data' onclick="fetchData();" /></td>
+          </tr>
+      </table>
 
-      <input type='button' class='btn btn-success pull-right' style="margin-right: 2%;" value='Load Data' onclick="fetchData();" />
+     
     </div>
-    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
     <div id="default" style="width: 100%; margin: auto;  text-align: center; vertical-align: top; margin-top:1%;">
     <table id='table' style="width: 100%;">
 
@@ -122,7 +156,6 @@
       <% end %>
     </table>
     </div>
-  </div>
 </div>
 <script type="text/javascript">
     function fetchData(){
