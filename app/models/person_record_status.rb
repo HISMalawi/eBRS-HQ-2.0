@@ -27,22 +27,39 @@ class PersonRecordStatus < ActiveRecord::Base
           comments: change_reason
       )
 
-      birth_details = PersonBirthDetail.where(person_id: person_id).last
 
-      if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
-          allocation = IdentifierAllocationQueue.new
-          allocation.person_id = person_id
-          allocation.assigned = 0
-          allocation.creator = User.current.id
-          allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "Birth Registration Number").last.person_identifier_type_id
-          allocation.created_at = Time.now
-          allocation.save 
+        birth_details = PersonBirthDetail.where(person_id: person_id).last
+
+        if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
+            allocation = IdentifierAllocationQueue.new
+            allocation.person_id = person_id
+            allocation.assigned = 0
+            allocation.creator = User.current.id
+            allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "Birth Registration Number").last.person_identifier_type_id
+            allocation.created_at = Time.now
+            allocation.save 
+        end
+      rescue StandardError => e
+         self.log_error(e.message,person_id)
       end
 
     end
 
     def self.status(person_id)
       self.where(:person_id => person_id, :voided => 0).last.status.name
+    end
+
+    def self.log_error(error_msge, content)
+
+      file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+      if !File.exists?(file_path)
+             file = File.new(file_path, 'w')
+      else
+         File.open(file_path, 'a') do |f|
+            f.puts "#{error_msge} >>>>>> #{content}"
+        end
+      end
+
     end
 
     def self.stats(types=['Normal', 'Adopted', 'Orphaned', 'Abandoned'], approved=true)

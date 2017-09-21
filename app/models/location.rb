@@ -110,4 +110,5 @@ class Location < ActiveRecord::Base
   def children
     return ActiveRecord::Base.connection.select_all("SELECT location_id from location WHERE parent_location = #{self.id}").collect{|s| s["location_id"]}
   end
+
 end

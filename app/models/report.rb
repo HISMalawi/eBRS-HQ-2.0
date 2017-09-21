@@ -154,12 +154,10 @@ class Report < ActiveRecord::Base
   end
 
   def self.user_audits(user = nil ,person = nil, start_date =nil,end_date = nil)
-      
-      start_date  = start_date.to_date.strftime('%Y-%m-%d 00:00:00') rescue nil
-      end_date    = end_date.to_date.strftime('%Y-%m-%d 23:59:59') rescue nil
 
       start_date = Date.today.strftime('%Y-%m-%d 00:00:00') if start_date.blank?
       end_date = Date.today.strftime('%Y-%m-%d 23:59:59') if end_date.blank?
+
 
       query = "SELECT CONCAT(first_name,\" \", last_name) as name,username, table_name, comment, 
               (SELECT CONCAT(first_name, \" \", last_name) FROM person_name a 
