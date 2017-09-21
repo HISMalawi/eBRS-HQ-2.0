@@ -29,9 +29,7 @@ class PersonRecordStatus < ActiveRecord::Base
           comments: change_reason
       )
 
-      begin
-
-        birth_details = PersonBirthDetail.where(person_id: person_id).last
+      birth_details = PersonBirthDetail.where(person_id: person_id).last
 
         if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
             allocation = IdentifierAllocationQueue.new
@@ -42,9 +40,8 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.created_at = Time.now
             allocation.save
         end
-      rescue StandardError => e
+    rescue StandardError => e
          self.log_error(e.message,person_id)
-      end
      end
   end
 
