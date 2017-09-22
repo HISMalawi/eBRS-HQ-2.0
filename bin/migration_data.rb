@@ -295,11 +295,11 @@ def test_method
     transform_record(data)
 end
 
-def build_client_record
+def build_client_record(current_pge, pge_size)
 
   data ={}
 
-  records = Child.all
+  records = Child.all.page(current_pge).limit(pge_size)
  
 
   (records || []).each do |r|
@@ -388,8 +388,19 @@ end
 
 
 def initiate_migration
-	 build_client_record
-	 puts "\n"
+
+        total_records = Child.count
+	page_size = 100
+	total_pages = (total_records / page_size) + (total_records % page_size)
+	current_page = 1
+
+	while (current_page < total_pages) do
+
+             build_client_record(current_page, page_size)
+	     current_page = current_page + 1	
+	end
+
+         puts "\n"
 	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	 puts "\n"
 end
