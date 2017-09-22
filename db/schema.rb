@@ -83,7 +83,9 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.datetime "created_at",                                      null: false
     t.datetime "updated_at",                                      null: false
   end
-
+  
+  change_column :identifier_allocation_queue, :identifier_allocation_queue_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+ 
   add_index "identifier_allocation_queue", ["person_id"], name: "fk_identifier_allocation_queue_1_idx", using: :btree
   add_index "identifier_allocation_queue", ["person_identifier_type_id"], name: "fk_identifier_allocation_queue_2", using: :btree
 
