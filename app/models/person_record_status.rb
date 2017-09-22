@@ -8,6 +8,8 @@ class PersonRecordStatus < ActiveRecord::Base
 
 
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
+    
+     begin
       user_id = User.current.id if user_id.blank?
       state_id = Status.where(:name => state).first.id
       trail = self.where(:person_id => person_id, :voided => 0)
