@@ -1,0 +1,136 @@
+<style type="text/css">
+    #table{
+        font-size: 1em;
+        color: darkslategray;
+    }
+    #table th{
+        border: 1px solid #d3d3d3;
+        background: #d3d3d3;
+        width: 2%;
+        color: #3465a4;
+        padding: 0.5em
+    }
+    #table td{
+       border: 1px solid #d3d3d3;
+       padding: 0.5em
+    }
+
+    .cat{
+      font-weight: bold;
+    }
+    .mintable{
+      width: 100%; 
+      border:none;
+      border-collapse: collapse;
+    }
+    .mintable td, .mintable th{
+        width: 33.33333% !important;
+        text-align: right;
+        padding-right: 10%;
+    }
+</style>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 50px;">
+      <table style="width: 100%;">
+        <tr>
+          <td>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Birth reports</h3>
+          </td>
+          <td colspan="8" style="width: 60%;">
+            <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="search-params"  style="width: 100%;margin:1%">
+      <label>Select district:</label>
+      <select id="selected_dc" style="margin-right: 3%; margin-bottom: 3%;" load="<%=params[:district] rescue ''%>">
+        <option></option>
+        <%(@districts || []).each do |district|%>
+          <option value="<%=district.id%>"><%=district.name%></option>
+        <%end%>
+      </select>
+      <label>Record status:</label>
+      <select id="selected_status" style="margin-right: 3%;margin-bottom: 3%;">
+        <option></option>
+        <%@statuses.each do |status|%>
+          <option value="<%=status%>"><%=status%></option>
+        <%end%>
+      </select>
+      <br/>
+      <label>Select <b>start date</b>:</label>
+      <input type="text" id="start_date" 
+        data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+        value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+        class = "dates date" />
+        <i class="fa fa-calendar"></i>
+      <label>Select <b>end date</b>:</label>
+      <input type="text" id="end_date" 
+        data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+        value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+        class = "dates date" />
+        <i class="fa fa-calendar"></i>
+
+      <input type='button' class='btn btn-success pull-right' style="margin-right: 2%;" value='Load Data' onclick="fetchData();" />
+    </div>
+    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
+    <div id="default" style="width: 100%; margin: auto;  text-align: center; vertical-align: top; margin-top:1%;">
+    <table id='table' style="width: 100%;">
+
+      <thead>
+            <tr>
+              <th>Category</th>
+              <th>Sub category</th>
+              <th>Female</th>
+              <th>Male</th>
+              <th>Total</th>
+            </tr>
+      </thead>
+
+      <% @data.each do |cat, data|
+      %>
+          <tr>
+            <td>
+              <%= cat%>
+            </td>
+            <td style="padding:0">
+                <table style="width: 100%; border:none; border-collapse: collapse; ">
+                    <% data.each do |k, sub_data|
+                    %>
+                        <tr><td><%= k%></td></tr>
+                    <% end
+                    %>
+                </table>
+            </td>
+            <td colspan="3" style="padding:0">
+                <table class="mintable">
+                    <% data.each do |k, sub_data|
+                    %>  
+                        <tr>
+                            <td><%= sub_data['Female']%></td>
+                            <td><%= sub_data['Male']%></td>
+                            <td><%= sub_data['Female'].to_i + sub_data['Male'].to_i %></td>
+                          </tr>
+                    <% end
+                    %>
+                </table>
+            </td>
+          </tr>
+      <% end %>
+    </table>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+    function fetchData(){
+         var district = jQuery("#selected_dc").val();
+         var start_date = jQuery("#start_date").val();
+         var end_date = jQuery("#start_date").val();
+         var status = jQuery("#selected_status").val()
+         var url = "/report/birth_reports?district="+district+"&start_date="+start_date+"&end_date="+end_date+"&status="+status;
+         window.location = url
+    }
+</script>

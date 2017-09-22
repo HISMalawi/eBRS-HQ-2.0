@@ -1,4 +1,30 @@
 Rails.application.routes.draw do
+
+  ####################### reports ################################
+
+  ### Printed certofocates
+  get '/printed_certificates' => 'report#printed_certificates'
+  get 'get_printed_certificates/:location_id/:start_date/:end_date' => 'report#get_printed_certificates'
+
+
+  get '/reported_births' => 'report#reported_births'
+  get 'get_reported_births/:location_id/:start_date/:end_date' => 'report#get_reported_births'
+  
+  get '/approved_at_hq' => 'report#approved_at_hq'
+  get 'get_approved_at_hq/:location_id/:start_date/:end_date' => 'report#get_approved_at_hq'
+
+  get '/voided_records' => 'report#voided_records'
+  get 'get_voided_records/:start_date/:end_date' => 'report#get_voided_records'
+
+  get '/registered_births' => 'report#registered_births'
+  get 'get_registered_births/:location_id/:start_date/:end_date' => 'report#get_registered_births'
+
+  get '/user_audit_trail' => 'report#user_audit_trail'
+  get 'get_user_audit_trail' => 'report#get_user_audit_trail'
+
+  get "/report/birth_reports"
+  ####################### reports end ################################
+
   get 'global_property/paper'
 
   get 'global_property/signature'
@@ -113,6 +139,7 @@ Rails.application.routes.draw do
   get "/person/special_cases"
   get "/person/print_out"
   get "/person/amendments"
+  get "/person/ammend_case"
   get "/person/dispatch_certificates"
   get "/person/dispatch_list"
   get "/person/view"
@@ -141,6 +168,10 @@ Rails.application.routes.draw do
   post '/print_dispatched_certs' => 'person#print_dispatched_certs'
   get '/paper' => 'global_property#paper'
   get '/signature' => 'global_property#signature'
+
+  get '/search' => "search#general_search"
+  get '/search_cases' => "search#search_cases"
+  post '/search_cases' => "search#search_cases"
 
   resources :person
 

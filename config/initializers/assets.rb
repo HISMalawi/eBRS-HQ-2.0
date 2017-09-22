@@ -7,6 +7,7 @@ Rails.application.config.assets.precompile += %w( datatables/* )
 Rails.application.config.assets.precompile += %w( js/* )
 Rails.application.config.assets.precompile += %w( extras/* )
 Rails.application.config.assets.precompile += %w( Highcharts/* )
+Rails.application.config.assets.precompile += %w( datepicker/* )
 
 
 # Add additional assets to the asset load path
