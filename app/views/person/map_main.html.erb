@@ -74,10 +74,13 @@
                 document.getElementById('reported').innerHTML = d3.select("#<%=site['district']%>").attr("reported");
             }).on("mouseout", function(){
 
-                //document.getElementById('site_name').innerHTML = '&nbsp;';
-                //document.getElementById('status').innerHTML = '&nbsp;';
-                //document.getElementById('reported').innerHTML = '&nbsp;';
-
+                document.getElementById('site_name').innerHTML = '&nbsp;';
+                document.getElementById('status').innerHTML = '&nbsp;';
+                document.getElementById('reported').innerHTML = '&nbsp;';
+                var items =  window.parent.document.getElementById('stat-count');
+                for(var i=0; i<items.length; i++){
+                    items[i].innerHTML = items[i].getAttribute('default-value')
+                }
             }).on("mousedown", function(){
 
                 document.getElementById('site_name').innerHTML = d3.select("#<%=site['district']%>").attr("tag");

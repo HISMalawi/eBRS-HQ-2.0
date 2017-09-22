@@ -21,10 +21,12 @@
     .action-btn .fa{
         min-width: 35px;
         font-size: 18px;
+
     }
 
     .checkbox{
         margin-left: 5px;
+
     }
 
     th{
@@ -42,6 +44,7 @@
         min-width: 50px;
         padding: 3px;
         margin-left: 5px;
+
     }
 
     .fix-middle{
@@ -254,6 +257,7 @@
                                 var person_id = json['data'][i][last_index]
                                 json['data'][i][last_index] =   '<td class="act-btn"> ' +
                                         '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
 
                                  <% if admin? %>
@@ -268,6 +272,7 @@
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
                                 <% end %>
+
                             }
                             return JSON.stringify( json );
                         }
