@@ -144,6 +144,7 @@ class Report < ActiveRecord::Base
       'Parents Married'    => parents_married.as_json,
       'Delayed Registrations' => delayed.as_json,
       'Place of Birth' => place_of_birth.as_json,
+      'Type of Birth'  => {"SVG" => {"Female"=> 0, "Male"=>0} , "Ceasar" => {"Female"=> 0, "Male"=>0}},
       "#{status}" => total.as_json
      }
     data

@@ -166,6 +166,7 @@ end
 def build_client_record(current_pge, pge_size)
 
   data ={}
+
   records = Child.all.page(current_pge).limit(pge_size)
 
   (records || []).each do |r|
@@ -271,6 +272,8 @@ def initiate_migration
         puts "\n"
         puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
         puts "\n"
+
+
 end
 
 initiate_migration

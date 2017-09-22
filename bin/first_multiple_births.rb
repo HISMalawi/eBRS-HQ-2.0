@@ -222,6 +222,7 @@ end
 def build_client_record(current_pge, pge_size)
 
   data ={}
+
   records = Child.all.page(current_pge).limit(pge_size)
 
   (records || []).each do |r|
@@ -327,7 +328,7 @@ def initiate_migration
 	   current_page = current_page + 1	
 	end
 
-	format_csv_file(@multiple_births)
+	 format_csv_file(@multiple_births)
 	 puts "\n"
 	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
          puts "\n"
