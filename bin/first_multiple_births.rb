@@ -219,10 +219,11 @@ def assign_district_id(person_id, ben)
 end
 
 
-def build_client_record
+def build_client_record(current_pge, pge_size)
 
   data ={}
-  records = Child.all
+
+  records = Child.all.page(current_pge).limit(pge_size)
 
   (records || []).each do |r|
 
@@ -315,7 +316,16 @@ def build_client_record
 end
 
 def initiate_migration
-	 build_client_record
+	total_records = Child.count
+	page_size = 100
+	total_pages = (total_records / page_size) + (total_records % page_size)
+	current_page = 1
+
+	while (current_page < total_pages) do
+
+        build_client_record(current_page, page_size)
+        current_page = current_page + 1
+	end
 	 format_csv_file(@multiple_births)
 	 puts "\n"
 	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
