@@ -1131,55 +1131,59 @@ class PersonController < ApplicationController
   end
 
   def map_main
-    sites = YAML.load_file("#{Rails.root}/public/sites.yml") rescue {}
+
     @sites = []
     @sites_enabled = []
 
-    sites.each do |site_id, site|
-      l = Location.find(site_id) rescue nil
-      next if l.blank?
-      @sites_enabled << l
+    files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
+    (files || []).each do |f|
+      sites = YAML.load_file(f) rescue {}
+      sites.each do |site_id, site|
+        l = Location.find(site_id) rescue nil
+        next if l.blank?
+        @sites_enabled << l
 
-      site['online'] = sites[site_id]['online'] rescue false
-      last_seen =  sites[site_id]['last_seen'].to_datetime rescue nil
+        site['online'] = sites[site_id]['online'] rescue false
+        last_seen =  sites[site_id]['last_seen'].to_datetime rescue nil
 
-      if last_seen.present?
-        months_diff = ((Time.now - last_seen.to_time)/(60*60*24*30)).to_i
-        days_diff = ((Time.now - last_seen.to_time)/(60*60*24)).to_i
-        hrs_diff = ((Time.now - last_seen.to_time)/(60*60)).to_i
-        min_diff = ((Time.now - last_seen.to_time)/(60)).to_i
-        sec_diff = (Time.now - last_seen.to_time).to_i
+        if last_seen.present?
+          months_diff = ((Time.now - last_seen.to_time)/(60*60*24*30)).to_i
+          days_diff = ((Time.now - last_seen.to_time)/(60*60*24)).to_i
+          hrs_diff = ((Time.now - last_seen.to_time)/(60*60)).to_i
+          min_diff = ((Time.now - last_seen.to_time)/(60)).to_i
+          sec_diff = (Time.now - last_seen.to_time).to_i
 
-        if site['online']
-          last_seen = "<span style='color: green !important'>Online</span>".html_safe
-        elsif months_diff > 0
-          last_seen = "#{months_diff} months ago"
-        elsif days_diff > 0
-          last_seen = "#{days_diff} days ago"
-        elsif hrs_diff > 0
-          last_seen = "#{hrs_diff} hrs ago"
-        elsif min_diff > 0
-          last_seen = "#{min_diff} mins ago"
+          if site['online']
+            last_seen = "<span style='color: green !important'>Online</span>".html_safe
+          elsif months_diff > 0
+            last_seen = "#{months_diff} months ago"
+          elsif days_diff > 0
+            last_seen = "#{days_diff} days ago"
+          elsif hrs_diff > 0
+            last_seen = "#{hrs_diff} hrs ago"
+          elsif min_diff > 0
+            last_seen = "#{min_diff} mins ago"
+          else
+            last_seen = "#{sec_diff} secs ago"
+          end
         else
-          last_seen = "#{sec_diff} secs ago"
+          last_seen = "<span style='color: red !important'>Offline</span>".html_safe
         end
-      else
-        last_seen = "<span style='color: red !important'>Offline</span>".html_safe
-      end
 
-      @sites << {
-          'online' => (site['online'] rescue false),
-          'region' => l.description,
-          'x' => l.latitude.to_f,
-          'y' => l.longitude.to_f,
-          'sitecode' => l.code,
-          'location_id' => l.id,
-          'name' => l.name,
-          'last_seen' => last_seen,
-          'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
-          'reported' => PersonBirthDetail.find_by_sql(
-              "SELECT count(*) c FROM person_birth_details WHERE district_of_birth = #{l.id} AND COALESCE(district_id_number, '') != '' ")[0]['c']
-      }
+        @sites << {
+            'online' => (site['online'] rescue false),
+            'region' => l.description,
+            'x' => l.latitude.to_f,
+            'y' => l.longitude.to_f,
+            'sitecode' => l.code,
+            'location_id' => l.id,
+            'name' => l.name,
+            'last_seen' => last_seen,
+            'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
+            'reported' => PersonBirthDetail.find_by_sql(
+                "SELECT count(*) c FROM person_birth_details WHERE district_of_birth = #{l.id} AND COALESCE(district_id_number, '') != '' ")[0]['c']
+        }
+      end
     end
 
     render :layout => false

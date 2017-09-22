@@ -89,7 +89,7 @@ class Methods
 
     temp = {}
     if !doc['ip_addresses'].blank? && !doc['district_id'].blank?
-      data = YAML.load_file("#{Dir.pwd}/public/sites.yml") rescue {}
+      data = YAML.load_file("#{Dir.pwd}/public/sites/#{doc['district_id']}.yml") rescue {}
       if data.blank?
        data = {}
       end
@@ -99,7 +99,7 @@ class Methods
       end
       temp[doc['district_id'].to_i]['ip_addresses'] = doc['ip_addresses']
 
-      File.open("#{Dir.pwd}/public/sites.yml","w") do |file|
+      File.open("#{Dir.pwd}/public/sites/#{doc['district_id']}.yml","w") do |file|
         YAML.dump(data, file)
         file.close
       end

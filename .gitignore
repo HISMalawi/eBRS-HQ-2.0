@@ -27,3 +27,4 @@ passenger*
 nbproject/
 public/errors/*
 *.~*
+public/sites/*

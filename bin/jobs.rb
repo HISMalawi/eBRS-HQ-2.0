@@ -8,24 +8,28 @@ def is_up?(host)
   b.scan(/succeeded/).length > 0
 end
 
-data = YAML.load_file("#{Rails.root}/public/sites.yml") rescue {}
-data.each do |site_id, d|
-  next if d.blank?
-  (d['ip_addresses'] || []).each do |adr|
-    if is_up?(adr)
-      data[site_id]['online'] = true
-      data[site_id]['last_seen'] = "#{Time.now}"
-      next
-    else
-      data[site_id]['online'] = false
+
+files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
+(files || []).each do |f|
+  data = YAML.load_file(f) rescue {}
+  (data || []).each do |site_id, d|
+    next if d.blank?
+    (d['ip_addresses'] || []).each do |adr|
+      if is_up?(adr)
+        data[site_id]['online'] = true
+        data[site_id]['last_seen'] = "#{Time.now}"
+        next
+      else
+        data[site_id]['online'] = false
+      end
+    end
+
+    File.open("#{Rails.root}/public/sites/#{site_id}.yml","w") do |file|
+      file.write data.to_yaml
     end
   end
+
 end
 
-data['last_run'] = "#{Time.now}"
-
-File.open("#{Rails.root}/public/sites.yml","w") do |file|
-  file.write data.to_yaml
-end
-
+FileUtils.touch("#{Rails.root}/public/ping_sentinel")
 

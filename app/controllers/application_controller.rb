@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   before_filter :check_last_sync_time
 
   def check_last_sync_time
-    last_run_time = YAML.load_file("#{Rails.root}/public/sites.yml")['last_run'].to_datetime rescue nil
+    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue {}
     job_interval = 60
     now = Time.now
     if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
