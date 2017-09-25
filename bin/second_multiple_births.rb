@@ -257,20 +257,23 @@ end
 
 def initiate_migration
 
-	total_records = Child.count
-	page_size = 100
-	total_pages = (total_records / page_size) + (total_records % page_size)
-	current_page = 1
+ 
+        total_records = Child.count
+        page_size = 100
+        total_pages = (total_records / page_size) + (total_records % page_size)
+        current_page = 1
 
-	while (current_page < total_pages) do
+        while (current_page < total_pages) do
 
-        build_client_record(current_page, page_size)
-		current_page = current_page + 1	
-	end
+           build_client_record(current_page, page_size)
+           current_page = current_page + 1
+        end
 
-    puts "\n"
-    puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
-    puts "\n"
+        puts "\n"
+        puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
+        puts "\n"
+
+
 end
 
 initiate_migration

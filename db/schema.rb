@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.integer  "audit_trail_type_id", limit: 4,   null: false
     t.bigint  "person_id",           limit: 4,   null: false
     t.string   "table_name",          limit: 100, null: false
-    t.integer  "table_row_id",        limit: 4,   null: false
+    t.bigint  "table_row_id",        limit: 4,   null: false
     t.string   "field",               limit: 50
     t.string   "previous_value",      limit: 255
     t.string   "current_value",       limit: 255
@@ -83,7 +83,9 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.datetime "created_at",                                      null: false
     t.datetime "updated_at",                                      null: false
   end
-
+  
+  change_column :identifier_allocation_queue, :identifier_allocation_queue_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+ 
   add_index "identifier_allocation_queue", ["person_id"], name: "fk_identifier_allocation_queue_1_idx", using: :btree
   add_index "identifier_allocation_queue", ["person_identifier_type_id"], name: "fk_identifier_allocation_queue_2", using: :btree
 
@@ -115,7 +117,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "void_reason",     limit: 255
     t.integer  "parent_location", limit: 4
     t.string   "uuid",            limit: 38,                  null: false
-    t.integer  "changed_by",      limit: 4
+    t.bigint  "changed_by",      limit: 4
     t.datetime "changed_at"
   end
 
@@ -443,7 +445,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "email",              limit: 225
     t.integer  "notify",             limit: 1,   default: 0,     null: false
     t.string   "preferred_keyboard", limit: 10,  default: "abc", null: false
-    t.integer  "password_attempt",   limit: 4,   default: 0
+    t.bigint  "password_attempt",   limit: 4,   default: 0
     t.datetime "last_password_date"
     t.string   "uuid",               limit: 38,                  null: false
     t.datetime "updated_at"
@@ -457,7 +459,6 @@ ActiveRecord::Schema.define(version: 20170912104756) do
 
   create_table "potential_duplicates", primary_key: "potential_duplicate_id", force: :cascade do |t|
     t.bigint  "person_id", limit: 4, null: false
-    t.string   "document_id", limit: 100
     t.string   "resolved",      limit: 1,   default: 0,     null: false
     t.string   "decision",      limit: 255
     t.string   "comment",      limit: 255
@@ -465,14 +466,17 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.datetime "created_at"
   end
 
+  change_column  :potential_duplicates, :potential_duplicate_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+
   add_foreign_key "potential_duplicates", "person", primary_key: "person_id", name: "fk_potential_duplicates_1"
 
   create_table "duplicate_records", primary_key: "duplicate_record_id", force: :cascade do |t|
     t.bigint  "person_id", limit: 4
-    t.integer   "potential_duplicate_id",      limit: 4
-    t.string   "document_id", limit: 100
+    t.bigint   "potential_duplicate_id",      limit: 4
     t.datetime "created_at"
   end
+
+  change_column  :duplicate_records, :duplicate_record_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
 
   add_foreign_key "duplicate_records", "potential_duplicates", primary_key: "potential_duplicate_id", name: "fk_duplicate_records_1"
   add_foreign_key "duplicate_records", "person", primary_key: "person_id", name: "fk_duplicate_records_2"

@@ -172,7 +172,8 @@ Rails.application.routes.draw do
   get '/search' => "search#general_search"
   get '/search_cases' => "search#search_cases"
   post '/search_cases' => "search#search_cases"
-
+  get '/person/map_main'
+  get '/person/get_district_stats'
   resources :person
 
   resources :users
