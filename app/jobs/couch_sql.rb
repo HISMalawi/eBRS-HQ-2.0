@@ -11,7 +11,7 @@ class CouchSQL
       CouchSQL.perform_in(5)
     end
 
-    CouchSQL.perform_in(5)
+    CouchSQL.perform_in(2)
   end
 
 

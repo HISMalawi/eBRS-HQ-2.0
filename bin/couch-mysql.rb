@@ -107,9 +107,6 @@ data['results'].each do |result|
   Methods.update_doc(result['doc'], seq)
 end
 
-%x[
-  mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} #{mysql_db} -e "UPDATE couch_sequence SET seq=#{seq}"
-]
 
 %x[
    mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} -e "SET GLOBAL foreign_key_checks=0"
@@ -119,5 +116,9 @@ end
 ]
 %x[
   mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} -e "SET GLOBAL foreign_key_checks=1"
+]
+
+%x[
+  mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} #{mysql_db} -e "UPDATE couch_sequence SET seq=#{seq}"
 ]
 
