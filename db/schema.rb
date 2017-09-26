@@ -330,6 +330,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   add_index "person_name", ["voided_by"], name: "fk_person_name_2_idx", using: :btree
 
   create_table "person_name_code", primary_key: "person_name_code_id", force: :cascade do |t|
+    t.bigint  "person_name_code_id",   limit: 4,  null: false
     t.bigint  "person_name_id",   limit: 4,  null: false
     t.string   "first_name_code",  limit: 10, null: false
     t.string   "middle_name_code", limit: 10
