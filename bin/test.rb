@@ -47,12 +47,14 @@ def get_record_status(rec_status, req_status)
   
     puts "<<<<<<<<<<< #{rec_status}   #{req_status}"
     
-      status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE', 
-      							'IN-COMPLETE' =>'DC-INCOMPLETE', 
+    status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
+      							'IN-COMPLETE' =>'DC-INCOMPLETE',
       							'COMPLETE' =>'DC-COMPLETE',
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -60,6 +62,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -79,15 +84,15 @@ def get_record_status(rec_status, req_status)
 					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
 		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
 
-  puts "#{status[rec_status][req_status]}"
+  return status[rec_status][req_status]
 
 end
 
 def func
   
   data ={}
-  records = Child.all.limit(500).each
-
+  records = Child.all.limit(20).each
+  count = 1
   (records || []).each do |r|
 
   data = { person: {duplicate: "", is_exact_duplicate: "", 
@@ -156,12 +161,13 @@ def func
 				   record_status: r[:record_status],
 				   _rev: r[:_rev],
 				   _id: r[:_id],
+				   count: count,
 				   request_status: r[:request_status], 
 				   copy_mother_name: "No", 
 				   controller: "person", 
 				   action: "create"
 				  }
-            
+=begin            
             if ["Twin","Triplet","Second Twin","Second Triplet","Third Triplet"].include? data[:person][:type_of_birth]
             	if data[:person][:type_of_birth] == "Twin" || data[:person][:type_of_birth] == "Triplet"
             		 row = "#{data[:person][:type_of_birth]},#{data[:_id]},"
@@ -180,7 +186,11 @@ def func
             	end
 
                
-            end
+        end
+=end 
+     
+     puts ">>>>>>>>>>>>>>Number: #{count}"
+     count = count + 1
    end
    
 end
