@@ -18,6 +18,8 @@ def get_record_status(rec_status, req_status)
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -25,6 +27,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -314,6 +319,7 @@ def build_client_record(current_pge, pge_size)
 end
 
 def initiate_migration
+
 	total_records = Child.count
 	page_size = 100
 	total_pages = (total_records / page_size) + (total_records % page_size)
@@ -324,7 +330,8 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
 	end
-	 format_csv_file(@multiple_births)
+  	 
+     format_csv_file(@multiple_births)
 	 puts "\n"
 	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
      puts "\n"

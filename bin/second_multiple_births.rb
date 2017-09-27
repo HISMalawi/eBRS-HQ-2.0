@@ -91,6 +91,8 @@ def get_record_status(rec_status, req_status)
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -98,6 +100,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -119,6 +124,7 @@ def get_record_status(rec_status, req_status)
 
 
    return status[rec_status][req_status]
+
 end
 
 def assign_district_id(person_id, ben)
@@ -257,7 +263,7 @@ end
 
 def initiate_migration
 
-  	total_records = Child.count
+    total_records = Child.count
 	page_size = 100
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
@@ -267,9 +273,11 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
 	end
-  puts "\n"
-  puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
-  puts "\n"
+
+    puts "\n"
+    puts "Completed migrating the data! To verify the completeness of this process, please review the log files.. Thank you!!"
+    puts "\n"
+
 end
 
 initiate_migration
