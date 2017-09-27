@@ -9,7 +9,9 @@ module Lib
         core_person.created_at = params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00")
         core_person.updated_at = params[:person][:updated_at].to_date
         core_person.save
-    
+
+        id = "#{params[:_id]},#{core_person.person_id},"
+        save_ids(id)
    
     person = Person.create(
         :person_id          => core_person.id,
@@ -528,6 +530,18 @@ end
       end
     end
 
+  end
+
+  def self.save_ids(content)
+    
+     file_path = "#{Rails.root}/app/assets/data/person.csv"
+     if !File.exists?(file_path)
+         file = File.new(file_path, 'w')
+     else
+       File.open(file_path, 'a') do |f|
+         f.puts "#{content}"
+       end
+     end
   end
   
   def self.is_twin_or_triplet(type_of_birth)

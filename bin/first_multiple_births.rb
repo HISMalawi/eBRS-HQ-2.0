@@ -104,10 +104,8 @@ def write_log(filename,content)
     else
        File.open(filename, 'a') do |f|
           f.puts "#{content}"
-
       end
     end
-
 end
 
 def save_full_record(params, district_id_number)
