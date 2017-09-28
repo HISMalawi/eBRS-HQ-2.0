@@ -9,9 +9,15 @@ module Lib
         core_person.created_at = params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00")
         core_person.updated_at = params[:person][:updated_at].to_date
         core_person.save
-
-        id = "#{params[:_id]},#{core_person.person_id},"
-        save_ids(id)
+        
+        person_id = CorePerson.first.person_id.to_i + params[:count].to_i 
+        sql_query = "(#{person_id}, \"#{core_person.person_type_id}\",#{core_person.created_at}, #{core_person.updated_at}\"),"
+        row = "#{params[:_id]},#{core_person.person_id},"
+        
+        save_ids(row)
+        self.write_to_dump("core_person.sql",sql_query)
+        
+        
    
     person = Person.create(
         :person_id          => core_person.id,
@@ -542,6 +548,11 @@ end
          f.puts "#{content}"
        end
      end
+  end
+
+  def self.write_to_dump(filename,content)
+     
+     `echo -n '#{content}' >> #{Rails.root}/app/assets/data/migration_dumps/#{filename}`    
   end
   
   def self.is_twin_or_triplet(type_of_birth)
