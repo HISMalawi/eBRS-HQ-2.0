@@ -1138,7 +1138,7 @@ class PersonController < ApplicationController
     files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
     (files || []).each do |f|
       sites = YAML.load_file(f) rescue {}
-      sites.each do |site_id, site|
+      (sites || []).each do |site_id, site|
         l = Location.find(site_id) rescue nil
         next if l.blank?
         @sites_enabled << l

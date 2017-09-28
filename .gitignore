@@ -28,3 +28,4 @@ nbproject/
 public/errors/*
 *.~*
 public/sites/*
+public/query.sql
