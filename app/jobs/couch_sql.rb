@@ -5,7 +5,6 @@ class CouchSQL
   def perform()
     begin
       load "#{Rails.root}/bin/couch-mysql.rb"
-      SuckerPunch.logger.info "Couch >> SQL"
     rescue => e
       SuckerPunch.logger.info "=========Error #{e.to_s}"
       CouchSQL.perform_in(5)

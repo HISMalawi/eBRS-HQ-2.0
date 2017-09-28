@@ -131,7 +131,7 @@ def precision_level(mothers, record)
 
     end
    end
-
+ Migration::Audit
    return match_count
 
 end
@@ -298,13 +298,11 @@ end
 def build_client_record(current_pge, pge_size)
 
   data ={}
-
   records = Child.all.page(current_pge).limit(pge_size)
- 
 
   (records || []).each do |r|
-     
-	  data = { person: {duplicate: "", is_exact_duplicate: "",
+	  data = { person: {duplicate: "",
+                      is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
 					   first_name: r[:first_name],
@@ -388,16 +386,15 @@ end
 
 
 def initiate_migration
-
    
-        total_records = Child.count
-	page_size = 100
-	total_pages = (total_records / page_size) + (total_records % page_size)
+  total_records = Child.count
+	page_size = 1000
+	total_pages = (total_records / page_size.to_f).ceil
 	current_page = 1
 
 	while (current_page < total_pages) do
 
-           build_client_record(current_page, page_size)
+     build_client_record(current_page, page_size)
 	   current_page = current_page + 1	
 	end
 
