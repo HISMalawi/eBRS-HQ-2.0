@@ -1,6 +1,12 @@
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
 @dump_files = "#{Rails.root}/app/assets/data/migration_dumps/"
+@missing_tas = "#{Rails.root}/app/assets/data/migration_issues/missing_tas.csv"
+@missing_villages = "#{Rails.root}/app/assets/data/migration_issues/missing_villages.csv"
+@missing_districts = "#{Rails.root}/app/assets/data/migration_issues/missing_districts.csv"
+@missing_statuses = "#{Rails.root}/app/assets/data/migration_issues/missing_statuses.csv"
+@missing_citizenships = "#{Rails.root}/app/assets/data/migration_issues/missing_citizenships.csv"
+@missing_record_statuses = "#{Rails.root}/app/assets/data/migration_issues/missing_citizenships.csv"
 
 def prepare_dump_files
 
@@ -29,20 +35,44 @@ def prepare_dump_files
     `echo -n '#{identifier_allocation_queue}' >> #{@dump_files}identifier_allocation_queue.sql`
 end
 
-def write_log(file, content)
-
-	if !File.exists?(file)
-           file = File.new(file, 'w')
+def write_log(filename, content)
+    
+	if !File.exists?(filename)
+           file = File.new(filename, 'w')
     else
 
-
-       File.open(file, 'a') do |f|
+       File.open(filename, 'a') do |f|
           f.puts "#{content}"
-
-      end
-
+       end
 
     end
+end
+
+def pre_migration_check(params)
+
+	#1. check the district
+	if Location.locate_id_by_tag(params[:person][:mother][:current_district], 'District') == nil
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_districts, content)
+	end 
+
+	home_district_id = Location.locate_id_by_tag(params[:person][:mother][:current_district], 'District')
+    if Location.locate_id(params[:person][:mother][:home_ta], 'Traditional Authority', home_district_id) == nil
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_villages, content)
+    end
+
+	#3. check the citizenship
+	if Location.where(country: params[:person][:mother][:citizenship]).last.id == nil
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_citizenships, content)
+	end
+	#4. check record statuses
+	if get_record_status(get_record_status(params[:record_status],params[:request_status]).upcase.squish!)== nil
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_record_statuses, content)
+    end
+
 end
 
 def get_prev_child_id
