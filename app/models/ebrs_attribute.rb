@@ -10,29 +10,46 @@ end
 module EbrsAttribute
 
   def send_data(hash)
-    h = Pusher.database.get(hash['document_id']) rescue nil
-    if !h.blank?
-      hash.keys.each do |k|
-        h[k] = hash[k]
-      end
+    id = "#{self.class.table_name}_#{self.id}"
+    hash = hash.as_json
+    hash.each {|k, v|
+      hash[k] = v.to_s(:db) if (['Time', 'Date', 'Datetime'].include?(v.class.name))
+    }
+
+    h = Pusher.database.get(id) rescue nil
+    if h.present?
+      h['location_id'] = SETTINGS['location_id'] if h['location_id'].blank?
+
+      h[self.class.table_name] = hash
     else
-      h = Pusher.new(hash)
+
+      district_id = Location.find(SETTINGS['location_id']).parent_location
+
+      temp_hash = {
+          '_id' => id,
+          'type' => 'data',
+          'location_id' => SETTINGS['location_id'],
+          'district_id' => district_id.blank? ? SETTINGS['location_id'] : district_id,
+          self.class.table_name => hash
+      }
+      h = Pusher.new(temp_hash)
     end
+    port=    YAML.load_file(Rails.root.join('config','couchdb.yml'))[Rails.env]['port']
+    adrs= Socket.ip_address_list.reject{|a| a.inspect.match(/127.0.0.1|0.0.0.0|localhost/) }.collect{|ip| "#{ip.ip_address}:#{port}"}
 
+    h['change_agent'] = self.class.table_name
+    h['change_location_id'] = SETTINGS['location_id']
+    h['ip_addresses'] = adrs
     h.save
-    h['document_id'] = h.id
-    h.save
-
-    h.id
   end
 
   def self.included(base)
     base.class_eval do
       before_create :check_record_complteness_before_creating
-      before_save :check_record_complteness_before_updating
+      before_save :check_record_complteness_before_updating, :keep_prev_value
       before_create :generate_key
       #after_create :create_or_update_in_couch
-      after_save :create_or_update_in_couch
+      after_save :create_or_update_in_couch, :create_audit_trail
     end
   end
 
@@ -53,6 +70,37 @@ module EbrsAttribute
     self.changed_at = Time.now if self.attribute_names.include?("changed_at")
   end
 
+  def create_audit_trail
+    if !["audit_trails","person_name_code","core_person"].include? self.class.table_name 
+      if self.prev.present?
+          fields = self.attributes.keys
+          prev = self.prev
+          fields.each do |key|
+              next if ["created_at"].include? key
+              next if key.include? "password"
+              if prev[key] != self.attributes[key]
+                 AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
+                          previous_value: prev[key],
+                          field: key,
+                          current_value: self.attributes[key],
+                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                          comment: "#{self.class.table_name.humanize} record updated")
+              else
+                next
+              end
+          end
+      else
+        AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
+                          audit_trail_type_id: AuditTrailType.find_by_name("CREATE").id,
+                          comment: "#{self.class.table_name.humanize} record created")
+      end
+    end
+  end
+
   def next_primary_key
     location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
     max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
@@ -70,13 +118,43 @@ module EbrsAttribute
   end
 
   def create_or_update_in_couch
-    data = self
-    transformed_data = data.as_json
-    #transformed_data.delete("#{eval(data.class.name).primary_key}")
-    transformed_data['type'] = eval(data.class.name).table_name
-    doc_id = send_data(transformed_data)
-    if data.document_id.blank?
-      data.update_attributes(:document_id => doc_id)
+    send_data(self)
+  end
+
+  def create_method( name, &block )
+        self.class.send(:define_method, name, &block )
+  end
+
+  def create_attr( name )
+        create_method( "#{name}=".to_sym ) { |val| 
+            instance_variable_set( "@" + name, val)
+        }
+
+        create_method( name.to_sym ) { 
+            instance_variable_get( "@" + name ) 
+        }
+  end
+  def keep_prev_value
+       self.create_attr("prev")
+       self.prev = nil
+       if self.class.table_name =="person_name"
+          last_name = ActiveRecord::Base.connection.select_all("SELECT * FROM person_name WHERE person_id=#{self.person_id} ORDER BY updated_at").last rescue nil
+          if last_name.present?
+            self.prev = self.class.new(last_name)
+          else
+            self.prev = nil
+          end
+       else 
+          self.prev = self.class.find(self.id) rescue nil        
+       end
+  end
+  def create_audit_trail_after_update
+    if self.class.table_name != "audit_trails"
+        AuditTrail.create(table_name: self.class.table_name,
+                          table_row_id:self.id,
+                          person_id: (self.person_id rescue (self.person.person_id rescue self.user_id)),
+                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                          comment: "#{self.class.table_name.humanize} record created")
     end
   end
 end

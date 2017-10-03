@@ -7,7 +7,8 @@ class AllocationQueue
     FileUtils.touch("#{Rails.root}/public/sentinel")
 
     ActiveRecord::Base.logger.level = 1
-    queue = IdentifierAllocationQueue.where(assigned: 0)
+    queue = []
+    queue = IdentifierAllocationQueue.where(assigned: 0) if (SETTINGS['assign_ben'] != false)
 
     if queue.length > 0
       SuckerPunch.logger.info "Approving for #{queue.count} record(s)"
@@ -23,13 +24,14 @@ class AllocationQueue
 
         if record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Birth Entry Number").last.person_identifier_type_id
+
           if !ben.blank?
             record.update_attributes(assigned: 1)
             next
           end
 
           location = Location.find(SETTINGS['location_id'])
-          district_code = location.district.code
+          district_code = location.code
           district_code_len = district_code.length
           year = Date.today.year
           year_len = year.to_s.length
@@ -42,16 +44,15 @@ class AllocationQueue
 
           person_birth_detail.update_attributes(district_id_number: "#{district_code}/#{mid_number}/#{year}")
           record.update_attributes(assigned: 1)
-
           PersonIdentifier.new_identifier(record.person_id, 'Birth Entry Number', person_birth_detail.district_id_number)
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Birth Registration Number").last.person_identifier_type_id
+
           if !brn.blank?
             record.update_attributes(assigned: 1)
             next
           end
-
 
           last = (PersonBirthDetail.select(" MAX(national_serial_number) AS last_num")[0]['last_num'] rescue 0).to_i
           brn = last + 1
@@ -78,6 +79,8 @@ class AllocationQueue
           end
         end
       end
+
+      load "#{Rails.root}/bin/jobs.rb"
     rescue
       AllocationQueue.perform_in(1.5)
     end
