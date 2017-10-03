@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 ruby '2.1.2'
-gem 'couch_tap'
+
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.6'
 # Use mysql as the database for Active Record
@@ -88,3 +88,6 @@ gem 'sucker_punch', '~> 2.0'
 
 gem "faker", "~> 1.6.6"
 
+gem "will_paginate", "3.1.6"
+
+gem "activerecord-session_store"

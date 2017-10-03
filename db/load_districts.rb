@@ -5,7 +5,7 @@ location_tag = LocationTag.where(name: 'District').first
 
 CSV.foreach("#{Rails.root}/app/assets/data/districts_with_codes.csv", :headers => true) do |row|
  next if row[0].blank?
- district = Location.create!(code: row[0], name: row[1], description: row[2])
+ district = Location.create!(code: row[0], name: row[1], description: row[2], latitude: row[3], longitude: row[4])
  LocationTagMap.create(location_id: district.id, location_tag_id: location_tag.id)
  puts "Loaded #{district.name}"
 

@@ -94,4 +94,21 @@ class Location < ActiveRecord::Base
       return nil
     end
   end
+
+  def self.locate_id(name, tag, parent_id)
+    tag_id = LocationTag.where(name: tag).last.id rescue nil
+    LocationTagMap.find_by_sql("SELECT * FROM location_tag_map m INNER JOIN location l ON l.location_id = m.location_id
+      WHERE m.location_tag_id = #{tag_id} AND l.parent_location = #{parent_id} AND l.name = \"#{name}\"").last.location_id  rescue nil
+  end
+
+  def self.locate_id_by_tag(name, tag)
+    tag_id = LocationTag.where(name: tag).last.id rescue nil
+    LocationTagMap.find_by_sql("SELECT * FROM location_tag_map m INNER JOIN location l ON l.location_id = m.location_id
+      WHERE m.location_tag_id = #{tag_id} AND l.name = '#{name}'").last.location_id  rescue nil
+  end
+
+  def children
+    return ActiveRecord::Base.connection.select_all("SELECT location_id from location WHERE parent_location = #{self.id}").collect{|s| s["location_id"]}
+  end
+
 end

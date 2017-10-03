@@ -18,10 +18,15 @@
         padding: 7px;
     }
 
-    .act-btn .fa{
+    .action-btn .fa{
         min-width: 35px;
-        padding: 5px;
-        border-radius: 10px !important;
+        font-size: 18px;
+
+    }
+
+    .checkbox{
+        margin-left: 5px;
+
     }
 
     th{
@@ -36,6 +41,10 @@
     .action-btn{
         border: none !important;
         margin-top: 0px;
+        min-width: 50px;
+        padding: 3px;
+        margin-left: 5px;
+
     }
 
     .fix-middle{
@@ -43,6 +52,10 @@
         z-index: 2000;
         left: 55%;
         top: 40%;
+    }
+    #birth_type, #example_filter{
+        margin-left: 15px;
+        float: right;
     }
 
 </style>
@@ -80,7 +93,7 @@
   <thead>
     <tr>
       <th style="text-align: left;">BEN</th>
-      <% if @records.length > 0 && @records[0]['brn'].present? %>
+      <% if true %>
         <th style="text-align: left;">BRN</th>
       <% end %>
       <th style="text-align: left;">Name</th>
@@ -99,10 +112,11 @@
   </tr>
   </thead>
     <%(@records || []).each do |record|
+       next
     %>
       <tr>
         <td style="text-align: left;width: 15%"><%= record['ben'] %>&nbsp;</td>
-        <% if @records.length > 0 && @records[0]['brn'].present? %>
+        <% if true%>
             <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
       <% end %>
         <td style="text-align: left;width: 15%"><%= record['name']%></td>
@@ -114,28 +128,7 @@
         <td>
           <table style="width: 100%; text-align: center; border-style: none;">
             <tr>
-              <td class="act-btn">
-                <button onclick="javascript:location='/show_person/<%= record['id']%>'"
-                        class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
-              </td>
-              <%if admin?%>
-                  <td class="act-btn">
-                    <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
-                            class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
-                  </td>
-                  <td class="act-btn">
-                    <button onclick="javascript:location='/void/<%= record['id']%>'"
-                            class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
-                  </td>
-              <%end%>
 
-              <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
-                  <td class="act-btn">
-                    <div class="checkbox">
-                      <label><input class='multi-check' person_id = "<%= record['id']%>" onchange="checkSelections();" type="checkbox" value=""></label>
-                    </div>
-                  </td>
-              <% end %>
             </tr>
           </table>
         </td>
@@ -227,12 +220,69 @@
   </div>
 </div>
 
+<select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
+  <option value="All">Select Birth Type</option>
+  <option>Normal</option>
+  <option>Abandoned</option>
+  <option>Adopted</option>
+  <option>Orphaned</option>
+</select>
+
 <script>
     selected = [];
+    var table;
+    var url = "<%= request.url%>";
 
     $i(document).ready(function() {
-        $i('#example').DataTable();
+        initTable();
+        var holder = __$('example_filter').parentNode;
+        holder.appendChild(__$('birth_type'));
     } );
+
+    function initTable(){
+        table =  $i('#example').DataTable(
+                {
+                    "processing": true,
+                    "serverSide": true,
+                    "ordering": false,
+                    "ajax": {
+                        "url": url,
+                        "data": function(d){
+                            d.type = __$('birth_type').value;
+                        },
+                        dataFilter: function(data){
+                            var json = jQuery.parseJSON( data );
+                            for(var i = 0; i < json['data'].length; i ++){
+                                var last_index = json['data'][i].length - 1;
+                                var person_id = json['data'][i][last_index]
+                                json['data'][i][last_index] =   '<td class="act-btn"> ' +
+                                        '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+
+                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+
+                                 <% if admin? %>
+                                    json['data'][i][last_index] += '<td class="act-btn">' +
+                                        '<button onclick="javascript:location=\'/edit/' + person_id + ' \'"' +
+                                        'class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button></td>' +
+                                        '<td class="act-btn"><button onclick="javascript:location=\'/void/' + person_id + '\'"' +
+                                        'class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button></td>'
+                                <% end %>
+
+                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                                json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
+                                    '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
+                                <% end %>
+
+                            }
+                            return JSON.stringify( json );
+                        }
+                    }}
+        );
+    }
+
+    function reloadDataTable(node){
+        table.ajax.reload();
+    }
 
     function printAll() {
         jQuery("#printerModal").modal("show");

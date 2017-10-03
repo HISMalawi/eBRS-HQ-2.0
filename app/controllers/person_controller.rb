@@ -113,6 +113,8 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
+    elsif ['DC-AMEND','HQ-AMEND'].include? @status 
+        redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
@@ -351,13 +353,74 @@ class PersonController < ApplicationController
   end
 
   def view
+
     params[:statuses] = [] if params[:statuses].blank?
-    session[:list_url] = request.fullpath
+    session[:list_url] = request.referrer
     @states = params[:statuses]
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
+    types = []
 
-    @records = PersonService.query_for_display(@states)
+    search_val = params[:search][:value] rescue nil
+    search_val = '_' if search_val.blank?
+    if !params[:start].blank?
+
+      state_ids = @states.collect{|s| Status.find_by_name(s).id} + [-1]
+      types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All'
+      types=[params[:type]] if types.blank?
+
+      person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
+
+      d = Person.order(" n.first_name, n.last_name, cp.created_at ")
+      .joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
+              INNER JOIN person_name n ON person.person_id = n.person_id
+              INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
+              INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
+      .where(" prs.status_id IN (#{state_ids.join(', ')})
+              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
+              AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
+                person.birthdate, person.gender) REGEXP '#{search_val}' ")
+
+      total = d.select(" count(*) c ")[0]['c'] rescue 0
+      page = (params[:start].to_i / params[:length].to_i) + 1
+
+      data = d.group(" prs.person_id ")
+
+      data = data.select(" n.*, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn")
+      data = data.page(page)
+      .per_page(params[:length].to_i)
+
+      @records = []
+      data.each do |p|
+        mother = PersonService.mother(p.person_id)
+        father = PersonService.father(p.person_id)
+        details = PersonBirthDetail.find_by_person_id(p.person_id)
+
+        name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
+        mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+        father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+        @records << [
+            p.ben,
+            details.brn,
+            name,
+            p.birthdate.strftime('%d/%b/%Y'),
+            p.gender,
+            father_name,
+            mother_name,
+            Status.find(p.status_id).name,
+            p.person_id
+        ]
+      end
+
+      render :text => {
+          "draw" => params[:draw].to_i,
+          "recordsTotal" => total,
+          "recordsFiltered" => total,
+          "data" => @records}.to_json and return
+    end
+
+   # @records = PersonService.query_for_display(@states)
+
     render :template => "/person/records"
   end
 
@@ -538,12 +601,21 @@ class PersonController < ApplicationController
 
   def amendments
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-    @tasks = [
-        ["Lost/Damaged", "Lost/Damaged", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Amendments", "Amendments", ["HQ-PRINTED"], "/person/view","/assets/folder3.png"],
-        ["Closed Amended Records", "Closed Amended Records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
-    ]
+    @tasks = []
 
+    if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"]
+    elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
+
+    else
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED","HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["DC-AMEND","HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
+    end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
@@ -572,12 +644,74 @@ class PersonController < ApplicationController
     render :template => "/person/tasks"
   end
 
+  def ammend_case
+    @person = Person.find(params[:id])
+    @prev_details = {}
+    @birth_details = PersonBirthDetail.where(person_id: params[:id]).last
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
+    @name = @person.person_names.last
+    @person_prev_values = {}
+    name_fields = ['first_name','last_name','middle_name',"gender","birthdate"]
+    name_fields.each do |field|
+        trail = AuditTrail.where(person_id: params[:id], field: field).order('created_at').last
+        if trail.present?
+            @person_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @person_prev_values['first_name'].present? || @person_prev_values['last_name'].present?
+        name = "#{@person_prev_values['first_name'].present? ? @person_prev_values['first_name'] : @name.first_name} "+
+               "#{@person_prev_values['middle_name'].present? ? @person_prev_values['middle_name'] : (@name.middle_name rescue '')}" +
+               "#{@person_prev_values['last_name'].present? ? @person_prev_values['last_name'] : @name.last_name}"
+        @person_prev_values["person_name"] = name
+    end
+    @address = @person.addresses.last
+
+    @mother_person = @person.mother
+    @mother_name = @mother_person.person_names.last rescue nil
+    @mother_prev_values = {}
+    name_fields.each do |field|
+        trail = AuditTrail.where(person_id: @mother_person.id, field: field).order('created_at').last
+        if trail.present?
+            @mother_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @mother_prev_values['first_name'].present? || @mother_prev_values['last_name'].present?
+        mother_name = "#{@mother_prev_values['first_name'].present? ? @mother_prev_values['first_name'] : @mother_name.first_name} "+
+               "#{@mother_prev_values['middle_name'].present? ? @mother_prev_values['middle_name'] : (@mother_name.middle_name rescue '')}" +
+               "#{@mother_prev_values['last_name'].present? ? @mother_prev_values['last_name'] : @mother_name.last_name}"
+        @person_prev_values["mother_name"] = mother_name
+    end
+
+    @father_person = @person.father
+    @father_name = @father_person.person_names.last rescue nil
+    @father_prev_values = {}
+    name_fields.each do |field|
+        break if @father_person.blank?
+        trail = AuditTrail.where(person_id: @father_person.id, field: field).order('created_at').last
+        if trail.present?
+            @father_prev_values[field] = trail.previous_value
+        end
+    end
+
+    if @father_prev_values['first_name'].present? || @father_prev_values['last_name'].present?
+        father_name = "#{@father_prev_values['first_name'].present? ? @father_prev_values['first_name'] : @father_name.first_name} "+
+               "#{@father_prev_values['middle_name'].present? ? @father_prev_values['middle_name'] : (@father_name.middle_name rescue '')}" +
+               "#{@father_prev_values['last_name'].present? ? @father_prev_values['last_name'] : @father_name.last_name}"
+        @person_prev_values["father_name"] = mother_name
+    end 
+
+    @section = 'Ammend Case'
+   
+  end
+
   def print_out
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
         ["Approve Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
         ["Print Certificates", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT","HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates","All reprinted records that didn’t pass QC" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"]
     ]
@@ -994,6 +1128,82 @@ class PersonController < ApplicationController
     end
 
     render text: data.to_json 
+  end
+
+  def map_main
+
+    @sites = []
+    @sites_enabled = []
+
+    files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
+    (files || []).each do |f|
+      sites = YAML.load_file(f) rescue {}
+      (sites || []).each do |site_id, site|
+        l = Location.find(site_id) rescue nil
+        next if l.blank?
+        @sites_enabled << l
+
+        site['online'] = sites[site_id]['online'] rescue false
+        last_seen =  sites[site_id]['last_seen'].to_datetime rescue nil
+
+        if last_seen.present?
+          months_diff = ((Time.now - last_seen.to_time)/(60*60*24*30)).to_i
+          days_diff = ((Time.now - last_seen.to_time)/(60*60*24)).to_i
+          hrs_diff = ((Time.now - last_seen.to_time)/(60*60)).to_i
+          min_diff = ((Time.now - last_seen.to_time)/(60)).to_i
+          sec_diff = (Time.now - last_seen.to_time).to_i
+
+          if site['online']
+            last_seen = "<span style='color: green !important'>Online</span>".html_safe
+          elsif months_diff > 0
+            last_seen = "#{months_diff} months ago"
+          elsif days_diff > 0
+            last_seen = "#{days_diff} days ago"
+          elsif hrs_diff > 0
+            last_seen = "#{hrs_diff} hrs ago"
+          elsif min_diff > 0
+            last_seen = "#{min_diff} mins ago"
+          else
+            last_seen = "#{sec_diff} secs ago"
+          end
+        else
+          last_seen = "<span style='color: red !important'>Offline</span>".html_safe
+        end
+
+        @sites << {
+            'online' => (site['online'] rescue false),
+            'region' => l.description,
+            'x' => l.latitude.to_f,
+            'y' => l.longitude.to_f,
+            'sitecode' => l.code,
+            'location_id' => l.id,
+            'name' => l.name,
+            'last_seen' => last_seen,
+            'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
+            'reported' => PersonBirthDetail.find_by_sql(
+                "SELECT count(*) c FROM person_birth_details WHERE district_of_birth = #{l.id} AND COALESCE(district_id_number, '') != '' ")[0]['c']
+        }
+      end
+    end
+
+    render :layout => false
+  end
+
+  def get_district_stats
+    stats = PersonRecordStatus.stats(['Normal', 'Adopted', 'Orphaned', 'Abandoned'], true, [params[:location_id]])
+    data = [
+        ['Newly Received (HQ)', stats['HQ-ACTIVE']],
+        ['Print Queue (HQ)', stats['HQ-CAN-PRINT']],
+        ['Verified (HQ)', stats['HQ-APPROVED']],
+        ['Re-print Que (HQ)', stats['HQ-RE-PRINT']],
+        ['Suspected Duplicate (HQ)', stats['HQ-POTENTIAL DUPLICATE']],
+        ['Incomplete Record (HQ)', stats['HQ-INCOMPLETE']],
+        ['Printed (HQ)', stats['HQ-PRINTED']],
+        ['Dispatched(HQ)', stats['HQ-DISPATCHED']],
+        ['Voided (HQ)', stats['HQ-VOIDED']],
+    ]
+
+    render :text => data.to_json
   end
 
 end

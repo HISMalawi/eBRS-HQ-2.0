@@ -20,7 +20,9 @@ Rails.application.routes.draw do
   get 'get_registered_births/:location_id/:start_date/:end_date' => 'report#get_registered_births'
 
   get '/user_audit_trail' => 'report#user_audit_trail'
-  get 'get_user_audit_trail/:start_date/:end_date' => 'report#get_user_audit_trail'
+  get 'get_user_audit_trail' => 'report#get_user_audit_trail'
+
+  get "/report/birth_reports"
   ####################### reports end ################################
 
   get 'global_property/paper'
@@ -137,6 +139,7 @@ Rails.application.routes.draw do
   get "/person/special_cases"
   get "/person/print_out"
   get "/person/amendments"
+  get "/person/ammend_case"
   get "/person/dispatch_certificates"
   get "/person/dispatch_list"
   get "/person/view"
@@ -167,6 +170,11 @@ Rails.application.routes.draw do
   get '/signature' => 'global_property#signature'
   get '/update_person' => 'person#update_person'
 
+  get '/search' => "search#general_search"
+  get '/search_cases' => "search#search_cases"
+  post '/search_cases' => "search#search_cases"
+  get '/person/map_main'
+  get '/person/get_district_stats'
   resources :person
 
   resources :users

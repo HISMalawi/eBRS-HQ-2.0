@@ -203,41 +203,18 @@ class ReportController < ApplicationController
   end
 
   def get_user_audit_trail
-    person_type       = PersonType.where(name: 'Client').first
-    start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
-    end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
+    start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00') rescue nil
+    end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59') rescue nil
 
-    data = Person.where("p.person_type_id = ? AND 
-      s.created_at BETWEEN ? AND ?", person_type.id, 
-      start_date, end_date).joins("INNER JOIN core_person p 
-      ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
-      ON d.person_id = person.person_id
-      INNER JOIN person_record_statuses s 
-      ON s.person_id = person.person_id AND s.voided = 0")\
-      .select("person.*, d.*, s.*, 
-      s.creator creator_user_id, s.created_at action_datetime,
-      s.status_id action_id").order('p.created_at ASC')
-
-    records = {}
-    (data || []).each do |r|
-      user = User.find(r.creator_user_id)
-      person = Person.find(user.person_id)
-
-      records[user.username] = {} if records[user.username].blank?
-      records[user.username][r.action_datetime.to_date] = [] \
-      if records[user.username][r.action_datetime.to_date].blank?
-
-      records[user.username][r.action_datetime.to_date] << {
-        action_datetime:  r.action_datetime.to_time.strftime('%Y-%m-%d %H:%M:%S'),
-        first_name:       person.first_name,
-        middle_name:      person.middle_name,
-        last_name:        person.last_name,
-        action:           Status.find(r.action_id).name
-      }
-    end
+    records = Report.user_audits(nil,nil,start_date,end_date)
 
     render text: records.to_json
+  end
+
+  def birth_reports
+    @districts = districts
+    @statuses = Status.all.map(&:name)
+    @data = Report.births_report(params)
   end
 
   private

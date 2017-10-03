@@ -79,6 +79,8 @@ class AllocationQueue
           end
         end
       end
+
+      load "#{Rails.root}/bin/jobs.rb"
     rescue
       AllocationQueue.perform_in(1.5)
     end

@@ -103,6 +103,58 @@
       jQuery('#alert-modal').modal('show');
     }catch(q) {} ;
   }
+
+  function padZeros(number, positions) {
+      var zeros = parseInt(positions) - String(number).length;
+      var padded = "";
+
+      for (var i = 0; i < zeros; i++) {
+          padded += "0";
+      }
+
+      padded += String(number);
+
+      return padded;
+  }
+
+  Object.defineProperty(Date.prototype, "format", {
+   value: function (format) {
+           var date = this;
+           var result = "";
+
+           if (!format) {
+
+                        format = ""
+
+           }
+
+            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                        "October", "November", "December"];
+
+            if (format.match(/YYYY\-mm\-dd/)) {
+
+                        result = date.getFullYear() + "-" + padZeros((parseInt(date.getMonth()) + 1), 2) + "-" + padZeros(date.getDate(), 2);
+
+            } else if (format.match(/mmm\/d\/YYYY/)) {
+
+                        result = months[parseInt(date.getMonth())] + "/" + date.getDate() + "/" + date.getFullYear();
+
+            } else if (format.match(/d\smmmm,\sYYYY/)) {
+
+                        result = date.getDate() + " " + monthNames[parseInt(date.getMonth())] + ", " + date.getFullYear();
+
+            } else {
+
+                        result = date.getDate() + "/" + months[parseInt(date.getMonth())] + "/" + date.getFullYear();
+
+            }
+
+                    return result;
+           }
+});
+
 </script>
   <section id="container" >
       <!-- **********************************************************************************************************************************************************
@@ -149,7 +201,7 @@
               
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coa.png', class: '', width: '60' %></a></p>
-              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;" class="centered"><%=User.current.username%></h5>
+              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;padding-bottom: 15px;" class="centered"><%=User.current.username%></h5>
 
               	  	
                   <li class="">
@@ -173,7 +225,7 @@
                             <li><a  href="/search/BEN">By BEN</a></li>
                         <% end %>
                         <% if @folders.include?('General Search')%>
-                            <li><a  href="/login">General Search</a></li>
+                            <li><a  href="/search">General Search</a></li>
                         <% end %>
                       </ul>
                     </li>
@@ -221,6 +273,7 @@
                       </a>
                       <ul class="sub">
                           <!--li class="active"><a  href="blank.html">Blank Page</a></li-->
+                          <li><a  href="/report/birth_reports">Birth Reports</a></li>
                           <li><a  href="/printed_certificates">Printed Certificates</a></li>
                           <li><a  href="/reported_births">Reported Births</a></li>
                           <li><a  href="/registered_births">Registered Births</a></li>
