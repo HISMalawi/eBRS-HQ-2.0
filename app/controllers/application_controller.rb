@@ -46,10 +46,20 @@ class ApplicationController < ActionController::Base
 
   def login!(user)
     session[:user_id] = user.id 
+    AuditTrail.ip_address_accessor = request.remote_ip
+    AuditTrail.mac_address_accessor = ` arp #{request.remote_ip}`.split(/\n/).last.split(/\s+/)[2]
+    AuditTrail.ip_address_accessor.inspect
+    AuditTrail.create(person_id: user.id,
+                       audit_trail_type_id: AuditTrailType.find_by_name("SYSTEM").id,
+                       comment: "User login")
   end
 
   def logout!
+    AuditTrail.create(person_id: session[:user_id],
+                       audit_trail_type_id: AuditTrailType.find_by_name("SYSTEM").id,
+                       comment: "User logout")
     session[:user_id] = nil
+
   end
 
   def application_couchdb
