@@ -28,11 +28,10 @@ class GlobalPropertyController < ApplicationController
 				end
 			
     elsif admin_password.present? && signatory_password.present? && signatory_username.present?
-        raise User.current.inspect
-        user = User.current_user
-      
-        if user.role.downcase == "system administrator" && user.password_matches?(admin_password)
-       
+        user =  User.current
+        user_role = UserRole.find_by_user_id(user.id)
+        if user_role.role.role == "Administrator" && user.password_matches?(admin_password)
+          raise "hit"
           signatory = User.find(signatory_username)
          
           if signatory.present?
