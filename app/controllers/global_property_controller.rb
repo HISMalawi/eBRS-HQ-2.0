@@ -1,8 +1,10 @@
 class GlobalPropertyController < ApplicationController
   def paper
+    @property = GlobalProperty.new
   end
 
   def signature
+    @property = GlobalProperty.new
   end
 
   def set_paper

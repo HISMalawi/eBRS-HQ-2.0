@@ -234,8 +234,9 @@ class Report < ActiveRecord::Base
               (SELECT CONCAT(first_name, \" \", last_name) FROM person_name a 
               WHERE a.person_id = audit_trails.person_id AND a.voided =0) as client,
               (SELECT name FROM location l WHERE l.location_id = audit_trails.location_id) 
-              as location,DATE_FORMAT(audit_trails.created_at,\"%Y-%m-%d %H:%i:%s\")as created_at
-              FROM audit_trails INNER JOIN person_name ON audit_trails.creator = person_name.person_id
+              as location,DATE_FORMAT(audit_trails.created_at,\"%Y-%m-%d %H:%i:%s\")as created_at,
+              audit_trails.mac_address, audit_trails.ip_address FROM audit_trails 
+              INNER JOIN person_name ON audit_trails.creator = person_name.person_id
               INNER JOIN users ON users.user_id = audit_trails.creator WHERE 
               DATE(audit_trails.created_at) >=  '#{start_date}' AND DATE(audit_trails.created_at) <= '#{end_date}' 
               ORDER BY audit_trails.created_at"
