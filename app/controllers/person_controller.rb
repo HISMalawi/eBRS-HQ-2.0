@@ -371,7 +371,7 @@ class PersonController < ApplicationController
 
       person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
 
-      d = Person.order(" n.first_name, n.last_name, cp.created_at ")
+      d = Person.order(" pbd.district_id_number, pbd.national_serial_number, n.first_name, n.last_name, cp.created_at ")
       .joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
               INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
@@ -505,12 +505,12 @@ class PersonController < ApplicationController
   def get_district
     nationality_tag = LocationTag.where(name: 'District').first
     data = []
-    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ?", 
-      "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ?",
+                   "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
       ON location.location_id = m.location_id").order('name ASC').map do |l|
       data << l.name
     end
-    
+
     if data.present?
       render text: data.compact.uniq.join("\n") and return
     else
@@ -518,65 +518,63 @@ class PersonController < ApplicationController
     end
   end
 
-  def get_ta
+  def get_ta_complete
     district_name = params[:district]
     nationality_tag = LocationTag.where(name: 'Traditional Authority').first
     location_id_for_district = Location.where(name: district_name).first.id
 
-    data = []
-    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ? AND parent_location = ?", 
-      "#{params[:search]}%", nationality_tag.id, location_id_for_district).joins("INNER JOIN location_tag_map m
+    data = [['', '']]
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ? AND parent_location = ?",
+                   "#{params[:search]}%", nationality_tag.id, location_id_for_district).joins("INNER JOIN location_tag_map m
       ON location.location_id = m.location_id").order('name ASC').map do |l|
-      data << l.name
+      data << [l.id, l.name]
     end
-    
-    if data.present?
-      render text: data.compact.uniq.join("\n") and return
-    else
-      render text: "" and return
-    end
+
+    render text: data.to_json
   end
 
-  def get_village
+  def get_village_complete
     district_name = params[:district]
     location_id_for_district = Location.where(name: district_name).first.id
 
     ta_name = params[:ta]
-    location_id_for_ta = Location.where("name = ? AND parent_location = ?", 
-      ta_name, location_id_for_district).first.id
+    location_id_for_ta = Location.where("name = ? AND parent_location = ?",
+                                        ta_name, location_id_for_district).first.id
 
 
     nationality_tag = LocationTag.where(name: 'Village').first
-    data = []
+    data = [['', '']]
     Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ?
       AND parent_location = ?", "#{params[:search]}%", nationality_tag.id,
-      location_id_for_ta).joins("INNER JOIN location_tag_map m
+                   location_id_for_ta).joins("INNER JOIN location_tag_map m
       ON location.location_id = m.location_id").order('name ASC').map do |l|
-      data << l.name
+      data << [l.id, l.name]
     end
-    
-    if data.present?
-      render text: data.compact.uniq.join("\n") and return
-    else
-      render text: "" and return
-    end
+
+    render text: data.to_json
   end
 
-  def get_hospital
-    
-    nationality_tag = LocationTag.where(name: 'Health facility').first
-    data = []
-    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ?", 
-      "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
-      ON location.location_id = m.location_id").order('name ASC').map do |l|
-      data << l.name
+  def get_hospital_complete
+    map =  {'Mzuzu City' => 'Mzimba',
+            'Lilongwe City' => 'Lilongwe',
+            'Zomba City' => 'Zomba',
+            'Blantyre City' => 'Blantyre'}
+
+    if  (params[:district].match(/City$/) rescue false)
+      params[:district] =map[params[:district]]
     end
-    
-    if data.present?
-      render text: data.compact.uniq.join("\n") and return
-    else
-      render text: "" and return
+
+    nationality_tag = LocationTag.where("name = 'Hospital' OR name = 'Health Facility'").first
+    data = [['', '']]
+    parent_location = Location.where(" name = '#{params[:district]}' AND COALESCE(code, '') != '' ").first.id rescue nil
+
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND parent_location = #{parent_location} AND m.location_tag_id = ?",
+                   "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
+    ON location.location_id = m.location_id").order('name ASC').map do |l|
+      data << [l.id, l.name]
     end
+
+    render text: data.to_json
   end
 
   #########################################################################
