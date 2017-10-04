@@ -57,7 +57,7 @@ class ApplicationController < ActionController::Base
   def logout!
     AuditTrail.create(person_id: session[:user_id],
                        audit_trail_type_id: AuditTrailType.find_by_name("SYSTEM").id,
-                       comment: "User logout")
+                       comment: "User logout") unless session[:user_id].blank?
     session[:user_id] = nil
 
   end
