@@ -34,6 +34,8 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "current_value",       limit: 255
     t.string   "comment",             limit: 255
     t.integer  "location_id",         limit: 4,   null: false
+    t.string   "ip_address"
+    t.string   "mac_address"
     t.bigint  "creator",             limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
