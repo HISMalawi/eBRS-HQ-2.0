@@ -149,7 +149,7 @@ end
 def func
   
   data ={}
-  records = Child.all.limit(20).each
+  records = Child.all.limit(4).each
   count = 1
   (records || []).each do |r|
 
@@ -247,12 +247,12 @@ def func
         end
 =end 
      
-     puts ">>>>>>>>>>>>>>Number: #{count}"
+     puts "#{data[:person][:mother]}"
      count = count + 1
    end
    
 end
 
-#func
+func
 #get_prev_child_id
-prepare_dump_files
+#prepare_dump_files

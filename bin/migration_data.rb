@@ -481,6 +481,7 @@ def test_method
 	        _id:"0275f9967f6069e00bbf2d310871a2f8", request_status:"DISPATCHED", 
 	        biological_parents:"", foster_parents:"", parents_details_available:"", 
 	        copy_mother_name:"No", controller:"person", action:"create"}
+
     transform_record(data)
 end
 
@@ -592,7 +593,7 @@ def initiate_migration
         current_page = current_page + 1
 	end
 
-     puts "\n"
+   puts "\n"
 	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	 puts "\n"
 end
