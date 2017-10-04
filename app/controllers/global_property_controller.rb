@@ -1,4 +1,5 @@
 class GlobalPropertyController < ApplicationController
+
   def paper
     @property = GlobalProperty.new
     @papersize =  GlobalProperty.find_by_property("paper_size").value rescue nil
@@ -10,22 +11,24 @@ class GlobalPropertyController < ApplicationController
   end
 
   def set_property
-    papersize = params[:property][:paper_setting] rescue nil
+    papersize = params[:property][:paper_size] rescue nil
     admin_password = params[:global_property][:admin_password] rescue nil
     signatory_password = params[:global_property][:signatory_password] rescue nil
     signatory_username = params[:global_property][:value] rescue nil
     
+    #setting paper_size
     if papersize.present?
         @papersize =  GlobalProperty.find("paper_size") rescue nil
 				if @papersize.blank?
-				  GlobalProperty.create(setting: "paper_size", value: params[:property][:paper_setting])
+          GlobalProperty.create(property: "paper_size", value: params[:property][:paper_size], uuid: SecureRandom.uuid)
+          flash[:notice] = "Set paper size"
 				else
-				  @papersize.update_attributes(value: params[:property][:paper_setting])
+          @papersize.update_attributes(value: params[:property][:paper_size])
 				  flash[:notice] = "Changed paper size"
 				end
 			
     elsif admin_password.present? && signatory_password.present? && signatory_username.present?
-        
+        raise User.current.inspect
         user = User.current_user
       
         if user.role.downcase == "system administrator" && user.password_matches?(admin_password)
