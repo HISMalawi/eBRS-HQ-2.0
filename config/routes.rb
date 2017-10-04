@@ -175,9 +175,14 @@ Rails.application.routes.draw do
   post '/search_cases' => "search#search_cases"
   get '/person/map_main'
   get '/person/get_district_stats'
+
+  post '/set_property' => 'global_property#set_property'
+
   resources :person
 
   resources :users
+
+  resources :global_properties
 
   resource :login do
     collection do
