@@ -123,7 +123,7 @@
           <input onclick="check(this)" type="checkbox" class="input-small check" id="place" style="margin-right: 105px;">
 
           <label for="place">Place of birth</label>
-          <select type="text" class="input-small"  id="place" name="filter[place]" onchange="showFields(this)">
+          <select type="text" class="input-small"  id="place_of_birth" name="filter[place]" onchange="showFields(this)">
             <option></option>
             <option>Home</option>
             <option>Hospital</option>
@@ -131,7 +131,7 @@
           </select>
 
           <label for="district_of_birth">District of birth</label>
-          <select type="text" class="input-small"  id="district_of_birth" name="filter[district_of_birth]">
+          <select type="text" class="input-small"  id="district_of_birth" name="filter[district_of_birth]" onchange="load_tas(this)">
             <option></option>
             <% @districts.each do |d|%>
                 <option value="<%= d.name%>"><%= d.name%></option>
@@ -139,7 +139,7 @@
           </select>
 
           <label for="ta_of_birth" class=" place home">TA of birth</label>
-          <select type="text" class="input-small  place home"  id="ta_of_birth" name="filter[ta_of_birth]">
+          <select type="text" class="input-small  place home"  id="ta_of_birth" name="filter[ta_of_birth]" onchange="load_villages(this)">
             <option></option>
             <% @districts.each do |d|%>
                 <option value="<%= d.id%>"><%= d.name%></option>
@@ -351,5 +351,65 @@
     function __$(id){
         return document.getElementById(id);
     }
+
+    function load_tas(district){
+        var district_name = district.options[district.selectedIndex].text;
+
+        jQuery("#village_of_birth").empty();
+        jQuery("#ta_of_birth").empty();
+        jQuery("#hospital_of_birth").empty();
+
+        if (__$('place_of_birth').value == 'Home') {
+            jQuery.ajax({
+                url: '/person/get_ta_complete?district=' + district_name,
+                success: function (result) {
+                    var list = JSON.parse(result);
+
+                    for (var i = 0; i < list.length; i++) {
+                        var o = document.createElement('option');
+                        o.innerHTML = list[i][1];
+                        o.setAttribute('value', list[i][0]);
+                        __$('ta_of_birth').appendChild(o);
+                    }
+                }
+            })
+        }
+
+        if (__$('place_of_birth').value == 'Hospital') {
+            jQuery.ajax({
+                url: '/person/get_hospital_complete?district=' + district_name,
+                success: function (result) {
+                    var list = JSON.parse(result);
+
+
+                    for (var i = 0; i < list.length; i++) {
+                        var o = document.createElement('option');
+                        o.innerHTML = list[i][1];
+                        o.setAttribute('value', list[i][0]);
+                        __$('hospital_of_birth').appendChild(o);
+                    }
+                }
+            })
+        }
+    }
+
+  function load_villages(ta){
+      var district_name = __$('district_of_birth').options[__$('district_of_birth').selectedIndex].text;
+      var ta_name = ta.options[ta.selectedIndex].text;
+
+      jQuery.ajax({
+          url: '/person/get_village_complete?district=' + district_name + "&ta=" + ta_name,
+          success: function(result){
+              var list = JSON.parse(result);
+              jQuery("#village_of_birth").empty();
+              for(var i = 0; i < list.length; i++){
+                  var o = document.createElement('option');
+                  o.innerHTML = list[i][1];
+                  o.setAttribute('value', list[i][0]);
+                  __$('village_of_birth').appendChild(o);
+              }
+          }
+      })
+  }
 
 </script>

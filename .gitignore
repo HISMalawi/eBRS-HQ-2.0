@@ -27,5 +27,5 @@ passenger*
 nbproject/
 public/errors/*
 *.~*
-public/sites/*
+public/sites/*.yml
 public/query.sql
