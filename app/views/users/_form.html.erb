@@ -22,10 +22,8 @@ sup{
 
 <%if request.path.match(/new/) 
   url_str = '/create_user'
-  form_id = 'new_post'
-else
-  form_id = "edit_post"
-  url_str = "/update/#{@user.id}"
+  form_id = 'new_global_property'
+  
 end%>
 
 <%= form_for(@user, as: :post, url: url_str, method: 'post') do |f| %>
