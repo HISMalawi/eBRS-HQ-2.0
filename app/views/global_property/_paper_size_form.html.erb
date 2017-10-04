@@ -1,104 +1,60 @@
 <style>
-
-    .record td {
-        padding: 10px !important;
-    }
-
-    label {
-        font-weight: normal !important;
-    }
-
+  .form-control, select{
+      width: 75%; !important;
+      margin: 0px;
+      margin-left: 50px;
+      color: black;
+  }
+label{
+    width: 60%;
+    font-weight: bold;
+    color: #3465a4;
+    padding: 0px; margin-top: 0px;
+}
+.form-group{
+}
+sup{
+    color: red;
+    font-size: 14px;
+}
 </style>
 
-<table style="margin: auto;">
-  <tr>
-    <td>
+<%= form_for(@property, url: "/set_property", method: 'post') do |f| %>
+    <div class="form-group">
+        <% @paper_size = ["","A4","A5"] %>
+        <label for="paper_size"><sup>*</sup>Paper Size:</label>
+        <%= select_tag "property[paper_size]", 
+            options_for_select(@paper_size, @papersize), 
+            :class => 'input_cell form-control', 
+            :placeholder => "Select Paper Size", 
+            :required => true %>
+    </div>
 
-      <%= form_for(@property, :url => "/create_property") do |f| %>
+    <div style="padding: 8px;">
+        <label id='required' class="label label-danger hidden">
+          Please enter all required fields indicated by *
+        </label>
+    </div>
+    <a class="btn btn-success pull-right"
+       onclick="validate()">
+      <span class="fa fa-save"></span>
+      Save
+    </a>
 
-          <% if @property.errors.any? %>
-              <div id="error_explanation">
-                <h2><%= pluralize(@property.errors.count, "error") %> prohibited this property from being saved:</h2>
-
-                <ul>
-                  <% @property.errors.full_messages.each do |message| %>
-                      <li><%= message %></li>
-                  <% end %>
-                </ul>
-              </div>
-          <% end %>
-
-          <table class="record" cellpadding="5" style="margin: auto; margin-top: 40px;">
-            <tr>
-              <th colspan="3" style="text-align: center !important; border-bottom: 1px solid #666;
-                      padding: 10px !important; font-size: 18px;">
-                Application Settings
-              </th>
-            </tr>
-            
-            <% @paper_size = ["","A4","A5"] %>
-
-            <tr>
-              <td align="right">
-                <%= f.label :Paper_Size %>
-              </td>
-              <td>
-                :
-              </td>
-              <td>
-                <%= select_tag "property[paper_setting]", options_for_select(@paper_size, @papersize), :class => 'input_cell', :placeholder => "Select Paper Size", :required => true, :style => "width: 100% !important;" %>
-              </td>
-            </tr>
-            
-          </table>
-
-      <% end %>
-
-    </td>
-  </tr>
-  <tr>
-    <td>
-      &nbsp;
-    </td>
-  </tr>
-  <tr>
-    <td>
-      &nbsp;
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <button id="btnAction" class="blue" style="cursor: pointer;
-              border: 1px solid #fff; padding: 5px; border-radius: 50px; padding-top: 7px; z-index: 1200;
-              font-size: 14px; min-height: 25px;" onclick="submitForm()">
-        Save Settings
-      </button>
-
-    </td>
-  </tr>
-</table>
-
+    <a class="btn btn-warning"
+       onclick="javascript:location='person/index'">
+      <span class="fa fa-chevron-circle-left"></span>
+      Back
+    </a>
+<% end %>
 <script>
-    // var good = <%= request.path.match(/new/) ? false : true %>
+  function validate(){
+          if (__$('property_paper_size').value.trim().length == 0){
+              jQuery('.label-danger').attr('class', 'label label-danger hidden');
+            __$("required").className = "label label-danger";
+              return;
+          }
 
-        function submitForm() {
-        // if (validateForm() && good) {
-        if (validateForm()) {
-            document.getElementsByTagName('form')[0].submit();
-        }
-
-    }
-
-    function validateForm() {
-        paper_size = document.getElementById('property_paper_setting');
-        
-        if (paper_size.value == '') {
-            showMsg("Please select paper size ...");
-            return false;
-        } 
-
-        return true;
-    }
-
-
+      __$('new_global_property').submit();
+  }
 </script>

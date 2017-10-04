@@ -169,12 +169,12 @@ Rails.application.routes.draw do
   get '/paper' => 'global_property#paper'
   get '/signature' => 'global_property#signature'
   get '/update_person' => 'person#update_person'
-
   get '/search' => "search#general_search"
   get '/search_cases' => "search#search_cases"
   post '/search_cases' => "search#search_cases"
   get '/person/map_main'
   get '/person/get_district_stats'
+  post '/set_property' => 'global_property#set_property'
   get '/person/get_ta'
   get '/person/get_ta_complete'
   get '/person/get_village_complete'
@@ -183,6 +183,8 @@ Rails.application.routes.draw do
   resources :person
 
   resources :users
+
+  resources :global_properties
 
   resource :login do
     collection do
