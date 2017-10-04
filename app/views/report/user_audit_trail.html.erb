@@ -86,7 +86,7 @@ function dataT(){
 
 function addRows(data) {
   for(var i = 0 ; i < data.length ; i++){
-    dataTable.api().row.add([data[i].created_at, data[i].username, data[i].name, data[i].comment, data[i].client, data[i].location]).draw();
+    dataTable.api().row.add([data[i].created_at, data[i].username, data[i].name, data[i].comment, data[i].client, data[i].location,data[i].mac_address, data[i].ip_address]).draw();
   }
 }
 
@@ -144,11 +144,14 @@ function fetchData() {
   <thead>
     <tr>
       <th style="width: 15%;">DateTime</th>
-      <th style="width: 15%;">Username</th>
-      <th >Name</th>
-      <th style="width: 25%;">Action</th>
-      <th>Client</th>
-      <th>Location</th>
+      <th style="width: 10%;">Username</th>
+      <th style="width: 15%;">Name</th>
+      <th >Action</th>
+      <th style="width: 15%;">Client</th>
+      <th>District/Facility</th>
+      <th>Mac Adsress</th>
+      <th>IP Adress</th>
+
     </tr>
   </thead>
   </tbody>
