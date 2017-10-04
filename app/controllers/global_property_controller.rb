@@ -18,7 +18,7 @@ class GlobalPropertyController < ApplicationController
     
     #setting paper_size
     if papersize.present?
-        @papersize =  GlobalProperty.find("paper_size") rescue nil
+        @papersize =  GlobalProperty.find_by_property("paper_size") rescue nil
 				if @papersize.blank?
           GlobalProperty.create(property: "paper_size", value: params[:property][:paper_size], uuid: SecureRandom.uuid)
           flash[:notice] = "Set paper size"
@@ -28,19 +28,16 @@ class GlobalPropertyController < ApplicationController
 				end
 			
     elsif admin_password.present? && signatory_password.present? && signatory_username.present?
-        raise User.current.inspect
-        user = User.current_user
-      
-        if user.role.downcase == "system administrator" && user.password_matches?(admin_password)
-       
-          signatory = User.find(signatory_username)
-         
+        user =  User.current
+        user_role = UserRole.find_by_user_id(user.id)
+        if user_role.role.role == "Administrator" && user.password_matches?(admin_password)
+          signatory = User.find_by_username(signatory_username)
           if signatory.present?
-        
-           if signatory.role.downcase == "certificate signatory" && signatory.password_matches?(signatory_password)
-              @signatory =  GlobalProperty.find("signatory") rescue nil
+           signatory_role = UserRole.find_by_user_id(signatory.id)
+           if signatory_role.role.role == "Certificate Signatory" && signatory.password_matches?(signatory_password)
+              @signatory =  GlobalProperty.find_by_property("signatory") rescue nil
 							if @signatory.blank?
-								GlobalProperty.create(setting: "signatory", value: signatory_username)
+								GlobalProperty.create(property: "signatory", value: signatory_username, uuid: SecureRandom.uuid)
 								flash[:notice] = "Assigned signatory"
 							else
 								@signatory.update_attributes(value: signatory_username)

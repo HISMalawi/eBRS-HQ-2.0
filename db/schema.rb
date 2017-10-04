@@ -72,7 +72,8 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   add_index "core_person", ["person_type_id"], name: "fk_core_person_1_idx", using: :btree
 
 
-  create_table "global_property", primary_key: "property", force: :cascade do |t|
+  create_table "global_property", primary_key: "global_property_id", force: :cascade do |t|
+    t.string   "property",   limit: 50, null: false
     t.string   "value",      limit: 50, null: false
     t.string   "uuid",       limit: 38, null: false
     t.datetime "created_at"
