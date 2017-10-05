@@ -14,11 +14,18 @@ files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
   data = YAML.load_file(f) rescue {}
   (data || []).each do |site_id, d|
     next if d.blank?
+    up = false
     (d['ip_addresses'] || []).each do |adr|
       if is_up?(adr)
+        up = true
         data[site_id]['online'] = true
         data[site_id]['last_seen'] = "#{Time.now}"
         next
+      end
+
+      if up == true
+        data[site_id]['online'] = true
+        data[site_id]['last_seen'] = "#{Time.now}"
       else
         data[site_id]['online'] = false
       end
