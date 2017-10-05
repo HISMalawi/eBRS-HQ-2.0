@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base
   before_filter :check_couch_loading
 
   def check_last_sync_time
-    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue {}
+    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue nil
     job_interval = 60
     now = Time.now
     if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
@@ -20,7 +20,7 @@ class ApplicationController < ActionController::Base
   end
 
   def check_couch_loading
-    last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue {}
+    last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
     job_interval = 60
     now = Time.now
     if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
