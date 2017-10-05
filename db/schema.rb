@@ -26,15 +26,17 @@ ActiveRecord::Schema.define(version: 20170912104756) do
 
   create_table "audit_trails", primary_key: "audit_trail_id", force: :cascade do |t|
     t.integer  "audit_trail_type_id", limit: 4,   null: false
-    t.bigint  "person_id",           limit: 4,   null: false
-    t.string   "table_name",          limit: 100, null: false
-    t.bigint  "table_row_id",        limit: 4,   null: false
+    t.bigint   "person_id",           limit: 4,   null: false
+    t.string   "table_name",          limit: 100
+    t.bigint   "table_row_id",        limit: 4
     t.string   "field",               limit: 50
     t.string   "previous_value",      limit: 255
     t.string   "current_value",       limit: 255
     t.string   "comment",             limit: 255
     t.integer  "location_id",         limit: 4,   null: false
-    t.bigint  "creator",             limit: 4
+    t.string   "ip_address"
+    t.string   "mac_address"
+    t.bigint   "creator",             limit: 4
     t.datetime "created_at"
     t.datetime "updated_at"
   end
@@ -70,7 +72,8 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   add_index "core_person", ["person_type_id"], name: "fk_core_person_1_idx", using: :btree
 
 
-  create_table "global_property", primary_key: "property", force: :cascade do |t|
+  create_table "global_property", primary_key: "global_property_id", force: :cascade do |t|
+    t.string   "property",   limit: 50, null: false
     t.string   "value",      limit: 50, null: false
     t.string   "uuid",       limit: 38, null: false
     t.datetime "created_at"

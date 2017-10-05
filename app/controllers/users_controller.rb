@@ -22,22 +22,43 @@ class UsersController < ApplicationController
   #Displays All Users
   def view
     @users = User.all.each
+    
   end
 
   #Adds A New User
   def new
     @user = User.new
     @usernames = User.all.map(&:username)
+    
+    @roles = ['']
+    
+    Role.where(:level => 'HQ').map do |r|
+      @roles << [r.role, r.id]
+    end
+    
+    @gender = ['','Female','Male']
+
   end
 
   # Edits Selected User
   def edit
     @user = User.find(params[:user_id])
     @usernames = User.all.map(&:username)
+    
+    @roles = ['']
+    
+    Role.where(:level => 'HQ').map do |r|
+      @roles << [r.role, r.id]
+    end
+    
+    @gender = ['','Female','Male']
+
   end
 
   #Creates A New User
   def create
+
+    role = Role.find(params[:post][:user_role]['role'])
     username = params[:post][:username]
     password = params[:post][:password]
     email    = params[:post][:email]
@@ -57,14 +78,29 @@ class UsersController < ApplicationController
       user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id:
           SETTINGS['location_id'], email: email, last_password_date: Time.now)
 
-      UserRole.create(user_id: user.id, role_id: params[:post][:user_role]['role'])
+      UserRole.create(user_id: user.id, role_id: role.id)
+
+      if role.role == "Certificate Signatory"
+        uploaded_io = params[:post][:signature]
+        if uploaded_io.present?
+          File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+            file.write(uploaded_io.read)
+          end
+          signature = uploaded_io.original_filename
+          attribute_type = PersonAttributeType.find_by_name("Signature") 
+          PersonAttribute.create(person_id: core_person.id, 
+                                     person_attribute_type_id: attribute_type.id, 
+                                     value: signature)
+        end
+      end  
+      
     end
 
     redirect_to '/users'
   end
 
   def update
-
+    role = Role.find(params[:post][:user_role]['role'])
     user = User.find(params[:user_id])
     person = Person.find(user.person_id)
     person_name = PersonName.where(person_id: user.person_id).last
@@ -77,7 +113,6 @@ class UsersController < ApplicationController
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
     gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
-    role = params[:post][:user_role]['role']
     ActiveRecord::Base.transaction do
 
       if password.length > 4
@@ -103,8 +138,22 @@ class UsersController < ApplicationController
       )
 
       user_role.update_attributes(
-          role_id: role
+          role_id: role.id
       )
+
+      if role.role == "Certificate Signatory"
+        uploaded_io = params[:post][:signature]
+        if uploaded_io.present?
+          File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+            file.write(uploaded_io.read)
+          end
+          signature = uploaded_io.original_filename
+          attribute_type = PersonAttributeType.find_by_name("Signature") 
+          PersonAttribute.create(person_id: person.id, 
+                                     person_attribute_type_id: attribute_type.id, 
+                                     value: signature)
+        end
+      end  
 
       redirect_to '/users'
     end

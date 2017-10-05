@@ -1,7 +1,4 @@
 #Create couch DB
-h = Hallo.new
-h.save
-h.destroy
 
 def create_user
   puts "Creating Person Type for User"

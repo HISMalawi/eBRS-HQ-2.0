@@ -19,7 +19,6 @@ sup{
 }
 </style>
 
-
 <%if request.path.match(/new/) 
   url_str = '/create_user'
   form_id = 'new_post'
@@ -72,13 +71,12 @@ end%>
     <%= f.fields_for :person do |i| %>
 
      <% gender = nil
-    if @user.present?
-        gender = ((Person.find(@user.person_id).gender == 'F' ) ? 'Female' : 'Male') rescue nil
-    end
-
-     @roles = ['','Female','Male']%>
-
-    <%= i.select :gender, options_for_select(@roles, gender),
+      if @user.present?
+          gender = ((Person.find(@user.person_id).gender == 'F' ) ? 'Female' : 'Male') rescue nil
+      end
+     %>
+    
+    <%= i.select :gender, options_for_select(@gender, gender),
         :class => "input_cell form-control", 
         :required => true %>
     <% end %> 
@@ -87,11 +85,7 @@ end%>
     <div class="form-group">
     <label for="role"><sup>*</sup>Select role:</label><br />
     <%= f.fields_for :user_role do |i| %>
-      <%
-      @roles = ['']
-      Role.where(:level => 'HQ').map do |r|
-        @roles << [r.role, r.id]
-      end%>
+      
 
     <%= i.select :role, options_for_select(@roles),
         :class => "input_cell form-control", 
@@ -113,6 +107,15 @@ end%>
         :class => "input_cell form-control", 
         :required => true,
         :textCase => "lower" %>
+  </div>
+
+  <div class="form-group">
+    <label for="signature"><sup>*</sup>Select Signature:</label>
+    <%= f.file_field :signature, 
+                     :class => "input_cell", 
+                     :data => {:max_file_size => 1.megabyte},  
+                     :optional => true %>
+    
   </div>
 
     <div style="padding: 8px;">
@@ -168,6 +171,9 @@ end%>
       var filter = /^\s*[\w\-\+_]+(\.[\w\-\+_]+)*\@[\w\-\+_]+\.[\w\-\+_]+(\.[\w\-\+_]+)*\s*$/;
       return String(e).search (filter) != -1;
   }
+  
+  
+
   function validate(){
       var compulsory_fields = ['post_username', 'post_person_name_first_name',
                 'post_person_name_last_name', 'post_user_role_role', 'post_password', 'post_confirm_password']

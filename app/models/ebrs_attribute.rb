@@ -49,6 +49,7 @@ module EbrsAttribute
       before_save :check_record_complteness_before_updating, :keep_prev_value
       before_create :generate_key
       #after_create :create_or_update_in_couch
+      #after_create :create_audit_trail_after_create
       after_save :create_or_update_in_couch, :create_audit_trail
     end
   end
@@ -70,8 +71,29 @@ module EbrsAttribute
     self.changed_at = Time.now if self.attribute_names.include?("changed_at")
   end
 
+  def next_primary_key
+    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
+    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
+      FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
+    autoincpart = max.to_s.split('')[6 .. 1000].join('').to_i rescue 0
+    auto_id = autoincpart + 1
+    new_id = (location_pad + auto_id.to_s).to_i
+    new_id
+  end
+
+  def generate_key
+    if !self.class.primary_key.blank? && !self.class.primary_key.class.to_s.match('CompositePrimaryKeys')
+      eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
+    end
+  end
+
+  def create_or_update_in_couch
+    send_data(self)
+  end
+
   def create_audit_trail
-    if !["audit_trails","person_name_code","core_person"].include? self.class.table_name 
+
+    if !["audit_trails","person_name_code","core_person"].include? self.class.table_name
       if self.prev.present?
           fields = self.attributes.keys
           prev = self.prev
@@ -100,27 +122,6 @@ module EbrsAttribute
       end
     end
   end
-
-  def next_primary_key
-    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
-    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
-      FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
-    autoincpart = max.to_s.split('')[6 .. 1000].join('').to_i rescue 0
-    auto_id = autoincpart + 1
-    new_id = (location_pad + auto_id.to_s).to_i
-    new_id
-  end
-
-  def generate_key
-    if !self.class.primary_key.blank? && !self.class.primary_key.class.to_s.match('CompositePrimaryKeys')
-      eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
-    end
-  end
-
-  def create_or_update_in_couch
-    send_data(self)
-  end
-
   def create_method( name, &block )
         self.class.send(:define_method, name, &block )
   end
@@ -157,4 +158,6 @@ module EbrsAttribute
                           comment: "#{self.class.table_name.humanize} record created")
     end
   end
+
+
 end
