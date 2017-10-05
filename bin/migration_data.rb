@@ -455,45 +455,13 @@ def get_record_status(rec_status, req_status)
 
 end
 
-<<<<<<< HEAD
-=======
-def test_method
-	data ={}
-	data = {person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Ndala",
-	        first_name:"Zimbota", middle_name:"", birthdate:"30/Oct/2015", birth_district:"Blantyre",
-	        gender:"Male", place_of_birth:"Hospital", hospital_of_birth:"Mlambe Hospital",
-	        birth_weight:"3.700", type_of_birth:"Single", parents_married_to_each_other:"Yes",
-	        court_order_attached:"", parents_signed:"", national_serial_number:"00000214140",
-	        district_id_number:"BT/0000125/2016", mother:{last_name:"Mkuwu", first_name:"Angella",
-	        middle_name:"", birthdate:"22/Oct/1985", birthdate_estimated:"",
-	        citizenship:"Malawian", residential_country:"Malawi", current_district:"Blantyre",
-	        current_ta:"Machinjiri", current_village:"Machinjiri", home_district:"Mangochi",
-	        home_ta:"Mponda", home_village:"Michesi"}, mode_of_delivery:"SVD",
-	        level_of_education:"Secondary", father:{birthdate_estimated:"",
-	        residential_country:"Malawi"}, informant:{last_name:"Mkuwu", first_name:"Angella",
-	        middle_name:"", relationship_to_person:"Mother", current_district:"Blantyre",
-	        current_ta:"Machinjiri", current_village:"Machinjiri", addressline1:"",
-	        addressline2:"", phone_number:"0993853933"}, form_signed:"Yes",
-	        acknowledgement_of_receipt_date:"2015-11-06 160456 -1000".to_date.strftime("%d/%b/%Y")},
-	        home_address_same_as_physical:"Yes", gestation_at_birth:"37", number_of_prenatal_visits:"4",
-	        month_prenatal_care_started:"3", number_of_children_born_alive_inclusive:"2",
-	        number_of_children_born_still_alive:"2", same_address_with_mother:"",
-	        informant_same_as_mother:"Yes", registration_type:"normal",
-	        record_status:"PRINTED", _rev:"7-213580c4bcfdf268c901d5c3b11617c2",
-	        _id:"0275f9967f6069e00bbf2d310871a2f8", request_status:"DISPATCHED",
-	        biological_parents:"", foster_parents:"", parents_details_available:"",
-	        copy_mother_name:"No", controller:"person", action:"create"}
-
-    transform_record(data)
-end
-
 
 def build_client_record(current_pge, pge_size)
 
   data ={}
 
   records = Child.by__id.page(current_pge).per(pge_size)
- 	
+
   i = 0
   (records || []).each do |r|
 
@@ -627,7 +595,7 @@ def build_client_record(current_pge, pge_size)
 			if i % 100 == 0
 				puts "Migrate #{i}"
 			end
-			
+
 
 			#pre_migration_check(data)
    end
