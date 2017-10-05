@@ -1,7 +1,7 @@
 module Lib
   require 'bean'
   require 'json'
-  
+  @rec_count = 0
 
   def self.new_child(params)
         core_person = CorePerson.new
@@ -9,9 +9,9 @@ module Lib
         core_person.created_at = params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00")
         core_person.updated_at = params[:person][:updated_at].to_date
         core_person.save
-        
-        person_id = CorePerson.first.person_id.to_i + params[:count].to_i 
-        sql_query = "(#{person_id}, \"#{core_person.person_type_id}\",#{core_person.created_at}, #{core_person.updated_at}\"),"
+        @rec_count = @rec_count.to_i + 1
+        person_id = CorePerson.first.person_id.to_i + @rec_count.to_i 
+        sql_query = "(#{person_id}, #{core_person.person_type_id},\"#{params[:person][:created_at].to_date}\", \"#{params[:person][:updated_at].to_date}\"),"
         row = "#{params[:_id]},#{core_person.person_id},"
         
         save_ids(row)

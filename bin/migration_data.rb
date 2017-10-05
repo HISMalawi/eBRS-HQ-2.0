@@ -7,6 +7,15 @@ require'migration-lib/person_service'
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 @analysis = "#{Rails.root}/app/assets/data/analysis.txt"
+@missing_tas = "#{Rails.root}/app/assets/data/migration_issues/missing_tas.csv"
+@missing_villages = "#{Rails.root}/app/assets/data/migration_issues/missing_villages.csv"
+@missing_districts = "#{Rails.root}/app/assets/data/migration_issues/missing_districts.csv"
+@missing_statuses = "#{Rails.root}/app/assets/data/migration_issues/missing_statuses.csv"
+@missing_citizenships = "#{Rails.root}/app/assets/data/migration_issues/missing_citizenships.csv"
+@missing_record_statuses = "#{Rails.root}/app/assets/data/migration_issues/missing_record_statuses.csv"
+@missing_birth_type = "#{Rails.root}/app/assets/data/migration_issues/missing_birth_type.csv"
+@missing_multiple_birth_ids = "#{Rails.root}/app/assets/data/migration_issues/missing_multiple_birth_ids.csv"
+@missing_doc_creator = "#{Rails.root}/app/assets/data/migration_issues/missing_doc_creator.csv"
 
 User.current = User.last
 
@@ -27,6 +36,115 @@ def write_log(file, content)
     end
 end
 
+def verify_location(owner, location_type, data)
+
+	location_found = false
+
+	if owner == "Mother"
+
+		if location_type == "TA"
+                cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+                cur_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', cur_district_id)
+                home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:home_district], 'District')
+                home_ta_id        = Location.locate_id(data[:person][:mother][:home_ta], 'Traditional Authority', home_district_id)
+
+                unless cur_ta_id.blank? || home_ta_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+
+		elsif location_type == "Village"
+
+                cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+                cur_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', cur_district_id)
+                cur_village_id   = Location.locate_id(data[:person][:mother][:current_village], 'Village', cur_ta_id)
+                home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+                home_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', home_district_id)
+                home_village_id   = Location.locate_id(data[:person][:mother][:current_village], 'Village', home_ta_id)
+
+                unless cur_village_id.blank? || home_village_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+
+		elsif location_type == "District"
+
+             cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+             home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:home_district], 'District')
+
+                unless cur_district_id.blank? || home_district_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+		else
+			 citizenship = Location.where(country: data[:person][:mother][:citizenship]).last.id rescue nil
+			 residential_country = Location.where(name: data[:person][:mother][:residential_country]).last.id rescue nil
+
+             unless citizenship.blank? || residential_country.blank?
+             	location_found = true
+             else
+             	location_found = false
+             end
+		end
+
+	else
+
+		if location_type == "TA"
+                cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+                cur_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', cur_district_id)
+                home_district_id  = Location.locate_id_by_tag(data[:person][:father][:home_district], 'District')
+                home_ta_id        = Location.locate_id(data[:person][:father][:home_ta], 'Traditional Authority', home_district_id)
+
+                unless cur_ta_id.blank? || home_ta_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+
+		elsif location_type == "Village"
+
+                cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+                cur_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', cur_district_id)
+                cur_village_id   = Location.locate_id(data[:person][:father][:current_village], 'Village', cur_ta_id)
+                home_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+                home_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', home_district_id)
+                home_village_id   = Location.locate_id(data[:person][:father][:current_village], 'Village', home_ta_id)
+
+                unless cur_village_id.blank? || home_village_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+
+		elsif location_type == "District"
+
+             cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+             home_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+
+                unless cur_district_id.blank? || home_district_id.blank?
+                	location_found = true
+                else
+                    location_found = false
+                end
+        else
+        	 citizenship = Location.where(country: data[:person][:father][:citizenship]).last.id rescue nil
+			 residential_country = Location.where(name: data[:person][:father][:residential_country]).last.id rescue nil
+
+             unless citizenship.blank? || residential_country.blank?
+             	location_found = true
+             else
+             	location_found = false
+             end
+
+	    end
+
+    end
+
+	return location_found
+end
 
 def log_error(error_msge, content)
 
@@ -43,6 +161,72 @@ def log_error(error_msge, content)
 
  end
 
+def pre_migration_check(params)
+
+	  if params[:person][:created_by].blank?
+        content = "#{params[:_id]},#{params[:person][:created_at]},#{params[:person][:created_by]},#{params[:person][:approved]},#{params[:person][:approved_by]}"
+        write_log(@missing_doc_creator, content)
+      end
+
+      if ["Second Twin","Second Triplet","Third Triplet"].include? params[:person][:type_of_birth]
+        if params[:person][:multiple_birth_id].blank?
+         content = "#{params[:_id]},#{params[:person][:multiple_birth_id]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_multiple_birth_ids, content)
+        end
+      end
+
+	  if params[:person][:type_of_birth].blank?
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_birth_type, content)
+      end
+
+        status = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue nil
+	  if  status.blank?
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:record_status]},#{params[:request_status]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_record_statuses, content)
+      end
+
+      if verify_location("Mother", "TA", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_ta]},#{params[:person][:mother][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_tas, content)
+      end
+
+      if verify_location("Mother", "Village", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_village]},#{params[:person][:mother][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_villages, content)
+      end
+
+      if verify_location("Mother", "District", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_district]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_districts, content)
+      end
+
+      if verify_location("Mother", "Citizenship", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:citizenship]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_citizenships, content)
+      end
+
+      if verify_location("Father", "TA", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_ta]},#{params[:person][:father][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_tas, content)
+      end
+
+      if verify_location("Father", "Village", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_village]},#{params[:person][:father][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_villages, content)
+      end
+
+      if verify_location("Father", "District", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_district]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_districts, content)
+      end
+
+      if verify_location("Father", "Citizenship", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:citizenship]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_citizenships, content)
+      end
+
+end
 
 def save_full_record(params, district_id_number)
 
@@ -51,15 +235,15 @@ def save_full_record(params, district_id_number)
     	person = PersonService.create_record(params)
 
       if !person.blank?
-        
+
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        
+
         	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
 	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
 	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
 	    #puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
 
-        
+
       end
 
    rescue StandardError => e
@@ -205,7 +389,7 @@ def transform_record(data)
        	end
     else
     end
-    
+
     #==================== Transform the citizenship if not complying with those specified in the metadata
     data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
     data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
@@ -271,6 +455,39 @@ def get_record_status(rec_status, req_status)
 
 end
 
+<<<<<<< HEAD
+=======
+def test_method
+	data ={}
+	data = {person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Ndala",
+	        first_name:"Zimbota", middle_name:"", birthdate:"30/Oct/2015", birth_district:"Blantyre",
+	        gender:"Male", place_of_birth:"Hospital", hospital_of_birth:"Mlambe Hospital",
+	        birth_weight:"3.700", type_of_birth:"Single", parents_married_to_each_other:"Yes",
+	        court_order_attached:"", parents_signed:"", national_serial_number:"00000214140",
+	        district_id_number:"BT/0000125/2016", mother:{last_name:"Mkuwu", first_name:"Angella",
+	        middle_name:"", birthdate:"22/Oct/1985", birthdate_estimated:"",
+	        citizenship:"Malawian", residential_country:"Malawi", current_district:"Blantyre",
+	        current_ta:"Machinjiri", current_village:"Machinjiri", home_district:"Mangochi",
+	        home_ta:"Mponda", home_village:"Michesi"}, mode_of_delivery:"SVD",
+	        level_of_education:"Secondary", father:{birthdate_estimated:"",
+	        residential_country:"Malawi"}, informant:{last_name:"Mkuwu", first_name:"Angella",
+	        middle_name:"", relationship_to_person:"Mother", current_district:"Blantyre",
+	        current_ta:"Machinjiri", current_village:"Machinjiri", addressline1:"",
+	        addressline2:"", phone_number:"0993853933"}, form_signed:"Yes",
+	        acknowledgement_of_receipt_date:"2015-11-06 160456 -1000".to_date.strftime("%d/%b/%Y")},
+	        home_address_same_as_physical:"Yes", gestation_at_birth:"37", number_of_prenatal_visits:"4",
+	        month_prenatal_care_started:"3", number_of_children_born_alive_inclusive:"2",
+	        number_of_children_born_still_alive:"2", same_address_with_mother:"",
+	        informant_same_as_mother:"Yes", registration_type:"normal",
+	        record_status:"PRINTED", _rev:"7-213580c4bcfdf268c901d5c3b11617c2",
+	        _id:"0275f9967f6069e00bbf2d310871a2f8", request_status:"DISPATCHED",
+	        biological_parents:"", foster_parents:"", parents_details_available:"",
+	        copy_mother_name:"No", controller:"person", action:"create"}
+
+    transform_record(data)
+end
+
+
 def build_client_record(current_pge, pge_size)
 
   data ={}
@@ -279,7 +496,7 @@ def build_client_record(current_pge, pge_size)
  	
   i = 0
   (records || []).each do |r|
-     
+
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -292,7 +509,9 @@ def build_client_record(current_pge, pge_size)
 					   hospital_of_birth: r[:hospital_of_birth],
 					   birth_weight: r[:birth_weight],
 					   type_of_birth: r[:type_of_birth],
+					   national_serial_number: r[:national_serial_number],
 					   parents_married_to_each_other: r[:parents_married_to_each_other],
+					   date_of_marriage: r[:date_of_marriage],
 					   court_order_attached: r[:court_order_attached],
 					   created_at: r[:created_at],
 					   created_by: r[:created_by],
@@ -333,7 +552,53 @@ def build_client_record(current_pge, pge_size)
 					     addressline2: r[:informant][:addressline2],
 					     phone_number: r[:informant][:phone_number]
 					  },
-					   form_signed: r[:form_signed],
+						foster_mother: {
+								id_number: r[:id_number],
+								first_name: r[:first_name],
+								middle_name: r[:middle_name],
+								last_name: r[:last_name],
+								birthdate: r[:birthdate],
+								birthdate_estimated: r[:birthdate_estimated],
+								current_village: r[:current_village],
+								current_ta: r[:current_ta],
+								current_district: r[:current_district],
+								home_village: r[:home_village],
+								home_ta: r[:home_ta],
+								home_district: r[:home_district],
+								home_country: r[:home_country],
+								citizenship: r[:citizenship],
+								residential_country: r[:residential_country],
+								foreigner_current_district: r[:foreigner_current_district],
+								foreigner_current_village: r[:foreigner_current_village],
+								foreigner_current_ta: r[:foreigner_current_ta],
+								foreigner_home_district: r[:foreigner_home_district],
+								foreigner_home_village: r[:foreigner_home_village],
+								foreigner_home_ta: r[:foreigner_home_ta]
+			        },
+		     	  foster_father: {
+							id_number: r[:id_number],
+							first_name: r[:first_name],
+							middle_name: r[:middle_name],
+							last_name: r[:last_name],
+							birthdate: r[:birthdate],
+							birthdate_estimated: r[:birthdate_estimated],
+							current_village: r[:current_village],
+							current_ta: r[:current_ta],
+							current_district: r[:current_district],
+							home_village: r[:home_village],
+							home_ta: r[:home_ta],
+							home_district: r[:home_district],
+							home_country: r[:home_country],
+							citizenship: r[:citizenship],
+							residential_country: r[:residential_country],
+							foreigner_current_district: r[:foreigner_current_district],
+							foreigner_current_village: r[:foreigner_current_village],
+							foreigner_current_ta: r[:foreigner_current_ta],
+							foreigner_home_district: r[:foreigner_home_district],
+							foreigner_home_village: r[:foreigner_home_village],
+							foreigner_home_ta: r[:foreigner_home_ta]
+						 },
+				    form_signed: r[:form_signed],
 					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
 					  },
 					   home_address_same_as_physical: "Yes",
@@ -363,6 +628,8 @@ def build_client_record(current_pge, pge_size)
 				puts "Migrate #{i}"
 			end
 			
+
+			#pre_migration_check(data)
    end
    records = nil
 end
@@ -382,10 +649,9 @@ def initiate_migration
         puts "Time taken #{(Time.now - start_time)/60} minites"
 	end
 
-     puts "\n"
+   puts "\n"
 	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	 puts "\n"
 end
 
 initiate_migration
-
