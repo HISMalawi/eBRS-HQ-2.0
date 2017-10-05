@@ -1,6 +1,7 @@
 require'migration-lib/lib'
 require'migration-lib/person_service'
 @file_path = "#{Rails.root}/app/assets/data/"
+@error_log = "#{Rails.root}/app/assets/data/error_log.txt"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 
@@ -17,6 +18,8 @@ def get_record_status(rec_status, req_status)
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -24,6 +27,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -47,6 +53,15 @@ def get_record_status(rec_status, req_status)
    return status[rec_status][req_status]
 
 end
+
+def format_csv_file(file)
+
+    raw_csv = File.read("#{file}")[0...-2]
+
+    File.open("#{file}", "w") {|csv| csv.puts raw_csv << ""}
+
+end
+
 
 def mother_records
 
@@ -74,12 +89,12 @@ end
 
 def log_error(error_msge, content)
 
-    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
-    if !File.exists?(file_path)
-           file = File.new(file_path, 'w')
+    
+    if !File.exists?(@error_log)
+           file = File.new(@error_log, 'w')
     else
 
-       File.open(file_path, 'a') do |f|
+       File.open(@error_log, 'a') do |f|
           f.puts "#{error_msge} >>>>>> #{content}"
 
       end
@@ -88,42 +103,41 @@ def log_error(error_msge, content)
  end
 
 def write_log(filename,content)
-  
+
     if !File.exists?(filename)
            file = File.new(filename, 'w')
     else
        File.open(filename, 'a') do |f|
           f.puts "#{content}"
-
       end
     end
-
 end
 
 def save_full_record(params, district_id_number)
 
-    if !district_id_number.blank?
-
+   begin
+        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
-    	row = "#{params[:_id]},#{person.person_id}"
-    	write_log(@multiple_births,row)
 
-      if person.present?
+    	row = "#{params[:_id]},#{person.person_id},"
+
+        write_log(@multiple_births,row)
+
+      if !person.blank?
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        begin
-	        record_status.update_attributes(status_id: Status.where(name: get_record_status(params[:record_status],params[:request_status]).upcase.squish!).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
-	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-        rescue StandardError => e
-            log_error(e.message, params)
-        end
+        
+        	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
+	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
+	    puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
+
         
       end
 
-    else
-    	 write_log(@suspected,params)
-    end
+   rescue StandardError => e
+          log_error(e.message, params)
+   end
 
 end
 
@@ -208,10 +222,11 @@ def assign_district_id(person_id, ben)
 end
 
 
-def build_client_record
+def build_client_record(current_pge, pge_size)
 
   data ={}
-  records = Child.all.limit(1000).each
+
+  records = Child.all.page(current_pge).limit(pge_size)
 
   (records || []).each do |r|
 
@@ -303,4 +318,23 @@ def build_client_record
             
 end
 
-build_client_record
+def initiate_migration
+
+	total_records = Child.count
+	page_size = 100
+	total_pages = (total_records / page_size) + (total_records % page_size)
+	current_page = 1
+
+	while (current_page < total_pages) do
+
+        build_client_record(current_page, page_size)
+        current_page = current_page + 1
+	end
+  	 
+     format_csv_file(@multiple_births)
+	 puts "\n"
+	 puts "Completed migration of 2 of 3 batch of records! To verify the completeness, please review the log files..."
+     puts "\n"
+end
+
+initiate_migration

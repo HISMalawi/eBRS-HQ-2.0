@@ -4,18 +4,27 @@ module Lib
   
 
   def self.new_child(params)
-   core_person = CorePerson.create(
-        :person_type_id     => PersonType.where(name: 'Client').last.id,
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
-    )
+        core_person = CorePerson.new
+        core_person.person_type_id = PersonType.where(name: 'Client').last.id
+        core_person.created_at = params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00")
+        core_person.updated_at = params[:person][:updated_at].to_date
+        core_person.save
+        
+        person_id = CorePerson.first.person_id.to_i + params[:count].to_i 
+        sql_query = "(#{person_id}, \"#{core_person.person_type_id}\",#{core_person.created_at}, #{core_person.updated_at}\"),"
+        row = "#{params[:_id]},#{core_person.person_id},"
+        
+        save_ids(row)
+        self.write_to_dump("core_person.sql",sql_query)
+        
+        
    
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
-        :birthdate          => params[:person][:birthdate].to_date.to_s,
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
+        :birthdate          => params[:person][:birthdate].to_date,
+        :created_at         => params[:person][:created_at].to_date,
+        :updated_at         => params[:person][:updated_at].to_date
      )
 
     PersonName.create(
@@ -23,8 +32,8 @@ module Lib
         :first_name         => params[:person][:first_name],
         :middle_name        => params[:person][:middle_name],
         :last_name          => params[:person][:last_name],
-        :created_at         => params[:person][:created_at].to_date.to_s,
-        :updated_at         => params[:person][:updated_at].to_date.to_s
+        :created_at         => params[:person][:created_at].to_date,
+        :updated_at         => params[:person][:updated_at].to_date
     )
     
     person
@@ -49,6 +58,8 @@ module Lib
      begin
         core_person = CorePerson.create(
             :person_type_id     => PersonType.where(name: mother_type).last.id,
+            :created_at         => params[:person][:created_at].to_date.to_s,
+            :updated_at         => params[:person][:updated_at].to_date.to_s
         )
       
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
@@ -151,6 +162,8 @@ module Lib
 
       core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: father_type).last.id,
+          :created_at         => params[:person][:created_at].to_date.to_s,
+          :updated_at         => params[:person][:updated_at].to_date.to_s
       )
     
       father_person = Person.create(
@@ -500,6 +513,7 @@ end
         end
     else
        #status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
+       status = PersonRecordStatus.new_record_state(person.id, params[:record_status])
     end
     rescue StandardError =>e
 
@@ -522,6 +536,23 @@ end
       end
     end
 
+  end
+
+  def self.save_ids(content)
+    
+     file_path = "#{Rails.root}/app/assets/data/person.csv"
+     if !File.exists?(file_path)
+         file = File.new(file_path, 'w')
+     else
+       File.open(file_path, 'a') do |f|
+         f.puts "#{content}"
+       end
+     end
+  end
+
+  def self.write_to_dump(filename,content)
+     
+     `echo -n '#{content}' >> #{Rails.root}/app/assets/data/migration_dumps/#{filename}`    
   end
   
   def self.is_twin_or_triplet(type_of_birth)

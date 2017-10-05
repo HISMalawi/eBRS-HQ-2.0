@@ -1,5 +1,33 @@
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
+@dump_files = "#{Rails.root}/app/assets/data/migration_dumps/"
+
+def prepare_dump_files
+
+	core_person ="INSERT INTO core_person (person_id,person_type_id,created_at,updated_at) VALUES "
+	person = "INSERT INTO person () VALUES "
+	person_name = "INSERT INTO person_name () VALUES "
+	person_addresses = "INSERT INTO person_addresses () VALUES ()"
+	person_relationship = "INSERT INTO person_relationship () VALUES "
+	person_attribute = "INSERT INTO person_attribute () VALUES "
+	person_birth_details = "INSERT INTO person_birth_details () VALUES "
+	potential_duplicate = "INSERT INTO potential_duplicate () VALUES "
+	identifier_allocation_queue = "INSERT INTO identifier_allocation_queue () VALUES "
+	person_record_status = "INSERT INTO person_record_status () VALUES "
+
+	`cd #{@dump_files} && [ -f core_person.sql ] && rm core_person.sql && [ -f person_name.sql ] && rm person_name.sql && [ -f person_addresses.sql ] && rm person_addresses.sql && [ -f person_relationship.sql ] && rm person_relationship.sql && [ -f person_attribute.sql ] && rm person_attribute.sql && [ -f identifier_allocation_queue.sql ] && rm identifier_allocation_queue.sql && [ -f person_birth_details.sql ] && rm person_birth_details.sql && [ -f potential_duplicate.sql ] && rm potential_duplicate.sql && [ -f person_record_status.sql ] && rm person_record_status.sql`
+    `cd #{@dump_files} && touch core_person.sql person.sql person_name.sql person_addresses.sql person_attribute.sql person_identifier.sql person_relationship.sql person_birth_details.sql potential_duplicate.sql identifier_allocation_queue.sql potential_duplicate.sql person_record_status.sql`
+    `echo -n '#{core_person}' >> #{@dump_files}core_person.sql`
+    `echo -n '#{person}' >> #{@dump_files}person.sql`
+    `echo -n '#{person_name}' >> #{@dump_files}person_name.sql`
+    `echo -n '#{person_addresses}' >> #{@dump_files}person_addresses.sql`
+    `echo -n '#{person_relationship}' >> #{@dump_files}person_relationship.sql`
+    `echo -n '#{person_attribute}' >> #{@dump_files}person_attribute.sql`
+    `echo -n '#{person_birth_details}' >> #{@dump_files}person_birth_details.sql`
+    `echo -n '#{person_record_status}' >> #{@dump_files}person_record_status.sql`
+    `echo -n '#{potential_duplicate}' >> #{@dump_files}potential_duplicate.sql`
+    `echo -n '#{identifier_allocation_queue}' >> #{@dump_files}identifier_allocation_queue.sql`
+end
 
 def write_log(file, content)
 
@@ -47,12 +75,14 @@ def get_record_status(rec_status, req_status)
   
     puts "<<<<<<<<<<< #{rec_status}   #{req_status}"
     
-      status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE', 
-      							'IN-COMPLETE' =>'DC-INCOMPLETE', 
+    status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
+      							'IN-COMPLETE' =>'DC-INCOMPLETE',
       							'COMPLETE' =>'DC-COMPLETE',
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -60,6 +90,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -79,15 +112,15 @@ def get_record_status(rec_status, req_status)
 					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
 		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
 
-  puts "#{status[rec_status][req_status]}"
+  return status[rec_status][req_status]
 
 end
 
 def func
   
   data ={}
-  records = Child.all.limit(500).each
-
+  records = Child.all.limit(20).each
+  count = 1
   (records || []).each do |r|
 
   data = { person: {duplicate: "", is_exact_duplicate: "", 
@@ -156,12 +189,13 @@ def func
 				   record_status: r[:record_status],
 				   _rev: r[:_rev],
 				   _id: r[:_id],
+				   count: count,
 				   request_status: r[:request_status], 
 				   copy_mother_name: "No", 
 				   controller: "person", 
 				   action: "create"
 				  }
-            
+=begin            
             if ["Twin","Triplet","Second Twin","Second Triplet","Third Triplet"].include? data[:person][:type_of_birth]
             	if data[:person][:type_of_birth] == "Twin" || data[:person][:type_of_birth] == "Triplet"
             		 row = "#{data[:person][:type_of_birth]},#{data[:_id]},"
@@ -180,10 +214,15 @@ def func
             	end
 
                
-            end
+        end
+=end 
+     
+     puts ">>>>>>>>>>>>>>Number: #{count}"
+     count = count + 1
    end
    
 end
 
 #func
 #get_prev_child_id
+prepare_dump_files

@@ -1,0 +1,1 @@
+INSERT INTO core_person (person_id,person_type_id,created_at,updated_at) VALUES (1003561, "7",2017-09-28 10:17:24 UTC, 2017-09-28 10:17:24 UTC"),(1003561, "7",2017-09-28 10:17:29 UTC, 2017-09-28 10:17:29 UTC"),

@@ -27,17 +27,6 @@ def write_log(file, content)
     end
 end
 
-def record_multiple_birth(params)
-
-	puts "Recording multiple birth instance for #{params[:person][:first_name]} #{params[:person][:last_name]} ..."
-    if !File.exists?(@multiple_birth_file)
-    	file = File.new(@multiple_birth_file, 'w')
-    else
-    	File.open(@multiple_birth_file, 'a')do |f|
-           #f.puts "{'_id' => {'#{params['_id']'=> {#{params['person']}},"
-        end
-    end
-end
 
 def log_error(error_msge, content)
 
@@ -54,32 +43,29 @@ def log_error(error_msge, content)
 
  end
 
-def save_partial_record(params, district_id_number)
-
-end
 
 def save_full_record(params, district_id_number)
 
-    if !district_id_number.blank?
-
+   begin
+        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
     	person = PersonService.create_record(params)
 
-      if person.present?
+      if !person.blank?
         
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        begin
-        	status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-	        record_status.update_attributes(status_id: Status.where(name: status).last.id)
-	        assign_district_id(person.person_id, (district_id_number.to_s rescue nil))
-	        puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-        rescue StandardError => e
-            log_error(e.message, params)
-        end
+        
+        	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
+	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
+	    puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
+
         
       end
-    else
-    	 write_log(@suspected,params)
-    end
+
+   rescue StandardError => e
+          log_error(e.message, params)
+   end
+
 end
 
 def mother_record_exist
@@ -249,6 +235,8 @@ def get_record_status(rec_status, req_status)
       							'DUPLICATE' =>'DC-DUPLICATE',
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
+      							'PENDING' => 'DC-PENDING',
+      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -256,6 +244,9 @@ def get_record_status(rec_status, req_status)
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -309,14 +300,15 @@ def test_method
     transform_record(data)
 end
 
-def func
+def build_client_record(current_pge, pge_size)
 
   data ={}
 
-  records = Child.all.limit(10000).each
+  records = Child.all.page(current_pge).limit(pge_size)
+ 
 
   (records || []).each do |r|
-
+     
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -399,6 +391,24 @@ def func
 
 end
 
-#test_method
-#func
+
+def initiate_migration
+
+	total_records = Child.count
+	page_size = 100
+	total_pages = (total_records / page_size) + (total_records % page_size)
+	current_page = 1
+
+	while (current_page < total_pages) do
+
+        build_client_record(current_page, page_size)
+        current_page = current_page + 1
+	end
+
+     puts "\n"
+	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
+	 puts "\n"
+end
+
+initiate_migration
 
