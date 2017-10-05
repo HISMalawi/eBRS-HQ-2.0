@@ -62,7 +62,7 @@ def verify_location(owner, location_type, data)
                 home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
                 home_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', home_district_id)
                 home_village_id   = Location.locate_id(data[:person][:mother][:current_village], 'Village', home_ta_id)
-                
+
                 unless cur_village_id.blank? || home_village_id.blank?
                 	location_found = true
                 else
@@ -88,7 +88,7 @@ def verify_location(owner, location_type, data)
              else
              	location_found = false
              end
-		end	
+		end
 
 	else
 
@@ -112,7 +112,7 @@ def verify_location(owner, location_type, data)
                 home_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
                 home_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', home_district_id)
                 home_village_id   = Location.locate_id(data[:person][:father][:current_village], 'Village', home_ta_id)
-                
+
                 unless cur_village_id.blank? || home_village_id.blank?
                 	location_found = true
                 else
@@ -141,10 +141,10 @@ def verify_location(owner, location_type, data)
 
 	    end
 
-    end	
+    end
 
 	return location_found
-end 
+end
 
 def log_error(error_msge, content)
 
@@ -174,7 +174,7 @@ def pre_migration_check(params)
          write_log(@missing_multiple_birth_ids, content)
         end
       end
-      
+
 	  if params[:person][:type_of_birth].blank?
         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
         write_log(@missing_birth_type, content)
@@ -235,15 +235,15 @@ def save_full_record(params, district_id_number)
     	person = PersonService.create_record(params)
 
       if !person.blank?
-        
+
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
-        
+
         	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
 	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
 	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
 	    puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
 
-        
+
       end
 
    rescue StandardError => e
@@ -389,7 +389,7 @@ def transform_record(data)
        	end
     else
     end
-    
+
     #==================== Transform the citizenship if not complying with those specified in the metadata
     data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
     data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
@@ -458,28 +458,28 @@ end
 def test_method
 	data ={}
 	data = {person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Ndala",
-	        first_name:"Zimbota", middle_name:"", birthdate:"30/Oct/2015", birth_district:"Blantyre", 
-	        gender:"Male", place_of_birth:"Hospital", hospital_of_birth:"Mlambe Hospital", 
-	        birth_weight:"3.700", type_of_birth:"Single", parents_married_to_each_other:"Yes", 
-	        court_order_attached:"", parents_signed:"", national_serial_number:"00000214140", 
-	        district_id_number:"BT/0000125/2016", mother:{last_name:"Mkuwu", first_name:"Angella", 
-	        middle_name:"", birthdate:"22/Oct/1985", birthdate_estimated:"", 
-	        citizenship:"Malawian", residential_country:"Malawi", current_district:"Blantyre", 
-	        current_ta:"Machinjiri", current_village:"Machinjiri", home_district:"Mangochi", 
-	        home_ta:"Mponda", home_village:"Michesi"}, mode_of_delivery:"SVD", 
-	        level_of_education:"Secondary", father:{birthdate_estimated:"", 
-	        residential_country:"Malawi"}, informant:{last_name:"Mkuwu", first_name:"Angella", 
-	        middle_name:"", relationship_to_person:"Mother", current_district:"Blantyre", 
-	        current_ta:"Machinjiri", current_village:"Machinjiri", addressline1:"", 
-	        addressline2:"", phone_number:"0993853933"}, form_signed:"Yes", 
-	        acknowledgement_of_receipt_date:"2015-11-06 160456 -1000".to_date.strftime("%d/%b/%Y")}, 
-	        home_address_same_as_physical:"Yes", gestation_at_birth:"37", number_of_prenatal_visits:"4", 
-	        month_prenatal_care_started:"3", number_of_children_born_alive_inclusive:"2", 
-	        number_of_children_born_still_alive:"2", same_address_with_mother:"", 
-	        informant_same_as_mother:"Yes", registration_type:"normal", 
-	        record_status:"PRINTED", _rev:"7-213580c4bcfdf268c901d5c3b11617c2", 
-	        _id:"0275f9967f6069e00bbf2d310871a2f8", request_status:"DISPATCHED", 
-	        biological_parents:"", foster_parents:"", parents_details_available:"", 
+	        first_name:"Zimbota", middle_name:"", birthdate:"30/Oct/2015", birth_district:"Blantyre",
+	        gender:"Male", place_of_birth:"Hospital", hospital_of_birth:"Mlambe Hospital",
+	        birth_weight:"3.700", type_of_birth:"Single", parents_married_to_each_other:"Yes",
+	        court_order_attached:"", parents_signed:"", national_serial_number:"00000214140",
+	        district_id_number:"BT/0000125/2016", mother:{last_name:"Mkuwu", first_name:"Angella",
+	        middle_name:"", birthdate:"22/Oct/1985", birthdate_estimated:"",
+	        citizenship:"Malawian", residential_country:"Malawi", current_district:"Blantyre",
+	        current_ta:"Machinjiri", current_village:"Machinjiri", home_district:"Mangochi",
+	        home_ta:"Mponda", home_village:"Michesi"}, mode_of_delivery:"SVD",
+	        level_of_education:"Secondary", father:{birthdate_estimated:"",
+	        residential_country:"Malawi"}, informant:{last_name:"Mkuwu", first_name:"Angella",
+	        middle_name:"", relationship_to_person:"Mother", current_district:"Blantyre",
+	        current_ta:"Machinjiri", current_village:"Machinjiri", addressline1:"",
+	        addressline2:"", phone_number:"0993853933"}, form_signed:"Yes",
+	        acknowledgement_of_receipt_date:"2015-11-06 160456 -1000".to_date.strftime("%d/%b/%Y")},
+	        home_address_same_as_physical:"Yes", gestation_at_birth:"37", number_of_prenatal_visits:"4",
+	        month_prenatal_care_started:"3", number_of_children_born_alive_inclusive:"2",
+	        number_of_children_born_still_alive:"2", same_address_with_mother:"",
+	        informant_same_as_mother:"Yes", registration_type:"normal",
+	        record_status:"PRINTED", _rev:"7-213580c4bcfdf268c901d5c3b11617c2",
+	        _id:"0275f9967f6069e00bbf2d310871a2f8", request_status:"DISPATCHED",
+	        biological_parents:"", foster_parents:"", parents_details_available:"",
 	        copy_mother_name:"No", controller:"person", action:"create"}
 
     transform_record(data)
@@ -490,10 +490,10 @@ def build_client_record(current_pge, pge_size)
   data ={}
 
   records = Child.all.page(current_pge).limit(pge_size)
- 
+
 
   (records || []).each do |r|
-     
+
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -549,7 +549,53 @@ def build_client_record(current_pge, pge_size)
 					     addressline2: r[:informant][:addressline2],
 					     phone_number: r[:informant][:phone_number]
 					  },
-					   form_signed: r[:form_signed],
+						foster_mother: {
+								id_number: r[:id_number],
+								first_name: r[:first_name],
+								middle_name: r[:middle_name],
+								last_name: r[:last_name],
+								birthdate: r[:birthdate],
+								birthdate_estimated: r[:birthdate_estimated],
+								current_village: r[:current_village],
+								current_ta: r[:current_ta],
+								current_district: r[:current_district],
+								home_village: r[:home_village],
+								home_ta: r[:home_ta],
+								home_district: r[:home_district],
+								home_country: r[:home_country],
+								citizenship: r[:citizenship],
+								residential_country: r[:residential_country],
+								foreigner_current_district: r[:foreigner_current_district],
+								foreigner_current_village: r[:foreigner_current_village],
+								foreigner_current_ta: r[:foreigner_current_ta],
+								foreigner_home_district: r[:foreigner_home_district],
+								foreigner_home_village: r[:foreigner_home_village],
+								foreigner_home_ta: r[:foreigner_home_ta]
+			        },
+		     	  foster_father: {
+							id_number: r[:id_number],
+							first_name: r[:first_name],
+							middle_name: r[:middle_name],
+							last_name: r[:last_name],
+							birthdate: r[:birthdate],
+							birthdate_estimated: r[:birthdate_estimated],
+							current_village: r[:current_village],
+							current_ta: r[:current_ta],
+							current_district: r[:current_district],
+							home_village: r[:home_village],
+							home_ta: r[:home_ta],
+							home_district: r[:home_district],
+							home_country: r[:home_country],
+							citizenship: r[:citizenship],
+							residential_country: r[:residential_country],
+							foreigner_current_district: r[:foreigner_current_district],
+							foreigner_current_village: r[:foreigner_current_village],
+							foreigner_current_ta: r[:foreigner_current_ta],
+							foreigner_home_district: r[:foreigner_home_district],
+							foreigner_home_village: r[:foreigner_home_village],
+							foreigner_home_ta: r[:foreigner_home_ta]
+						 },
+				    form_signed: r[:form_signed],
 					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
 					  },
 					   home_address_same_as_physical: "Yes",
@@ -599,4 +645,3 @@ def initiate_migration
 end
 
 initiate_migration
-
