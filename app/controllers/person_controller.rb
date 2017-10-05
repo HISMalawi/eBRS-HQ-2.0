@@ -853,6 +853,10 @@ class PersonController < ApplicationController
   def birth_certificate
 
     @data = []
+    signatory = User.find_by_username(GlobalProperty.find_by_property("signatory").value) rescue nil
+    signatory_attribute_type = PersonAttributeType.find_by_name("Signature") if signatory.present?
+    @signature = PersonAttribute.find_by_person_id_and_person_attribute_type_id(signatory.id,signatory_attribute_type.id).value rescue nil
+
     person_ids = params[:person_ids].split(',')
     person_ids.each do |person_id|
       data = {}
