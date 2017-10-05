@@ -300,7 +300,7 @@ class PersonController < ApplicationController
       person["gender"] = (@person.gender == 'F' ? 'Female' : 'Male')
       person["birthdate"]= @person.birthdate.to_date
       person["birthdate_estimated"] = @person.birthdate_estimated
-      person["nationality"]=  @mother_person.citizenship
+      person["nationality"]=  @mother_person.citizenship rescue ''
       person["place_of_birth"] = @place_of_birth
       if  birth_loc.district.present?
         person["district"] = birth_loc.district
