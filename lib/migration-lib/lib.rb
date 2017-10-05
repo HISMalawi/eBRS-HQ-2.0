@@ -65,7 +65,7 @@ module Lib
         mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
         mother[:residential_country] = 'Malawi' if mother[:residential_country].blank?
 
-      puts "Creating mother for: #{person.person_id} Mother_id: #{core_person.id} >>>>"
+
         mother_person = Person.create(
             :person_id          => core_person.id,
             :gender             => 'F',
@@ -74,9 +74,7 @@ module Lib
             :created_at         => params[:person][:created_at].to_date.to_s,
             :updated_at         => params[:person][:updated_at].to_date.to_s
         )
-      puts " Person created...\n"
 
-      puts "Creating PersonName for #{core_person.id} ....\n"
         person_name = PersonName.create(
             :person_id          => core_person.id,
             :first_name         => mother[:first_name],
@@ -85,7 +83,6 @@ module Lib
             :created_at         => params[:person][:created_at].to_date.to_s,
             :updated_at         => params[:person][:updated_at].to_date.to_s
         )
-       puts " PersonName created...\n"
       
         cur_district_id         = Location.locate_id_by_tag(mother[:current_district], 'District')
         cur_ta_id               = Location.locate_id(mother[:current_ta], 'Traditional Authority', cur_district_id)
@@ -95,7 +92,6 @@ module Lib
         home_ta_id              = Location.locate_id(mother[:home_ta], 'Traditional Authority', home_district_id)
         home_village_id         = Location.locate_id(mother[:home_village], 'Village', home_ta_id)
         
-        puts "Creating personAddress for #{core_person.id}...\n"
       
         person_address = PersonAddress.create(
             :person_id          => core_person.id,
@@ -120,7 +116,7 @@ module Lib
             :created_at         => params[:person][:created_at].to_date.to_s,
             :updated_at         => params[:person][:updated_at].to_date.to_s
         )
-       puts " PersonAddress created...\n" 
+
      rescue StandardError => e
 
           self.log_error(e.message, params)
@@ -137,7 +133,6 @@ module Lib
       )
     end
 
-    puts "Mother record for client: #{person.person_id} created..."
 
     mother_person
   end
@@ -231,7 +226,6 @@ module Lib
       )
     end
     
-    puts "Father record for client: #{person.person_id} created..."
 
     father_person
 
@@ -321,7 +315,6 @@ def self.new_informant(person, params)
         updated_at: params[:person][:updated_at].to_date.to_s
     )
 
-    puts "Informant record for client: #{person.person_id} created..."
 
     if informant[:phone_number].present?
       PersonAttribute.create(
@@ -388,7 +381,6 @@ def self.new_birth_details(person, params)
     reg_type = SETTINGS['application_mode'] =='FC' ? BirthRegistrationType.where(name: 'Normal').first.birth_registration_type_id :
         BirthRegistrationType.where(name: params[:person][:relationship]).last.birth_registration_type_id
     
-    puts "creating new birth details... Type of birth #{person[:type_of_birth]}"
 
     unless person[:type_of_birth].blank?
 
@@ -445,7 +437,7 @@ def self.new_birth_details(person, params)
         other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
         acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
         location_created_at:                      SETTINGS['location_id'],
-        date_registered:                          (Date.today.to_s),
+        date_reported:                            params[:person][:created_at].to_date.to_s,
         created_at:                               params[:person][:created_at].to_date.to_s,
         updated_at:                               params[:person][:updated_at].to_date.to_s
     )
