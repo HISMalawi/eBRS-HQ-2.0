@@ -159,22 +159,22 @@ function fetchData() {
 </table>
 
 <script>
+  
 
+  function activeDate() {
+    jQuery(function() {
+      jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
 
-function activeDate() {
-  jQuery(function() {
-    jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
-  });
+    jQuery(function() {
+      jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    }); 
 
-  jQuery(function() {
-    jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
-  }); 
+  }
 
-}
-
-activeDate();
-dataT();
-jQuery(document).ready(function(){
-      fetchData();
-})
+  activeDate();
+  dataT();
+  jQuery(document).ready(function(){
+        fetchData();
+  })
 </script>
