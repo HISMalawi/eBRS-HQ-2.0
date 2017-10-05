@@ -455,8 +455,7 @@ def get_record_status(rec_status, req_status)
 
 end
 
-<<<<<<< HEAD
-=======
+
 def test_method
 	data ={}
 	data = {person:{duplicate:"", is_exact_duplicate:"", relationship:"normal", last_name:"Ndala",
@@ -643,7 +642,6 @@ def initiate_migration
 	current_page = 1
 	start_time = Time.now
 	while (current_page < total_pages) do
-
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Time taken #{(Time.now - start_time)/60} minites"
