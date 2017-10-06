@@ -166,6 +166,40 @@ class ReportController < ApplicationController
     render text: records.to_json
   end
 
+  def get_active_records
+    person_type       = PersonType.where(name: 'Client').first.id
+    status_id        = Status.where(name: 'HQ-ACTIVE').first.id
+    start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
+    end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
+
+    data = ActiveRecord::Base.connection.select_all("SELECT person.*, n.*, d.*, s.created_at dispatch_date FROM person
+      INNER JOIN core_person p
+      ON person.person_id = p.person_id
+      INNER JOIN person_birth_details d ON d.person_id = person.person_id
+      INNER JOIN person_name n ON n.person_id = p.person_id
+      INNER JOIN person_record_statuses s ON s.person_id = person.person_id AND s.voided = 0
+      WHERE p.person_type_id = #{person_type}
+        AND s.status_id = #{status_id} AND s.created_at BETWEEN #{start_date} AND #{end_date}
+        ORDER p.created_at DESC, district_id_number ASC GROUP BY n.person_id")
+
+    records = []
+    (data || []).each do |r|
+      p = Person.find(r.person_id)
+      records << {
+          registration_number: r.national_serial_number,
+          birth_entry_number: r.district_id_number,
+          first_name: p.first_name,
+          middle_name: p.middle_name,
+          last_name: p.last_name,
+          birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
+          gender: p.full_gender,
+          person_id: p.person_id
+      }
+    end
+
+    render text: records.to_json
+  end
+
   def registered_births
     @districts = districts
   end
@@ -214,8 +248,7 @@ class ReportController < ApplicationController
   def birth_reports
     @districts = districts
     @statuses = Status.all.map(&:name)
-    status = (params[:status].present? ? params[:status] : "Reported")
-    @data = Report.births_report(params[:district],params[:start_date], params[:end_date],status)
+    @data = Report.births_report(params)
   end
 
   private

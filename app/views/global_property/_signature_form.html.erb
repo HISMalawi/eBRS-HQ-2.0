@@ -1,0 +1,77 @@
+<style>
+  .form-control, select{
+      width: 75%; !important;
+      margin: 0px;
+      margin-left: 50px;
+      color: black;
+  }
+label{
+    width: 60%;
+    font-weight: bold;
+    color: #3465a4;
+    padding: 0px; margin-top: 0px;
+}
+.form-group{
+}
+sup{
+    color: red;
+    font-size: 14px;
+}
+</style>
+
+<%= form_for(@property, url: "/set_property", method: 'post') do |f| %>
+    <div class="form-group">
+        <label for="admin_password"><sup>*</sup>Admin Password:</label>
+        <%= f.password_field "admin_password", 
+           :class => "input_cell form-control", 
+           :required => true, 
+           :textCase => "lower" %>
+    </div>
+
+    <div class="form-group">
+      <label for="signatory_username"><sup>*</sup>Signatory Username:</label>
+      <%= f.text_field "value", 
+         :class => "input_cell form-control", 
+         :required => true, 
+         :textCase => "lower" %>
+  </div>
+  
+  <div class="form-group">
+    <label for="signatory_password"><sup>*</sup>Signatory Password:</label>
+    <%= f.password_field "signatory_password", 
+       :class => "input_cell form-control", 
+       :required => true, 
+       :textCase => "lower" %>
+</div>
+
+    <div style="padding: 8px;">
+        <label id='required' class="label label-danger hidden">
+          Please enter all required fields indicated by *
+        </label>
+    </div>
+    <a class="btn btn-success pull-right"
+       onclick="validate()">
+      <span class="fa fa-save"></span>
+      Save
+    </a>
+
+    <a class="btn btn-warning"
+       onclick="javascript:location='person/index'">
+      <span class="fa fa-chevron-circle-left"></span>
+      Back
+    </a>
+<% end %>
+<script>
+  function validate(){
+      var compulsory_fields = ['global_property_admin_password', 'global_property_value','global_property_signatory_password'];
+
+      for(var i = 0; i < compulsory_fields.length; i ++){
+          if (__$(compulsory_fields[i]).value.trim().length == 0){
+              jQuery('.label-danger').attr('class', 'label label-danger hidden');
+            __$("required").className = "label label-danger";
+              return;
+          }
+      }
+      __$('new_global_property').submit();
+  }
+</script>

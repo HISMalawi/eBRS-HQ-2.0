@@ -10,24 +10,17 @@ end
 module EbrsAttribute
 
   def send_data(hash)
-
+    id = "#{self.class.table_name}_#{self.id}"
+    hash = hash.as_json
     hash.each {|k, v|
       hash[k] = v.to_s(:db) if (['Time', 'Date', 'Datetime'].include?(v.class.name))
     }
 
-    person_id = hash['person_id']
-    person_id = hash['person_a'] if person_id.blank?
-    person_id = PersonName.find(hash['person_name_id']).person_id rescue nil if person_id.blank? && hash['person_name_id'].present?
-    person_id = User.find(hash['user_id']).person_id rescue nil if person_id.blank? && hash['user_id'].present?
-    id = person_id.to_s if !person_id.blank?
-
-    return nil if id.blank?
-
     h = Pusher.database.get(id) rescue nil
     if h.present?
-      h[self.class.table_name] = [] if h[self.class.table_name].blank?
       h['location_id'] = SETTINGS['location_id'] if h['location_id'].blank?
-      h[self.class.table_name] << hash
+
+      h[self.class.table_name] = hash
     else
 
       district_id = Location.find(SETTINGS['location_id']).parent_location
@@ -37,22 +30,28 @@ module EbrsAttribute
           'type' => 'data',
           'location_id' => SETTINGS['location_id'],
           'district_id' => district_id.blank? ? SETTINGS['location_id'] : district_id,
-          self.class.table_name => [hash]
+          self.class.table_name => hash
       }
       h = Pusher.new(temp_hash)
     end
+    port=    YAML.load_file(Rails.root.join('config','couchdb.yml'))[Rails.env]['port']
+    adrs= Socket.ip_address_list.reject{|a| a.inspect.match(/127.0.0.1|0.0.0.0|localhost/) }.collect{|ip|
+      "#{ip.ip_address}:#{port}"}.reject{|ip| !ip.match(/\d+\.\d+\.\d+\.\d+\:\d+/)}
 
     h['change_agent'] = self.class.table_name
+    h['change_location_id'] = SETTINGS['location_id']
+    h['ip_addresses'] = adrs
     h.save
   end
 
   def self.included(base)
     base.class_eval do
-      #before_create :check_record_complteness_before_creating
-      #before_save :check_record_complteness_before_updating, :keep_prev_value
+      before_create :check_record_complteness_before_creating
+      before_save :check_record_complteness_before_updating, :keep_prev_value
       before_create :generate_key
       #after_create :create_or_update_in_couch
-      #after_save :create_or_update_in_couch, :create_audit_trail
+      #after_create :create_audit_trail_after_create
+      after_save :create_or_update_in_couch, :create_audit_trail
     end
   end
 
@@ -73,8 +72,29 @@ module EbrsAttribute
     self.changed_at = Time.now if self.attribute_names.include?("changed_at")
   end
 
+  def next_primary_key
+    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
+    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
+      FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
+    autoincpart = max.to_s.split('')[6 .. 1000].join('').to_i rescue 0
+    auto_id = autoincpart + 1
+    new_id = (location_pad + auto_id.to_s).to_i
+    new_id
+  end
+
+  def generate_key
+    if !self.class.primary_key.blank? && !self.class.primary_key.class.to_s.match('CompositePrimaryKeys')
+      eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
+    end
+  end
+
+  def create_or_update_in_couch
+    send_data(self)
+  end
+
   def create_audit_trail
-    if !["audit_trails","person_name_code","core_person"].include? self.class.table_name 
+
+    if !["audit_trails","person_name_code","core_person"].include? self.class.table_name
       if self.prev.present?
           fields = self.attributes.keys
           prev = self.prev
@@ -103,29 +123,6 @@ module EbrsAttribute
       end
     end
   end
-
-  def next_primary_key
-    location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
-    max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
-      FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
-    autoincpart = max.to_s.split('')[6 .. 1000].join('').to_i rescue 0
-    auto_id = autoincpart + 1
-    new_id = (location_pad + auto_id.to_s).to_i
-    new_id
-  end
-
-  def generate_key
-    if !self.class.primary_key.blank? && !self.class.primary_key.class.to_s.match('CompositePrimaryKeys')
-      eval("self.#{self.class.primary_key} = next_primary_key") if self.attributes[self.class.primary_key].blank?
-    end
-  end
-
-  def create_or_update_in_couch
-    data = self
-    transformed_data = data.as_json
-    send_data(transformed_data)
-  end
-
   def create_method( name, &block )
         self.class.send(:define_method, name, &block )
   end
@@ -162,4 +159,6 @@ module EbrsAttribute
                           comment: "#{self.class.table_name.humanize} record created")
     end
   end
+
+
 end

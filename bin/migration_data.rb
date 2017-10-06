@@ -458,6 +458,7 @@ def get_record_status(rec_status, req_status)
 
 end
 
+<<<<<<< HEAD
 
 def test_method
 	data ={}
@@ -489,13 +490,15 @@ def test_method
     transform_record(data)
 end
 
+=======
+>>>>>>> ab5bbd1f3422d6d1ad6a1fc4d40c35a00f023163
 
 def build_client_record(current_pge, pge_size)
 
   data ={}
 
   records = Child.by__id.page(current_pge).per(pge_size)
- 	
+
   i = 0
   (records || []).each do |r|
 
@@ -629,7 +632,7 @@ def build_client_record(current_pge, pge_size)
 			if i % 100 == 0
 				puts "Migrate #{i}"
 			end
-			
+
 
 			#pre_migration_check(data)
    end
