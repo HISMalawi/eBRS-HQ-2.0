@@ -4,7 +4,7 @@ module PersonService
 
   def self.create_record(params)
 
-    registration_type   = params[:person][:relationship]
+    registration_type   = params[:person][:relationship].downcase
     person  = MigrateChild.new_child(params)
 
     case registration_type

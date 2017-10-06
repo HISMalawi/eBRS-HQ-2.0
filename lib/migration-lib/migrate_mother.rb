@@ -3,8 +3,7 @@ module MigrateMother
      
 	    if self.is_twin_or_triplet(params[:person][:type_of_birth])
 	      mother_person = Person.find(params[:person][:prev_child_id]).mother
-	    else
-	       
+	    else	       
 	        if mother_type =="Adoptive-Mother"
 	          mother = params[:person][:foster_mother]
 	        else

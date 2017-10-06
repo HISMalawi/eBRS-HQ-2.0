@@ -46,12 +46,12 @@ module EbrsAttribute
 
   def self.included(base)
     base.class_eval do
-      before_create :check_record_complteness_before_creating
-      before_save :check_record_complteness_before_updating, :keep_prev_value
+      #before_create :check_record_complteness_before_creating
+      #before_save :check_record_complteness_before_updating, :keep_prev_value
       before_create :generate_key
       #after_create :create_or_update_in_couch
       #after_create :create_audit_trail_after_create
-      after_save :create_or_update_in_couch, :create_audit_trail
+      #after_save :create_or_update_in_couch, :create_audit_trail
     end
   end
 
@@ -60,8 +60,9 @@ module EbrsAttribute
     and (self.creator.blank? || self.creator == 0)and User.current != nil
     self.provider_id = User.current.person.id if self.attribute_names.include?("provider_id") and \
       (self.provider_id.blank? || self.provider_id == 0)and User.current != nil
-    self.created_at = Time.now if self.attribute_names.include?("created_at")
-    self.updated_at = Time.now if self.attribute_names.include?("updated_at")
+
+    self.created_at = Time.now if self.attribute_names.include?("created_at") && self.created_at.blank?
+    self.updated_at = Time.now if self.attribute_names.include?("updated_at") && self.updated_at.blank?
     self.uuid = ActiveRecord::Base.connection.select_one("SELECT UUID() as uuid")['uuid'] \
       if self.attribute_names.include?("uuid")
     self.voided = false if self.attribute_names.include?("voided") and (self.voided.to_s.blank? rescue true)
