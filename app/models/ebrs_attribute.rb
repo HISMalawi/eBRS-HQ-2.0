@@ -46,7 +46,7 @@ module EbrsAttribute
 
   def self.included(base)
     base.class_eval do
-      #before_create :check_record_complteness_before_creating
+      before_create :check_record_complteness_before_creating
       #before_save :check_record_complteness_before_updating, :keep_prev_value
       before_create :generate_key
       #after_create :create_or_update_in_couch
@@ -129,12 +129,12 @@ module EbrsAttribute
   end
 
   def create_attr( name )
-        create_method( "#{name}=".to_sym ) { |val| 
+        create_method( "#{name}=".to_sym ) { |val|
             instance_variable_set( "@" + name, val)
         }
 
-        create_method( name.to_sym ) { 
-            instance_variable_get( "@" + name ) 
+        create_method( name.to_sym ) {
+            instance_variable_get( "@" + name )
         }
   end
   def keep_prev_value
@@ -147,8 +147,8 @@ module EbrsAttribute
           else
             self.prev = nil
           end
-       else 
-          self.prev = self.class.find(self.id) rescue nil        
+       else
+          self.prev = self.class.find(self.id) rescue nil
        end
   end
   def create_audit_trail_after_update
