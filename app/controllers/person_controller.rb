@@ -300,7 +300,7 @@ class PersonController < ApplicationController
       person["gender"] = (@person.gender == 'F' ? 'Female' : 'Male')
       person["birthdate"]= @person.birthdate.to_date
       person["birthdate_estimated"] = @person.birthdate_estimated
-      person["nationality"]=  @mother_person.citizenship
+      person["nationality"]=  @mother_person.citizenship rescue ''
       person["place_of_birth"] = @place_of_birth
       if  birth_loc.district.present?
         person["district"] = birth_loc.district
@@ -853,6 +853,10 @@ class PersonController < ApplicationController
   def birth_certificate
 
     @data = []
+    signatory = User.find_by_username(GlobalProperty.find_by_property("signatory").value) rescue nil
+    signatory_attribute_type = PersonAttributeType.find_by_name("Signature") if signatory.present?
+    @signature = PersonAttribute.find_by_person_id_and_person_attribute_type_id(signatory.id,signatory_attribute_type.id).value rescue nil
+
     person_ids = params[:person_ids].split(',')
     person_ids.each do |person_id|
       data = {}

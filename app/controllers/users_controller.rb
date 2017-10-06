@@ -89,8 +89,8 @@ class UsersController < ApplicationController
           signature = uploaded_io.original_filename
           attribute_type = PersonAttributeType.find_by_name("Signature") 
           PersonAttribute.create(person_id: core_person.id, 
-                                     person_attribute_type_id: attribute_type.id, 
-                                     value: signature)
+                                 person_attribute_type_id: attribute_type.id, 
+                                 value: signature)
         end
       end  
       
