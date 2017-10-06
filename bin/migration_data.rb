@@ -3,7 +3,8 @@ require 'migration-lib/migrate_mother'
 require 'migration-lib/migrate_father'
 require 'migration-lib/migrate_informant'
 require "migration-lib/migrate_birth_details"
-require'migration-lib/person_service'
+require 'migration-lib/person_service'
+require "simple_elastic_search"
 
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
@@ -623,14 +624,15 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 1000
+	page_size = 10
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
 	while (current_page < total_pages) do
         build_client_record(current_page, page_size)
         current_page = current_page + 1
-        puts "Migrated about #{page_size * current_page} in #{(Time.now - start_time)/60} minutes"
+        puts "Migrated about #{page_size * (current_page - 1 )} in #{(Time.now - start_time)/60} minutes"
+        break
 	end
 
    puts "\n"
