@@ -496,7 +496,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "value",      limit: 20, null: false
     t.integer  "assigned",   limit: 1,   default: 0, null: false
     t.bigint  "person_id", limit: 4
-    t.datetime "update_at"
+    t.datetime "updated_at"
     t.datetime "created_at"
   end
   
