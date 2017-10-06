@@ -201,7 +201,7 @@
               
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coa.png', class: '', width: '60' %></a></p>
-              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;" class="centered"><%=User.current.username%></h5>
+              	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;padding-bottom: 15px;" class="centered"><%=User.current.username%></h5>
 
               	  	
                   <li class="">
@@ -254,7 +254,7 @@
                           <%if @folders.include?('Manage Users') %>
                             <li><a  href="/users">Manage users</a></li>
                             <li><a  href="/paper">Set Paper Size</a></li>
-                            <li><a  href="/signature">Set Signature</a></li>
+                            <li><a  href="/signature">Set Signatory</a></li>
                           <%end%>
 
                         <%if @folders.include?('My Account') %>
@@ -279,6 +279,7 @@
                           <li><a  href="/registered_births">Registered Births</a></li>
                           <li><a  href="/approved_at_hq">Approved at HQ</a></li>
                           <li><a  href="/voided_records">Voided Records</a></li>
+                          <li><a  href="/active_records">Active Records</a></li>
                           <li><a  href="/user_audit_trail">User Audits</a></li>
                       </ul>
                   </li>

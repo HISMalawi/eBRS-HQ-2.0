@@ -1,7 +1,4 @@
 #Create couch DB
-h = Hallo.new
-h.save
-h.destroy
 
 def create_user
   puts "Creating Person Type for User"
@@ -43,6 +40,9 @@ def create_user
   User.current = User.first
       
   puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
+
+  CouchdbSequence.create!(seq: 0)
+
 end
 
 begin

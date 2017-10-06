@@ -17,33 +17,37 @@
   margin-left: 5%;
 }
 
+#map{
+    max-width: 650px;
+    max-height: 730px;
+}
 </style>
 
 <%= stylesheet_link_tag "bootstrap/bootstrap" %>                                         
 <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
 
 <div class="panel panel-default">
-  <div class="panel-heading" style="height: 50px;">
+  <div class="panel-heading" style="height: 40px;">
     <table style="width: 100%;">
       <tr>
         <td>
-          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
-        </td>
-        <td colspan="8" style="width: 60%;">
-          <div class="pull-right" style="height: 40px; margin-top: 0px;">
-
-          </div>
+          <h3 style="padding-bottom: 12.5px;color:darkslategray; height: 30px;margin-top: 0px;"><%= @section%></h3>
         </td>
       </tr>
     </table>
   </div>
-  <div class="col-lg-12 main-chart"> 
-    
-    <div class="row ">
+
+  <div class="col-lg-4">
+    <iframe id="map" style="border: 1px solid lightgray; border-top: none; height: 50vh; width: 98%" scrolling="no" id="main-display" src="/person/map_main"></iframe>
+  </div>
+
+  <div class="col-lg-8 main-chart" style="padding-top: 0px;">
+    <h3 style="width: 100%; text-align: center;padding: 0px;" id="district_label">&nbsp;</h3>
+    <div class="row " style="width: 97%; margin: auto;  box-shadow: 0px 5px 5px darkslategray, 0px 5px 5px black; padding: 15px;">
       <%
         attributes = [
           ['Newly Received (HQ)', @stats['HQ-ACTIVE']],
-          ['Print Que (HQ)', @stats['HQ-CAN-PRINT']],
+          ['Print Queue (HQ)', @stats['HQ-CAN-PRINT']],
           ['Verified (HQ)', @stats['HQ-APPROVED']],
           ['Re-print Que (HQ)', @stats['HQ-RE-PRINT']],
           ['Suspected Duplicate (HQ)', @stats['HQ-POTENTIAL DUPLICATE']],
@@ -53,11 +57,13 @@
           ['Voided (HQ)', @stats['HQ-VOIDED']],
         ]
       %>
-      <%(attributes || []).each do |a, count|%>   
-      <div class="col-md-2 col-sm-2 col-md-offset-1 box0">
+
+      <%(attributes || []).each do |a, count|%>
+
+      <div class="col-md-3 col-sm-3 col-md-offset-1 box0">
         <div class="box1" style="padding: 0px;">
           <span class="li_heart"></span>
-          <h3 style="color: black;"><%=count%></h3>
+          <h3 style="color: black;" class='stat-count' id="<%= a%>" default-value="<%=count%>"><%=count%></h3>
         </div>
         <p style="color: darkslategray;"><%= a %></p>
       </div>
@@ -81,7 +87,6 @@
       </div--> 
 
     </div> 
-  </div> 
-
-
+  </div>
 </div>
+
