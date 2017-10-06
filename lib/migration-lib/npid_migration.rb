@@ -33,7 +33,7 @@ npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
   puts "#{i}/#{total}"
 
-  BarcodeIdentifier.new(
+  BarcodeIdentifier.create(
     value: pid['national_id'],
     assigned: (pid['assigned'] == true ? 1 : 0),
     created_at: (pid['created_at'].to_datetime rescue nil),

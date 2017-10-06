@@ -28,6 +28,11 @@ mysql_username = mysql_db_settings["username"]
 mysql_password = mysql_db_settings["password"]
 mysql_host = mysql_db_settings["host"] || '0.0.0.0'
 mysql_db = mysql_db_settings["database"]
+
+$mysql_username = mysql_db_settings["username"]
+$mysql_password = mysql_db_settings["password"]
+$mysql_host = mysql_db_settings["host"] || '0.0.0.0'
+$mysql_db = mysql_db_settings["database"]
 mysql_port = mysql_db_settings["port"] || '3306'
 mysql_adapter = mysql_db_settings["adapter"]
 #reading db_mapping
@@ -86,8 +91,27 @@ class Methods
       insert_query += ( values.join(",")) + ")"
       query = "#{insert_query} ON DUPLICATE KEY #{update_query};"
 
-      open("#{Dir.pwd}/public/query.sql", 'a') do |f|
-        f << "#{query}"
+      begin
+
+
+        %x[
+          mysql -h#{$mysql_host} -u#{$mysql_username} -p#{$mysql_password} -e "SET GLOBAL foreign_key_checks=0"
+        ]
+
+        ActiveRecord::Base.connection.execute(query)
+
+        %x[
+          mysql -h#{$mysql_host} -u#{$mysql_username} -p#{$mysql_password} -e "SET GLOBAL foreign_key_checks=1"
+        ]
+      rescue => e
+        #open("#{Dir.pwd}/public/query.sql", 'a') do |f|
+        #  f << "#{query}"
+        #end
+        id = "#{table}_#{p_value}"
+        open("#{Dir.pwd}/public/errors/#{id}", 'a') do |f|
+          f << "#{query}"
+          f << "\n\n#{e}"
+        end
       end
     end
   end
@@ -101,15 +125,16 @@ changes_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_
 
 data = JSON.parse(RestClient.get(changes_link))  rescue {}
 
-open("#{Dir.pwd}/public/query.sql","w") do |file|
-  file.write('')
-end
+#open("#{Dir.pwd}/public/query.sql","w") do |file|
+#  file.write('')
+#end
 
 (data['results'] || []).each do |result|
   seq = result['seq']
   Methods.update_doc(result['doc'], seq)
 end
 
+=begin
 
 %x[
    mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} -e "SET GLOBAL foreign_key_checks=0"
@@ -120,8 +145,10 @@ end
 %x[
   mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} -e "SET GLOBAL foreign_key_checks=1"
 ]
+=end
 
 %x[
   mysql -h#{mysql_host} -u#{mysql_username} -p#{mysql_password} #{mysql_db} -e "UPDATE couchdb_sequence SET seq=#{seq}"
 ]
+
 
