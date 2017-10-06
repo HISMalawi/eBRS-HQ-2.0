@@ -38,9 +38,9 @@ module PersonService
           mother   = MigrateFather.new_father(person, params, 'Father')
         end
         informant = MigrateInformant.new_informant(person, params)
-    else 
-
-    end
+      else 
+          puts "Write some to track registration type not present"
+      end
    
     details = MigrateBirthDetails.new_birth_details(person, params)
     
