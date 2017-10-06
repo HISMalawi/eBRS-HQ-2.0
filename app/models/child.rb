@@ -3,11 +3,11 @@ require 'couchrest_model'
 class Child < CouchRest::Model::Base
    use_database "child"
   validates :national_serial_number , uniqueness: {allow_blank: true, message: "BRN cannot be duplicate"}
-  
+
   validates :district_id_number , uniqueness: {allow_blank: true, message: "BEN cannot be duplicate"}
- 
+
   validates :npid , uniqueness: {allow_blank: true, message: "NPID cannot be duplicate"}
-  
+
   validates_with ChildValidator
 
   before_save NameCodes.new("first_name"), NameCodes.new("last_name"), NameCodes.new("middle_name"),
@@ -38,7 +38,7 @@ class Child < CouchRest::Model::Base
                    EncryptionWrapper.new("id_number", "informant"), EncryptionWrapper.new("record_status"),
                    EncryptionWrapper.new("request_status"), # EncryptionWrapper.new("national_serial_number"),
                    EncryptionWrapper.new("npid"), if: proc{|c| self.new_record?; !self.new_record? }
-                   
+
 
   def person_id=(value)
     self['_id']=value.to_s
@@ -103,14 +103,14 @@ class Child < CouchRest::Model::Base
   property :approved_by, String
   property :approved_at, Time
   property :printed_at, Time
-  property :dispatched_at, Time 
+  property :dispatched_at, Time
   property :acknowledgement_of_receipt_date, Time
   property :facility_serial_number, String
   property :potentialduplicate, String
   property :dispatched_to, String
   property :dispatched_date, String
   property :dispatched_by, String
-  property :locked, TrueClass, :default => false 
+  property :locked, TrueClass, :default => false
   property :voided_by, String
   property :date_voided, Time
   property :relationship, String, :default => "normal" # normal | adopted | orphaned | abandoned
@@ -205,13 +205,13 @@ class Child < CouchRest::Model::Base
     property :city, String
     property :phone_number, String
   end
-  
-  
-   
+
+
+
   #Foster parents_details
-  
+
   #Foster father
-  
+
   property :foster_father do
     property :id_number, String
     property :first_name, String
@@ -244,10 +244,10 @@ class Child < CouchRest::Model::Base
     property :foreigner_home_ta, String #Address
 
   end
-  
-  
+
+
   #Foster father
-  
+
   property :foster_mother do
     property :id_number, String
     property :first_name, String
@@ -324,18 +324,18 @@ class Child < CouchRest::Model::Base
          found_child = Child.find(child_id)
          next if found_child.request_status.to_s.upcase == "VOIDED"
          records <<  Child.find(child_id)
-       end  
+       end
        return records
-  end  
-  
+  end
+
   def locked?
 		 return self.locked == true ? true : false
 	end
-	
+
 	def self.lock(id)
 	    Child.find(id).update_attributes(:locked => true)
 	end
-	
+
 	def self.unlock(id)
 	    Child.find(id).update_attributes(:locked => false)
 	end
@@ -343,21 +343,23 @@ class Child < CouchRest::Model::Base
   design do
 
     view :by__id
-      
+
     view :by_multiple_birth_id
 
     view :by_national_serial_number
-    
+
     view :by_npid
-    
+
+    view :by_relationship
+
     view :by_approved_at
-    
+
     view :by_approved_at_and_gender
-    
+
     view :by_created_at
-    
+
     view :by_updated_at
 
   end
-  
+
 end

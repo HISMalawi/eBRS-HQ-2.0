@@ -2,7 +2,9 @@ require'migration-lib/migrate_child'
 require 'migration-lib/migrate_mother'
 require 'migration-lib/migrate_father'
 require 'migration-lib/migrate_informant'
+require "migration-lib/migrate_birth_details"
 require'migration-lib/person_service'
+
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
 @file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
@@ -151,7 +153,7 @@ end
 
 def log_error(error_msge, content)
 
-    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+    file_path = "#{Rails.root}/log/migration_error_log.txt"
     if !File.exists?(file_path)
            file = File.new(file_path, 'w')
     else
@@ -523,50 +525,50 @@ def build_client_record(current_pge, pge_size)
 					     phone_number: r[:informant][:phone_number]
 					  },
 						foster_mother: {
-								id_number: r[:id_number],
-								first_name: r[:first_name],
-								middle_name: r[:middle_name],
-								last_name: r[:last_name],
-								birthdate: r[:birthdate],
-								birthdate_estimated: r[:birthdate_estimated],
-								current_village: r[:current_village],
-								current_ta: r[:current_ta],
-								current_district: r[:current_district],
-								home_village: r[:home_village],
-								home_ta: r[:home_ta],
-								home_district: r[:home_district],
-								home_country: r[:home_country],
-								citizenship: r[:citizenship],
-								residential_country: r[:residential_country],
-								foreigner_current_district: r[:foreigner_current_district],
-								foreigner_current_village: r[:foreigner_current_village],
-								foreigner_current_ta: r[:foreigner_current_ta],
-								foreigner_home_district: r[:foreigner_home_district],
-								foreigner_home_village: r[:foreigner_home_village],
-								foreigner_home_ta: r[:foreigner_home_ta]
-			        },
+								id_number: (r[:foster_mother][:id_number] rescue nil),
+								first_name: (r[:foster_mother][:first_name] rescue nil),
+								middle_name: (r[:foster_mother][:middle_name] rescue nil),
+								last_name: (r[:foster_mother][:last_name] rescue nil),
+								birthdate: (r[:foster_mother][:birthdate] rescue nil),
+								birthdate_estimated: (r[:foster_mother][:birthdate_estimated] rescue nil),
+								current_village: (r[:foster_mother][:current_village] rescue nil),
+								current_ta: (r[:foster_mother][:current_ta] rescue nil),
+								current_district: (r[:foster_mother][:current_district] rescue nil),
+								home_village: (r[:foster_mother][:home_village] rescue nil),
+								home_ta: (r[:foster_mother][:home_ta] rescue nil),
+								home_district: (r[:foster_mother][:home_district] rescue nil),
+								home_country: (r[:foster_mother][:home_country] rescue nil),
+								citizenship: (r[:foster_mother][:citizenship] rescue nil),
+								residential_country: (r[:foster_mother][:residential_country] rescue nil),
+								foreigner_current_district: (r[:foster_mother][:foreigner_current_district] rescue nil),
+								foreigner_current_village: (r[:foster_mother][:foreigner_current_village] rescue nil),
+								foreigner_current_ta: (r[:foster_mother][:foreigner_current_ta] rescue nil),
+								foreigner_home_district: (r[:foster_mother][:foreigner_home_district] rescue nil),
+								foreigner_home_village: (r[:foster_mother][:foreigner_home_village] rescue nil),
+								foreigner_home_ta: (r[:foster_mother][:foreigner_home_ta] rescue nil)
+			       },
 		     	  foster_father: {
-							id_number: r[:id_number],
-							first_name: r[:first_name],
-							middle_name: r[:middle_name],
-							last_name: r[:last_name],
-							birthdate: r[:birthdate],
-							birthdate_estimated: r[:birthdate_estimated],
-							current_village: r[:current_village],
-							current_ta: r[:current_ta],
-							current_district: r[:current_district],
-							home_village: r[:home_village],
-							home_ta: r[:home_ta],
-							home_district: r[:home_district],
-							home_country: r[:home_country],
-							citizenship: r[:citizenship],
-							residential_country: r[:residential_country],
-							foreigner_current_district: r[:foreigner_current_district],
-							foreigner_current_village: r[:foreigner_current_village],
-							foreigner_current_ta: r[:foreigner_current_ta],
-							foreigner_home_district: r[:foreigner_home_district],
-							foreigner_home_village: r[:foreigner_home_village],
-							foreigner_home_ta: r[:foreigner_home_ta]
+							id_number: (r[:foster_father][:id_number] rescue nil),
+							first_name: (r[:foster_father][:first_name] rescue nil),
+							middle_name: (r[:foster_father][:middle_name] rescue nil),
+							last_name: (r[:foster_father][:last_name] rescue nil),
+							birthdate: (r[:foster_father][:birthdate] rescue nil),
+							birthdate_estimated: (r[:foster_father][:birthdate_estimated] rescue nil),
+							current_village: (r[:foster_father][:current_village] rescue nil),
+							current_ta: (r[:foster_father][:current_ta] rescue nil),
+							current_district: (r[:foster_father][:current_district] rescue nil),
+							home_village: (r[:foster_father][:home_village] rescue nil),
+							home_ta: (r[:foster_father][:home_ta] rescue nil),
+							home_district: (r[:foster_father][:home_district] rescue nil),
+							home_country: (r[:foster_father][:home_country] rescue nil),
+							citizenship: (r[:foster_father][:citizenship] rescue nil),
+							residential_country: (r[:foster_father][:residential_country] rescue nil),
+							foreigner_current_district: (r[:foster_father][:foreigner_current_district] rescue nil),
+							foreigner_current_village: (r[:foster_father][:foreigner_current_village] rescue nil),
+							foreigner_current_ta: (r[:foster_father][:foreigner_current_ta] rescue nil),
+							foreigner_home_district: (r[:foster_father][:foreigner_home_district] rescue nil),
+							foreigner_home_village: (r[:foster_father][:foreigner_home_village] rescue nil),
+							foreigner_home_ta: (r[:foster_father][:foreigner_home_ta] rescue nil)
 						 },
 				    form_signed: r[:form_signed],
 					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
@@ -616,6 +618,7 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Time taken #{(Time.now - start_time)/60} minites"
+        break;
 	end
 
    puts "\n"

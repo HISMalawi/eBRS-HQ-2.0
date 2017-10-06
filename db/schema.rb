@@ -458,7 +458,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "preferred_keyboard", limit: 10,  default: "abc", null: false
     t.bigint  "password_attempt",   limit: 4,   default: 0
     t.datetime "last_password_date"
-    t.string   "uuid",               limit: 38,                  null: false
+    t.string   "uuid",               limit: 38
     t.datetime "updated_at"
     t.datetime "created_at"
   end
