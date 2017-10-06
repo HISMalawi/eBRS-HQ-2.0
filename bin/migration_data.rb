@@ -523,50 +523,50 @@ def build_client_record(current_pge, pge_size)
 					     phone_number: r[:informant][:phone_number]
 					  },
 						foster_mother: {
-								id_number: r[:id_number],
-								first_name: r[:first_name],
-								middle_name: r[:middle_name],
-								last_name: r[:last_name],
-								birthdate: r[:birthdate],
-								birthdate_estimated: r[:birthdate_estimated],
-								current_village: r[:current_village],
-								current_ta: r[:current_ta],
-								current_district: r[:current_district],
-								home_village: r[:home_village],
-								home_ta: r[:home_ta],
-								home_district: r[:home_district],
-								home_country: r[:home_country],
-								citizenship: r[:citizenship],
-								residential_country: r[:residential_country],
-								foreigner_current_district: r[:foreigner_current_district],
-								foreigner_current_village: r[:foreigner_current_village],
-								foreigner_current_ta: r[:foreigner_current_ta],
-								foreigner_home_district: r[:foreigner_home_district],
-								foreigner_home_village: r[:foreigner_home_village],
-								foreigner_home_ta: r[:foreigner_home_ta]
-			        },
+								id_number: r[:foster_mother][:id_number],
+								first_name: r[:foster_mother][:first_name],
+								middle_name: r[:foster_mother][:middle_name],
+								last_name: r[:foster_mother][:last_name],
+								birthdate: r[:foster_mother][:birthdate],
+								birthdate_estimated: r[:foster_mother][:birthdate_estimated],
+								current_village: r[:foster_mother][:current_village],
+								current_ta: r[:foster_mother][:current_ta],
+								current_district: r[:foster_mother][:current_district],
+								home_village: r[:foster_mother][:home_village],
+								home_ta: r[:foster_mother][:home_ta],
+								home_district: r[:foster_mother][:home_district],
+								home_country: r[:foster_mother][:home_country],
+								citizenship: r[:foster_mother][:citizenship],
+								residential_country: r[:foster_mother][:residential_country],
+								foreigner_current_district: r[:foster_mother][:foreigner_current_district],
+								foreigner_current_village: r[:foster_mother][:foreigner_current_village],
+								foreigner_current_ta: r[:foster_mother][:foreigner_current_ta],
+								foreigner_home_district: r[:foster_mother][:foreigner_home_district],
+								foreigner_home_village: r[:foster_mother][:foreigner_home_village],
+								foreigner_home_ta: r[:foster_mother][:foreigner_home_ta]
+			       },
 		     	  foster_father: {
-							id_number: r[:id_number],
-							first_name: r[:first_name],
-							middle_name: r[:middle_name],
-							last_name: r[:last_name],
-							birthdate: r[:birthdate],
-							birthdate_estimated: r[:birthdate_estimated],
-							current_village: r[:current_village],
-							current_ta: r[:current_ta],
-							current_district: r[:current_district],
-							home_village: r[:home_village],
-							home_ta: r[:home_ta],
-							home_district: r[:home_district],
-							home_country: r[:home_country],
-							citizenship: r[:citizenship],
-							residential_country: r[:residential_country],
-							foreigner_current_district: r[:foreigner_current_district],
-							foreigner_current_village: r[:foreigner_current_village],
-							foreigner_current_ta: r[:foreigner_current_ta],
-							foreigner_home_district: r[:foreigner_home_district],
-							foreigner_home_village: r[:foreigner_home_village],
-							foreigner_home_ta: r[:foreigner_home_ta]
+							id_number: r[:foster_father][:id_number],
+							first_name: r[:foster_father][:first_name],
+							middle_name: r[:foster_father][:middle_name],
+							last_name: r[:foster_father][:last_name],
+							birthdate: r[:foster_father][:birthdate],
+							birthdate_estimated: r[:foster_father][:birthdate_estimated],
+							current_village: r[:foster_father][:current_village],
+							current_ta: r[:foster_father][:current_ta],
+							current_district: r[:foster_father][:current_district],
+							home_village: r[:foster_father][:home_village],
+							home_ta: r[:foster_father][:home_ta],
+							home_district: r[:foster_father][:home_district],
+							home_country: r[:foster_father][:home_country],
+							citizenship: r[:foster_father][:citizenship],
+							residential_country: r[:foster_father][:residential_country],
+							foreigner_current_district: r[:foster_father][:foreigner_current_district],
+							foreigner_current_village: r[:foster_father][:foreigner_current_village],
+							foreigner_current_ta: r[:foster_father][:foreigner_current_ta],
+							foreigner_home_district: r[:foster_father][:foreigner_home_district],
+							foreigner_home_village: r[:foster_father][:foreigner_home_village],
+							foreigner_home_ta: r[:foster_father][:foreigner_home_ta]
 						 },
 				    form_signed: r[:form_signed],
 					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
@@ -608,7 +608,7 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 1000
+	page_size = 3
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
@@ -616,6 +616,7 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Time taken #{(Time.now - start_time)/60} minites"
+        break;
 	end
 
    puts "\n"

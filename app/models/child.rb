@@ -350,6 +350,8 @@ class Child < CouchRest::Model::Base
     
     view :by_npid
     
+    view :by_relationship
+    
     view :by_approved_at
     
     view :by_approved_at_and_gender
