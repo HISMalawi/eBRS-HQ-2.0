@@ -42,7 +42,8 @@ module PersonService
 
     end
    
-    details = MigraBirthDetails.new_birth_details(person, params)
+    details = MigrateBirthDetails.new_birth_details(person, params)
+    
     status = MigrateChild.workflow_init(person,params)
     return person
   end

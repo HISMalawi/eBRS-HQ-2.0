@@ -2,7 +2,9 @@ require'migration-lib/migrate_child'
 require 'migration-lib/migrate_mother'
 require 'migration-lib/migrate_father'
 require 'migration-lib/migrate_informant'
+require "migration-lib/migrate_birth_details"
 require'migration-lib/person_service'
+
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
 @file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
@@ -151,7 +153,7 @@ end
 
 def log_error(error_msge, content)
 
-    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+    file_path = "#{Rails.root}/log/migration_error_log.txt"
     if !File.exists?(file_path)
            file = File.new(file_path, 'w')
     else
@@ -608,7 +610,7 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 3
+	page_size = 1
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now

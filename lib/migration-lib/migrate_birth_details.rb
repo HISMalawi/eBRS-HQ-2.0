@@ -1,6 +1,7 @@
-module MigraBirthDetails
+module MigrateBirthDetails
 	def self.new_birth_details(person, params)
-	    if self.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+		puts "In Birth details"
+	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
 	      return self.birth_details_multiple(person,params)
 	    end
 	    person_id = person.id; place_of_birth_id = nil; location_id = nil; other_place_of_birth = nil
@@ -84,7 +85,7 @@ module MigraBirthDetails
 	        birth_weight:                             (person[:birth_weight].blank? ? nil : person[:birth_weight]),
 	        type_of_birth:                            type_of_birth_id,
 	        parents_married_to_each_other:            (person[:parents_married_to_each_other] == 'No' ? 0 : 1),
-	        date_of_marriage:                         (person[:date_of_marriage] rescue nil),
+	        date_of_marriage:                         (person[:date_of_marriage].to_date.to_s rescue nil),
 	        gestation_at_birth:                       (params[:gestation_at_birth].blank? ? nil : params[:gestation_at_birth]),
 	        number_of_prenatal_visits:                (params[:number_of_prenatal_visits].blank? ? nil : params[:number_of_prenatal_visits]),
 	        month_prenatal_care_started:              (params[:month_prenatal_care_started].blank? ? nil : params[:month_prenatal_care_started]),
@@ -113,7 +114,7 @@ module MigraBirthDetails
 
 	end
 
-	 def self.birth_details_multiple(person,params)
+	def self.birth_details_multiple(person,params)
 	    
 	    prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
 	    
@@ -143,5 +144,5 @@ module MigraBirthDetails
 	    end
 
 	    return details
-	 end
+	end
 end

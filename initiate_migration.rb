@@ -11,17 +11,3 @@ echo "";
 
 echo "";
 
-echo "=================================== Data migration in progress. Please wait...";
-
-echo "";
-
-[ -f bin/first_multiple_births.rb ]  &&  echo "Migrating the first multiple birth registrations..."  &&  rails r bin/first_multiple_births.rb  &&  echo "Log file path: app/assets/data/error_log.txt and app/assets/data/suspected.txt"  || echo "Error! File not found...";
-
-echo " ";
-
-echo "==================================== Data migration in progress. Please wait...";
-
-echo " ";
-
-[ -f bin/second_multiple_births.rb ]  &&  echo "Migrating the second MULTIPLE birth registrations..."  &&  rails r bin/second_multiple_births.rb  &&  echo "Log file path: app/assets/data/error.log AND app/assets/data/suspected.txt"  || echo "Error! File not found...";
-
