@@ -492,6 +492,16 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   add_foreign_key "duplicate_records", "potential_duplicates", primary_key: "potential_duplicate_id", name: "fk_duplicate_records_1"
   add_foreign_key "duplicate_records", "person", primary_key: "person_id", name: "fk_duplicate_records_2"
 
+  create_table "barcode_identifiers", primary_key: "barcode_identifier_id", force: :cascade do |t|
+    t.string   "value",      limit: 20, null: false
+    t.integer  "assigned",   limit: 1,   default: 0, null: false
+    t.bigint  "person_id", limit: 4
+    t.datetime "updated_at"
+    t.datetime "created_at"
+  end
+  
+  add_foreign_key "barcode_identifiers", "person", primary_key: "person_id", name: "fk_barcode_identifiers_1"
+  add_index "barcode_identifiers", ["value"], name: "value_UNIQUE", unique: true, using: :btree
   ##########################################################################################################################
 
   add_index "users", ["person_id"], name: "fk_users_1_idx", using: :btree

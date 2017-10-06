@@ -466,9 +466,9 @@ def build_client_record(current_pge, pge_size)
 
   records = Child.by__id.page(current_pge).per(pge_size)
 
+  #records = Child.by__id.keys(["00f58f198d783b8d3c6511b003990d41","010b673327cce4aca05b4703d7131fac"])
   i = 0
   (records || []).each do |r|
-
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -491,8 +491,8 @@ def build_client_record(current_pge, pge_size)
 					   parents_signed: "",
 					   national_serial_number: r[:national_serial_number],
 					   district_id_number: r[:district_id_number],
-					   mother:{
-					     last_name: r[:mother][:last_name],
+					   mother: {
+					     last_name: r[:mother][:last_name] ,
 					     first_name: r[:mother][:first_name],
 					     middle_name: r[:mother][:middle_name],
 					     birthdate: r[:mother][:birthdate],
@@ -506,12 +506,23 @@ def build_client_record(current_pge, pge_size)
 					     home_ta: r[:mother][:home_ta],
 					     home_village: r[:mother][:home_village]
 					  },
+             father: {
+               last_name: r[:father][:last_name],
+               first_name: r[:father][:first_name],
+               middle_name: r[:father][:middle_name],
+               birthdate: r[:father][:birthdate],
+               birthdate_estimated: r[:father][:birthdate_estimated],
+               citizenship: r[:father][:citizenship],
+               residential_country: r[:father][:residential_country],
+               current_district: r[:father][:current_district],
+               current_ta: r[:father][:current_ta],
+               current_village: r[:father][:current_village],
+               home_district: r[:father][:home_district],
+               home_ta: r[:father][:home_ta],
+               home_village: r[:father][:home_village]
+            },
 					   mode_of_delivery: r[:mode_of_delivery],
 					   level_of_education: r[:level_of_education],
-					   father: {
-					     birthdate_estimated: r[:father][:birthdate_estimated],
-					     residential_country: r[:father][:residential_country]
-					  },
 					   informant: {
 					     last_name: r[:informant][:last_name],
 					     first_name: r[:informant][:first_name],
@@ -593,10 +604,9 @@ def build_client_record(current_pge, pge_size)
 					   controller: "person",
 					   action: "create"
 					  }
-
 			transform_record(data)
 			i = i + 1
-			if i % 100 == 0
+			if i % 500 == 0
 				puts "Migrate #{i}"
 			end
 
@@ -610,15 +620,15 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 1
+	page_size = 1000
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
 	while (current_page < total_pages) do
         build_client_record(current_page, page_size)
         current_page = current_page + 1
-        puts "Time taken #{(Time.now - start_time)/60} minites"
-        break;
+        puts "Migrated about #{page_size * current_page} in #{(Time.now - start_time)/60} minutes"
+        break
 	end
 
    puts "\n"

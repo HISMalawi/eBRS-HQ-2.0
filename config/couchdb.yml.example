@@ -14,3 +14,16 @@ production:
   <<: *development
   protocol: 'http'
   suffix: hq_production
+
+
+#Only when migrating from EBRS 1 to 2
+user_migration:
+  <<: *development
+  prefix: ebrsmig
+  suffix:
+
+npid_migration:
+  <<: *development
+  prefix: ebrsmig
+  suffix:
+

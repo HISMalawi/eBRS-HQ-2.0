@@ -1,6 +1,5 @@
 module MigrateBirthDetails
 	def self.new_birth_details(person, params)
-		puts "In Birth details"
 	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
 	      return self.birth_details_multiple(person,params)
 	    end
