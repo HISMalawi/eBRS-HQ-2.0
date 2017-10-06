@@ -610,7 +610,7 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 1
+	page_size = 1000
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
