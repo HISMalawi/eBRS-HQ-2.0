@@ -1,4 +1,7 @@
-require'migration-lib/lib'
+require'migration-lib/migrate_child'
+require 'migration-lib/migrate_mother'
+require 'migration-lib/migrate_father'
+require 'migration-lib/migrate_informant'
 require'migration-lib/person_service'
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
