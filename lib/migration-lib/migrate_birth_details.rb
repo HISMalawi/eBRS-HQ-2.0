@@ -74,6 +74,10 @@ module MigrateBirthDetails
 	   
 	  begin
 
+	  	level = nil
+	  	level = "DC" if params[:district_code].present?
+	  	level = "FC" if params[:facility_code].present?
+
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
@@ -102,7 +106,8 @@ module MigrateBirthDetails
 	        location_created_at:                      SETTINGS['location_id'],
 	        date_reported:                            params[:person][:created_at].to_date.to_s,
 	        created_at:                               params[:person][:created_at].to_date.to_s,
-	        updated_at:                               params[:person][:updated_at].to_date.to_s
+	        updated_at:                               params[:person][:updated_at].to_date.to_s,
+	        level: 									  level
 	    )
 	    
 	  rescue StandardError => e

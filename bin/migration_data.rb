@@ -466,7 +466,7 @@ def build_client_record(current_pge, pge_size)
 
   records = Child.by__id.page(current_pge).per(pge_size)
 
-  #records = Child.by__id.keys(["00f58f198d783b8d3c6511b003990d41","010b673327cce4aca05b4703d7131fac"])
+  #records = Child.by__id.keys(["0031107eef3a8b2c578d528658f54c28", "0031107eef3a8b2c578d528658f4362b", "05935986ca4c19a1de1ddcfe581e2a7b", "05935986ca4c19a1de1ddcfe589d0f11"])
   i = 0
   (records || []).each do |r|
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
@@ -602,8 +602,11 @@ def build_client_record(current_pge, pge_size)
 					   parents_details_available: "",
 					   copy_mother_name: "No",
 					   controller: "person",
-					   action: "create"
+					   action: "create",
+             district_code: (r[:district_code] rescue nil),
+             facility_code: (r[:facility_code] rescue nil)
 					  }
+
 			transform_record(data)
 			i = i + 1
 			if i % 500 == 0
@@ -628,7 +631,6 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Migrated about #{page_size * current_page} in #{(Time.now - start_time)/60} minutes"
-        break
 	end
 
    puts "\n"

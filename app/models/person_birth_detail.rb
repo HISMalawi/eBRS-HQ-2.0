@@ -12,7 +12,7 @@ class PersonBirthDetail < ActiveRecord::Base
     before_create :set_level
 
   def set_level
-    self.level = 'HQ'
+    self.level = 'HQ' if self.blank?
   end
   def birth_type
     PersonTypeOfBirth.find(self.type_of_birth)
