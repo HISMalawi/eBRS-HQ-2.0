@@ -323,6 +323,7 @@ class PersonController < ApplicationController
         duplicates.each do |dup|
             next if DuplicateRecord.where(person_id: person['person_id']).present?
             @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank? 
+
         end  
         
         if @results.present?
