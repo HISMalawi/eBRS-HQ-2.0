@@ -1,4 +1,7 @@
-require'migration-lib/lib'
+require'migration-lib/migrate_child'
+require 'migration-lib/migrate_mother'
+require 'migration-lib/migrate_father'
+require 'migration-lib/migrate_informant'
 require'migration-lib/person_service'
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
@@ -455,7 +458,6 @@ def get_record_status(rec_status, req_status)
 
 end
 
-
 def build_client_record(current_pge, pge_size)
 
   data ={}
@@ -611,7 +613,6 @@ def initiate_migration
 	current_page = 1
 	start_time = Time.now
 	while (current_page < total_pages) do
-
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Time taken #{(Time.now - start_time)/60} minites"
