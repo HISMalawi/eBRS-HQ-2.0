@@ -238,7 +238,7 @@ def save_full_record(params, district_id_number)
 
    begin
         params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-    	person = PersonService.create_record(params)
+    	  person = PersonService.create_record(params)
 
       if !person.blank?
 
@@ -367,7 +367,6 @@ def assign_district_id(person_id, ben)
 	end
 
 end
-
 
 
 def transform_record(data)
