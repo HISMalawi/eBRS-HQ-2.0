@@ -467,7 +467,6 @@ def assign_district_id(person_id, ben)
 end
 
 
-
 def transform_record(data)
 
     case data[:registration_type]
