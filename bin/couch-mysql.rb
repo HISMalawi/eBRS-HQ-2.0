@@ -100,7 +100,7 @@ class Methods
             record.save
           end
         rescue => e
-          id = "#{table}_#{p_value}"
+          id = "#{table}_#{p_value}_#{seq}"
           open("#{Dir.pwd}/public/errors/#{id}", 'a') do |f|
             f << "#{record}"
             f << "\n\n#{e}"

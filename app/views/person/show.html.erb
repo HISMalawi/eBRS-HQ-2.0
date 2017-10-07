@@ -428,16 +428,17 @@
             var status = ({
                 'Data Checking Clerk': 'HQ-COMPLETE',
                 'Administrator': 'HQ-COMPLETE',
-                'Data Supervisor': 'HQ-CONFLICT-TBA',
+                'Data Supervisor': 'HQ-CONFLICT',
                 'Data Manager': 'HQ-CAN-PRINT'
             })[role];
         }
+
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
         jQuery.ajax({
             url: url,
             success: function(feedback){
-                window.parent.location = return_path;
+               window.parent.location = return_path;
             },
             error: function(error){
                 alert("Something went wrong!");
@@ -522,7 +523,6 @@
             status = ({
                 'Data Checking Clerk': 'HQ-INCOMPLETE',
                 'Administrator': 'HQ-INCOMPLETE-TBA',
-                'Data Supervisor': 'HQ-CONFLICT',
                 'Data Supervisor': 'HQ-INCOMPLETE-TBA',
                 'Data Manager': 'HQ-CAN-REJECT'
             })[role];

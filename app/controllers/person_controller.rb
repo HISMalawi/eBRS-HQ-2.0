@@ -728,7 +728,8 @@ class PersonController < ApplicationController
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
         ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
-        ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"]
+        ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
+        ["Conflict Cases" ,"Conflict Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"]
       ]
     
     @tasks.reject{|task| !@folders.include?(task[0]) }
@@ -860,15 +861,14 @@ class PersonController < ApplicationController
     person_ids = params[:person_ids].split(',')
     person_ids.each do |person_id|
       data = {}
-      data['person'] = Person.find(person_id)
+      data['person'] = Person.find(person_id) rescue nil
       data['birth']  = PersonBirthDetail.where(person_id: person_id).last
 
       barcode = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png") rescue nil
       if barcode.nil?
-        p = Process.fork{`bin/generate_barcode #{ data['person'].id} #{ data['person'].id} #{SETTINGS['barcodes_path']}`}
-        Process.detach(p)
+        `bundle exec rails r bin/generate_barcode #{ data['person'].id} #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
       end
-      sleep(0.5)
+
       data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png")
 
       @data << data
