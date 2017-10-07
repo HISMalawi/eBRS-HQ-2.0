@@ -310,9 +310,27 @@ class PersonController < ApplicationController
       person["mother_first_name"]= @mother_name.first_name rescue ''
       person["mother_last_name"] =  @mother_name.last_name  rescue ''
       person["mother_middle_name"] = @mother_name.middle_name rescue '' 
+
+      person["mother_home_district"] = Location.find(@mother_person.addresses.last.home_district).name rescue nil
+      person["mother_home_ta"] = Location.find(@mother_person.addresses.last.home_ta).name rescue nil
+      person["mother_home_village"] = Location.find(@mother_person.addresses.last.home_village).name rescue nil
+
+      person["mother_current_district"] = Location.find(@mother_person.addresses.last.current_district).name rescue nil
+      person["mother_current_ta"] = Location.find(@mother_person.addresses.last.current_ta).name rescue nil
+      person["mother_current_village"] = Location.find(@mother_person.addresses.last.current_village).name rescue nil
+
       person["father_first_name"]= @father_name.first_name  rescue ''
       person["father_last_name"] =  @father_name.last_name  rescue ''
       person["father_middle_name"] = @father_name.middle_name  rescue ''
+
+      person["father_home_district"] = Location.find(@father_person.addresses.last.home_district).name rescue nil
+      person["father_home_ta"] = Location.find(@father_person.addresses.last.home_ta).name rescue nil
+      person["father_home_village"] = Location.find(@father_person.addresses.last.home_village).name rescue nil
+
+      person["father_current_district"] = Location.find(@father_person.addresses.last.current_district).name rescue nil
+      person["father_current_ta"] = Location.find(@father_person.addresses.last.current_ta).name rescue nil
+      person["father_current_village"] = Location.find(@father_person.addresses.last.current_village).name rescue nil
+
     
       SimpleElasticSearch.add(person)
 
