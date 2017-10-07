@@ -11,8 +11,6 @@ class CouchSQL
       SuckerPunch.logger.info "=========Error #{e.to_s}"
       CouchSQL.perform_in(2)
     end
-
-    CouchSQL.perform_in(2)
   end
 
 
