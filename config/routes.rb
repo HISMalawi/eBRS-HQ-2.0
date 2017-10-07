@@ -180,6 +180,8 @@ Rails.application.routes.draw do
   get '/person/get_village_complete'
   get '/person/get_hospital_complete'
 
+  get "/person/check_background_jobs"
+
   resources :person
 
   resources :users
