@@ -35,7 +35,6 @@ def write_log(file, content)
 end
 
 
-
 def log_error(error_msge, content)
 
     file_path = "#{Rails.root}/log/migration_error_log.txt"
@@ -51,15 +50,181 @@ def log_error(error_msge, content)
 
  end
 
+ def person_for_elastic_search(core_person,params)
+
+      person = {}
+      person["id"] = core_person.person_id
+      person["first_name"]= params[:person][:first_name]
+      person["last_name"] =  params[:person][:last_name]
+      person["middle_name"] = params[:person][:middle_name]
+      person["gender"] = params[:person][:gender]
+      person["birthdate"]= params[:person][:birthdate].to_date.strftime('%Y-%m-%d')
+      person["birthdate_estimated"] = params[:person][:birthdate_estimated]
+
+      if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+         prev_child = Person.find(params[:person][:prev_child_id].to_i)
+         if params[:relationship] == "opharned" || params[:relationship] == "adopted"
+           mother = prev_child.adoptive_mother
+         else
+           mother = prev_child.mother
+         end
+
+         if mother.present?
+            mother_name =  mother.person_names.first
+         else
+            mother_name = nil
+         end
+
+         person["mother_first_name"] = mother_name.first_name rescue ""
+         person["mother_last_name"] =   mother_name.last_name rescue ""
+         person["mother_middle_name"] =  mother_name.first_name rescue ""
+
+         person["mother_home_district"] = Location.find(mother.addresses.last.home_district).name rescue nil
+         person["mother_home_ta"] = Location.find(mother.addresses.last.home_ta).name rescue nil
+         person["mother_home_village"] = Location.find(mother.addresses.last.home_village).name rescue nil
+
+         person["mother_current_district"] = Location.find(mother.addresses.last.current_district).name rescue nil
+         person["mother_current_ta"] = Location.find(mother.addresses.last.current_ta).name rescue nil
+         person["mother_current_village"] = Location.find(mother.addresses.last.current_village).name rescue nil
+
+         if params[:relationship] == "opharned" || params[:relationship] == "adopted"
+           father = prev_child.adoptive_father
+         else
+           father = prev_child.father
+         end
+
+         if father.present?
+            father_name =  father.person_names.first
+         else
+            father_name = nil
+         end
+
+         person["father_first_name"] = father_name.first_name rescue ""
+         person["father_last_name"] =   father_name.last_name rescue ""
+         person["father_middle_name"] = father_name.first_name rescue ""
+
+         person["father_home_district"] = params[:person][:mother][:home_district] rescue nil
+         person["father_home_ta"] = params[:person][:mother][:home_ta] rescue nil
+         person["father_home_village"] = params[:person][:mother][:home_village] rescue nil
+
+         person["father_current_district"] = params[:person][:mother][:home_district] rescue nil
+         person["father_current_ta"] = params[:person][:mother][:home_ta] rescue nil
+         person["father_current_village"] = params[:person][:mother][:home_village] rescue nil
+
+         birth_details = prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_i).first
+         person["place_of_birth"] = Location.find(birth_details.place_of_birth).name
+         person["district"] = Location.find(birth_details.district_of_birth).name
+         person["nationality"]= Location.find(mother.addresses.first.citizenship).name rescue "Malawian"
+
+      else
+
+        person["place_of_birth"] = params[:person][:place_of_birth]
+        person["district"] = params[:person][:birth_district]
+        person["nationality"]=  params[:person][:mother][:citizenship]
+
+        person["mother_first_name"]= params[:person][:mother][:first_name] rescue nil
+        person["mother_last_name"] =  params[:person][:mother][:last_name] rescue nil
+        person["mother_middle_name"] = params[:person][:mother][:middle_name] rescue nil
+
+        person["mother_home_district"] = params[:person][:mother][:home_district] rescue nil
+        person["mother_home_ta"] = params[:person][:mother][:home_ta] rescue nil
+        person["mother_home_village"] = params[:person][:mother][:home_village] rescue nil
+
+        person["mother_current_district"] = params[:person][:mother][:home_district] rescue nil
+        person["mother_current_ta"] = params[:person][:mother][:home_ta] rescue nil
+        person["mother_current_village"] = params[:person][:mother][:home_village] rescue nil
+
+        person["father_first_name"]= params[:person][:father][:first_name] rescue nil
+        person["father_last_name"] =  params[:person][:father][:last_name] rescue nil
+        person["father_middle_name"] = params[:person][:father][:middle_name] rescue nil
+
+        person["father_home_district"] = params[:person][:father][:home_district] rescue nil
+        person["father_home_ta"] = params[:person][:father][:home_ta] rescue nil
+        person["father_home_village"] = params[:person][:father][:home_village] rescue nil
+
+        person["father_current_district"] = params[:person][:father][:home_district] rescue nil
+        person["father_current_ta"] = params[:person][:father][:home_ta] rescue nil
+        person["father_current_village"] = params[:person][:father][:home_village] rescue nil
+
+      end
+      return person
+ end
+
+ def pre_migration_check(params)
+
+	  if params[:person][:created_by].blank?
+        content = "#{params[:_id]},#{params[:person][:created_at]},#{params[:person][:created_by]},#{params[:person][:approved]},#{params[:person][:approved_by]}"
+        write_log(@missing_doc_creator, content)
+      end
+
+      if ["Second Twin","Second Triplet","Third Triplet"].include? params[:person][:type_of_birth]
+        if params[:person][:multiple_birth_id].blank?
+         content = "#{params[:_id]},#{params[:person][:multiple_birth_id]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_multiple_birth_ids, content)
+        end
+      end
+
+	  if params[:person][:type_of_birth].blank?
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_birth_type, content)
+      end
+
+        status = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue nil
+	  if  status.blank?
+        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:record_status]},#{params[:request_status]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+        write_log(@missing_record_statuses, content)
+      end
+
+      if verify_location("Mother", "TA", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_ta]},#{params[:person][:mother][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_tas, content)
+      end
+
+      if verify_location("Mother", "Village", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_village]},#{params[:person][:mother][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_villages, content)
+      end
+
+      if verify_location("Mother", "District", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_district]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_districts, content)
+      end
+
+      if verify_location("Mother", "Citizenship", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:citizenship]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_citizenships, content)
+      end
+
+      if verify_location("Father", "TA", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_ta]},#{params[:person][:father][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_tas, content)
+      end
+
+      if verify_location("Father", "Village", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_village]},#{params[:person][:father][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_villages, content)
+      end
+
+      if verify_location("Father", "District", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_district]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_districts, content)
+      end
+
+      if verify_location("Father", "Citizenship", params) == false
+      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:citizenship]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         write_log(@missing_citizenships, content)
+      end
+
+end
+
 
 def save_full_record(params, district_id_number)
-
-   begin
-        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-    	  person = PersonService.create_record(params)
+  begin
+      params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+    	person = PersonService.create_record(params)
 
       if !person.blank?
-
+        SimpleElasticSearch.add(person_for_elastic_search(person,params))
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
 
         	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
@@ -73,7 +238,6 @@ def save_full_record(params, district_id_number)
    rescue StandardError => e
           log_error(e.message, params)
    end
-
 end
 
 def mother_record_exist
@@ -427,7 +591,8 @@ def build_client_record(current_pge, pge_size)
 
 			transform_record(data)
 			i = i + 1
-			if i % 500 == 0
+			if i % (pge_size / 2).to_i == 0
+        `clear`
 				puts "Migrate #{i}"
 			end
 
@@ -441,7 +606,8 @@ end
 def initiate_migration
 
 	total_records = Child.count
-	page_size = 10
+  puts "Enter page size :"
+	page_size = gets.to_i
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
@@ -449,7 +615,7 @@ def initiate_migration
         build_client_record(current_page, page_size)
         current_page = current_page + 1
         puts "Migrated about #{page_size * (current_page - 1 )} in #{(Time.now - start_time)/60} minutes"
-        
+
 	end
 
    puts "\n"

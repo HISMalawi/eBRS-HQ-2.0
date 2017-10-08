@@ -203,7 +203,7 @@ class SimpleElasticSearch
     person["content"] = "#{self.escape_single_quotes(person["first_name"])} #{self.escape_single_quotes(person["last_name"])} #{content}"
     person["coded_content"] = coded_content
     create_string = self.escape_single_quotes(person.as_json.to_json)
-    create_query = "curl -XPUT 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{person['id']}'  -d '
+    create_query = "curl -s -XPUT 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{person['id']}'  -d '
                 #{create_string}'"
     `#{create_query}`             
     return self.find(person["id"])
@@ -211,7 +211,7 @@ class SimpleElasticSearch
 
   #Retriving record from elastic research
   def self.find(id)
-    find_query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{id}' "
+    find_query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{id}' "
     begin
       record = JSON.parse(`#{find_query}`)
       return record["_source"].merge({"id" => record["_id"]}) 
@@ -316,5 +316,23 @@ class SimpleElasticSearch
     query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'"
     data = JSON.parse(`#{query}`)["hits"]
     return data["total"]
+  end
+
+  def self.connect?
+    if self.query_connection.blank? && self.query_connection["name"].blank?
+      return false 
+    else
+      return true
+    end
+  end
+
+  def self.query_connection
+    begin
+      connection = "curl http://#{SETTING['host']}:#{SETTING['port']}"
+      return JSON.parse(`#{connection}`)
+    rescue Exception => e
+      return {}
+    end
+
   end
 end
