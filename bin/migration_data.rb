@@ -442,15 +442,37 @@ def get_record_status(rec_status, req_status)
 
 end
 
+def decrypt(value)
+
+    return value if !File.exists?("#{Rails.root}/config/private.pem")
+
+    private_key_file = "#{Rails.root}/config/private.pem"
+
+    password = CONFIG["crtkey"] rescue nil
+
+    return value if password.nil?
+
+    private_key = OpenSSL::PKey::RSA.new(File.read(private_key_file), password)
+
+    string = private_key.private_decrypt(Base64.decode64(value)) rescue nil
+
+    return value if string.nil?
+
+    return string
+
+end
+
 def build_client_record(current_pge, pge_size)
 
   data ={}
-
+  configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
   records = Child.by__id.page(current_pge).per(pge_size)
-
+  #records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{configs['prefix']}_child_#{configs['suffix']}/_design/Child/_view/all?include_docs=true  -G -d limit=#{pge_size} -d skip=#{current_pge * pge_size} -d descending=true`)["rows"]
   #records = Child.by__id.keys(["0031107eef3a8b2c578d528658f54c28", "0031107eef3a8b2c578d528658f4362b", "05935986ca4c19a1de1ddcfe581e2a7b", "05935986ca4c19a1de1ddcfe589d0f11"])
   i = 0
-  (records || []).each do |r|
+  (records || []).each do |doc|
+    #r = doc["doc"].with_indifferent_access
+    r = doc
 	  data = { person: {duplicate: "", is_exact_duplicate: "",
 					   relationship: r[:relationship],
 					   last_name: r[:last_name],
@@ -592,7 +614,6 @@ def build_client_record(current_pge, pge_size)
 			transform_record(data)
 			i = i + 1
 			if i % (pge_size / 2).to_i == 0
-        `clear`
 				puts "Migrate #{i}"
 			end
 
@@ -606,21 +627,47 @@ end
 def initiate_migration
 
 	total_records = Child.count
-  puts "Enter page size :"
-	page_size = gets.to_i
+  migration = EbrsMigration.last
+
+  if migration.blank?
+    migration = EbrsMigration.new
+  end
+  restart  = false
+  if migration.pagesize.blank?
+    puts "Enter page size :"
+  	page_size = gets.to_i
+    migration.pagesize  = page_size
+  else
+    page_size  =  migration.pagesize.to_i
+  end
+
 	total_pages = (total_records / page_size) + (total_records % page_size)
 	current_page = 1
 	start_time = Time.now
 	while (current_page < total_pages) do
         build_client_record(current_page, page_size)
         current_page = current_page + 1
+        migration.current_page = current_page
+        migration.save
         puts "Migrated about #{page_size * (current_page - 1 )} in #{(Time.now - start_time)/60} minutes"
+<<<<<<< HEAD
 
+=======
+        if false && ((Time.now - start_time)/60).to_i >= 10
+          restart = true
+          puts "The script is taking long to migrate #{page_size} need gabage collection then restart"
+          break;
+        end
+>>>>>>> 49e247c3f3cfb53acd524467333bcd93ad50a209
 	end
 
-   puts "\n"
-	 puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
-	 puts "\n"
+  if restart
+      sleep(30)
+      `cd #{Rails.root} ./initiate_migration.rb`
+  end
+  puts "\n"
+	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
+	puts "\n"
 end
 
 initiate_migration
