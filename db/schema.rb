@@ -17,6 +17,11 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.bigint "seq", limit: 4, null: false
   end
 
+  create_table "ebrs_migration", primary_key: "ebrs_migration_id", force: :cascade do |t|
+    t.bigint  "pagesize"
+    t.bigint  "current_page"
+  end  
+
   create_table "audit_trail_types", primary_key: "audit_trail_type_id", force: :cascade do |t|
     t.string   "name",       limit: 20
     t.bigint  "creator",    limit: 4
