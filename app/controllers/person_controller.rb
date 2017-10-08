@@ -423,8 +423,8 @@ class PersonController < ApplicationController
             name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
-            father_name,
             mother_name,
+            father_name,
             Status.find(p.status_id).name,
             p.person_id
         ]
