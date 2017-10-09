@@ -167,7 +167,7 @@ class ReportController < ApplicationController
   end
 
   def record_state_and_date
-    @statuses = Status.all.order("name")
+    @statuses = Status.all.order("name").reverse
   end
 
   def ajax_record_state_and_date

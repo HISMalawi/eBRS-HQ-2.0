@@ -98,7 +98,7 @@ function addRows(data) {
     brn           =  records[i]['registration_number'];
     date           =  records[i]['date'];
 
-    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, date, '']).draw();
+    dataTable.api().row.add([brn, ben, first_name, middle_name, last_name, dob, gender, date, '']).draw();
   }
 }
 
