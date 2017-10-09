@@ -1,6 +1,8 @@
 
 <style>
-
+th{
+    background: lightsteelblue;
+}
 .callout {
   border-left: 5px solid #eee;
   border-radius: 3px;
@@ -12,9 +14,7 @@
   border-color: #0097bc;
 }
 
-.callout-info {
-  background-color: #00c0ef;
-}
+
 
 .search-params {
   margin-bottom: 50px;
@@ -96,46 +96,35 @@ function addRows(data) {
     gender        =  records[i]['gender'];
     ben           =  records[i]['birth_entry_number'];
     brn           =  records[i]['registration_number'];
+    date           =  records[i]['date'];
 
-    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, '','']).draw();
+    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, date, '']).draw();
   }
 }
 
-function fetchData() {                                                       
-                                                                            
-  if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari  
-    xmlhttp=new XMLHttpRequest();                                             
-  }else{// code for IE6, IE5                                                  
-    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");                           
-  }                                                                           
-  xmlhttp.onreadystatechange=function() {                                     
-    if (xmlhttp.readyState==4 && xmlhttp.status==200) {                       
-      var results = xmlhttp.responseText;                                     
-      if(results == 'undefined' || results == '' || results == '"not validate"') {                           
-        return;                                                               
-      }else{                                                                  
-        dataTable.fnClearTable();
-        addRows(results);    
-      }                                                                       
-    }                                                                         
-  }      
+function fetchData() {
+    var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+    var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+    var status    = document.getElementById('status').value.replace(/\//g, '-');
 
-  var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
-  var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
-                                                                     
-  xmlhttp.open("GET","/get_voided_records/" + start_date + "/" + end_date, true);           
-  xmlhttp.send();                                                             
+    jQuery.ajax({
+        url: "/ajax_record_state_and_date?start_date=" + start_date + "&end_date=" + end_date + "&status=" + status,
+        success: function(results){
+            dataTable.fnClearTable();
+            addRows(results);
+        }
+    })
 }
 
 
 </script>
 
-<h3>Voided records</h3>
+<h3>By Record Status on a Particular Date Range</h3>
 
 <div class="callout callout-info" style="margin: 10px;">
-  <p>To view data, first select the&nbsp;<b>period</b>.</p>
-  <p>Start with:&nbsp;<b>Start date</b>.</p>
-  <p>Then end with:&nbsp;<b>End date</b>.</p>
+  <p>To view data, first select the&nbsp;<b>Record Status</b>.</p>
+  <p>Then:&nbsp;<b>Start date</b>.</p>
+  <p>Then:&nbsp;<b>End date</b>.</p>
   <p>
     <p><b><span style="color: red;">*</span>Start date should never be greater than End date</b></p>
   </p>
@@ -159,21 +148,32 @@ function fetchData() {
   &nbsp;
   &nbsp;
   &nbsp;
+
+  <label class="pull-left">Select <b>Record Status</b>:</label>
+ <select id="status" name="status" value="" class="pull-left">
+    <option></option>
+   <% @statuses.each do |s|%>
+    <option value="<%= s.id%>" > <%=s.name.titleize.gsub(/HQ/i, 'HO').gsub(/DC/i, 'DC').gsub(/FC/i, 'FC').gsub(/TBA/i, 'TBA')%> </option>
+   <% end %>
+ </select>
+  <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
   <input type='button' class='btn btn-success' value='Fetch data' onclick="fetchData();" />
 </div>
 
 <table style="width:100%" id="report" class="table table-striped table-advance table-hover">
   <thead>
     <tr>
-      <th style="width: 10%;">Reg. number</th>
-      <th style="width: 10%;">Birth entry number</th>
+      <th style="width: 10%;">BRN</th>
+      <th style="width: 10%;">BEN</th>
       <th>First name</th>
       <th>Middle name</th>
       <th>Last name</th>
       <th>Birthdate</th>
       <th>Gender</th>
-      <th>Comment(s)</th>
-      <th>Voided date</th>
+      <th>Date of Status</th>
     </tr>
   </thead>
   </tbody>

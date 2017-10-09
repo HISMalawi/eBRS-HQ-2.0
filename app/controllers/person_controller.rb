@@ -605,8 +605,7 @@ class PersonController < ApplicationController
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
-              ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"],
-              ["Reports" , "Reports" , [],"/reports","/assets/reports/chart.png"]
+              ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"]
             ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
