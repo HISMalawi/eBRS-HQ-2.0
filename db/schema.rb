@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   end
 
   create_table "ebrs_migration", primary_key: "ebrs_migration_id", force: :cascade do |t|
-    t.bigint  "pagesize"
+    t.bigint  "page_size"
     t.bigint  "current_page"
   end  
 

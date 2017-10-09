@@ -74,14 +74,13 @@ end
   end
 
   def self.log_error(error_msge, content)
-
-    file_path = "#{Rails.root}/app/assets/data/error_log.txt"
+    file_path = "#{Rails.root}/log/migration_error_log.txt"
     if !File.exists?(file_path)
            file = File.new(file_path, 'w')
     else
 
        File.open(file_path, 'a') do |f|
-          f.puts "#{error_msge} >>>>>> #{content}"
+          f.puts "#{error_msge} >>>>>> {\"id\" : #{content['_id']}, \"rev\" : #{content['_rev']} }"
 
       end
     end
@@ -116,4 +115,19 @@ end
       return false
     end
   end
+
+  def self.log_error(error_msge, content)
+
+    file_path = "#{Rails.root}/log/migration_error_log.txt"
+    if !File.exists?(file_path)
+           file = File.new(file_path, 'w')
+    else
+
+       File.open(file_path, 'a') do |f|
+          f.puts "#{error_msge} >>>>>> #{content}"
+
+      end
+    end
+
+ end
 end

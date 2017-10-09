@@ -43,7 +43,7 @@ class EncryptionWrapper
   alias_method :after_initialize, :after_save
 
   #private
-  def self.encrypt(value)
+  def encrypt(value)
 
     return value if !File.exists?("#{Rails.root}/config/public.pem")
 
@@ -57,7 +57,7 @@ class EncryptionWrapper
 
   end
 
-  def self.decrypt(value)
+  def decrypt(value)
 
     return value if !File.exists?("#{Rails.root}/config/private.pem")
 

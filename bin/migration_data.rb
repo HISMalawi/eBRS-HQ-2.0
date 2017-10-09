@@ -160,7 +160,7 @@ def log_error(error_msge, content)
     else
 
        File.open(file_path, 'a') do |f|
-          f.puts "#{error_msge} >>>>>> #{content}"
+          f.puts "#{error_msge} >>>>>> {\"id\" : #{content[:_id]}, \"rev\" : #{content[:_rev]} }"
 
       end
     end
@@ -746,37 +746,31 @@ def initiate_migration
   migration = EbrsMigration.last
 
   if migration.blank?
-    migration = EbrsMigration.new
-  end
-  restart  = false
-  if migration.pagesize.blank?
-    puts "Enter page size :"
-  	page_size = gets.to_i
-    migration.pagesize  = page_size
+      migration = EbrsMigration.new
+      page_size = 1000
+      current_page = 1
+      migration.page_size  = page_size
+
   else
-    page_size  =  migration.pagesize.to_i
+    page_size  =  migration.page_size.to_i
+    current_page =  migration.current_page.to_i + 1
   end
 
-	total_pages = (total_records / page_size) + (total_records % page_size)
-	current_page = 1
+	total_pages = (total_records / page_size).divmod(1)[0].to_i + ((total_records % page_size) > 0 ? 1 : 0)
+
 	start_time = Time.now
 	while (current_page < total_pages) do
         build_client_record(current_page, page_size)
-        current_page = current_page + 1
         migration.current_page = current_page
         migration.save
-        puts "Migrated about #{page_size * (current_page - 1 )} in #{(Time.now - start_time)/60} minutes"
-        if false && ((Time.now - start_time)/60).to_i >= 10
-          restart = true
-          puts "The script is taking long to migrate #{page_size} need gabage collection then restart"
-          break;
+        current_page = current_page + 1
+        puts "Migrated about #{page_size * (current_page -1 )} in #{(Time.now - start_time)/60} minutes"
+        if false && ((page_size * (current_page -1)).to_i % 1000) == 0
+          puts "Migrated current 1000 records rerun the script to migration next batch"
+          return;
         end
 	end
 
-  if restart
-      sleep(30)
-      `cd #{Rails.root} ./initiate_migration.rb`
-  end
   puts "\n"
 	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	puts "\n"
