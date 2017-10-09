@@ -54,5 +54,7 @@ bundle exec rake db:seed
 
 ./build_metadata.sh $ENV
 
+rm public/sites/*.yml
+
 echo "Done"
 
