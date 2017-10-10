@@ -340,14 +340,13 @@ def save_full_record(params, district_id_number)
     	person = PersonService.create_record(params)
 
       if !person.blank?
-        SimpleElasticSearch.add(person_for_elastic_search(person,params))
+        #SimpleElasticSearch.add(person_for_elastic_search(person,params))
         record_status = PersonRecordStatus.where(person_id: person.person_id).first
 
         	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
 	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
 	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
 	    #puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-
 
       end
 
@@ -499,16 +498,9 @@ def transform_record(data)
 
 
     if data[:person][:type_of_birth]== 'Single'
-=begin
-    	if precision_level(mother_records, data) == 7
-    		puts "registration type: #{data[:registration_type]} \n"
-            puts "Saving partial record for #{data[:person][:first_name]} #{data[:person][:last_name]} ..."
-    	    #save_partial_record(data, data[:person][:district_id_number])
-    	else
-=end
-            #puts "Saving full record for #{data[:person][:first_name]} #{data[:person][:last_name]} ..."
+
             save_full_record(data,data[:person][:district_id_number])
-#    	end
+
     end
 
 end
@@ -578,202 +570,201 @@ def decrypt(value)
 
 end
 
-def build_client_record(current_pge, pge_size)
-
-  data ={}
-  configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
-  records = Child.by__id.page(current_pge).per(pge_size)
-  #records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{configs['prefix']}_child_#{configs['suffix']}/_design/Child/_view/all?include_docs=true  -G -d limit=#{pge_size} -d skip=#{current_pge * pge_size} -d descending=true`)["rows"]
-  #records = Child.by__id.keys(["0031107eef3a8b2c578d528658f54c28", "0031107eef3a8b2c578d528658f4362b", "05935986ca4c19a1de1ddcfe581e2a7b", "05935986ca4c19a1de1ddcfe589d0f11"])
-  i = 0
-  (records || []).each do |doc|
-    #r = doc["doc"].with_indifferent_access
-    r = doc
-	  data = { person: {duplicate: "", is_exact_duplicate: "",
-					   relationship: r[:relationship],
-					   last_name: r[:last_name],
-					   first_name: r[:first_name],
-					   middle_name: r[:middle_name],
-					   birthdate: r[:birthdate],
-					   birth_district: r[:birth_district],
-					   gender: r[:gender],
-					   place_of_birth: r[:place_of_birth],
-					   hospital_of_birth: r[:hospital_of_birth],
-					   birth_weight: r[:birth_weight],
-					   type_of_birth: r[:type_of_birth],
-					   national_serial_number: r[:national_serial_number],
-					   parents_married_to_each_other: r[:parents_married_to_each_other],
-					   date_of_marriage: r[:date_of_marriage],
-					   court_order_attached: r[:court_order_attached],
-					   created_at: r[:created_at],
-					   created_by: r[:created_by],
-					   updated_at: r[:updated_at],
-					   parents_signed: "",
-					   national_serial_number: r[:national_serial_number],
-					   district_id_number: r[:district_id_number],
-					   mother: {
-					     last_name: r[:mother][:last_name] ,
-					     first_name: r[:mother][:first_name],
-					     middle_name: r[:mother][:middle_name],
-					     birthdate: r[:mother][:birthdate],
-					     birthdate_estimated: r[:mother][:birthdate_estimated],
-					     citizenship: r[:mother][:citizenship],
-					     residential_country: r[:mother][:residential_country],
-					     current_district: r[:mother][:current_district],
-					     current_ta: r[:mother][:current_ta],
-					     current_village: r[:mother][:current_village],
-					     home_district: r[:mother][:home_district],
-					     home_ta: r[:mother][:home_ta],
-					     home_village: r[:mother][:home_village]
-					  },
-             father: {
-               last_name: r[:father][:last_name],
-               first_name: r[:father][:first_name],
-               middle_name: r[:father][:middle_name],
-               birthdate: r[:father][:birthdate],
-               birthdate_estimated: r[:father][:birthdate_estimated],
-               citizenship: r[:father][:citizenship],
-               residential_country: r[:father][:residential_country],
-               current_district: r[:father][:current_district],
-               current_ta: r[:father][:current_ta],
-               current_village: r[:father][:current_village],
-               home_district: r[:father][:home_district],
-               home_ta: r[:father][:home_ta],
-               home_village: r[:father][:home_village]
-            },
-					   mode_of_delivery: r[:mode_of_delivery],
-					   level_of_education: r[:level_of_education],
-					   informant: {
-					     last_name: r[:informant][:last_name],
-					     first_name: r[:informant][:first_name],
-					     middle_name: r[:informant][:middle_name],
-					     relationship_to_person: r[:informant][:relationship_to_child],
-					     current_district: r[:informant][:current_district],
-					     current_ta: r[:informant][:current_ta],
-					     current_village: r[:informant][:current_village],
-					     addressline1: r[:informant][:addressline1],
-					     addressline2: r[:informant][:addressline2],
-					     phone_number: r[:informant][:phone_number]
-					  },
-						foster_mother: {
-								id_number: (r[:foster_mother][:id_number] rescue nil),
-								first_name: (r[:foster_mother][:first_name] rescue nil),
-								middle_name: (r[:foster_mother][:middle_name] rescue nil),
-								last_name: (r[:foster_mother][:last_name] rescue nil),
-								birthdate: (r[:foster_mother][:birthdate] rescue nil),
-								birthdate_estimated: (r[:foster_mother][:birthdate_estimated] rescue nil),
-								current_village: (r[:foster_mother][:current_village] rescue nil),
-								current_ta: (r[:foster_mother][:current_ta] rescue nil),
-								current_district: (r[:foster_mother][:current_district] rescue nil),
-								home_village: (r[:foster_mother][:home_village] rescue nil),
-								home_ta: (r[:foster_mother][:home_ta] rescue nil),
-								home_district: (r[:foster_mother][:home_district] rescue nil),
-								home_country: (r[:foster_mother][:home_country] rescue nil),
-								citizenship: (r[:foster_mother][:citizenship] rescue nil),
-								residential_country: (r[:foster_mother][:residential_country] rescue nil),
-								foreigner_current_district: (r[:foster_mother][:foreigner_current_district] rescue nil),
-								foreigner_current_village: (r[:foster_mother][:foreigner_current_village] rescue nil),
-								foreigner_current_ta: (r[:foster_mother][:foreigner_current_ta] rescue nil),
-								foreigner_home_district: (r[:foster_mother][:foreigner_home_district] rescue nil),
-								foreigner_home_village: (r[:foster_mother][:foreigner_home_village] rescue nil),
-								foreigner_home_ta: (r[:foster_mother][:foreigner_home_ta] rescue nil)
-			       },
-		     	  foster_father: {
-							id_number: (r[:foster_father][:id_number] rescue nil),
-							first_name: (r[:foster_father][:first_name] rescue nil),
-							middle_name: (r[:foster_father][:middle_name] rescue nil),
-							last_name: (r[:foster_father][:last_name] rescue nil),
-							birthdate: (r[:foster_father][:birthdate] rescue nil),
-							birthdate_estimated: (r[:foster_father][:birthdate_estimated] rescue nil),
-							current_village: (r[:foster_father][:current_village] rescue nil),
-							current_ta: (r[:foster_father][:current_ta] rescue nil),
-							current_district: (r[:foster_father][:current_district] rescue nil),
-							home_village: (r[:foster_father][:home_village] rescue nil),
-							home_ta: (r[:foster_father][:home_ta] rescue nil),
-							home_district: (r[:foster_father][:home_district] rescue nil),
-							home_country: (r[:foster_father][:home_country] rescue nil),
-							citizenship: (r[:foster_father][:citizenship] rescue nil),
-							residential_country: (r[:foster_father][:residential_country] rescue nil),
-							foreigner_current_district: (r[:foster_father][:foreigner_current_district] rescue nil),
-							foreigner_current_village: (r[:foster_father][:foreigner_current_village] rescue nil),
-							foreigner_current_ta: (r[:foster_father][:foreigner_current_ta] rescue nil),
-							foreigner_home_district: (r[:foster_father][:foreigner_home_district] rescue nil),
-							foreigner_home_village: (r[:foster_father][:foreigner_home_village] rescue nil),
-							foreigner_home_ta: (r[:foster_father][:foreigner_home_ta] rescue nil)
-						 },
-				    form_signed: r[:form_signed],
-					   acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
-					  },
-					   home_address_same_as_physical: "Yes",
-					   gestation_at_birth: r[:gestation_at_birth],
-					   number_of_prenatal_visits: r[:number_of_prenatal_visits],
-					   month_prenatal_care_started: r[:month_prenatal_care_started],
-					   number_of_children_born_alive_inclusive: r[:number_of_children_born_alive_inclusive],
-					   number_of_children_born_still_alive: r[:number_of_children_born_still_alive],
-					   same_address_with_mother: "",
-					   informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"),
-					   registration_type: r[:relationship],
-					   record_status: r[:record_status],
-					   _rev: r[:_rev],
-					   _id: r[:_id],
-					   request_status: r[:request_status],
-					   biological_parents: "",
-					   foster_parents: "",
-					   parents_details_available: "",
-					   copy_mother_name: "No",
-					   controller: "person",
-					   action: "create",
-             district_code: (r[:district_code] rescue nil),
-             facility_code: (r[:facility_code] rescue nil)
-					  }
-      
-			transform_record(data)
-			i = i + 1
-			if i % (pge_size / 2).to_i == 0
-				puts "Migrate #{i}"
-			end
+def build_client_record(records)
 
 
-			#pre_migration_check(data)
-   end
-   records = nil
+    data ={}
+
+    #records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{configs['prefix']}_child_#{configs['suffix']}/_design/Child/_view/all?include_docs=true  -G -d limit=#{pge_size} -d skip=#{current_pge * pge_size} -d descending=true`)["rows"]
+    #records = Child.by__id.keys(["0031107eef3a8b2c578d528658f54c28", "0031107eef3a8b2c578d528658f4362b", "05935986ca4c19a1de1ddcfe581e2a7b", "05935986ca4c19a1de1ddcfe589d0f11"])
+
+      ActiveRecord::Base.transaction do
+    i = 0
+    (records || []).each do |doc|
+      r = doc["doc"].with_indifferent_access
+      data = { person: {duplicate: "", is_exact_duplicate: "",
+               relationship: r[:relationship],
+               last_name: decrypt(r[:last_name]),
+               first_name: decrypt(r[:first_name]),
+               middle_name: decrypt(r[:middle_name]),
+               birthdate: r[:birthdate],
+               birth_district: r[:birth_district],
+               gender: r[:gender],
+               place_of_birth: r[:place_of_birth],
+               hospital_of_birth: r[:hospital_of_birth],
+               birth_weight: r[:birth_weight],
+               type_of_birth: r[:type_of_birth],
+               national_serial_number: r[:national_serial_number],
+               parents_married_to_each_other: r[:parents_married_to_each_other],
+               date_of_marriage: r[:date_of_marriage],
+               court_order_attached: r[:court_order_attached],
+               created_at: r[:created_at],
+               created_by: r[:created_by],
+               updated_at: r[:updated_at],
+               parents_signed: "",
+               district_id_number: r[:district_id_number],
+               mother: {},
+               father:{},
+               mode_of_delivery: r[:mode_of_delivery],
+               level_of_education: r[:level_of_education],
+               informant: {},
+              foster_mother: {},
+              foster_father: {},
+              form_signed: r[:form_signed],
+               acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
+              },
+               home_address_same_as_physical: "Yes",
+               gestation_at_birth: r[:gestation_at_birth],
+               number_of_prenatal_visits: r[:number_of_prenatal_visits],
+               month_prenatal_care_started: r[:month_prenatal_care_started],
+               number_of_children_born_alive_inclusive: r[:number_of_children_born_alive_inclusive],
+               number_of_children_born_still_alive: r[:number_of_children_born_still_alive],
+               same_address_with_mother: "",
+               informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"),
+               registration_type: r[:relationship],
+               record_status: decrypt(r[:record_status]),
+               _rev: r[:_rev],
+               _id: r[:_id],
+               request_status: decrypt(r[:request_status]),
+               biological_parents: "",
+               foster_parents: "",
+               parents_details_available: "",
+               copy_mother_name: "No",
+               controller: "person",
+               action: "create",
+               district_code: (r[:district_code] rescue nil),
+               facility_code: (r[:facility_code] rescue nil)
+              }
+
+              if !r[:mother].blank?
+                data[:mother] = {
+                    last_name: decrypt(r[:mother][:last_name]) ,
+                    first_name: decrypt(r[:mother][:first_name]),
+                    middle_name: decrypt(r[:mother][:middle_name]),
+                    birthdate: r[:mother][:birthdate],
+                    birthdate_estimated: r[:mother][:birthdate_estimated],
+                    citizenship: r[:mother][:citizenship],
+                    residential_country: r[:mother][:residential_country],
+                    current_district: r[:mother][:current_district],
+                    current_ta: r[:mother][:current_ta],
+                    current_village: r[:mother][:current_village],
+                    home_district: r[:mother][:home_district],
+                    home_ta: r[:mother][:home_ta],
+                    home_village: r[:mother][:home_village]
+                }
+              end
+
+              if !r[:father].blank?
+                data[:father] =  {
+                    last_name: decrypt(r[:father][:last_name]),
+                    first_name: decrypt(r[:father][:first_name]),
+                    middle_name: decrypt(r[:father][:middle_name]),
+                    birthdate: r[:father][:birthdate],
+                    birthdate_estimated: r[:father][:birthdate_estimated],
+                    citizenship: r[:father][:citizenship],
+                    residential_country: r[:father][:residential_country],
+                    current_district: r[:father][:current_district],
+                    current_ta: r[:father][:current_ta],
+                    current_village: r[:father][:current_village],
+                    home_district: r[:father][:home_district],
+                    home_ta: r[:father][:home_ta],
+                    home_village: r[:father][:home_village]
+                }
+              end
+
+              if !r[:informant].blank?
+                data[:informant] =  {
+                    last_name: decrypt(r[:informant][:last_name]),
+                    first_name: decrypt(r[:informant][:first_name]),
+                    middle_name: decrypt(r[:informant][:middle_name]),
+                    relationship_to_person: r[:informant][:relationship_to_child],
+                    current_district: r[:informant][:current_district],
+                    current_ta: r[:informant][:current_ta],
+                    current_village: r[:informant][:current_village],
+                    addressline1: r[:informant][:addressline1],
+                    addressline2: r[:informant][:addressline2],
+                    phone_number: r[:informant][:phone_number]
+                }
+              end
+
+              if !r[:foster_mother].blank?
+                data[:foster_mother] ={
+                    id_number: (r[:foster_mother][:id_number] rescue nil),
+                    first_name: decrypt((r[:foster_mother][:first_name] rescue nil)),
+                    middle_name: decrypt((r[:foster_mother][:middle_name] rescue nil)),
+                    last_name: decrypt((r[:foster_mother][:last_name] rescue nil)),
+                    birthdate: (r[:foster_mother][:birthdate] rescue nil),
+                    birthdate_estimated: (r[:foster_mother][:birthdate_estimated] rescue nil),
+                    current_village: (r[:foster_mother][:current_village] rescue nil),
+                    current_ta: (r[:foster_mother][:current_ta] rescue nil),
+                    current_district: (r[:foster_mother][:current_district] rescue nil),
+                    home_village: (r[:foster_mother][:home_village] rescue nil),
+                    home_ta: (r[:foster_mother][:home_ta] rescue nil),
+                    home_district: (r[:foster_mother][:home_district] rescue nil),
+                    home_country: (r[:foster_mother][:home_country] rescue nil),
+                    citizenship: (r[:foster_mother][:citizenship] rescue nil),
+                    residential_country: (r[:foster_mother][:residential_country] rescue nil),
+                    foreigner_current_district: (r[:foster_mother][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:foster_mother][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:foster_mother][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:foster_mother][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:foster_mother][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:foster_mother][:foreigner_home_ta] rescue nil)
+                }
+              end
+
+              if !r[:foster_father].blank?
+                data[:foster_father] =   {
+                    id_number: (r[:foster_father][:id_number] rescue nil),
+                    first_name: decrypt((r[:foster_father][:first_name] rescue nil)),
+                    middle_name: decrypt((r[:foster_father][:middle_name] rescue nil)),
+                    last_name: decrypt((r[:foster_father][:last_name] rescue nil)),
+                    birthdate: (r[:foster_father][:birthdate] rescue nil),
+                    birthdate_estimated: (r[:foster_father][:birthdate_estimated] rescue nil),
+                    current_village: (r[:foster_father][:current_village] rescue nil),
+                    current_ta: (r[:foster_father][:current_ta] rescue nil),
+                    current_district: (r[:foster_father][:current_district] rescue nil),
+                    home_village: (r[:foster_father][:home_village] rescue nil),
+                    home_ta: (r[:foster_father][:home_ta] rescue nil),
+                    home_district: (r[:foster_father][:home_district] rescue nil),
+                    home_country: (r[:foster_father][:home_country] rescue nil),
+                    citizenship: (r[:foster_father][:citizenship] rescue nil),
+                    residential_country: (r[:foster_father][:residential_country] rescue nil),
+                    foreigner_current_district: (r[:foster_father][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:foster_father][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:foster_father][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:foster_father][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:foster_father][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:foster_father][:foreigner_home_ta] rescue nil)
+                }
+              end
+         transform_record(data)
+        i = i + 1
+        if i % 10 == 0
+          `#{i} >> f.log`
+        end
+     end
+     records = nil
+    end
+
 end
 
 
-def initiate_migration
+def initiate_migration(records)
 
-	total_records = Child.count
-  migration = EbrsMigration.last
-
-  if migration.blank?
-      migration = EbrsMigration.new
-      page_size = 1000
-      current_page = 1
-      migration.page_size  = page_size
-
-  else
-    page_size  =  migration.page_size.to_i
-    current_page =  migration.current_page.to_i + 1
-  end
-
-	total_pages = (total_records / page_size).divmod(1)[0].to_i + ((total_records % page_size) > 0 ? 1 : 0)
-
-	start_time = Time.now
-	while (current_page < total_pages) do
-        build_client_record(current_page, page_size)
-        migration.current_page = current_page
-        migration.save
-        current_page = current_page + 1
-        puts "Migrated about #{page_size * (current_page -1 )} in #{(Time.now - start_time)/60} minutes"
-        if false && ((page_size * (current_page -1)).to_i % 1000) == 0
-          puts "Migrated current 1000 records rerun the script to migration next batch"
-          return;
-        end
-	end
+	total_records = records.count
+  #build_client_record
 
   puts "\n"
 	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	puts "\n"
 end
 
-initiate_migration
+configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
+records = Oj.load File.read("#{Rails.root}/data.json")
+
+records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
+  build_client_record(block)
+end
+
+
