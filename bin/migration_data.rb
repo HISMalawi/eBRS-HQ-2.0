@@ -27,6 +27,16 @@ User.current = User.last
 
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
+password = CONFIG["crtkey"] rescue nil
+$private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pem"), password)
+$old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
+$old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
+$old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
+
+if password.blank? || $private_key.blank?
+  raise "Invalid Decryption Key".inspect
+end
+
 def write_log(file, content)
 
 	if !File.exists?(file)
@@ -335,31 +345,14 @@ def log_error(error_msge, content)
 end
 
 def save_full_record(params, district_id_number)
-  begin
-      params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-    	person = PersonService.create_record(params)
 
-      if !person.blank?
-        #SimpleElasticSearch.add(person_for_elastic_search(person,params))
-        record_status = PersonRecordStatus.where(person_id: person.person_id).first
+  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (raise params.inspect)
+  person = PersonService.create_record(params)
 
-        	#status = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
-	        #record_status.update_attributes(status_id: Status.where(name: status).last.id)
-	    assign_district_id(person.person_id, (district_id_number.to_s rescue "NULL"))
-	    #puts "Record for #{params[:person][:first_name]} #{params[:person][:middle_name]} #{params[:person][:last_name]} Created ............. "
-
-      end
-
-   rescue StandardError => e
-          log_error(e.message, params)
-   end
-end
-
-def mother_record_exist
-   mothers = mother_records
-   record = start
-   precision = precision_level(mothers)
-   puts "<<<< precision level: #{precision} <<<<<<<<<<<"
+  if !person.blank?
+    #SimpleElasticSearch.add(person_for_elastic_search(person,params))
+    assign_identifiers(person.person_id, params)
+  end
 end
 
 def precision_level(mothers, record)
@@ -423,46 +416,19 @@ def precision_level(mothers, record)
 
 end
 
-def mother_records
+def assign_identifiers(person_id, params)
 
-	 mothers = []
+    if !params[:person][:district_id_number].blank?
+      PersonIdentifier.create(value: params[:person][:district_id_number], person_id: person_id, person_identifier_type_id: $old_ben_type)
+    end
 
-	 records = PersonName.find_by_sql("SELECT P.person_id,first_name,last_name,birthdate,birthdate_estimated,home_village,home_ta,citizenship,home_district
-	 	                               FROM person_name PN INNER JOIN person P ON P.person_id = PN.person_id
-	 	                               INNER JOIN person_addresses PA ON PA.person_id = P.person_id WHERE PN.person_id
-	 	                               IN (select person_b from person_relationship where person_relationship_type_id = 6)")
+    if !params[:person][:national_serial_number].blank?
+      PersonIdentifier.create(value: params[:person][:national_serial_number], person_id: person_id, person_identifier_type_id: $old_brn_type)
+    end
 
-     (records || []).each do |rec|
-         mothers << {'person_id' => rec.person_id,
-         	        'first_name' => rec.first_name,
-                   'last_name' => rec.last_name,
-                   'birthdate' => rec.birthdate,
-                   'birthdate_estimated' => rec.birthdate_estimated,
-                   'home_village' => rec.home_village,
-                   'home_ta' => rec.home_ta,
-                   'citizenship'=> rec.citizenship,
-                   'home_district' => rec.home_district }
-     end
-
-     return mothers
-end
-
-def assign_district_id(person_id, ben)
-
-	ben_exist = PersonBirthDetail.where(district_id_number: ben)
-
-	if ben_exist.blank?
-		birth_details = PersonBirthDetail.where(person_id: person_id).first
-	    birth_details.update_attributes(district_id_number: ben)
-
-	else
-		PersonAttribute.create(value: ben, person_id: person_id, person_attribute_type_id: Duplicate_attribute_type_id )
-		(ben_exist || []).each do |r|
-			r.update_attributes(district_id_number: nil)
-			PersonAttribute.create(value: ben, person_id: r.person_id, person_attribute_type_id: Duplicate_attribute_type_id)
-		 end
-	end
-
+    if !params[:person][:facility_serial_number].blank?
+      PersonIdentifier.create(value: params[:person][:facility_serial_number], person_id: person_id, person_identifier_type_id: $old_serial_type)
+    end
 end
 
 
@@ -516,6 +482,7 @@ def get_record_status(rec_status, req_status)
       							'GRANTED' =>'DC-GRANTED',
       							'PENDING' => 'DC-PENDING',
       							'CAN-REPRINT' => 'DC-CAN-REPRINT',
+                    'CAN RE_PRINT' => 'DC-CAN-REPRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -545,24 +512,12 @@ def get_record_status(rec_status, req_status)
 					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
 		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
 
-
-   return status[rec_status][req_status]
-
+   s = status[rec_status][req_status] rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
+   return s
 end
 
 def decrypt(value)
-
-    return value if !File.exists?("#{Rails.root}/config/private.pem")
-
-    private_key_file = "#{Rails.root}/config/private.pem"
-
-    password = CONFIG["crtkey"] rescue nil
-
-    return value if password.nil?
-
-    private_key = OpenSSL::PKey::RSA.new(File.read(private_key_file), password)
-
-    string = private_key.private_decrypt(Base64.decode64(value)) rescue nil
+    string = $private_key.private_decrypt(Base64.decode64(value)) rescue nil
 
     return value if string.nil?
 
@@ -570,7 +525,7 @@ def decrypt(value)
 
 end
 
-def build_client_record(records)
+def build_client_record(records, n)
 
 
     data ={}
@@ -583,7 +538,7 @@ def build_client_record(records)
     (records || []).each do |doc|
       r = doc["doc"].with_indifferent_access
       data = { person: {duplicate: "", is_exact_duplicate: "",
-               relationship: r[:relationship],
+               relationship: (r[:relationship].blank? ? 'normal' : r[:relationship]),
                last_name: decrypt(r[:last_name]),
                first_name: decrypt(r[:first_name]),
                middle_name: decrypt(r[:middle_name]),
@@ -594,7 +549,6 @@ def build_client_record(records)
                hospital_of_birth: r[:hospital_of_birth],
                birth_weight: r[:birth_weight],
                type_of_birth: r[:type_of_birth],
-               national_serial_number: r[:national_serial_number],
                parents_married_to_each_other: r[:parents_married_to_each_other],
                date_of_marriage: r[:date_of_marriage],
                court_order_attached: r[:court_order_attached],
@@ -603,6 +557,8 @@ def build_client_record(records)
                updated_at: r[:updated_at],
                parents_signed: "",
                district_id_number: r[:district_id_number],
+               national_serial_number: r[:national_serial_number],
+               facility_serial_number: r[:facility_serial_number],
                mother: {},
                father:{},
                mode_of_delivery: r[:mode_of_delivery],
@@ -621,7 +577,7 @@ def build_client_record(records)
                number_of_children_born_still_alive: r[:number_of_children_born_still_alive],
                same_address_with_mother: "",
                informant_same_as_mother: (r[:informant][:relationship_to_child] == "Mother" ? "Yes" : "No"),
-               registration_type: r[:relationship],
+               registration_type: (r[:relationship].blank? ? 'normal' : r[:relationship]),
                record_status: decrypt(r[:record_status]),
                _rev: r[:_rev],
                _id: r[:_id],
@@ -740,8 +696,8 @@ def build_client_record(records)
               end
          transform_record(data)
         i = i + 1
-        if i % 10 == 0
-          `#{i} >> f.log`
+        if i % 100 == 0
+          puts n + i
         end
      end
      records = nil
@@ -763,8 +719,12 @@ end
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 records = Oj.load File.read("#{Rails.root}/data.json")
 
-records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
-  build_client_record(block)
+records['rows'].each_slice(5000).to_a.each_with_index do |block, i|
+  puts "#{Time.now.to_s(:db)}"
+  GC.start
+  GC.disable
+  build_client_record(block, (i*5000))
+  puts "#{Time.now.to_s(:db)}"
 end
 
 

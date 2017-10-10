@@ -4,21 +4,18 @@ module MigrateChild
   @rec_count = 0
 
   def self.new_child(params)
-        core_person = CorePerson.create(
-        person_type_id: PersonType.where(name: 'Client').last.id,
-        created_at: params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00"),
-        updated_at: params[:person][:updated_at].to_date)
-        #core_person.save
-        @rec_count = @rec_count.to_i + 1
-        person_id = CorePerson.first.person_id.to_i + @rec_count.to_i
-        sql_query = "(#{person_id}, #{core_person.person_type_id},\"#{params[:person][:created_at].to_date}\", \"#{params[:person][:updated_at].to_date}\"),"
-        row = "#{params[:_id]},#{core_person.person_id},"
+    core_person = CorePerson.create(
+    person_type_id: PersonType.where(name: 'Client').last.id,
+    created_at: params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00"),
+    updated_at: params[:person][:updated_at].to_date)
+    #core_person.save
+    @rec_count = @rec_count.to_i + 1
+    person_id = CorePerson.first.person_id.to_i + @rec_count.to_i
+    sql_query = "(#{person_id}, #{core_person.person_type_id},\"#{params[:person][:created_at].to_date}\", \"#{params[:person][:updated_at].to_date}\"),"
+    row = "#{params[:_id]},#{core_person.person_id},"
 
-        save_ids(row)
-        #self.write_to_dump("core_person.sql",sql_query)
-
-
-
+    save_ids(row)
+    #
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
@@ -37,7 +34,7 @@ module MigrateChild
     )
 
     person
-end
+  end
 
 
   def self.workflow_init(person,params)
@@ -88,15 +85,7 @@ end
   end
 
   def self.save_ids(content)
-
-     file_path = "#{Rails.root}/app/assets/data/person.csv"
-     if !File.exists?(file_path)
-         file = File.new(file_path, 'w')
-     else
-       File.open(file_path, 'a') do |f|
-         f.puts "#{content}"
-       end
-     end
+     `echo #{content} >> #{Rails.root}/app/assets/data/person.csv`
   end
 
   def self.write_to_dump(filename,content)
