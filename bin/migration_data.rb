@@ -433,13 +433,9 @@ end
 
 def build_client_record(records, n)
 
-
     data ={}
 
-    #records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{configs['prefix']}_child_#{configs['suffix']}/_design/Child/_view/all?include_docs=true  -G -d limit=#{pge_size} -d skip=#{current_pge * pge_size} -d descending=true`)["rows"]
-    #records = Child.by__id.keys(["0031107eef3a8b2c578d528658f54c28", "0031107eef3a8b2c578d528658f4362b", "05935986ca4c19a1de1ddcfe581e2a7b", "05935986ca4c19a1de1ddcfe589d0f11"])
-
-      ActiveRecord::Base.transaction do
+    ActiveRecord::Base.transaction do
     i = 0
     (records || []).each do |doc|
       r = doc["doc"].with_indifferent_access
@@ -467,6 +463,7 @@ def build_client_record(records, n)
                facility_serial_number: r[:facility_serial_number],
                mother: {},
                father:{},
+               npid: decrypt(r[:npid]),
                mode_of_delivery: r[:mode_of_delivery],
                level_of_education: r[:level_of_education],
                informant: {},
@@ -600,6 +597,7 @@ def build_client_record(records, n)
                     foreigner_home_ta: (r[:foster_father][:foreigner_home_ta] rescue nil)
                 }
               end
+
          transform_record(data)
         i = i + 1
         if i % 100 == 0
@@ -623,14 +621,14 @@ end
 
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
-`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
+#`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
 
-records['rows'].each_slice(5000).to_a.each_with_index do |block, i|
+records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
   GC.start
   GC.disable
-	start = i*5000
+	start = i*1000
   build_client_record(block, start)
   puts "#{Time.now.to_s(:db)}"
 end
