@@ -94,3 +94,5 @@ gem "faker", "~> 1.6.6"
 gem "will_paginate", "3.1.6"
 
 gem "activerecord-session_store"
+
+gem "oj"

@@ -22,10 +22,10 @@ module MigrateFather
           :created_at         => params[:person][:created_at].to_date.to_s,
           :updated_at         => params[:person][:updated_at].to_date.to_s
       )
-    
+
       father_person = Person.create(
           :person_id          => core_person.id,
-          :gender             => 'F',
+          :gender             => 'M',
           :birthdate          => (father[:birthdate].blank? ? "1900-01-01" : father[:birthdate].to_date),
           :birthdate_estimated => (father[:birthdate].blank? ? 1 : 0),
           :created_at         => params[:person][:created_at].to_date.to_s,
@@ -48,8 +48,8 @@ module MigrateFather
       home_district_id        = Location.locate_id_by_tag(father[:home_district], 'District')
       home_ta_id              = Location.locate_id(father[:home_ta], 'Traditional Authority', home_district_id)
       home_village_id         = Location.locate_id(father[:home_village], 'Village', home_ta_id)
-    
-     
+
+
       PersonAddress.create(
           :person_id          => core_person.id,
           :current_district   => cur_district_id,
@@ -75,7 +75,7 @@ module MigrateFather
       )
      rescue StandardError => e
 
-          self.log_error(e.message, params)
+          MigrateChild.log_error(e.message, params)
      end
     end
 
@@ -87,7 +87,7 @@ module MigrateFather
               updated_at: params[:person][:updated_at].to_date.to_s
       )
     end
-    
+
 
     father_person
 

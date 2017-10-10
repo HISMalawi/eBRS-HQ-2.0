@@ -78,7 +78,7 @@ module MigrateMother
 
 	     rescue StandardError => e
 
-	          self.log_error(e.message, params)
+	          MigrateChild.log_error(e.message, params)
 	     end
 
 	    end
@@ -95,5 +95,7 @@ module MigrateMother
 
 	    mother_person
 	end
+
+
 
 end

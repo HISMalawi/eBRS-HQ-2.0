@@ -97,7 +97,7 @@ module MigrateInformant
 
 	  rescue StandardError => e
 	          
-	          self.log_error(e.message, params)        
+	          MigrateChild.log_error(e.message, params)        
 	  end
 
 	    informant_person

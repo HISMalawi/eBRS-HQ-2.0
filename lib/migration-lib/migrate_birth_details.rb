@@ -111,7 +111,7 @@ module MigrateBirthDetails
 	    )
 	    
 	  rescue StandardError => e
-	    self.log_error(e.message, params)
+	    MigrateChild.log_error(e.message, params)
 	  end
 
 	    return details
@@ -143,7 +143,7 @@ module MigrateBirthDetails
 
 	    rescue StandardError =>e
 
-	      self.log_error(e.message,person)
+	      MigrateChild.log_error(e.message,person)
 
 	    end
 
