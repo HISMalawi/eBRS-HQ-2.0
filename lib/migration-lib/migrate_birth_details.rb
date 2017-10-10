@@ -72,9 +72,7 @@ module MigrateBirthDetails
 	      rel = params[:person][:informant][:relationship_to_person] rescue nil
 	    end
 	   
-	  begin
-
-	  	level = nil
+	   	level = nil
 	  	level = "DC" if params[:district_code].present?
 	  	level = "FC" if params[:facility_code].present?
 
@@ -104,15 +102,12 @@ module MigrateBirthDetails
 	        other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
+          source_id:                                params[:_id],
 	        date_reported:                            params[:person][:created_at].to_date.to_s,
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
 	        level: 									  level
 	    )
-	    
-	  rescue StandardError => e
-	    MigrateChild.log_error(e.message, params)
-	  end
 
 	    return details
 
