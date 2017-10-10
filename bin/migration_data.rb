@@ -5,6 +5,7 @@ require 'migration-lib/migrate_informant'
 require "migration-lib/migrate_birth_details"
 require 'migration-lib/person_service'
 require "simple_elastic_search"
+require 'json'
 
 @missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
 @loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
@@ -462,6 +463,22 @@ def decrypt(value)
 
 end
 
+def test_func
+	data = {}
+	file = File.read("#{Rails.root}/app/assets/data/ebrs_child_hq_dev.json")
+	records = JSON.parse(file)
+	#records.to_json
+	 #(records || []).each do |doc|
+	#	r = doc[0]
+	# 	if r == "rows"
+	 		#raise doc[:doc].inspect
+	# 	end
+	 #end
+	#for(i in records)
+		#puts records[i].inspect
+	#end
+end
+
 def build_client_record(current_pge, pge_size)
 
   data ={}
@@ -650,15 +667,13 @@ def initiate_migration
         migration.current_page = current_page
         migration.save
         puts "Migrated about #{page_size * (current_page - 1 )} in #{(Time.now - start_time)/60} minutes"
-<<<<<<< HEAD
 
-=======
         if false && ((Time.now - start_time)/60).to_i >= 10
           restart = true
           puts "The script is taking long to migrate #{page_size} need gabage collection then restart"
           break;
         end
->>>>>>> 49e247c3f3cfb53acd524467333bcd93ad50a209
+
 	end
 
   if restart
@@ -671,3 +686,4 @@ def initiate_migration
 end
 
 initiate_migration
+#test_func

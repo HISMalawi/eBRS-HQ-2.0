@@ -27,8 +27,10 @@ passenger*
 nbproject/
 public/errors/*
 *.~*
+log/migration_error_log.txt
 public/sites/*.yml
 public/query.sql
 app/assets/data/person.csv
+app/assets/data/*.json
 app/assets/data/migration_issues/*.csv
 app/assets/data/migration_dumps/*
