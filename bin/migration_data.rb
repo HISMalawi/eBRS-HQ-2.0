@@ -717,13 +717,16 @@ def initiate_migration(records)
 end
 
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
+
+`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
 
 records['rows'].each_slice(5000).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
   GC.start
   GC.disable
-  build_client_record(block, (i*5000))
+	start = i*5000
+  build_client_record(block, start)
   puts "#{Time.now.to_s(:db)}"
 end
 
