@@ -4,7 +4,7 @@ module PersonService
 
   def self.create_record(params)
 
-    registration_type   = params[:person][:relationship].downcase
+    registration_type   = params[:person][:relationship].downcase #rescue (raise params.inspect)
     person  = MigrateChild.new_child(params)
 
     case registration_type
@@ -45,7 +45,6 @@ module PersonService
     details = MigrateBirthDetails.new_birth_details(person, params)
     
     status = MigrateChild.workflow_init(person,params)
-
 
     
     return person
