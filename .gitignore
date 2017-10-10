@@ -30,3 +30,4 @@ public/errors/*
 public/sites/*.yml
 public/query.sql
 app/assets/data/person.csv
+data.json
