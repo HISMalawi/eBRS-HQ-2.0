@@ -381,17 +381,11 @@ def transform_record(data)
     data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
     data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
 
-		#================== Transforming the marriage date and or estimated marriage date if blank or not known
-		if data[:person][:date_of_marriage].split("/")[0] == "?"
-			 estimated_date = data[:person][:date_of_marriage].split("/")
-			 estimated_date[0] = "15"
-			 data[:person][:date_of_marriage] = estimated_date.join("/")
+		#================== Transforming the marriage date and or estimated marriage date iis partly known
+		unless data[:person][:date_of_marriage].blank?
+			   format_date(data[:person][:date_of_marriage])
 		end
-		if data[:person][:date_of_marriage].split("/")[1] == "?"
-			 estimated_month = data[:person][:date_of_marriage].split("/")
-			 estimated_month[1] = "15"
-			 data[:person][:date_of_marriage] = estimated_month.join("/")
-		end
+
 
     if data[:person][:type_of_birth]== 'Single'
 
@@ -399,6 +393,22 @@ def transform_record(data)
 
     end
 
+end
+
+def format_date(date)
+	unless date.blank?
+		if date.split("/")[0]  == "?"
+			 estimated_date = date.split("/")
+			 estimated_date[0] = 15
+			 date = estimated_date.join("/")
+		end
+		if date.split("/")[1]  == "?"
+			 estimated_date = date.split("/")
+			 estimated_date[1] = 7
+			 date = estimated_date.join("/")
+		end
+	 end
+	return date
 end
 
 def get_record_status(rec_status, req_status)
