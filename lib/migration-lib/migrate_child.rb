@@ -6,7 +6,7 @@ module MigrateChild
   def self.new_child(params)
     core_person = CorePerson.create(
     person_type_id: PersonType.where(name: 'Client').last.id,
-    created_at: params[:person][:created_at].to_date.strftime("%Y-%m-%d HH:MM:00"),
+    created_at: params[:person][:created_at].to_date,
     updated_at: params[:person][:updated_at].to_date)
     #core_person.save
     @rec_count = @rec_count.to_i + 1
@@ -43,7 +43,7 @@ module MigrateChild
                 else
                   raise name.inspect
                 end
-             
+
         end
       end
       return citizenship
