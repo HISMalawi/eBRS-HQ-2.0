@@ -25,6 +25,7 @@ $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pe
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
+$index = {}
 
 if password.blank? || $private_key.blank?
   raise "Invalid Decryption Key".inspect
@@ -350,8 +351,20 @@ def transform_record(data)
 		#================== Transforming the marriage date and or estimated marriage date iis partly known
 		unless data[:person][:date_of_marriage].blank?
 			   format_date(data[:person][:date_of_marriage])
-		end
+    end
 
+    if !data[:person][:district_id_number].blank?
+
+      #create fixed BEN
+      old_ben = data[:person][:district_id_number]
+      code, inc, year = old_ben.split("/")
+      $index[year] = 0 if $index[year].blank?
+      $index[year] += 1
+      new_inc =  $index[year].to_s.rjust(8,'0')
+      new_ben = "#{code}/#{new_inc}/#{year}"
+
+      data[:person][:new_district_id_number] = new_ben
+    end
 
     if data[:person][:type_of_birth]== 'Single'
 
@@ -496,7 +509,7 @@ def build_client_record(records, n)
               }
 
               if !r[:mother].blank?
-                data[:mother] = {
+                data[:person][:mother] = {
                     last_name: decrypt(r[:mother][:last_name]) ,
                     first_name: decrypt(r[:mother][:first_name]),
                     middle_name: decrypt(r[:mother][:middle_name]),
@@ -520,7 +533,7 @@ def build_client_record(records, n)
               end
 
               if !r[:father].blank?
-                data[:father] =  {
+                data[:person][:father] =  {
                     last_name: decrypt(r[:father][:last_name]),
                     first_name: decrypt(r[:father][:first_name]),
                     middle_name: decrypt(r[:father][:middle_name]),
@@ -544,7 +557,7 @@ def build_client_record(records, n)
               end
 
               if !r[:informant].blank?
-                data[:informant] =  {
+                data[:person][:informant] =  {
                     last_name: decrypt(r[:informant][:last_name]),
                     first_name: decrypt(r[:informant][:first_name]),
                     middle_name: decrypt(r[:informant][:middle_name]),
@@ -559,7 +572,7 @@ def build_client_record(records, n)
               end
 
               if !r[:foster_mother].blank?
-                data[:foster_mother] ={
+                data[:person][:foster_mother] ={
                     id_number: (r[:foster_mother][:id_number] rescue nil),
                     first_name: decrypt((r[:foster_mother][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_mother][:middle_name] rescue nil)),
@@ -585,7 +598,7 @@ def build_client_record(records, n)
               end
 
               if !r[:foster_father].blank?
-                data[:foster_father] =   {
+                data[:person][:foster_father] =   {
                     id_number: (r[:foster_father][:id_number] rescue nil),
                     first_name: decrypt((r[:foster_father][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_father][:middle_name] rescue nil)),
@@ -635,6 +648,7 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
 #`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
+records['rows'] = records['rows'].sort_by { |r|  r['approved_at'].to_datetime rescue nil}
 
 records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"

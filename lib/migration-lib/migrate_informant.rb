@@ -1,5 +1,5 @@
 module MigrateInformant
-	def self.new_informant(person, params)
+	def self.new_informant(person, params, mother=nil, father=nil)
 
 	    informant_person = nil; core_person = nil
 
@@ -10,21 +10,10 @@ module MigrateInformant
 	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
 	      informant_person = Person.find(params[:person][:prev_child_id]).informant
 	    elsif params[:informant_same_as_mother] == 'Yes'
-
-	      if params[:person][:relationship] == "adopted"
-	          informant_person = person.adoptive_mother
-	      else
-	         informant_person = person.mother
-	      end
+	      informant_person = mother
 	    elsif params[:informant_same_as_father] == 'Yes'
-	      if params[:person][:relationship] == "adopted"
-	          informant_person = person.adoptive_father
-	      else
-	         informant_person = person.father
-	      end
+	        informant_person = father
 	    else
-	    
-	    
 	      core_person = CorePerson.create(
 	          :person_type_id => PersonType.where(:name => 'Informant').last.id,
 	          :created_at     => params[:person][:created_at].to_date.to_s,
@@ -76,8 +65,11 @@ module MigrateInformant
 
 	    end
 
+      person_id = person.id
+      informant_id = informant_person.id
+
 	    PersonRelationship.create(
-	        person_a: person.id, person_b: informant_person.id,
+	        person_a: person_id, person_b: informant_id,
 	        person_relationship_type_id: PersonRelationType.where(name: 'Informant').last.id,
 	        created_at: params[:person][:created_at].to_date.to_s,
 	        updated_at: params[:person][:updated_at].to_date.to_s
