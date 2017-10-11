@@ -32,21 +32,86 @@ module MigrateFather
 
       PersonName.create(
           :person_id          => core_person.id,
-          :first_name         => father[:first_name],
-          :middle_name        => father[:middle_name],
-          :last_name          => father[:last_name],
+          :first_name         => father[:first_name].squish,
+          :middle_name        => father[:middle_name].squish,
+          :last_name          => father[:last_name].squish,
           :created_at         => params[:person][:created_at].to_date.to_s,
           :updated_at         => params[:person][:updated_at].to_date.to_s
       )
 
-      cur_district_id         = Location.locate_id_by_tag(father[:current_district], 'District')
-      cur_ta_id               = Location.locate_id(father[:current_ta], 'Traditional Authority', cur_district_id)
-      cur_village_id          = Location.locate_id(father[:current_village], 'Village', cur_ta_id)
+      current_district_id        = Location.by_name("Other").id
+      current_ta_id              = Location.by_name("Other").id
+      current_village_id         = Location.by_name("Other").id
 
-      home_district_id        = Location.locate_id_by_tag(father[:home_district], 'District')
-      home_ta_id              = Location.locate_id(father[:home_ta], 'Traditional Authority', home_district_id)
-      home_village_id         = Location.locate_id(father[:home_village], 'Village', home_ta_id)
 
+      if father[:current_district].present?
+         cur_district_id         = Location.locate_id_by_tag(father[:current_district].squish, 'District')
+         if cur_district_id.blank?
+            cur_district_id         = Location.by_name("Other").id
+            current_district_other  = father[:current_district]
+         end
+      elsif father[:foreigner_current_district].present?
+            cur_district_id         = Location.by_name("Other").id
+            current_district_other  = father[:foreigner_current_district]
+      end
+
+      if father[:current_ta].present?
+          cur_ta_id               = Location.locate_id(father[:current_ta].squish, 'Traditional Authority', cur_district_id)
+          if cur_ta_id.blank?
+             cur_ta_id         = Location.by_name("Other").id
+             current_ta_other  = father[:current_ta]
+          end
+      elsif father[:foreigner_current_ta].present?
+          cur_ta_id         = Location.by_name("Other").id
+          current_ta_other  = father[:foreigner_current_ta]
+      end
+
+      if father[:current_village].present?
+          cur_village_id          = Location.locate_id(father[:current_village].squish, 'Village', cur_ta_id)
+          if cur_village_id.blank?
+             cur_village_id         = Location.by_name("Other").id
+             cur_village_other  = father[:current_village]
+          end
+      elsif father[:foreigner_current_village].present?
+          cur_village_id         = Location.by_name("Other").id
+          current_village_other  = father[:foreigner_current_village]
+      end
+      
+      home_district_id        = Location.by_name("Other").id
+      home_ta_id              = Location.by_name("Other").id
+      home_village_id         = Location.by_name("Other").id
+
+      if father[:home_district].present?
+         home_district_id  = Location.locate_id_by_tag(father[:home_district].squish, 'District')
+         if home_district_id.blank?
+            home_district_id = Location.by_name("Other").id
+            home_district_other  = father[:home_district].squish
+         end
+      elsif father[:foreigner_home_district].present?
+            home_district_id         = Location.by_name("Other").id
+            home_district_other  = father[:foreigner_home_district].squish
+      end
+      if father[:home_ta].present?
+          home_ta_id   = Location.locate_id(father[:home_ta].squish, 'Traditional Authority', home_district_id)
+          if home_ta_id.blank?
+             home_ta_id  = Location.by_name("Other").id
+             home_ta_other  = father[:home_ta].squish
+          end
+      elsif father[:foreigner_home_ta].present?
+          home_ta_id  = Location.by_name("Other").id
+          home_district_other  = father[:foreigner_home_ta]
+      end
+
+      if father[:current_village].present?
+          home_village_id = Location.locate_id(father[:current_village].squish, 'Village', home_ta_id)
+          if home_village_id.blank?
+             home_village_id         = Location.by_name("Other").id
+             home_village_other  = father[:home_village]
+          end
+      elsif father[:foreigner_home_village].present?
+          home_village_id = Location.by_name("Other").id
+          home_village_other  = father[:foreigner_home_village]
+      end
 
       PersonAddress.create(
           :person_id          => core_person.id,
@@ -57,12 +122,12 @@ module MigrateFather
           :home_ta            => home_ta_id,
           :home_village       => home_village_id,
 
-          :current_district_other   => father[:foreigner_home_district],
-          :current_ta_other         => father[:foreigner_current_ta],
-          :current_village_other    => father[:foreigner_current_village],
-          :home_district_other      => father[:foreigner_home_district],
-          :home_ta_other            => father[:foreigner_home_ta],
-          :home_village_other       => father[:foreigner_home_village],
+          :current_district_other   => (current_district_other  rescue nil),
+          :current_ta_other         => (current_ta_other  rescue nil),
+          :current_village_other    => (current_village_other  rescue nil),
+          :home_district_other      => (home_district_other  rescue nil),
+          :home_ta_other            => (home_ta_other  rescue nil),
+          :home_village_other       => (home_village_other  rescue nil),
 
           :citizenship            => Location.where(country: father[:citizenship]).last.id,
           :residential_country    => Location.locate_id_by_tag(father[:residential_country], 'Country'),
