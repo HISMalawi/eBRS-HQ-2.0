@@ -38,22 +38,22 @@ module PersonService
           mother   = MigrateFather.new_father(person, params, 'Father')
         end
         informant = MigrateInformant.new_informant(person, params)
-      else 
+      else
           puts "Write some to track registration type not present"
       end
-   
+
     details = MigrateBirthDetails.new_birth_details(person, params)
-    
+
     status = MigrateChild.workflow_init(person,params)
 
-    
+
     return person
   end
 
 
   def self.update_record(params)
 
-  end  
+  end
 
   def self.is_num?(val)
 
@@ -64,15 +64,125 @@ module PersonService
 
   end
 
+  def self.verify_location(owner, location_type, data)
+
+    location_found = false
+
+   if owner == "Mother"
+
+     if location_type == "TA"
+          cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+          cur_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', cur_district_id)
+          home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:home_district], 'District')
+          home_ta_id        = Location.locate_id(data[:person][:mother][:home_ta], 'Traditional Authority', home_district_id)
+
+        unless cur_ta_id.blank? || home_ta_id.blank?
+          location_found = true
+        else
+          location_found = false
+        end
+
+     elsif location_type == "Village"
+
+          cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+          cur_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', cur_district_id)
+          cur_village_id   = Location.locate_id(data[:person][:mother][:current_village], 'Village', cur_ta_id)
+          home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+          home_ta_id        = Location.locate_id(data[:person][:mother][:current_ta], 'Traditional Authority', home_district_id)
+          home_village_id   = Location.locate_id(data[:person][:mother][:current_village], 'Village', home_ta_id)
+
+        unless cur_village_id.blank? || home_village_id.blank?
+          location_found = true
+        else
+          location_found = false
+        end
+
+     elsif location_type == "District"
+
+         cur_district_id  = Location.locate_id_by_tag(data[:person][:mother][:current_district], 'District')
+         home_district_id  = Location.locate_id_by_tag(data[:person][:mother][:home_district], 'District')
+
+        unless cur_district_id.blank? || home_district_id.blank?
+          location_found = true
+        else
+          location_found = false
+        end
+     else
+        citizenship = Location.where(country: data[:person][:mother][:citizenship]).last.id rescue nil
+        residential_country = Location.where(name: data[:person][:mother][:residential_country]).last.id rescue nil
+
+          unless citizenship.blank? || residential_country.blank?
+            location_found = true
+          else
+            location_found = false
+          end
+     end
+
+   else
+
+     if location_type == "TA"
+          cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+          cur_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', cur_district_id)
+          home_district_id  = Location.locate_id_by_tag(data[:person][:father][:home_district], 'District')
+          home_ta_id        = Location.locate_id(data[:person][:father][:home_ta], 'Traditional Authority', home_district_id)
+
+          unless cur_ta_id.blank? || home_ta_id.blank?
+            location_found = true
+          else
+            location_found = false
+          end
+
+     elsif location_type == "Village"
+
+          cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+          cur_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', cur_district_id)
+          cur_village_id   = Location.locate_id(data[:person][:father][:current_village], 'Village', cur_ta_id)
+          home_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+          home_ta_id        = Location.locate_id(data[:person][:father][:current_ta], 'Traditional Authority', home_district_id)
+          home_village_id   = Location.locate_id(data[:person][:father][:current_village], 'Village', home_ta_id)
+
+          unless cur_village_id.blank? || home_village_id.blank?
+              location_found = true
+          else
+              location_found = false
+          end
+
+     elsif location_type == "District"
+
+          cur_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+          home_district_id  = Location.locate_id_by_tag(data[:person][:father][:current_district], 'District')
+
+          unless cur_district_id.blank? || home_district_id.blank?
+            location_found = true
+          else
+            location_found = false
+          end
+    else
+        citizenship = Location.where(country: data[:person][:father][:citizenship]).last.id rescue nil
+        residential_country = Location.where(name: data[:person][:father][:residential_country]).last.id rescue nil
+
+        unless citizenship.blank? || residential_country.blank?
+            location_found = true
+        else
+            location_found = false
+        end
+
+    end
+
+  end
+
+   return location_found
+end
+
   def self.mother(person_id)
     birth_details = PersonBirthDetail.where(person_id: person_id).first
     birth_registration_type_id = birth_details.birth_registration_type_id
     registration_name = BirthRegistrationType.where(birth_registration_type_id: birth_registration_type_id).last.name
     case registration_name
     when "Adopted"
-         relationship_name = "Adoptive-Mother"  
+         relationship_name = "Adoptive-Mother"
     else
-        relationship_name = "Mother"   
+        relationship_name = "Mother"
     end
 
     result = nil
@@ -93,9 +203,9 @@ module PersonService
     registration_name = BirthRegistrationType.where(birth_registration_type_id: birth_registration_type_id).last.name
     case registration_name
     when "Adopted"
-         relationship_name = "Adoptive-Father"  
+         relationship_name = "Adoptive-Father"
     else
-        relationship_name = "Father"   
+        relationship_name = "Father"
     end
 
     result = nil

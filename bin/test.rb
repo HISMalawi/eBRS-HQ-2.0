@@ -1,3 +1,4 @@
+require'migration-lib/migrate_child'
 @file_path = "#{Rails.root}/app/assets/data/"
 @multiple_births = "#{Rails.root}/app/assets/data/multiple_births.csv"
 @dump_files = "#{Rails.root}/app/assets/data/migration_dumps/"
@@ -195,6 +196,8 @@ def func
 				   controller: "person",
 				   action: "create"
 				  }
+
+
 =begin
             if ["Twin","Triplet","Second Twin","Second Triplet","Third Triplet"].include? data[:person][:type_of_birth]
             	if data[:person][:type_of_birth] == "Twin" || data[:person][:type_of_birth] == "Triplet"
@@ -216,7 +219,7 @@ def func
 
         end
 =end
-
+     #puts "Location found: #{	PersonService.verify_location('Mother','District',data[:person][:mother][:current_district])}"
      puts ">>>>>>>>>>>>>>Number: #{count}"
      count = count + 1
    end
@@ -235,7 +238,7 @@ def kick_start
         puts "<<<<<<<<<<<<<<<< Page number: #{current_page}"
         puts "\n"
         test_method(current_page, page_size)
-		current_page = current_page + 1
+		    current_page = current_page + 1
 	end
 end
 
@@ -354,6 +357,116 @@ def test_method(current_pge, pge_size)
    end
 end
 
+def self.verify_location(owner, location_type, data)
+	location_found = false
+
+ if owner == "Mother"
+
+	 if location_type == "TA"
+				cur_district_id  = Location.locate_id_by_tag(data, 'District')
+				cur_ta_id        = Location.locate_id(data, 'Traditional Authority', cur_district_id)
+				home_district_id  = Location.locate_id_by_tag(data, 'District')
+				home_ta_id        = Location.locate_id(data, 'Traditional Authority', home_district_id)
+
+			unless cur_ta_id.blank? || home_ta_id.blank?
+				location_found = true
+			else
+				location_found = false
+			end
+
+	 elsif location_type == "Village"
+
+				cur_district_id  = Location.locate_id_by_tag(data, 'District')
+				cur_ta_id        = Location.locate_id(data, 'Traditional Authority', cur_district_id)
+				cur_village_id   = Location.locate_id(data, 'Village', cur_ta_id)
+				home_district_id  = Location.locate_id_by_tag(data, 'District')
+				home_ta_id        = Location.locate_id(data, 'Traditional Authority', home_district_id)
+				home_village_id   = Location.locate_id(data, 'Village', home_ta_id)
+
+			unless cur_village_id.blank? || home_village_id.blank?
+				location_found = true
+			else
+				location_found = false
+			end
+
+	 elsif location_type == "District"
+
+			 cur_district_id  = Location.locate_id_by_tag(data, 'District')
+			 home_district_id  = Location.locate_id_by_tag(data, 'District')
+
+			unless cur_district_id.blank? || home_district_id.blank?
+				location_found = true
+			else
+				location_found = false
+			end
+	 else
+			citizenship = Location.where(country: data).last.id rescue nil
+			residential_country = Location.where(name: data).last.id rescue nil
+
+				unless citizenship.blank? || residential_country.blank?
+					location_found = true
+				else
+					location_found = false
+				end
+	 end
+
+ else
+
+	 if location_type == "TA"
+				cur_district_id  = Location.locate_id_by_tag(data, 'District')
+				cur_ta_id        = Location.locate_id(data, 'Traditional Authority', cur_district_id)
+				home_district_id  = Location.locate_id_by_tag(data, 'District')
+				home_ta_id        = Location.locate_id(data, 'Traditional Authority', home_district_id)
+
+				unless cur_ta_id.blank? || home_ta_id.blank?
+					location_found = true
+				else
+					location_found = false
+				end
+
+	 elsif location_type == "Village"
+
+				cur_district_id  = Location.locate_id_by_tag(data, 'District')
+				cur_ta_id        = Location.locate_id(data, 'Traditional Authority', cur_district_id)
+				cur_village_id   = Location.locate_id(data, 'Village', cur_ta_id)
+				home_district_id  = Location.locate_id_by_tag(data, 'District')
+				home_ta_id        = Location.locate_id(data, 'Traditional Authority', home_district_id)
+				home_village_id   = Location.locate_id(data, 'Village', home_ta_id)
+
+				unless cur_village_id.blank? || home_village_id.blank?
+						location_found = true
+				else
+						location_found = false
+				end
+
+	 elsif location_type == "District"
+
+				cur_district_id  = Location.locate_id_by_tag(data, 'District')
+				home_district_id  = Location.locate_id_by_tag(data, 'District')
+
+				unless cur_district_id.blank? || home_district_id.blank?
+					location_found = true
+				else
+					location_found = false
+				end
+	else
+			citizenship = Location.where(country: data).last.id rescue nil
+			residential_country = Location.where(name: data).last.id rescue nil
+
+			unless citizenship.blank? || residential_country.blank?
+					location_found = true
+			else
+					location_found = false
+			end
+
+	end
+
+end
+
+ return location_found
+end
+
+
 def format_date(date)
 	unless date.blank?
 		if date.split("/")[0]  == "?"
@@ -370,8 +483,12 @@ def format_date(date)
 	return date
 end
 
+def try_loc
+	puts " #{self.verify_location('Mother','District','Blantyre')}"
+end
 
+#try_loc
 
-#func
+func
 #get_prev_child_id
 #prepare_dump_files

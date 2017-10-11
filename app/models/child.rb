@@ -1,6 +1,8 @@
 require 'couchrest_model'
 
 class Child < CouchRest::Model::Base
+
+  use Child database
   validates :national_serial_number , uniqueness: {allow_blank: true, message: "BRN cannot be duplicate"}
 
   validates :district_id_number , uniqueness: {allow_blank: true, message: "BEN cannot be duplicate"}
