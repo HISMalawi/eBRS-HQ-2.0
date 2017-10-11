@@ -46,6 +46,9 @@ module MigrateInformant
 	      home_ta_id              = Location.locate_id(informant[:home_ta], 'Traditional Authority', home_district_id)
 	      home_village_id         = Location.locate_id(informant[:home_village], 'Village', home_ta_id)
 	     
+	      citizenship = MigrateChild.search_citizenship(informant[:citizenship].squish)
+	      residential_country = MigrateChild.search_citizenship(informant[:residential_country].squish)
+
 	      PersonAddress.create(
 	          :person_id          => core_person.id,
 	          :current_district   => cur_district_id,
@@ -54,8 +57,8 @@ module MigrateInformant
 	          :home_district   => home_district_id,
 	          :home_ta            => home_ta_id,
 	          :home_village       => home_village_id,
-	          :citizenship            => Location.where(country: informant[:citizenship]).last.id,
-	          :residential_country    => Location.locate_id_by_tag(informant[:residential_country], 'Country'),
+	          :citizenship            => citizenship.id,
+	          :residential_country    => residential_country.id,
 	          :address_line_1         => informant[:addressline1],
 	          :address_line_2         => informant[:addressline2],
 	          :created_at         => params[:person][:created_at].to_date.to_s,

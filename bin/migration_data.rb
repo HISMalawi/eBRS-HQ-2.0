@@ -510,12 +510,18 @@ def build_client_record(records, n)
                     birthdate_estimated: r[:mother][:birthdate_estimated],
                     citizenship: r[:mother][:citizenship],
                     residential_country: r[:mother][:residential_country],
-                    current_district: r[:mother][:current_district],
-                    current_ta: r[:mother][:current_ta],
-                    current_village: r[:mother][:current_village],
-                    home_district: r[:mother][:home_district],
-                    home_ta: r[:mother][:home_ta],
-                    home_village: r[:mother][:home_village]
+                    current_district: (r[:mother][:current_district]  rescue nil),
+                    current_ta: (r[:mother][:current_ta]  rescue nil),
+                    current_village: (r[:mother][:current_village]  rescue nil),
+                    home_district: (r[:mother][:home_district]  rescue nil),
+                    home_ta: (r[:mother][:home_ta]  rescue nil),
+                    home_village: (r[:mother][:home_village]  rescue nil),
+                    foreigner_current_district: (r[:mother][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:mother][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:mother][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:mother][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:mother][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:mother][:foreigner_home_ta] rescue nil)
                 }
               end
 
@@ -528,12 +534,18 @@ def build_client_record(records, n)
                     birthdate_estimated: r[:father][:birthdate_estimated],
                     citizenship: r[:father][:citizenship],
                     residential_country: r[:father][:residential_country],
-                    current_district: r[:father][:current_district],
-                    current_ta: r[:father][:current_ta],
-                    current_village: r[:father][:current_village],
-                    home_district: r[:father][:home_district],
-                    home_ta: r[:father][:home_ta],
-                    home_village: r[:father][:home_village]
+                    current_district: (r[:father][:current_district]  rescue nil),
+                    current_ta: (r[:father][:current_ta]  rescue nil),
+                    current_village: (r[:father][:current_village]  rescue nil),
+                    home_district: (r[:father][:home_district]  rescue nil),
+                    home_ta: (r[:father][:home_ta]  rescue nil),
+                    home_village: (r[:father][:home_village]  rescue nil),
+                    foreigner_current_district: (r[:father][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:father][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:father][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:father][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:father][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:father][:foreigner_home_ta] rescue nil)
                 }
               end
 

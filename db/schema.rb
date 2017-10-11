@@ -303,6 +303,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.string   "informant_designation",                   limit: 255
     t.string   "level",                                   limit: 10
     t.string   "source_id",                               limit: 255
+    t.integer  "flagged",                                 limit: 1,   default: 0, null: false
     t.date     "date_reported",                                                   null: false
     t.date     "date_registered"                                                
     t.bigint   "creator",                                 limit: 4,               null: false
