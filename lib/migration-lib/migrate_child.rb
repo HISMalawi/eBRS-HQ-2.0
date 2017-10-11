@@ -11,11 +11,6 @@ module MigrateChild
     #core_person.save
     @rec_count = @rec_count.to_i + 1
     person_id = CorePerson.first.person_id.to_i + @rec_count.to_i
-    sql_query = "(#{person_id}, #{core_person.person_type_id},\"#{params[:person][:created_at].to_date}\", \"#{params[:person][:updated_at].to_date}\"),"
-    row = "#{params[:_id]},#{core_person.person_id},"
-
-    save_ids(row)
-    #
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
@@ -36,12 +31,27 @@ module MigrateChild
     person
   end
 
-
+  def self.search_citizenship(name)
+      citizenship = Location.where(country: name).last
+      if citizenship.blank?
+        citizenship = Location.where(name: name).last
+        if citizenship.blank?
+                if name == "Moz"
+                  citizenship = Location.where(name: "Mozambique").last
+                elsif name.downcase.include?("united kingdom")
+                  citizenship = Location.where(country: "British").last
+                else
+                  raise name.inspect
+                end
+             
+        end
+      end
+      return citizenship
+  end
   def self.workflow_init(person,params)
 
     status = nil
     is_record_a_duplicate = params[:person][:duplicate] rescue nil
-    begin
     if is_record_a_duplicate.present?
         if params[:person][:is_exact_duplicate].present? && eval(params[:person][:is_exact_duplicate].to_s)
             status = PersonRecordStatus.new_record_state(person.id, 'DC-DUPLICATE')
@@ -61,10 +71,6 @@ module MigrateChild
     else
        #status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
        status = PersonRecordStatus.new_record_state(person.id, params[:record_status])
-    end
-    rescue StandardError =>e
-
-        self.log_error(e.message, params)
     end
 
     return status

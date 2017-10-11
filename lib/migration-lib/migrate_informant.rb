@@ -1,30 +1,19 @@
 module MigrateInformant
-	def self.new_informant(person, params)
+	def self.new_informant(person, params, mother=nil, father=nil)
 
 	    informant_person = nil; core_person = nil
 
 	    informant = params[:person][:informant]
 	    informant[:citizenship] = 'Malawian' if informant[:citizenship].blank?
 	    informant[:residential_country] = 'Malawi' if informant[:residential_country].blank?
-	  begin
+
 	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
 	      informant_person = Person.find(params[:person][:prev_child_id]).informant
 	    elsif params[:informant_same_as_mother] == 'Yes'
-
-	      if params[:person][:relationship] == "adopted"
-	          informant_person = person.adoptive_mother
-	      else
-	         informant_person = person.mother
-	      end
+	      informant_person = mother
 	    elsif params[:informant_same_as_father] == 'Yes'
-	      if params[:person][:relationship] == "adopted"
-	          informant_person = person.adoptive_father
-	      else
-	         informant_person = person.father
-	      end
+	        informant_person = father
 	    else
-	    
-	    
 	      core_person = CorePerson.create(
 	          :person_type_id => PersonType.where(:name => 'Informant').last.id,
 	          :created_at     => params[:person][:created_at].to_date.to_s,
@@ -57,6 +46,9 @@ module MigrateInformant
 	      home_ta_id              = Location.locate_id(informant[:home_ta], 'Traditional Authority', home_district_id)
 	      home_village_id         = Location.locate_id(informant[:home_village], 'Village', home_ta_id)
 	     
+	      citizenship = MigrateChild.search_citizenship(informant[:citizenship].squish)
+	      residential_country = MigrateChild.search_citizenship(informant[:residential_country].squish)
+
 	      PersonAddress.create(
 	          :person_id          => core_person.id,
 	          :current_district   => cur_district_id,
@@ -65,8 +57,8 @@ module MigrateInformant
 	          :home_district   => home_district_id,
 	          :home_ta            => home_ta_id,
 	          :home_village       => home_village_id,
-	          :citizenship            => Location.where(country: informant[:citizenship]).last.id,
-	          :residential_country    => Location.locate_id_by_tag(informant[:residential_country], 'Country'),
+	          :citizenship            => citizenship.id,
+	          :residential_country    => residential_country.id,
 	          :address_line_1         => informant[:addressline1],
 	          :address_line_2         => informant[:addressline2],
 	          :created_at         => params[:person][:created_at].to_date.to_s,
@@ -76,8 +68,11 @@ module MigrateInformant
 
 	    end
 
+      person_id = person.id
+      informant_id = informant_person.id
+
 	    PersonRelationship.create(
-	        person_a: person.id, person_b: informant_person.id,
+	        person_a: person_id, person_b: informant_id,
 	        person_relationship_type_id: PersonRelationType.where(name: 'Informant').last.id,
 	        created_at: params[:person][:created_at].to_date.to_s,
 	        updated_at: params[:person][:updated_at].to_date.to_s
@@ -94,11 +89,6 @@ module MigrateInformant
 	          :updated_at               => params[:person][:updated_at].to_date.to_s
 	      )
 	    end
-
-	  rescue StandardError => e
-	          
-	          MigrateChild.log_error(e.message, params)        
-	  end
 
 	    informant_person
 	end

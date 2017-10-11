@@ -25,6 +25,7 @@ $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pe
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
+$index = {}
 
 if password.blank? || $private_key.blank?
   raise "Invalid Decryption Key".inspect
@@ -343,22 +344,27 @@ def transform_record(data)
     else
     end
 
-    #==================== Transform the citizenship if not complying with those specified in the metadata
-    data[:person][:mother][:citizenship] ="Mozambican" if data[:person][:mother][:citizenship] =="Mozambique"
-    data[:person][:mother][:citizenship] ="Malawian" if data[:person][:mother][:citizenship].blank?
-
 		#================== Transforming the marriage date and or estimated marriage date iis partly known
 		unless data[:person][:date_of_marriage].blank?
 			   format_date(data[:person][:date_of_marriage])
-		end
-
-
-    if data[:person][:type_of_birth]== 'Single'
-
-            save_full_record(data,data[:person][:district_id_number])
-
     end
 
+    if !data[:person][:district_id_number].blank?
+
+      #create fixed BEN
+      old_ben = data[:person][:district_id_number]
+      code, inc, year = old_ben.split("/")
+      $index[year] = 0 if $index[year].blank?
+      $index[year] += 1
+      new_inc =  $index[year].to_s.rjust(8,'0')
+      new_ben = "#{code}/#{new_inc}/#{year}"
+
+      data[:person][:new_district_id_number] = new_ben
+    end
+
+    if data[:person][:type_of_birth]== 'Single'
+      save_full_record(data,data[:person][:district_id_number])
+    end
 end
 
 def format_date(date)
@@ -496,7 +502,7 @@ def build_client_record(records, n)
               }
 
               if !r[:mother].blank?
-                data[:mother] = {
+                data[:person][:mother] = {
                     last_name: decrypt(r[:mother][:last_name]) ,
                     first_name: decrypt(r[:mother][:first_name]),
                     middle_name: decrypt(r[:mother][:middle_name]),
@@ -504,17 +510,23 @@ def build_client_record(records, n)
                     birthdate_estimated: r[:mother][:birthdate_estimated],
                     citizenship: r[:mother][:citizenship],
                     residential_country: r[:mother][:residential_country],
-                    current_district: r[:mother][:current_district],
-                    current_ta: r[:mother][:current_ta],
-                    current_village: r[:mother][:current_village],
-                    home_district: r[:mother][:home_district],
-                    home_ta: r[:mother][:home_ta],
-                    home_village: r[:mother][:home_village]
+                    current_district: (r[:mother][:current_district]  rescue nil),
+                    current_ta: (r[:mother][:current_ta]  rescue nil),
+                    current_village: (r[:mother][:current_village]  rescue nil),
+                    home_district: (r[:mother][:home_district]  rescue nil),
+                    home_ta: (r[:mother][:home_ta]  rescue nil),
+                    home_village: (r[:mother][:home_village]  rescue nil),
+                    foreigner_current_district: (r[:mother][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:mother][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:mother][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:mother][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:mother][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:mother][:foreigner_home_ta] rescue nil)
                 }
               end
 
               if !r[:father].blank?
-                data[:father] =  {
+                data[:person][:father] =  {
                     last_name: decrypt(r[:father][:last_name]),
                     first_name: decrypt(r[:father][:first_name]),
                     middle_name: decrypt(r[:father][:middle_name]),
@@ -522,17 +534,23 @@ def build_client_record(records, n)
                     birthdate_estimated: r[:father][:birthdate_estimated],
                     citizenship: r[:father][:citizenship],
                     residential_country: r[:father][:residential_country],
-                    current_district: r[:father][:current_district],
-                    current_ta: r[:father][:current_ta],
-                    current_village: r[:father][:current_village],
-                    home_district: r[:father][:home_district],
-                    home_ta: r[:father][:home_ta],
-                    home_village: r[:father][:home_village]
+                    current_district: (r[:father][:current_district]  rescue nil),
+                    current_ta: (r[:father][:current_ta]  rescue nil),
+                    current_village: (r[:father][:current_village]  rescue nil),
+                    home_district: (r[:father][:home_district]  rescue nil),
+                    home_ta: (r[:father][:home_ta]  rescue nil),
+                    home_village: (r[:father][:home_village]  rescue nil),
+                    foreigner_current_district: (r[:father][:foreigner_current_district] rescue nil),
+                    foreigner_current_village: (r[:father][:foreigner_current_village] rescue nil),
+                    foreigner_current_ta: (r[:father][:foreigner_current_ta] rescue nil),
+                    foreigner_home_district: (r[:father][:foreigner_home_district] rescue nil),
+                    foreigner_home_village: (r[:father][:foreigner_home_village] rescue nil),
+                    foreigner_home_ta: (r[:father][:foreigner_home_ta] rescue nil)
                 }
               end
 
               if !r[:informant].blank?
-                data[:informant] =  {
+                data[:person][:informant] =  {
                     last_name: decrypt(r[:informant][:last_name]),
                     first_name: decrypt(r[:informant][:first_name]),
                     middle_name: decrypt(r[:informant][:middle_name]),
@@ -547,7 +565,7 @@ def build_client_record(records, n)
               end
 
               if !r[:foster_mother].blank?
-                data[:foster_mother] ={
+                data[:person][:foster_mother] ={
                     id_number: (r[:foster_mother][:id_number] rescue nil),
                     first_name: decrypt((r[:foster_mother][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_mother][:middle_name] rescue nil)),
@@ -573,7 +591,7 @@ def build_client_record(records, n)
               end
 
               if !r[:foster_father].blank?
-                data[:foster_father] =   {
+                data[:person][:foster_father] =   {
                     id_number: (r[:foster_father][:id_number] rescue nil),
                     first_name: decrypt((r[:foster_father][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_father][:middle_name] rescue nil)),
@@ -623,12 +641,14 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
 #`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
+records['rows'] = records['rows'].sort_by { |r|  r[:district_id_number].split(/\//)[1].to_i rescue nil}
 
 records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
   GC.start
   GC.disable
 	start = i*1000
+  #next if i == 0
   build_client_record(block, start)
   puts "#{Time.now.to_s(:db)}"
 end
