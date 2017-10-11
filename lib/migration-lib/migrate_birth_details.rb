@@ -81,6 +81,7 @@ module MigrateBirthDetails
 				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first.id
 			else
 				district_of_birth_id = Location.where(name: 'Other').first.location_id
+				other_place_of_birth = "Other"
 			end
 
 	    details = PersonBirthDetail.create(
