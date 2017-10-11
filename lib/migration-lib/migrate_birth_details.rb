@@ -43,7 +43,7 @@ module MigrateBirthDetails
 
 	    reg_type = SETTINGS['application_mode'] =='FC' ? BirthRegistrationType.where(name: 'Normal').first.birth_registration_type_id :
 	        BirthRegistrationType.where(name: params[:person][:relationship]).last.birth_registration_type_id
-	    
+
 
 	    unless person[:type_of_birth].blank?
 
@@ -62,7 +62,7 @@ module MigrateBirthDetails
 	      type_of_birth_id = PersonTypeOfBirth.where(name:  'Single').last.id
 	    end
 
-	    
+
 	    rel = nil
 	    if params[:informant_same_as_mother] == 'Yes'
 	      rel = 'Mother'
@@ -71,17 +71,24 @@ module MigrateBirthDetails
 	    else
 	      rel = params[:person][:informant][:relationship_to_person] rescue nil
 	    end
-	   
+
 	   	level = nil
 	  	level = "DC" if params[:district_code].present?
 	  	level = "FC" if params[:facility_code].present?
+
+			district_of_birth_id = nil
+			if !params[:person][:birth_district].blank?
+				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first.id
+			else
+				district_of_birth_id = Location.where(name: 'Other').first.location_id
+			end
 
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
 	        place_of_birth:                           place_of_birth_id,
 	        birth_location_id:                        location_id,
-	        district_of_birth:                        Location.where("name = '#{params[:person][:birth_district]}' AND code IS NOT NULL").first.id,
+	        district_of_birth:                        district_of_birth_id,
 	        other_birth_location:                     other_place_of_birth,
 	        birth_weight:                             (person[:birth_weight].blank? ? nil : person[:birth_weight]),
 	        type_of_birth:                            type_of_birth_id,
@@ -116,9 +123,9 @@ module MigrateBirthDetails
 	end
 
 	def self.birth_details_multiple(person,params)
-	    
+
 	    prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
-	    
+
 	    begin
 	    prev_details_keys = prev_details.attributes.keys
 	    exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id"]
