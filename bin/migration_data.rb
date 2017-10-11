@@ -25,6 +25,7 @@ $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pe
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
+$index = {}
 
 if password.blank? || $private_key.blank?
   raise "Invalid Decryption Key".inspect
@@ -350,8 +351,20 @@ def transform_record(data)
 		#================== Transforming the marriage date and or estimated marriage date iis partly known
 		unless data[:person][:date_of_marriage].blank?
 			   format_date(data[:person][:date_of_marriage])
-		end
+    end
 
+    if !data[:person][:district_id_number].blank?
+
+      #create fixed BEN
+      old_ben = params[:person][:district_id_number]
+      code, inc, year = old_ben.split("/")
+      $index[year] = 0 if $index[year].blank?
+      $index[year] += 1
+      new_inc =  $index[year].to_s.rjust(8,'0')
+      new_ben = "#{code}/#{new_inc}/#{year}"
+
+      data[:person][:new_district_id_number] = new_ben
+    end
 
     if data[:person][:type_of_birth]== 'Single'
 
@@ -623,6 +636,7 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
 #`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
+records = records.sort_by { |r|  r['approved_at'].to_datetime rescue nil}
 
 records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
