@@ -11,11 +11,11 @@ module PersonService
       when "normal"
         mother   = MigrateMother.new_mother(person, params, 'Mother')
         father   = MigrateFather.new_father(person, params,'Father')
-        informant = MigrateInformant.new_informant(person, params)
+        informant = MigrateInformant.new_informant(person, params, mother, father)
       when "orphaned"
-        #mother   = Lib.new_mother(person, params, 'Adoptive-Mother')
-        #father   = Lib.new_father(person, params,'Adoptive-Father')
-        informant = MigrateInformant.new_informant(person, params)
+        mother   = Lib.new_mother(person, params, 'Adoptive-Mother') rescue nil
+        father   = Lib.new_father(person, params,'Adoptive-Father') rescue nil
+        informant = MigrateInformant.new_informant(person, params, mother, father)
       when "adopted"
         if params[:biological_parents] == "Both" || params[:biological_parents] =="Mother"
           mother   =MigrateMother.new_mother(person, params, 'Mother')
@@ -29,7 +29,9 @@ module PersonService
         if params[:foster_parents] == "Both" || params[:foster_parents] =="Mother"
           adoptive_father   = Lib.new_father(person, params,'Adoptive-Father')
         end
-        informant = MigrateInformant.new_informant(person, params)
+        mother = mother.present? ? mother : adoptive_mother
+        father = father.present? ? father : adoptive_father
+        informant = MigrateInformant.new_informant(person, params, mother, father)
       when "abandoned"
         if params[:parents_details_available] == "Both" || params[:parents_details_available] == "Mother"
           mother   = MigrateMother.new_mother(person, params, 'Mother')
@@ -37,7 +39,7 @@ module PersonService
         if params[:parents_details_available] == "Both" || params[:parents_details_available] == "Father"
           mother   = MigrateFather.new_father(person, params, 'Father')
         end
-        informant = MigrateInformant.new_informant(person, params)
+        informant = MigrateInformant.new_informant(person, params, mother, father)
       else 
           puts "Write some to track registration type not present"
       end
