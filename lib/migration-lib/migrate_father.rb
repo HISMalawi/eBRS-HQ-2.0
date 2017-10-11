@@ -15,8 +15,6 @@ module MigrateFather
         return nil
       end
 
-     begin
-
       core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: father_type).last.id,
           :created_at         => params[:person][:created_at].to_date.to_s,
@@ -73,10 +71,6 @@ module MigrateFather
           :created_at         => params[:person][:created_at].to_date.to_s,
           :updated_at         => params[:person][:updated_at].to_date.to_s
       )
-     rescue StandardError => e
-
-          MigrateChild.log_error(e.message, params)
-     end
     end
 
     unless father_person.blank?

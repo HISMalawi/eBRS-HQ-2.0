@@ -41,7 +41,6 @@ module MigrateChild
 
     status = nil
     is_record_a_duplicate = params[:person][:duplicate] rescue nil
-    begin
     if is_record_a_duplicate.present?
         if params[:person][:is_exact_duplicate].present? && eval(params[:person][:is_exact_duplicate].to_s)
             status = PersonRecordStatus.new_record_state(person.id, 'DC-DUPLICATE')
@@ -61,10 +60,6 @@ module MigrateChild
     else
        #status = PersonRecordStatus.new_record_state(person.id, 'DC-ACTIVE')
        status = PersonRecordStatus.new_record_state(person.id, params[:record_status])
-    end
-    rescue StandardError =>e
-
-        self.log_error(e.message, params)
     end
 
     return status

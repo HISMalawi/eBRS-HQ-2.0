@@ -6,7 +6,7 @@ module MigrateInformant
 	    informant = params[:person][:informant]
 	    informant[:citizenship] = 'Malawian' if informant[:citizenship].blank?
 	    informant[:residential_country] = 'Malawi' if informant[:residential_country].blank?
-	  begin
+
 	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
 	      informant_person = Person.find(params[:person][:prev_child_id]).informant
 	    elsif params[:informant_same_as_mother] == 'Yes'
@@ -94,11 +94,6 @@ module MigrateInformant
 	          :updated_at               => params[:person][:updated_at].to_date.to_s
 	      )
 	    end
-
-	  rescue StandardError => e
-	          
-	          MigrateChild.log_error(e.message, params)        
-	  end
 
 	    informant_person
 	end
