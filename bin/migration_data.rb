@@ -349,21 +349,10 @@ def transform_record(data)
 			   format_date(data[:person][:date_of_marriage])
     end
 
-    if !data[:person][:district_id_number].blank?
-
-      #create fixed BEN
-      old_ben = data[:person][:district_id_number]
-      code, inc, year = old_ben.split("/")
-      $index[year] = 0 if $index[year].blank?
-      $index[year] += 1
-      new_inc =  $index[year].to_s.rjust(8,'0')
-      new_ben = "#{code}/#{new_inc}/#{year}"
-
-      data[:person][:new_district_id_number] = new_ben
-    end
-
     if data[:person][:type_of_birth]== 'Single'
       save_full_record(data,data[:person][:district_id_number])
+    else
+
     end
 end
 
@@ -393,8 +382,8 @@ def get_record_status(rec_status, req_status)
       							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
       							'GRANTED' =>'DC-GRANTED',
       							'PENDING' => 'DC-PENDING',
-      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
-                    'CAN RE_PRINT' => 'DC-CAN-REPRINT',
+      							'CAN-REPRINT' => 'HQ-CAN-RE-PRINT',
+                    'CAN RE_PRINT' => 'HQ-CAN-RE-PRINT',
       							'REJECTED' =>'DC-REJECTED'},
 		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
 		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
@@ -404,7 +393,7 @@ def get_record_status(rec_status, req_status)
 					'DISPATCHED' =>'HQ-DISPATCHED'},
 		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
 		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
-		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
+		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
 		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
 					'RE-APPROVED' =>'HQ-RE-APPROVED',
 					'DC_ASK' =>'DC-ASK',
@@ -631,7 +620,6 @@ end
 def initiate_migration(records)
 
 	total_records = records.count
-
   puts "\n"
 	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
 	puts "\n"
@@ -641,14 +629,11 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
 #`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
-records['rows'] = records['rows'].sort_by { |r|  r[:district_id_number].split(/\//)[1].to_i rescue nil}
+records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
 
-records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
+records['rows'].each_slice(100).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
-  GC.start
-  GC.disable
-	start = i*1000
-  #next if i == 0
+  start = i*100
   build_client_record(block, start)
   puts "#{Time.now.to_s(:db)}"
 end

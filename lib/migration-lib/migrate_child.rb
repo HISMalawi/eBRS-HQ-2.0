@@ -32,17 +32,18 @@ module MigrateChild
   end
 
   def self.search_citizenship(name)
+      name = "Malawi" if name == "Malaw"
       citizenship = Location.where(country: name).last
       if citizenship.blank?
         citizenship = Location.where(name: name).last
         if citizenship.blank?
-                if name == "Moz"
-                  citizenship = Location.where(name: "Mozambique").last
-                elsif name.downcase.include?("united kingdom")
-                  citizenship = Location.where(country: "British").last
-                else
-                  raise name.inspect
-                end
+            if name == "Moz"
+              citizenship = Location.where(name: "Mozambique").last
+            elsif name.downcase.include?("united kingdom")
+              citizenship = Location.where(country: "British").last
+            else
+              raise name.inspect
+            end
 
         end
       end
