@@ -7,19 +7,6 @@ require 'migration-lib/person_service'
 require "simple_elastic_search"
 require 'json'
 
-@missing_district_ids = "#{Rails.root}/app/assets/data/missing_district_ids.txt"
-@loaded_data = "#{Rails.root}/app/assets/data/loaded_data.txt"
-@file_path = "#{Rails.root}/app/assets/data/missing_district_id_num_docs.txt"
-@multiple_birth_file = "#{Rails.root}/app/assets/data/multiple_birth_children.json"
-@failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
-@suspected = "#{Rails.root}/app/assets/data/suspected.txt"
-@analysis = "#{Rails.root}/app/assets/data/analysis.txt"
-
-
-User.current = User.last
-
-Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
-
 password = CONFIG["crtkey"] rescue nil
 $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pem"), password)
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id

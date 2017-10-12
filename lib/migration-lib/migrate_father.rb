@@ -24,7 +24,7 @@ module MigrateFather
       father_person = Person.create(
           :person_id          => core_person.id,
           :gender             => 'M',
-          :birthdate          => (father[:birthdate].blank? ? "1900-01-01" : father[:birthdate].to_date),
+          :birthdate          => ((father[:birthdate].blank? ? "1900-01-01" : father[:birthdate].to_date) rescue "1900-01-01"),
           :birthdate_estimated => (father[:birthdate].blank? ? 1 : 0),
           :created_at         => params[:person][:created_at].to_date.to_s,
           :updated_at         => params[:person][:updated_at].to_date.to_s
