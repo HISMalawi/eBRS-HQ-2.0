@@ -349,21 +349,6 @@ def transform_record(data)
 			   format_date(data[:person][:date_of_marriage])
     end
 
-    if !data[:person][:district_id_number].blank?
-
-      #create fixed BEN
-      old_ben = data[:person][:district_id_number]
-      code, inc, year = old_ben.split("/")
-      $index[code] = {} if $index[code].blank?
-      $index[code][year] = 0 if $index[code][year].blank?
-      $index[code][year] += 1
-
-      new_inc =  $index[code][year].to_s.rjust(8,'0')
-      new_ben = "#{code}/#{new_inc}/#{year}"
-
-      #data[:person][:new_district_id_number] = new_ben
-    end
-
     if data[:person][:type_of_birth]== 'Single'
       save_full_record(data,data[:person][:district_id_number])
     else
@@ -646,9 +631,9 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 records = Oj.load File.read("#{Rails.root}/data.json")
 records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
 
-records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
+records['rows'].each_slice(100).to_a.each_with_index do |block, i|
   puts "#{Time.now.to_s(:db)}"
-  start = i*1000
+  start = i*100
   build_client_record(block, start)
   puts "#{Time.now.to_s(:db)}"
 end
