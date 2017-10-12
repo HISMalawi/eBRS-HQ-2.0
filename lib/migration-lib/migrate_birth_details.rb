@@ -76,13 +76,19 @@ module MigrateBirthDetails
 	  	level = "DC" if params[:district_code].present?
 	  	level = "FC" if params[:facility_code].present?
 
-			district_of_birth_id = nil
-			if !params[:person][:birth_district].blank?
-				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first.id
-			else
+		district_of_birth_id = nil
+		if !params[:person][:birth_district].blank?
+				 district_of_birth = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first
+				 if district_of_birth.blank?
+				 	district_of_birth_id = Location.where(name: 'Other').first.location_id
+					other_place_of_birth = params[:person][:birth_district]
+				else
+					district_of_birth_id = district_of_birth.id
+				end
+		else
 				district_of_birth_id = Location.where(name: 'Other').first.location_id
-				other_place_of_birth = "Other"
-			end
+				other_place_of_birth = "District of birth not present"
+		end
 
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
