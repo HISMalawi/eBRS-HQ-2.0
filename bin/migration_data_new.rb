@@ -350,7 +350,12 @@ def transform_record(data)
     end
 
     if data[:person][:type_of_birth]== 'Single'
-      save_full_record(data,data[:person][:district_id_number])
+      begin
+          save_full_record(data,data[:person][:district_id_number])
+      rescue Exception => e
+          log_error(e, data)
+      end
+      
     else
 
     end
@@ -439,13 +444,17 @@ def build_client_record(records, n)
     data ={}
 
    
-    i = 0
+   i = 0
+   start_time = Time.now
    records.each do |doc|
       ActiveRecord::Base.transaction do    
           transform_record(doc[1])
           i = i + 1
           if i % 100 == 0
             puts n + i
+          end
+          if i % 1000 == 0
+            puts "Time interval : #{(Time.now - start_time) /60}"
           end
       end
     end
@@ -478,10 +487,10 @@ if last_file_migrated.present?
 else
   last_file_migrated = EbrsMigration.new
 end
-
+start_time = nil
 while file_number < number_of_files
   GC.start
-  start_time = Time.now
+
   records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json")))
 
   build_client_record(records, file_number * 1000)
@@ -489,6 +498,5 @@ while file_number < number_of_files
   last_file_migrated.file_number =  file_number
   last_file_migrated.save
   file_number = file_number + 1
-
-  puts "Time interval : #{(Time.now - start_time) /60}"
 end
+puts "Time interval : #{(Time.now - start_time) /60}"
