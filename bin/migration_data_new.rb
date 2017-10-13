@@ -446,6 +446,7 @@ def build_client_record(records, n)
    
    i = 0
    start_time = Time.now
+
    records.each do |doc|
       ActiveRecord::Base.transaction do    
           transform_record(doc[1])
