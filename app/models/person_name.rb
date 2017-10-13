@@ -7,4 +7,12 @@ class PersonName < ActiveRecord::Base
     belongs_to :person
     belongs_to :core_person
     has_one :person_name_code
+
+    before_create :check_length
+
+  def check_length
+    self.first_name = '@@@@@' if self.first_name.length > 100
+    self.middle_name = '@@@@@' if self.middle_name.length > 100
+    self.last_name = '@@@@@' if self.last_name.length > 100
+  end
 end
