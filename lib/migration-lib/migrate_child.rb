@@ -42,7 +42,7 @@ module MigrateChild
               citizenship = Location.where(country: "British").last
             elsif name.downcase =="drc"
               citizenship = Location.where(country: "Congolese").last
-            elsif ["malaw","malawin","malwian", 'alawian'].include?(name.downcase)
+            elsif ["malaw","malawin","malwian", 'alawian', 'limalawi'].include?(name.downcase)
               citizenship = Location.where(name: "Malawi").last
             elsif name =="Tanzania"
                 citizenship = Location.where(name: "Tanzania, United Republic of").last
