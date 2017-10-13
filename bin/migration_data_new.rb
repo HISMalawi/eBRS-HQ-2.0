@@ -33,7 +33,7 @@ end
 
 def write_log(file, content)
 
-	if !File.exists?(file)
+  if !File.exists?(file)
            file = File.new(file, 'w')
     else
 
@@ -164,7 +164,7 @@ def log_error(error_msge, content)
 
  def pre_migration_check(params)
 
-	  if params[:person][:created_by].blank?
+    if params[:person][:created_by].blank?
         content = "#{params[:_id]},#{params[:person][:created_at]},#{params[:person][:created_by]},#{params[:person][:approved]},#{params[:person][:approved_by]}"
         write_log(@missing_doc_creator, content)
       end
@@ -176,54 +176,54 @@ def log_error(error_msge, content)
         end
       end
 
-	  if params[:person][:type_of_birth].blank?
+    if params[:person][:type_of_birth].blank?
         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
         write_log(@missing_birth_type, content)
       end
 
         status = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue nil
-	  if  status.blank?
+    if  status.blank?
         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:record_status]},#{params[:request_status]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
         write_log(@missing_record_statuses, content)
       end
 
       if verify_location("Mother", "TA", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_ta]},#{params[:person][:mother][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_ta]},#{params[:person][:mother][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_tas, content)
       end
 
       if verify_location("Mother", "Village", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_village]},#{params[:person][:mother][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_village]},#{params[:person][:mother][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_villages, content)
       end
 
       if verify_location("Mother", "District", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_district]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_district]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_districts, content)
       end
 
       if verify_location("Mother", "Citizenship", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:citizenship]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:citizenship]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_citizenships, content)
       end
 
       if verify_location("Father", "TA", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_ta]},#{params[:person][:father][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_ta]},#{params[:person][:father][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_tas, content)
       end
 
       if verify_location("Father", "Village", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_village]},#{params[:person][:father][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_village]},#{params[:person][:father][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_villages, content)
       end
 
       if verify_location("Father", "District", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_district]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_district]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_districts, content)
       end
 
       if verify_location("Father", "Citizenship", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:citizenship]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
+         content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:citizenship]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
          write_log(@missing_citizenships, content)
       end
 
@@ -243,55 +243,55 @@ end
 
 def precision_level(mothers, record)
 
-	fnames = []
-	lnames =[]
-	home_villages =[]
-	home_ta =[]
-	home_districts =[]
-	birthdates =[]
-	citizenships =[]
+  fnames = []
+  lnames =[]
+  home_villages =[]
+  home_ta =[]
+  home_districts =[]
+  birthdates =[]
+  citizenships =[]
 
-	match_count = 0
+  match_count = 0
 
-	mothers.each do |x|
+  mothers.each do |x|
 
-		fnames << x['first_name']
-		lnames << x['last_name']
-		home_villages << x['home_village']
+    fnames << x['first_name']
+    lnames << x['last_name']
+    home_villages << x['home_village']
         home_districts << x['home_district']
         birthdates << x['birthdate']
         citizenships << x['citizenship']
         home_ta << x['home_ta']
 
-	end
+  end
 
     if fnames.include? record[:person][:mother][:first_name]
-	   match_count = match_count + 1
-	end
+     match_count = match_count + 1
+  end
     if lnames.include? record[:person][:mother][:last_name]
-	   match_count = match_count + 1
-	end
-	if home_villages.include? record[:person][:mother][:home_village]
-	   match_count = match_count + 1
-	end
-	if home_ta.include? record[:person][:mother][:home_ta]
-	   match_count = match_count + 1
-	end
-	if birthdates.include? record[:person][:mother][:birthdate]
-	   match_count = match_count + 1
-	end
-	if home_districts.include? record[:person][:mother][:home_district]
-	   match_count = match_count + 1
-	end
-	if citizenships.include? record[:person][:mother][:citizenship]
-	   match_count = match_count + 1
-	end
+     match_count = match_count + 1
+  end
+  if home_villages.include? record[:person][:mother][:home_village]
+     match_count = match_count + 1
+  end
+  if home_ta.include? record[:person][:mother][:home_ta]
+     match_count = match_count + 1
+  end
+  if birthdates.include? record[:person][:mother][:birthdate]
+     match_count = match_count + 1
+  end
+  if home_districts.include? record[:person][:mother][:home_district]
+     match_count = match_count + 1
+  end
+  if citizenships.include? record[:person][:mother][:citizenship]
+     match_count = match_count + 1
+  end
 
    if match_count == 7
     if !File.exists?(@suspected)
-    	file = File.new(@suspected, 'w')
+      file = File.new(@suspected, 'w')
     else
-    	File.open(@suspected, 'a')do |f|
+      File.open(@suspected, 'a')do |f|
            f.puts "match count: #{match_count} Name: #{record[:person][:mother][:first_name]}"
         end
 
@@ -322,94 +322,102 @@ def transform_record(data)
 
     case data[:registration_type]
        when "adopted"
-       	if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
-       		data[:biological_parents] = "Both"
-       	end
-       	if !data[:person][:mother][:first_name].blank? && data[:person][:father][:first_name].blank?
-       		data[:biological_parents] = "Mother"
-       	end
-       	if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
-       		data[:biological_parents] = "Father"
-       	end
-       when "abandoned"
-       	if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
-       	    data[:parents_details_available] = "Both"
-       	end
+        if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
+          data[:biological_parents] = "Both"
+        end
         if !data[:person][:mother][:first_name].blank? && data[:person][:father][:first_name].blank?
-       		data[:parents_details_available] = "Mother"
-       	end
-       	if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
-       		data[:parents_details_available] = "Father"
-       	end
+          data[:biological_parents] = "Mother"
+        end
+        if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
+          data[:biological_parents] = "Father"
+        end
+       when "abandoned"
+        if !data[:person][:mother][:first_name].blank? && !data[:person][:mother][:last_name].blank? && !data[:person][:father][:first_name].blank? && !data[:person][:father][:last_name].blank?
+            data[:parents_details_available] = "Both"
+        end
+        if !data[:person][:mother][:first_name].blank? && data[:person][:father][:first_name].blank?
+          data[:parents_details_available] = "Mother"
+        end
+        if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
+          data[:parents_details_available] = "Father"
+        end
     else
     end
 
-		#================== Transforming the marriage date and or estimated marriage date iis partly known
-		unless data[:person][:date_of_marriage].blank?
-			   format_date(data[:person][:date_of_marriage])
+    #================== Transforming the marriage date and or estimated marriage date iis partly known
+    unless data[:person][:date_of_marriage].blank?
+         format_date(data[:person][:date_of_marriage])
     end
-    
+
     if data[:person][:type_of_birth]== 'Single'
       save_full_record(data,data[:person][:district_id_number])
+    else
+
     end
 end
 
 def format_date(date)
-	unless date.blank?
-		if date.split("/")[0]  == "?"
-			 estimated_date = date.split("/")
-			 estimated_date[0] = 15
-			 date = estimated_date.join("/")
-		end
-		if date.split("/")[1]  == "?"
-			 estimated_date = date.split("/")
-			 estimated_date[1] = 7
-			 date = estimated_date.join("/")
-		end
-	 end
-	return date
+  unless date.blank?
+    if date.to_s.split("/").length <= 1
+       return date
+    end
+    if date.split("/")[0]  == "?"
+       estimated_date = date.split("/")
+       estimated_date[0] = 15
+       date = estimated_date.join("/")
+    end
+    if date.split("/")[1]  == "?"
+       estimated_date = date.split("/")
+       estimated_date[1] = 7
+       date = estimated_date.join("/")
+    end
+    if date.split("/")[2]  == "?"
+       date = nil
+    end
+   end
+  return date
 end
 
 def get_record_status(rec_status, req_status)
 
 
  status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
-      							'IN-COMPLETE' =>'DC-INCOMPLETE',
-      							'COMPLETE' =>'DC-COMPLETE',
-      							'DUPLICATE' =>'DC-DUPLICATE',
-      							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
-      							'GRANTED' =>'DC-GRANTED',
-      							'PENDING' => 'DC-PENDING',
-      							'CAN-REPRINT' => 'DC-CAN-REPRINT',
-                    'CAN RE_PRINT' => 'DC-CAN-REPRINT',
-      							'REJECTED' =>'DC-REJECTED'},
-		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
-		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
-		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
-					'CLOSED' =>'HQ-VOIDED'},
-		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
-					'DISPATCHED' =>'HQ-DISPATCHED'},
-		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
-		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
-		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-REPRINT'},
-		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
-					'RE-APPROVED' =>'HQ-RE-APPROVED',
-					'DC_ASK' =>'DC-ASK',
-					'GRANTED' =>'HQ-GRANTED',
-					'REJECTED' =>'HQ-REJECTED',
-					'COMPLETE' =>'HQ-INCOMPLETE-TBA',
-					'COMPLETE' =>'HQ-COMPLETE',
-					'CAN PRINT' =>'HQ-CAN-PRINT',
-					'CAN REJECT' =>'HQ-CAN-REJECT',
-					'APPROVED' =>'HQ-APPROVED',
-					'TBA-CONFLICT' =>'HQ-CONFLICT',
-					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
-					'CAN VOID' =>'HQ-CAN-VOID',
-					'INCOMPLETE' =>'HQ-INCOMPLETE',
-					'RE-PRINT' =>'HQ-RE-PRINT',
-					'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
-					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
-		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
+                    'IN-COMPLETE' =>'DC-INCOMPLETE',
+                    'COMPLETE' =>'DC-COMPLETE',
+                    'DUPLICATE' =>'DC-DUPLICATE',
+                    'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
+                    'GRANTED' =>'DC-GRANTED',
+                    'PENDING' => 'DC-PENDING',
+                    'CAN-REPRINT' => 'HQ-CAN-RE-PRINT',
+                    'CAN RE_PRINT' => 'HQ-CAN-RE-PRINT',
+                    'REJECTED' =>'DC-REJECTED'},
+    "POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
+    "POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
+    "VOIDED" =>{'CLOSED' =>'DC-VOIDED',
+          'CLOSED' =>'HQ-VOIDED'},
+    "PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
+          'DISPATCHED' =>'HQ-DISPATCHED'},
+    "HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
+    "HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
+    "HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
+    "HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
+          'RE-APPROVED' =>'HQ-RE-APPROVED',
+          'DC_ASK' =>'DC-ASK',
+          'GRANTED' =>'HQ-GRANTED',
+          'REJECTED' =>'HQ-REJECTED',
+          'COMPLETE' =>'HQ-INCOMPLETE-TBA',
+          'COMPLETE' =>'HQ-COMPLETE',
+          'CAN PRINT' =>'HQ-CAN-PRINT',
+          'CAN REJECT' =>'HQ-CAN-REJECT',
+          'APPROVED' =>'HQ-APPROVED',
+          'TBA-CONFLICT' =>'HQ-CONFLICT',
+          'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
+          'CAN VOID' =>'HQ-CAN-VOID',
+          'INCOMPLETE' =>'HQ-INCOMPLETE',
+          'RE-PRINT' =>'HQ-RE-PRINT',
+          'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
+          'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
+    "DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
 
    s = status[rec_status][req_status] rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
    return s
@@ -417,7 +425,9 @@ end
 
 def decrypt(value)
     string = $private_key.private_decrypt(Base64.decode64(value)) rescue nil
-
+    special = "?<>',?[]}{=)(*&^%$#`~{}"
+    regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
+    return "Not decrypted" if (string =~ regex).to_i > 0
     return value if string.nil?
 
     return string
@@ -493,7 +503,7 @@ def build_client_record(records, n)
                     last_name: decrypt(r[:mother][:last_name]) ,
                     first_name: decrypt(r[:mother][:first_name]),
                     middle_name: decrypt(r[:mother][:middle_name]),
-                    birthdate: r[:mother][:birthdate],
+                    birthdate: format_date(r[:mother][:birthdate]),
                     birthdate_estimated: r[:mother][:birthdate_estimated],
                     citizenship: r[:mother][:citizenship],
                     residential_country: r[:mother][:residential_country],
@@ -517,7 +527,7 @@ def build_client_record(records, n)
                     last_name: decrypt(r[:father][:last_name]),
                     first_name: decrypt(r[:father][:first_name]),
                     middle_name: decrypt(r[:father][:middle_name]),
-                    birthdate: r[:father][:birthdate],
+                    birthdate: format_date(r[:father][:birthdate]),
                     birthdate_estimated: r[:father][:birthdate_estimated],
                     citizenship: r[:father][:citizenship],
                     residential_country: r[:father][:residential_country],
@@ -557,7 +567,7 @@ def build_client_record(records, n)
                     first_name: decrypt((r[:foster_mother][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_mother][:middle_name] rescue nil)),
                     last_name: decrypt((r[:foster_mother][:last_name] rescue nil)),
-                    birthdate: (r[:foster_mother][:birthdate] rescue nil),
+                    birthdate: format_date((r[:foster_mother][:birthdate] rescue nil)),
                     birthdate_estimated: (r[:foster_mother][:birthdate_estimated] rescue nil),
                     current_village: (r[:foster_mother][:current_village] rescue nil),
                     current_ta: (r[:foster_mother][:current_ta] rescue nil),
@@ -583,7 +593,7 @@ def build_client_record(records, n)
                     first_name: decrypt((r[:foster_father][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_father][:middle_name] rescue nil)),
                     last_name: decrypt((r[:foster_father][:last_name] rescue nil)),
-                    birthdate: (r[:foster_father][:birthdate] rescue nil),
+                    birthdate: format_date((r[:foster_father][:birthdate] rescue nil)),
                     birthdate_estimated: (r[:foster_father][:birthdate_estimated] rescue nil),
                     current_village: (r[:foster_father][:current_village] rescue nil),
                     current_ta: (r[:foster_father][:current_ta] rescue nil),
@@ -617,19 +627,20 @@ end
 
 def initiate_migration(records)
 
-	total_records = records.count
-
+  total_records = records.count
   puts "\n"
-	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
-	puts "\n"
+  puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
+  puts "\n"
 end
+
 
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
-#`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
-count = JSON.parse(` curl -s -X GET http://admin:password@localhost:5984/ebrs_child_hq_2_0/_design/Child/_view/by__id`)["rows"][0]["value"].to_i
+#count = JSON.parse(` curl -s -X GET http://admin:password@localhost:5984/ebrs_child_hq_2_0/_design/Child/_view/by__id`)["rows"][0]["value"].to_i
 
-number_of_files = (count / 1000) + (count % 1000 > 0 ? 1 : 0)
+#number_of_files = (count / 1000) + (count % 1000 > 0 ? 1 : 0)
+files = Dir.glob(File.expand_path("~/")+"/ebrs_chuncks/*.json").sort
+number_of_files = files.length 
 file_number = 0 
 last_file_migrated = EbrsMigration.last
 if last_file_migrated.present?
@@ -641,7 +652,7 @@ end
 while file_number < number_of_files
   GC.start
   start_time = Time.now
-  records = JSON.parse(File.read("/home/cranberry/test/#{file_number}.json"))
+  records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json")))
 
   build_client_record(records, file_number * 1000)
 
@@ -651,21 +662,3 @@ while file_number < number_of_files
 
   puts "Time interval : #{(Time.now - start_time) /60}"
 end
-
-
-
-=begin
-  
-
-  records['rows'] = records['rows'].sort_by { |r|  r[:district_id_number].split(/\//)[1].to_i rescue nil}
-
-  records['rows'].each_slice(1000).to_a.each_with_index do |block, i|
-    puts "#{Time.now.to_s(:db)}"
-    GC.start
-    GC.disable
-  	start = i*1000
-    #next if i == 0
-    build_client_record(block, start)
-    puts "#{Time.now.to_s(:db)}"
-  end
-=end
