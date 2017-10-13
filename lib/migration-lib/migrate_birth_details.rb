@@ -16,13 +16,16 @@ module MigrateBirthDetails
 	        place_of_birth_id = Location.locate_id_by_tag("Other", 'Place of Birth')
 	      end
 
-	      if person[:place_of_birth] == 'Home'
+	      if person[:place_of_birth].squish == 'Home'
 	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
+					if district_id.blank?
+						 raise person[:birth_district].inspect
+					end
 	        ta_id = Location.locate_id(person[:birth_ta], 'Traditional Authority', district_id)
 	        village_id = Location.locate_id(person[:birth_village], 'Village', ta_id)
 	        location_id = [village_id, ta_id, district_id].compact.first #Notice the order
 
-	      elsif person[:place_of_birth] == 'Hospital'
+	      elsif person[:place_of_birth].squish == 'Hospital'
 	        map =  {'Mzuzu City' => 'Mzimba',
 	                'Lilongwe City' => 'Lilongwe',
 	                'Zomba City' => 'Zomba',
@@ -30,8 +33,17 @@ module MigrateBirthDetails
 
 	        person[:birth_district] = map[person[:birth_district]] if person[:birth_district].match(/City$/)
 
-	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
-	        location_id = Location.locate_id(person[:hospital_of_birth], 'Health Facility', district_id)
+					hospital_of_birth = person[:hospital_of_birth].squish
+
+					if ['Blanytre','Blantyr'].include? person[:birth_district].squish
+            birth_district = 'Blantyre'
+					end
+
+	        district_id = Location.locate_id_by_tag(birth_district, 'District')
+					if district_id.blank?
+						 raise person[:birth_district].inspect
+					end
+	        location_id = Location.locate_id(hospital_of_birth, 'Health Facility', district_id)
 
 	        location_id = [location_id, district_id].compact.first
 
@@ -39,7 +51,9 @@ module MigrateBirthDetails
 	        location_id = Location.where(name: 'Other').last.id #Location.locate_id_by_tag(person[:birth_district], 'District')
 	        other_place_of_birth = params[:other_birth_place_details]
 	      end
+
 	    end
+
 
 	    reg_type = SETTINGS['application_mode'] =='FC' ? BirthRegistrationType.where(name: 'Normal').first.birth_registration_type_id :
 	        BirthRegistrationType.where(name: params[:person][:relationship]).last.birth_registration_type_id
@@ -78,12 +92,17 @@ module MigrateBirthDetails
 
 			district_of_birth_id = nil
 			if !params[:person][:birth_district].blank?
-				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first.id
+
+				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district]}' AND code IS NOT NULL").first.id rescue nil
+				 if district_of_birth_id.blank?
+					  	district_of_birth_id = Location.where(name: 'Other').first.location_id
+							other_place_of_birth = "Missing district of birth"
+				 end
 			else
 				district_of_birth_id = Location.where(name: 'Other').first.location_id
 				other_place_of_birth = "Other"
 			end
-
+   begin
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
@@ -116,9 +135,11 @@ module MigrateBirthDetails
 	        date_reported:                            params[:person][:created_at].to_date.to_s,
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
-	        level: 									  level
+	        level: 									                  level
 	    )
-
+    rescue StandardError => e
+			   raise "#{person[:place_of_birth]} #{person[:hospital_of_birth]} #{district_id}".inspect
+		end
 	    return details
 
 	end
