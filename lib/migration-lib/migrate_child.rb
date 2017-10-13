@@ -50,6 +50,8 @@ module MigrateChild
                 citizenship = Location.where(name: "Burundi").last
             elsif   ["lwanda","lwandan"].include?(name.downcase)
               citizenship = Location.where(name: "Rwanda").last
+              ["america"].include?(name.downcase)
+              citizenship = Location.where(name:"United States of America").last
             else
               raise name.inspect
             end
