@@ -21,6 +21,7 @@ module MigrateFather
           :updated_at         => params[:person][:updated_at].to_date.to_s
       )
 
+
       father_person = Person.create(
           :person_id          => core_person.id,
           :gender             => 'M',

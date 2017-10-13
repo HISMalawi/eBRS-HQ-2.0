@@ -358,6 +358,9 @@ end
 
 def format_date(date)
 	unless date.blank?
+    if date.to_s.split("/").length <= 1
+       return date
+    end
 		if date.split("/")[0]  == "?"
 			 estimated_date = date.split("/")
 			 estimated_date[0] = 15
@@ -368,6 +371,9 @@ def format_date(date)
 			 estimated_date[1] = 7
 			 date = estimated_date.join("/")
 		end
+    if date.split("/")[2]  == "?"
+       date = nil
+    end
 	 end
 	return date
 end
@@ -419,7 +425,9 @@ end
 
 def decrypt(value)
     string = $private_key.private_decrypt(Base64.decode64(value)) rescue nil
-
+    special = "?<>',?[]}{=)(*&^%$#`~{}"
+    regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
+    return "Not decrypted" if (string =~ regex).to_i > 0
     return value if string.nil?
 
     return string
@@ -495,7 +503,7 @@ def build_client_record(records, n)
                     last_name: decrypt(r[:mother][:last_name]) ,
                     first_name: decrypt(r[:mother][:first_name]),
                     middle_name: decrypt(r[:mother][:middle_name]),
-                    birthdate: r[:mother][:birthdate],
+                    birthdate: format_date(r[:mother][:birthdate]),
                     birthdate_estimated: r[:mother][:birthdate_estimated],
                     citizenship: r[:mother][:citizenship],
                     residential_country: r[:mother][:residential_country],
@@ -519,7 +527,7 @@ def build_client_record(records, n)
                     last_name: decrypt(r[:father][:last_name]),
                     first_name: decrypt(r[:father][:first_name]),
                     middle_name: decrypt(r[:father][:middle_name]),
-                    birthdate: r[:father][:birthdate],
+                    birthdate: format_date(r[:father][:birthdate]),
                     birthdate_estimated: r[:father][:birthdate_estimated],
                     citizenship: r[:father][:citizenship],
                     residential_country: r[:father][:residential_country],
@@ -559,7 +567,7 @@ def build_client_record(records, n)
                     first_name: decrypt((r[:foster_mother][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_mother][:middle_name] rescue nil)),
                     last_name: decrypt((r[:foster_mother][:last_name] rescue nil)),
-                    birthdate: (r[:foster_mother][:birthdate] rescue nil),
+                    birthdate: format_date((r[:foster_mother][:birthdate] rescue nil)),
                     birthdate_estimated: (r[:foster_mother][:birthdate_estimated] rescue nil),
                     current_village: (r[:foster_mother][:current_village] rescue nil),
                     current_ta: (r[:foster_mother][:current_ta] rescue nil),
@@ -585,7 +593,7 @@ def build_client_record(records, n)
                     first_name: decrypt((r[:foster_father][:first_name] rescue nil)),
                     middle_name: decrypt((r[:foster_father][:middle_name] rescue nil)),
                     last_name: decrypt((r[:foster_father][:last_name] rescue nil)),
-                    birthdate: (r[:foster_father][:birthdate] rescue nil),
+                    birthdate: format_date((r[:foster_father][:birthdate] rescue nil)),
                     birthdate_estimated: (r[:foster_father][:birthdate_estimated] rescue nil),
                     current_village: (r[:foster_father][:current_village] rescue nil),
                     current_ta: (r[:foster_father][:current_ta] rescue nil),
@@ -625,15 +633,32 @@ def initiate_migration(records)
 	puts "\n"
 end
 
+
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
-#`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
-records = Oj.load File.read("#{Rails.root}/data.json")
-records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
+#count = JSON.parse(` curl -s -X GET http://admin:password@localhost:5984/ebrs_child_hq_2_0/_design/Child/_view/by__id`)["rows"][0]["value"].to_i
 
-records['rows'].each_slice(100).to_a.each_with_index do |block, i|
-  puts "#{Time.now.to_s(:db)}"
-  start = i*100
-  build_client_record(block, start)
-  puts "#{Time.now.to_s(:db)}"
+#number_of_files = (count / 1000) + (count % 1000 > 0 ? 1 : 0)
+files = Dir.glob(File.expand_path("~/")+"/ebrs_chuncks/*.json").sort
+number_of_files = files.length 
+file_number = 0 
+last_file_migrated = EbrsMigration.last
+if last_file_migrated.present?
+  file_number = last_file_migrated.file_number  + 1
+else
+  last_file_migrated = EbrsMigration.new
+end
+
+while file_number < number_of_files
+  GC.start
+  start_time = Time.now
+  records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json")))
+
+  build_client_record(records, file_number * 1000)
+
+  last_file_migrated.file_number =  file_number
+  last_file_migrated.save
+  file_number = file_number + 1
+
+  puts "Time interval : #{(Time.now - start_time) /60}"
 end

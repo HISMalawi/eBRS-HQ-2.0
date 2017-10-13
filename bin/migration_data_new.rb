@@ -348,20 +348,7 @@ def transform_record(data)
 		unless data[:person][:date_of_marriage].blank?
 			   format_date(data[:person][:date_of_marriage])
     end
-
-    if !data[:person][:district_id_number].blank?
-
-      #create fixed BEN
-      old_ben = data[:person][:district_id_number]
-      code, inc, year = old_ben.split("/")
-      $index[year] = 0 if $index[year].blank?
-      $index[year] += 1
-      new_inc =  $index[year].to_s.rjust(8,'0')
-      new_ben = "#{code}/#{new_inc}/#{year}"
-
-      data[:person][:new_district_id_number] = new_ben
-    end
-
+    
     if data[:person][:type_of_birth]== 'Single'
       save_full_record(data,data[:person][:district_id_number])
     end
