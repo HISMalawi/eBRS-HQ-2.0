@@ -230,10 +230,13 @@ def log_error(error_msge, content)
 end
 
 
-def save_full_record(params, district_id_number)
+def save_full_record(params)
 
-  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (raise params.inspect)
-  person = nil; #PersonService.create_record(params)
+  prev = PersonBirthDetail.where(source_id: params[:_id]).first
+  return nil if !prev.blank?
+
+  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+  person = PersonService.create_record(params)
 
   if !person.blank?
     #SimpleElasticSearch.add(person_for_elastic_search(person,params))
@@ -289,13 +292,7 @@ def transform_record(data)
     end
 
     if data[:person][:type_of_birth]== 'Single'
-      begin
-        save_full_record(data,data[:person][:district_id_number])
-      rescue => e
-        File.open("errors", "a"){|f|
-          f.puts ({"#{data['_id']}" => e})
-        }
-      end
+        save_full_record(data)
     else
 
     end
@@ -562,18 +559,54 @@ def build_client_record(records, n)
 
 end
 
+=begin
+records = Oj.load File.read("#{Rails.root}/data.json")
+countries = []
+records['rows'].each_with_index do |doc, i|
+  r = doc["doc"].with_indifferent_access
+  r[:mother] = {} if r[:mother].blank?
+  r[:father] = {} if r[:father].blank?
+  r[:foster_father] = {} if r[:foster_father].blank?
+  r[:foster_mother] = {} if r[:foster_mother].blank?
+  r[:informant] = {} if r[:informant].blank?
 
-def initiate_migration(records)
+  countries << r[:mother][:citizenship]
+  countries <<  r[:mother][:residential_country]
 
-	total_records = records.count
-  puts "\n"
-	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
-	puts "\n"
+  countries << r[:father][:citizenship]
+  countries <<  r[:father][:residential_country]
+
+  countries << r[:foster_mother][:home_country]
+  countries << r[:foster_mother][:residential_country]
+  countries << r[:foster_mother][:home_country]
+
+  countries << r[:foster_father][:home_country]
+  countries << r[:foster_father][:residential_country]
+  countries << r[:foster_father][:home_country]
+
+  countries << r[:informant][:citizenship]
+  countries <<  r[:informant][:residential_country]
+
+  countries << r[:father][:citizenship]
+  countries <<  r[:father][:residential_country]
+  countries << r[:foster_mother][:home_country]
+
+  puts i if i % 1000 == 0
 end
 
-records = Oj.load File.read("#{Rails.root}/data.json")
+open(".json", 'w'){|f| f.puts countries.uniq.to_json}
+=end
+
 records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
+i = 0
 records.each do |id, data|
-  transform_record(data)
+  i += 1
+  ActiveRecord::Base.transaction do
+    transform_record(data)
+  end
+
+  if (i % 100) == 0
+    puts i
+  end
 end
 

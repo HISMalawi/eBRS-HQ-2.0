@@ -119,7 +119,7 @@ module MigrateBirthDetails
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
           source_id:                                params[:_id],
-	        date_reported:                            params[:person][:created_at].to_date.to_s,
+	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
 	        level: 									  level
