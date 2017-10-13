@@ -90,19 +90,22 @@ module MigrateBirthDetails
 	  	level = "DC" if params[:district_code].present?
 	  	level = "FC" if params[:facility_code].present?
 
-			district_of_birth_id = nil
-			if !params[:person][:birth_district].blank?
 
-				 district_of_birth_id = Location.where("name = '#{params[:person][:birth_district]}' AND code IS NOT NULL").first.id rescue nil
-				 if district_of_birth_id.blank?
-					  	district_of_birth_id = Location.where(name: 'Other').first.location_id
-							other_place_of_birth = "Missing district of birth"
-				 end
-			else
+		district_of_birth_id = nil
+		if !params[:person][:birth_district].blank?
+				 district_of_birth = Location.where("name = '#{params[:person][:birth_district].squish}' AND code IS NOT NULL").first
+				 if district_of_birth.blank?
+				 	district_of_birth_id = Location.where(name: 'Other').first.location_id
+					other_place_of_birth = params[:person][:birth_district]
+				else
+					district_of_birth_id = district_of_birth.id
+				end
+		else
 				district_of_birth_id = Location.where(name: 'Other').first.location_id
-				other_place_of_birth = "Other"
-			end
-   begin
+				other_place_of_birth = "District of birth not present"
+		end
+
+
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
@@ -132,14 +135,12 @@ module MigrateBirthDetails
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
           source_id:                                params[:_id],
-	        date_reported:                            params[:person][:created_at].to_date.to_s,
+	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
 	        level: 									                  level
 	    )
-    rescue StandardError => e
-			   raise "#{person[:place_of_birth]} #{person[:hospital_of_birth]} #{district_id}".inspect
-		end
+
 	    return details
 
 	end

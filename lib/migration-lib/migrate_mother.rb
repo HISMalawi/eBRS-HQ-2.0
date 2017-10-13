@@ -120,8 +120,8 @@ module MigrateMother
 	        citizenship = MigrateChild.search_citizenship(mother[:citizenship].squish)
 	        residential_country = MigrateChild.search_citizenship(mother[:residential_country].squish)
 
-	      
-	        person_address = PersonAddress.create(
+	      begin
+	      	person_address = PersonAddress.create(
 	            :person_id          => core_person.id,
 	            :current_district   => cur_district_id,
 	            :current_ta         => cur_ta_id,
@@ -144,6 +144,10 @@ module MigrateMother
 	            :created_at         => params[:person][:created_at].to_date.to_s,
 	            :updated_at         => params[:person][:updated_at].to_date.to_s
 	        )
+	      rescue Exception => e
+	      		raise mother.inspect
+	      end
+
 
 	    end
 

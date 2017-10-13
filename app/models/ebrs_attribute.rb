@@ -1,12 +1,3 @@
-
-SERVER = CouchRest.new
-configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
-#DB = SERVER.database!("#{configs['prefix']}_#{configs['suffix']}")
-
-class Pusher < CouchRest::Document
- # use_database(DB)
-end
-
 module EbrsAttribute
 
   def send_data(hash)
