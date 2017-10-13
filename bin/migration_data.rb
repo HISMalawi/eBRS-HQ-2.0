@@ -571,20 +571,9 @@ def initiate_migration(records)
 	puts "\n"
 end
 
-configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
-
-#`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
 records = Oj.load File.read("#{Rails.root}/data.json")
-#records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
-
-records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
-
-records['rows'].each_slice(20000).to_a.each_with_index do |block, i|
-  start = i*20000
-	next if i != 7
-  build_client_record(block, start)
+records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
+records.each do |id, data|
+  transform_record(data)
 end
 
-File.open("7.json", "w+"){|f|
-  f.puts @results
-}
