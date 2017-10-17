@@ -124,7 +124,7 @@
           Name
         </td>
         <td align="left">
-          <%= person.name %>
+          <%= person.printable_name %>
         </td>
       </tr>
       <tr>
@@ -175,7 +175,7 @@
         </td>
         <td align="left">
            
-          <%= person.mother.name rescue nil%>
+          <%= person.mother.printable_name rescue nil%>
           
         </td>
       </tr>
@@ -202,7 +202,7 @@
 									Name of Father
 									</td>
 									<td align="left">
-										<%= person.father.name%>
+										<%= person.father.printable_name %>
 									</td>
 									</tr>
 									
@@ -230,7 +230,7 @@
                             </td>
                             <td align="left">
                                 <% if (person.father.name.present? rescue false) %>
-                                    <%= person.father.name  %>
+                                    <%= person.father.printable_name  %>
                                 <% end %>
 	           </td>
 	         </tr>
