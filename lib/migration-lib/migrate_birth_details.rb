@@ -90,6 +90,10 @@ module MigrateBirthDetails
 				other_place_of_birth = "District of birth not present"
 		end
 
+      if location_id.blank?
+        location_id = Location.where(name: 'Other').first.id
+      end
+
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
