@@ -13,6 +13,14 @@ module MigrateInformant
 	      informant_person = mother
 	    elsif params[:informant_same_as_father] == 'Yes'
 	        informant_person = father
+	    elsif params[:informant_same_as_father].blank? || params[:informant_same_as_mother].blank?
+	    	if mother.present?
+	    		informant_person = mother
+	    	elsif father.present?
+	    		informant_person = father
+	    	else
+	    		raise "informant details not present".inspect
+	    	end
 	    else
 	      core_person = CorePerson.create(
 	          :person_type_id => PersonType.where(:name => 'Informant').last.id,
