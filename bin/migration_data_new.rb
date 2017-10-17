@@ -353,6 +353,7 @@ def transform_record(data)
       begin
           save_full_record(data,data[:person][:district_id_number])
       rescue Exception => e
+          raise e.inspect
           log_error(e, data)
       end
       
@@ -447,6 +448,8 @@ def build_client_record(records, n)
    i = 0
    start_time = Time.now
 
+   
+
    records.each do |doc|
       ActiveRecord::Base.transaction do    
           transform_record(doc[1])
@@ -483,7 +486,7 @@ files = Dir.glob(File.expand_path("~/")+"/ebrs_chuncks/*.json").sort
 number_of_files = files.length 
 file_number = 0 
 last_file_migrated = EbrsMigration.last
-if last_file_migrated.present?
+if last_file_migrated.present? 
   file_number = last_file_migrated.file_number  + 1
 else
   last_file_migrated = EbrsMigration.new
@@ -494,7 +497,7 @@ while file_number < number_of_files
 
   records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json")))
 
-  build_client_record(records, file_number * 1000)
+  build_client_record(records, file_number * 1000, )
 
   last_file_migrated.file_number =  file_number
   last_file_migrated.save
