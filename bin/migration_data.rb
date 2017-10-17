@@ -594,7 +594,7 @@ records['rows'].each_with_index do |doc, i|
   puts i if i % 1000 == 0
 end
 
-open(".json", 'w'){|f| f.puts countries.uniq.to_json}
+open("countries.json", 'w'){|f| f.puts countries.uniq.to_json}
 =end
 
 records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
