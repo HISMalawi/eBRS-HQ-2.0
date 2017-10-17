@@ -22,7 +22,7 @@ module MigrateChild
     PersonName.create(
         :person_id          => core_person.id,
         :first_name         => params[:person][:first_name],
-        :middle_name        => params[:person][:middle_name],
+        :middle_name        => (params[:person][:middle_name] rescue nil),
         :last_name          => params[:person][:last_name],
         :created_at         => params[:person][:created_at].to_date,
         :updated_at         => params[:person][:updated_at].to_date
@@ -32,26 +32,17 @@ module MigrateChild
   end
 
   def self.search_citizenship(name)
+      name = name.strip rescue name
+
+      wrong_countries_map = JSON.parse(File.read("#{Rails.root}/wrong_countries.json")) rescue {}
+      name = wrong_countries_map[name] if wrong_countries_map[name].present?
       citizenship = Location.where(country: name).last
+
       if citizenship.blank?
         citizenship = Location.where(name: name).last
-        if citizenship.blank?
-            if ["moz", "mosambique","mocambiquian","mocambique","mozambique"].include?(name.downcase) 
-              citizenship = Location.where(name: "Mozambique").last
-            elsif name.downcase.include?("united kingdom")
-              citizenship = Location.where(country: "British").last
-            elsif name.downcase =="drc"
-              citizenship = Location.where(country: "Congolese").last
-            elsif ["malaw","malawin","malwian"].include?(name.downcase)
-              citizenship = Location.where(name: "Malawi").last
-            elsif name =="Tanzania"
-                citizenship = Location.where(name: "Tanzania, United Republic of").last
-            elsif name.downcase == "bulundi"
-                citizenship = Location.where(name: "Burundi").last
-            else
-              raise name.inspect
-            end
 
+        if citizenship.blank?
+          raise name.inspect
         end
       end
       return citizenship
