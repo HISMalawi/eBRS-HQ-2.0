@@ -13,12 +13,12 @@ module MigrateInformant
 	      informant_person = mother
 	    elsif params[:informant_same_as_father] == 'Yes'
 	        informant_person = father
-	    elsif params[:informant_same_as_father].blank? || params[:informant_same_as_mother].blank?
+      elsif (params[:informant_same_as_father].blank? || params[:informant_same_as_mother].blank?) && (!mother.blank? || !father.blank?)
 	    	if mother.present?
 	    		informant_person = mother
 	    	elsif father.present?
 	    		informant_person = father
-	    	else
+        else
 	    		raise "informant details not present".inspect
 	    	end
 	    else
@@ -72,7 +72,7 @@ module MigrateInformant
 	          :created_at         => params[:person][:created_at].to_date.to_s,
 	          :updated_at         => params[:person][:updated_at].to_date.to_s
 	      )
-	  
+
 
 	    end
 

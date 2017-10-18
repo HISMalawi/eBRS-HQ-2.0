@@ -13,8 +13,8 @@ module PersonService
         father   = MigrateFather.new_father(person, params,'Father')
         informant = MigrateInformant.new_informant(person, params, mother, father)
       when "orphaned"
-        mother   = Lib.new_mother(person, params, 'Adoptive-Mother') rescue nil
-        father   = Lib.new_father(person, params,'Adoptive-Father') rescue nil
+        mother   = Lib.new_mother(person, params, 'Adoptive-Mother') #rescue nil
+        father   = Lib.new_father(person, params,'Adoptive-Father') #rescue nil
         informant = MigrateInformant.new_informant(person, params, mother, father)
       when "adopted"
 

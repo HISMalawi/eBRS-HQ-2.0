@@ -10,7 +10,6 @@ module MigrateMother
 	        else
 	          mother = params[:person][:mother]
 	        end
-
 	        if mother[:first_name].blank?
 	          return nil
 	        end
