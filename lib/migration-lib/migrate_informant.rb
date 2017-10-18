@@ -7,7 +7,7 @@ module MigrateInformant
 	    informant[:citizenship] = 'Malawian' if informant[:citizenship].blank?
 	    informant[:residential_country] = 'Malawi' if informant[:residential_country].blank?
 
-	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
 	      informant_person = Person.find(params[:person][:prev_child_id]).informant
 	    elsif params[:informant_same_as_mother] == 'Yes'
 	      informant_person = mother
@@ -77,6 +77,11 @@ module MigrateInformant
 	    end
 
       person_id = person.id
+
+      if informant_person.blank?
+      	raise params[:_id].inspect
+      end
+
       informant_id = informant_person.id
 
 	    PersonRelationship.create(

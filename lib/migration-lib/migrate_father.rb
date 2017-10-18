@@ -1,6 +1,6 @@
 module MigrateFather
   def self.new_father(person, params, father_type)
-    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
       father_person = Person.find(params[:person][:prev_child_id]).father
     else
       if father_type =="Adoptive-Father"
