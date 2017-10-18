@@ -40,9 +40,9 @@ module MigrateInformant
 
 	      PersonName.create(
 	          :person_id   => informant_person.id,
-	          :first_name  => informant[:first_name],
+	          :first_name  => (informant[:first_name] rescue "@@@@@"),
 	          :middle_name => informant[:middle_name],
-	          :last_name   => informant[:last_name],
+	          :last_name   => (informant[:last_name] rescue "@@@@@"),
 	          :created_at  => params[:person][:created_at].to_date.to_s,
 	          :updated_at  => params[:person][:updated_at].to_date.to_s
 	      )
