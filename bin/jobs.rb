@@ -9,6 +9,21 @@ def is_up?(host)
 end
 
 
+district_tag_id = LocationTag.where(name: "District").last.id
+LocationTagMap.where(location_tag_id: district_tag_id).map(&:location_id).each do |loc_id|
+  if !File.exist?("#{Dir.pwd}/public/sites/#{loc_id}.yml")
+    File.open("#{Dir.pwd}/public/sites/#{loc_id}.yml","w") do |file|
+      data = {loc_id =>
+        {
+          online: false
+        }
+      }
+      file.write data.to_yaml
+      file.close
+    end
+  end
+end
+
 files = Dir.glob( File.join("#{Rails.root}/public/sites", '**', '*.yml')).to_a
 (files || []).each do |f|
   data = YAML.load_file(f) rescue {}
