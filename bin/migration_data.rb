@@ -232,17 +232,19 @@ end
 
 def save_full_record(params)
 
-  prev = PersonBirthDetail.where(source_id: params[:_id]).first
-  return nil if !prev.blank?
+    if !['c15af8a55fc177950d8cbd8b11957a31','a1e09ad1136236812eee3b2c6cdcd60b'].include? params[:_id]
+        prev = PersonBirthDetail.where(source_id: params[:_id]).first
+          return nil if !prev.blank?
 
-  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (
-    raise "#{params[:record_status]} --- #{params[:request_status]}").to_s
-  person = PersonService.create_record(params)
+        params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (
+            raise "#{params[:record_status]} --- #{params[:request_status]}").to_s
+        person = PersonService.create_record(params)
 
-  if !person.blank?
-    #SimpleElasticSearch.add(person_for_elastic_search(person,params))
-    assign_identifiers(person.person_id, params)
-  end
+        if !person.blank?
+            #SimpleElasticSearch.add(person_for_elastic_search(person,params))
+            assign_identifiers(person.person_id, params)
+        end
+    end
 end
 
 def assign_identifiers(person_id, params)
@@ -598,7 +600,7 @@ end
 
 open("countries.json", 'w'){|f| f.puts countries.uniq.to_json}
 =end
-
+#records = eval((File.read(File.expand_path("~/")+"/ebrs_chunks/5.json")))
 records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
 i = 0
 records.each do |id, data|
@@ -611,4 +613,3 @@ records.each do |id, data|
     puts i
   end
 end
-

@@ -33,16 +33,27 @@ module MigrateBirthDetails
 
 	        person[:birth_district] = map[person[:birth_district]] if person[:birth_district].match(/City$/)
 
-					hospital_of_birth = person[:hospital_of_birth].squish
+         if !person[:hospital_of_birth].blank?
+					  hospital_of_birth = person[:hospital_of_birth].squish
+				 else
+					 location_id = Location.where(name: 'Other').first.location_id
+					 other_place_of_birth = "Hospital of birth name not present"
+				 end
 
 					if ['Blanytre','Blantyr'].include? person[:birth_district].squish
-            birth_district = 'Blantyre'
+            person[:birth_district] = 'Blantyre'
 					end
 
-	        district_id = Location.locate_id_by_tag(birth_district, 'District')
-					if district_id.blank?
-						 raise person[:birth_district].inspect
+					if ['Nkhata-bay'].include? person[:birth_district].squish
+						person[:birth_district] = 'Nkhata bay'
 					end
+
+	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
+					if district_id.blank?
+						 location_id = Location.where(name: 'Other').first.location_id
+						 other_place_of_birth = "District not present"						 
+					end
+
 	        location_id = Location.locate_id(hospital_of_birth, 'Health Facility', district_id)
 
 	        location_id = [location_id, district_id].compact.first
