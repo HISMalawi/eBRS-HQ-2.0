@@ -106,8 +106,8 @@ th{
         %>
             <tr>
               <td><%= user.username %></td>
-              <td><%= given_name.first_name %></td>
-              <td><%= given_name.last_name %></td>
+              <td><%= given_name.first_name rescue nil %></td>
+              <td><%= given_name.last_name rescue nil%></td>
               <td><%= user.user_role.role.role rescue 'N/A' %></td>
               <td><%= user.email rescue 'N/A' %></td>
               <td style="text-align: left;">

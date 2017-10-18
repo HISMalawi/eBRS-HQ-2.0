@@ -235,7 +235,8 @@ def save_full_record(params)
   prev = PersonBirthDetail.where(source_id: params[:_id]).first
   return nil if !prev.blank?
 
-  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
+  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (
+    raise "#{params[:record_status]} --- #{params[:request_status]}").to_s
   person = PersonService.create_record(params)
 
   if !person.blank?
@@ -332,7 +333,8 @@ def get_record_status(rec_status, req_status)
 		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
 					'CLOSED' =>'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
-					'DISPATCHED' =>'HQ-DISPATCHED'},
+					'DISPATCHED' =>'HQ-DISPATCHED',
+          "APPROVED"   => "HQ-APPROVED"},
 		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
 		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
 		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
@@ -594,7 +596,7 @@ records['rows'].each_with_index do |doc, i|
   puts i if i % 1000 == 0
 end
 
-open(".json", 'w'){|f| f.puts countries.uniq.to_json}
+open("countries.json", 'w'){|f| f.puts countries.uniq.to_json}
 =end
 
 records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))

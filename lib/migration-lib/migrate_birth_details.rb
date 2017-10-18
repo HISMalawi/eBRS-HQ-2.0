@@ -105,6 +105,9 @@ module MigrateBirthDetails
 				other_place_of_birth = "District of birth not present"
 		end
 
+      if location_id.blank?
+        location_id = Location.where(name: 'Other').first.id
+      end
 
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
@@ -136,6 +139,7 @@ module MigrateBirthDetails
 	        location_created_at:                      SETTINGS['location_id'],
           source_id:                                params[:_id],
 	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
+          date_registered:                          (person[:date_registered].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
 	        level: 									                  level

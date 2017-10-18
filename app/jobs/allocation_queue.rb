@@ -4,9 +4,10 @@ class AllocationQueue
 
   def perform()
 
+    ActiveRecord::Base.logger.level = 3
+
     FileUtils.touch("#{Rails.root}/public/sentinel")
 
-    ActiveRecord::Base.logger.level = 1
     queue = []
     queue = IdentifierAllocationQueue.where(assigned: 0) if (SETTINGS['assign_ben'] != false)
 
@@ -59,7 +60,16 @@ class AllocationQueue
           person_birth_detail.update_attributes(national_serial_number: brn)
           record.update_attributes(assigned: 1)
 
-          PersonIdentifier.new_identifier(record.person_id, 'Birth Registration Number', person_birth_detail.national_serial_number)
+          PersonIdentifier.new_identifier(record.person_id,
+                                          'Birth Registration Number', person_birth_detail.national_serial_number)
+          barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
+
+          if barcode.present?
+            PersonIdentifier.new_identifier(record.person_id,
+                                            'Barcode Number', barcode.value)
+            barcode.update_columns(assigned: 1,
+                                   person_id: record.person_id)
+          end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
@@ -81,6 +91,8 @@ class AllocationQueue
       end
 
       load "#{Rails.root}/bin/jobs.rb"
+
+      ActiveRecord::Base.logger.level = 1
     rescue
       AllocationQueue.perform_in(1.5)
     end
