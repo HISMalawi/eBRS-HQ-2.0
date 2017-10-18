@@ -33,9 +33,9 @@ module MigrateFather
 
       PersonName.create(
           :person_id          => core_person.id,
-          :first_name         => father[:first_name].squish,
+          :first_name         => (father[:first_name].squish rescue "@@@@@"),
           :middle_name        => (father[:middle_name].squish rescue nil),
-          :last_name          => father[:last_name].squish,
+          :last_name          => (father[:last_name].squish rescue "@@@@@"),
           :created_at         => params[:person][:created_at].to_date.to_s,
           :updated_at         => params[:person][:updated_at].to_date.to_s
       )
