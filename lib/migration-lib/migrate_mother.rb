@@ -10,7 +10,6 @@ module MigrateMother
 	        else
 	          mother = params[:person][:mother]
 	        end
-
 	        if mother[:first_name].blank?
 	          return nil
 	        end
@@ -36,9 +35,9 @@ module MigrateMother
 
 	        person_name = PersonName.create(
 	            :person_id          => core_person.id,
-	            :first_name         => mother[:first_name],
+	            :first_name         => (mother[:first_name] rescue "@@@@@"),
 	            :middle_name        => mother[:middle_name],
-	            :last_name          => mother[:last_name],
+	            :last_name          => (mother[:last_name] rescue "@@@@@"),
 	            :created_at         => params[:person][:created_at].to_date.to_s,
 	            :updated_at         => params[:person][:updated_at].to_date.to_s
 	        )
