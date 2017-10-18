@@ -18,10 +18,11 @@ module MigrateInformant
 	    		informant_person = mother
 	    	elsif father.present?
 	    		informant_person = father
-        else
-	    		raise "informant details not present".inspect
+
 	    	end
-	    else
+      end
+
+      if informant_person.blank?
 	      core_person = CorePerson.create(
 	          :person_type_id => PersonType.where(:name => 'Informant').last.id,
 	          :created_at     => params[:person][:created_at].to_date.to_s,
