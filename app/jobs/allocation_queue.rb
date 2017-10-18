@@ -4,9 +4,10 @@ class AllocationQueue
 
   def perform()
 
+    ActiveRecord::Base.logger.level = 3
+
     FileUtils.touch("#{Rails.root}/public/sentinel")
 
-    ActiveRecord::Base.logger.level = 1
     queue = []
     queue = IdentifierAllocationQueue.where(assigned: 0) if (SETTINGS['assign_ben'] != false)
 
@@ -38,7 +39,7 @@ class AllocationQueue
 
           last = PersonBirthDetail.where("LEFT(district_id_number, #{district_code_len}) = '#{district_code}'
             AND RIGHT(district_id_number, #{year_len}) = #{Date.today.year}").select(" MAX(SUBSTR(district_id_number,
-              #{(district_code_len + 2)}, 7)) AS last_num")[0]['last_num'] rescue 0
+              #{(district_code_len + 2)}, 8)) AS last_num")[0]['last_num'] rescue 0
 
           mid_number = (last.to_i + 1).to_s.rjust(8,'0')
 
@@ -59,7 +60,16 @@ class AllocationQueue
           person_birth_detail.update_attributes(national_serial_number: brn)
           record.update_attributes(assigned: 1)
 
-          PersonIdentifier.new_identifier(record.person_id, 'Birth Registration Number', person_birth_detail.national_serial_number)
+          PersonIdentifier.new_identifier(record.person_id,
+                                          'Birth Registration Number', person_birth_detail.national_serial_number)
+          barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
+
+          if barcode.present?
+            PersonIdentifier.new_identifier(record.person_id,
+                                            'Barcode Number', barcode.value)
+            barcode.update_columns(assigned: 1,
+                                   person_id: record.person_id)
+          end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
@@ -81,6 +91,8 @@ class AllocationQueue
       end
 
       load "#{Rails.root}/bin/jobs.rb"
+
+      ActiveRecord::Base.logger.level = 1
     rescue
       AllocationQueue.perform_in(1.5)
     end

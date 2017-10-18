@@ -13,20 +13,24 @@ module PersonService
         father   = MigrateFather.new_father(person, params,'Father')
         informant = MigrateInformant.new_informant(person, params, mother, father)
       when "orphaned"
-        mother   = Lib.new_mother(person, params, 'Adoptive-Mother') rescue nil
-        father   = Lib.new_father(person, params,'Adoptive-Father') rescue nil
+        mother   = Lib.new_mother(person, params, 'Adoptive-Mother') #rescue nil
+        father   = Lib.new_father(person, params,'Adoptive-Father') #rescue nil
         informant = MigrateInformant.new_informant(person, params, mother, father)
       when "adopted"
+
+        foster_mother = params[:person][:foster_mother].values.reject{|e| e.blank?} rescue nil
+        foster_father = params[:person][:foster_father].values.reject{|e| e.blank?} rescue nil
+
         if params[:biological_parents] == "Both" || params[:biological_parents] =="Mother"
           mother   =MigrateMother.new_mother(person, params, 'Mother')
         end
-        if params[:biological_parents] == "Both" || params[:biological_parents] =="Father"
+        if params[:biological_parents] == "Both" || params[:biological_parents] =="Father" || !foster_father.blank?
           father   = MigrateFather.new_father(person, params,'Father')
         end
-        if params[:foster_parents] == "Both" || params[:foster_parents] =="Mother"
+        if params[:foster_parents] == "Both" || params[:foster_parents] =="Mother" || !foster_mother.blank?
           adoptive_mother   = MigrateMother.new_mother(person, params, 'Adoptive-Mother')
         end
-        if params[:foster_parents] == "Both" || params[:foster_parents] =="Mother"
+        if params[:foster_parents] == "Both" || params[:foster_parents] =="Mother"  || !foster_father.blank?
           adoptive_father   = Lib.new_father(person, params,'Adoptive-Father')
         end
         mother = mother.present? ? mother : adoptive_mother

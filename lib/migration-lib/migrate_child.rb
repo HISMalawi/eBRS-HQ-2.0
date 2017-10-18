@@ -42,7 +42,7 @@ module MigrateChild
         citizenship = Location.where(name: name).last
 
         if citizenship.blank?
-          raise name.inspect
+          citizenship = Location.where(name: 'Malawi').last
         end
       end
       return citizenship
