@@ -1,3 +1,4 @@
+require "csv"
 require'migration-lib/migrate_child'
 require 'migration-lib/migrate_mother'
 require 'migration-lib/migrate_father'
@@ -14,6 +15,7 @@ require 'json'
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 @analysis = "#{Rails.root}/app/assets/data/analysis.txt"
+OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 @results = {}
 
 User.current = User.last
@@ -60,6 +62,18 @@ def log_error(error_msge, content)
       end
     end
 
+ end
+
+ def write_csv_header(file, header)
+    CSV.open(file, 'w' ) do |exporter|
+        exporter << header
+    end
+ end
+
+ def write_csv_content(file, content)
+    CSV.open(file, '+a' ) do |exporter|
+        exporter << content
+    end
  end
 
  def person_for_elastic_search(core_person,params)
@@ -297,7 +311,7 @@ def transform_record(data)
     if data[:person][:type_of_birth]== 'Single'
         save_full_record(data)
     else
-
+        write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
 end
 
@@ -601,7 +615,9 @@ end
 
 open("countries.json", 'w'){|f| f.puts countries.uniq.to_json}
 =end
-#records = eval((File.read(File.expand_path("~/")+"/ebrs_chunks/5.json")))
+
+write_csv_header(OTHER_TYPES_OF_BIRTH, ["Couch ID","Type of Birth"])
+
 records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
 i = 0
 records.each do |id, data|

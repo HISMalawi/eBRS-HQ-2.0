@@ -1,6 +1,6 @@
 module MigrateBirthDetails
 	def self.new_birth_details(person, params)
-	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
 	      return self.birth_details_multiple(person,params)
 	    end
 	    person_id = person.id; place_of_birth_id = nil; location_id = nil; other_place_of_birth = nil
@@ -143,14 +143,14 @@ module MigrateBirthDetails
 	        court_order_attached:                     (person[:court_order_attached] == 'Yes' ? 1 : 0),
 	        parents_signed:                           (person[:parents_signed] == 'Yes' ? 1 : 0),
 	        form_signed:                              (person[:form_signed] == 'Yes' ? 1 : 0),
-          district_id_number:                       params[:person][:new_district_id_number],
-          facility_serial_number:                   params[:person][:facility_serial_number],
+            district_id_number:                       params[:person][:new_district_id_number],
+            facility_serial_number:                   params[:person][:facility_serial_number],
 	        informant_designation:                    (params[:person][:informant][:designation].present? ? params[:person][:informant][:designation].to_s : nil),
 	        informant_relationship_to_person:         rel,
 	        other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
-          source_id:                                params[:_id],
+            source_id:                                params[:_id],
 	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
           date_registered:                          (person[:date_registered].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,

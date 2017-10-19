@@ -211,16 +211,19 @@ module MigrateChild
 end
 
 
-def self.is_twin_or_triplet(type_of_birth)
-    if type_of_birth == "Second Twin"
-      return true
-    elsif type_of_birth == "Second Triplet"
-      return true
-    elsif type_of_birth == "Third Triplet"
-      return true
-    else
-      return false
+def self.is_twin_or_triplet(type_of_birth,params)
+    response = false
+
+    if params[:person][:multiple_birth_id].blank?
+      return response
     end
+
+    if ["second twin","second triplet","third triplet"].include?(type_of_birth.downcase)
+        if params[:person][:multiple_birth_id].present?
+          response = true
+        end
+    end
+    return response
 end
 
   def self.log_error(error_msge, content)

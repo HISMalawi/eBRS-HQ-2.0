@@ -14,7 +14,7 @@ require 'json'
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 @analysis = "#{Rails.root}/app/assets/data/analysis.txt"
-
+OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 
 User.current = User.last
 
@@ -60,6 +60,18 @@ def log_error(error_msge, content)
       end
     end
 
+ end
+
+ def write_csv_header(file, header)
+    CSV.open(file, 'w' ) do |exporter|
+        exporter << header
+    end
+ end
+
+ def write_csv_content(file, content)
+    CSV.open(file, 'a+' ) do |exporter|
+        exporter << content
+    end
  end
 
  def person_for_elastic_search(core_person,params)
@@ -353,12 +365,11 @@ def transform_record(data)
       begin
           save_full_record(data,data[:person][:district_id_number])
       rescue Exception => e
-          raise e.inspect
           log_error(e, data)
       end
 
     else
-
+        write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
 end
 
@@ -476,6 +487,7 @@ def initiate_migration(records)
   puts "\n"
 end
 
+write_csv_header(OTHER_TYPES_OF_BIRTH, ["Couch ID","Type of Birth"])
 
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 
