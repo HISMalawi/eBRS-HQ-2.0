@@ -2,7 +2,7 @@ require 'couchrest_model'
 
 class Child < CouchRest::Model::Base
 
-  use_database "child"
+#  use_database "child"
 
   validates :national_serial_number , uniqueness: {allow_blank: true, message: "BRN cannot be duplicate"}
 

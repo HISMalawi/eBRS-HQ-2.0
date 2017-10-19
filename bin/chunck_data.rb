@@ -317,50 +317,6 @@ def format_date(date)
 	return date
 end
 
-def get_record_status(rec_status, req_status)
-
-
- status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
-      							'IN-COMPLETE' =>'DC-INCOMPLETE',
-      							'COMPLETE' =>'DC-COMPLETE',
-      							'DUPLICATE' =>'DC-DUPLICATE',
-      							'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
-      							'GRANTED' =>'DC-GRANTED',
-      							'PENDING' => 'DC-PENDING',
-      							'CAN-REPRINT' => 'HQ-CAN-RE-PRINT',
-                    'CAN RE_PRINT' => 'HQ-CAN-RE-PRINT',
-      							'REJECTED' =>'DC-REJECTED'},
-		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
-		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
-		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
-					'CLOSED' =>'HQ-VOIDED'},
-		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
-					'DISPATCHED' =>'HQ-DISPATCHED'},
-		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
-		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
-		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
-		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
-					'RE-APPROVED' =>'HQ-RE-APPROVED',
-					'DC_ASK' =>'DC-ASK',
-					'GRANTED' =>'HQ-GRANTED',
-					'REJECTED' =>'HQ-REJECTED',
-					'COMPLETE' =>'HQ-INCOMPLETE-TBA',
-					'COMPLETE' =>'HQ-COMPLETE',
-					'CAN PRINT' =>'HQ-CAN-PRINT',
-					'CAN REJECT' =>'HQ-CAN-REJECT',
-					'APPROVED' =>'HQ-APPROVED',
-					'TBA-CONFLICT' =>'HQ-CONFLICT',
-					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
-					'CAN VOID' =>'HQ-CAN-VOID',
-					'INCOMPLETE' =>'HQ-INCOMPLETE',
-					'RE-PRINT' =>'HQ-RE-PRINT',
-					'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
-					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
-		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
-
-   s = status[rec_status][req_status] rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
-   return s
-end
 
 def decrypt(value)
     string = $private_key.private_decrypt(Base64.decode64(value)) rescue nil
@@ -371,13 +327,11 @@ def decrypt(value)
 
 end
 
-def build_client_record(records, n)
+def build_client_record(records)
 
     data ={}
 
-    ActiveRecord::Base.transaction do
-    i = 0
-    (records || []).each do |doc|
+    (records || []).each_with_index do |doc, i|
       r = doc["doc"].with_indifferent_access
       data = { person: {duplicate: "", is_exact_duplicate: "",
                relationship: (r[:relationship].blank? ? 'normal' : r[:relationship]),
@@ -550,41 +504,49 @@ def build_client_record(records, n)
                 }
               end
 
-         @results[data[:_id]] = data
-         #transform_record(data)
+        @results[data[:_id]] = data
         i = i + 1
-        if i % 100 == 0
-          puts n + i
+        if (i + 1) % 100 == 0
+          puts (i + 1)
         end
      end
-     records = nil
-    end
-
 end
 
 
-def initiate_migration(records)
-
-	total_records = records.count
-  puts "\n"
-	puts "Completed migration of 1 of 3 batch of records! Please review the log files to verify.."
-	puts "\n"
-end
-
-configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
-
-#`curl -X GET http://root:password@localhost:5984/ebrsmig/_design/Child/_view/all?include_docs=true >> data.json`
+=begin
 records = Oj.load File.read("#{Rails.root}/data.json")
-#records = eval(File.read("#{Rails.root}/#{ARGV[0]}"))
+countries = []
+records['rows'].each_with_index do |doc, i|
+  r = doc["doc"].with_indifferent_access
+  r[:mother] = {} if r[:mother].blank?
+  r[:father] = {} if r[:father].blank?
+  r[:foster_father] = {} if r[:foster_father].blank?
+  r[:foster_mother] = {} if r[:foster_mother].blank?
+  r[:informant] = {} if r[:informant].blank?
 
-records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
+  countries << r[:mother][:citizenship]
+  countries <<  r[:mother][:residential_country]
 
-records['rows'].each_slice(20000).to_a.each_with_index do |block, i|
-  start = i*20000
-	next if i != 7
-  build_client_record(block, start)
+  countries << r[:father][:citizenship]
+  countries <<  r[:father][:residential_country]
+
+  countries << r[:foster_mother][:home_country]
+  countries << r[:foster_mother][:residential_country]
+  countries << r[:foster_mother][:home_country]
+
+  countries << r[:foster_father][:home_country]
+  countries << r[:foster_father][:residential_country]
+  countries << r[:foster_father][:home_country]
+
+  countries << r[:informant][:citizenship]
+  countries <<  r[:informant][:residential_country]
+
+  countries << r[:father][:citizenship]
+  countries <<  r[:father][:residential_country]
+  countries << r[:foster_mother][:home_country]
+
+  puts i if i % 1000 == 0
 end
 
-File.open("7.json", "w+"){|f|
-  f.puts @results
-}
+open("countries.json", 'w'){|f| f.puts countries.uniq.to_json}
+=end
