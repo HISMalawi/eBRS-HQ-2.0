@@ -87,7 +87,7 @@ def log_error(error_msge, content)
       person["birthdate"]= params[:person][:birthdate].to_date.strftime('%Y-%m-%d')
       person["birthdate_estimated"] = params[:person][:birthdate_estimated]
 
-      if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+      if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
          prev_child = Person.find(params[:person][:prev_child_id].to_i)
          if params[:relationship] == "opharned" || params[:relationship] == "adopted"
            mother = prev_child.adoptive_mother
@@ -156,9 +156,9 @@ def log_error(error_msge, content)
         person["mother_home_ta"] = params[:person][:mother][:home_ta] rescue nil
         person["mother_home_village"] = params[:person][:mother][:home_village] rescue nil
 
-        person["mother_current_district"] = params[:person][:mother][:home_district] rescue nil
-        person["mother_current_ta"] = params[:person][:mother][:home_ta] rescue nil
-        person["mother_current_village"] = params[:person][:mother][:home_village] rescue nil
+        person["mother_current_district"] = params[:person][:mother][:current_district] rescue nil
+        person["mother_current_ta"] = params[:person][:mother][:current_ta] rescue nil
+        person["mother_current_village"] = params[:person][:mother][:current_village] rescue nil
 
         person["father_first_name"]= params[:person][:father][:first_name] rescue nil
         person["father_last_name"] =  params[:person][:father][:last_name] rescue nil
@@ -168,9 +168,9 @@ def log_error(error_msge, content)
         person["father_home_ta"] = params[:person][:father][:home_ta] rescue nil
         person["father_home_village"] = params[:person][:father][:home_village] rescue nil
 
-        person["father_current_district"] = params[:person][:father][:home_district] rescue nil
-        person["father_current_ta"] = params[:person][:father][:home_ta] rescue nil
-        person["father_current_village"] = params[:person][:father][:home_village] rescue nil
+        person["father_current_district"] = params[:person][:father][:current_district] rescue nil
+        person["father_current_ta"] = params[:person][:father][:current_ta] rescue nil
+        person["father_current_village"] = params[:person][:father][:current_village] rescue nil
 
       end
       return person
@@ -255,7 +255,9 @@ def save_full_record(params)
         person = PersonService.create_record(params)
 
         if !person.blank?
-            #SimpleElasticSearch.add(person_for_elastic_search(person,params))
+            if SETTINGS['potential_search']
+              SimpleElasticSearch.add(person_for_elastic_search(person,params))
+            end
             assign_identifiers(person.person_id, params)
         end
     end

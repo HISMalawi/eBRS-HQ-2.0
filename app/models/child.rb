@@ -362,6 +362,8 @@ class Child < CouchRest::Model::Base
 
     view :by_updated_at
 
+    view :by_record_status_code_and_request_status_code
+
   end
 
 end
