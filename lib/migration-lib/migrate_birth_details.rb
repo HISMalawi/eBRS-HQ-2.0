@@ -16,16 +16,18 @@ module MigrateBirthDetails
 	        place_of_birth_id = Location.locate_id_by_tag("Other", 'Place of Birth')
 	      end
 
-	      if person[:place_of_birth].squish == 'Home'
+
+	      if (person[:place_of_birth].squish rescue nil) == 'Home'
 	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
 					if district_id.blank?
-						 raise person[:birth_district].inspect
+						district_id = Location.where(name: 'Other').first.location_id
+						other_place_of_birth = "District name not present"
 					end
 	        ta_id = Location.locate_id(person[:birth_ta], 'Traditional Authority', district_id)
 	        village_id = Location.locate_id(person[:birth_village], 'Village', ta_id)
 	        location_id = [village_id, ta_id, district_id].compact.first #Notice the order
 
-	      elsif person[:place_of_birth].squish == 'Hospital'
+	      elsif (person[:place_of_birth].squish rescue nil) == 'Hospital'
 	        map =  {'Mzuzu City' => 'Mzimba',
 	                'Lilongwe City' => 'Lilongwe',
 	                'Zomba City' => 'Zomba',
@@ -51,7 +53,7 @@ module MigrateBirthDetails
 	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
 					if district_id.blank?
 						 location_id = Location.where(name: 'Other').first.location_id
-						 other_place_of_birth = "District not present"						 
+						 other_place_of_birth = "District not present"
 					end
 
 	        location_id = Location.locate_id(hospital_of_birth, 'Health Facility', district_id)
