@@ -367,7 +367,7 @@ def transform_record(data)
       rescue Exception => e
           log_error(e, data)
       end
-      
+
     else
         write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
@@ -455,14 +455,14 @@ def build_client_record(records, n)
 
     data ={}
 
-   
+
    i = 0
    start_time = Time.now
 
-   
+
 
    records.each do |doc|
-      ActiveRecord::Base.transaction do    
+      ActiveRecord::Base.transaction do
           transform_record(doc[1])
           i = i + 1
           if i % 100 == 0
@@ -494,16 +494,16 @@ configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 #count = JSON.parse(` curl -s -X GET http://admin:password@localhost:5984/ebrs_child_hq_2_0/_design/Child/_view/by__id`)["rows"][0]["value"].to_i
 
 #number_of_files = (count / 1000) + (count % 1000 > 0 ? 1 : 0)
-files = Dir.glob(File.expand_path("~/")+"/ebrs_chuncks/*.json").sort
-number_of_files = files.length 
-file_number = 0 
+files = Dir.glob(File.expand_path("~/")+"/ebrs_chunks/*.json").sort
+number_of_files = files.length
+file_number = 5
 last_file_migrated = EbrsMigration.last
-if last_file_migrated.present? 
+if last_file_migrated.present?
   file_number = last_file_migrated.file_number  + 1
 else
   last_file_migrated = EbrsMigration.new
 end
-start_time = nil
+start_time = Time.now
 while file_number < number_of_files
   GC.start
 

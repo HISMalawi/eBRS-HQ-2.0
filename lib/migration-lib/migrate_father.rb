@@ -77,7 +77,7 @@ module MigrateFather
           cur_village_id         = Location.where(:name =>"Other").last.id
           current_village_other  = father[:foreigner_current_village]
       end
-      
+
       home_district_id        = Location.where(:name =>"Other").last.id
       home_ta_id              = Location.where(:name =>"Other").last.id
       home_village_id         = Location.where(:name =>"Other").last.id
