@@ -71,7 +71,7 @@ def log_error(error_msge, content)
  end
 
  def write_csv_content(file, content)
-    CSV.open(file, '+a' ) do |exporter|
+    CSV.open(file, 'a+' ) do |exporter|
         exporter << content
     end
  end
