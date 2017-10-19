@@ -271,6 +271,7 @@ def save_data(r,multiple_person=nil)
    
 	return person
 end
+
 def migrate_record(type, child, multiple_person = nil)
 	person = nil
 	case type
@@ -321,6 +322,7 @@ def migrate_record(type, child, multiple_person = nil)
 	end
 	return person
 end
+
 i = 0
 start_time = Time.now
 CSV.foreach(OTHER_TYPES_OF_BIRTH, :headers => true) do |row|

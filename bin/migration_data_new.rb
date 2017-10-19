@@ -507,8 +507,8 @@ start_time = Time.now
 while file_number < number_of_files
   GC.start
 
-  records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json")))
-
+  records = eval((File.read(File.expand_path("~/")+"/ebrs_chuncks/#{file_number}.json"))) rescue []
+  next if records.blank?
   build_client_record(records, file_number * 1000, )
 
   last_file_migrated.file_number =  file_number
