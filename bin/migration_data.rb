@@ -38,13 +38,9 @@ def write_log(file, content)
 	if !File.exists?(file)
            file = File.new(file, 'w')
     else
-
        File.open(file, 'a') do |f|
           f.puts "#{content}"
-
       end
-
-
     end
 end
 
@@ -246,7 +242,7 @@ end
 
 def save_full_record(params)
 
-    if !['c15af8a55fc177950d8cbd8b11957a31','a1e09ad1136236812eee3b2c6cdcd60b'].include? params[:_id]
+    if !['c15af8a55fc177950d8cbd8b11957a31','a1e09ad1136236812eee3b2c6cdcd60b','d69382e8ea7e6c295ef88d28d69d1430'].include? params[:_id]
         prev = PersonBirthDetail.where(source_id: params[:_id]).first
           return nil if !prev.blank?
 

@@ -36,3 +36,4 @@ app/assets/data/migration_issues/*.csv
 app/assets/data/migration_dumps/*
 app/assets/data/error_log.txt
 data.json
+*.json
