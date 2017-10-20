@@ -1,6 +1,7 @@
 status = [["DC OPEN".soundex, "POTENTIAL DUPLICATE".soundex],["DC OPEN".soundex, "POTENTIAL-DUPLICATE".soundex],["HQ OPEN".soundex,"POTENTIAL DUPLICATE".soundex],["HQ OPEN".soundex,"TBA-POTENTIAL DUPLICATE".soundex],["DUPLICATE".soundex,"VOIDED".soundex]] 
 i = 0
 Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
+		break unless SETTINGS['potential_search']
 		person_details = PersonBirthDetail.where(source_id: child.id).last
 		next if person_details.blank?
 		person = {}

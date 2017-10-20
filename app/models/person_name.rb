@@ -18,8 +18,8 @@ class PersonName < ActiveRecord::Base
   def check_special_chars
       special = "?<>',?[]}{=)(*&^%$#`~{}"
       regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
-      self.first_name = "@@@@@" if (string =~ regex).to_i > 0
-      self.last_name = "@@@@@" if (string =~ regex).to_i > 0
-      self.middle_name = "@@@@@" if (string =~ regex).to_i > 0
+      self.first_name = "@@@@@" if (self.first_name =~ regex).to_i > 0
+      self.last_name = "@@@@@" if (self.last_name =~ regex).to_i > 0
+      self.middle_name = "@@@@@" if (self.middle_name =~ regex).to_i > 0
   end
 end
