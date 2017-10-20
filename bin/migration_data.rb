@@ -261,7 +261,7 @@ def assign_identifiers(person_id, params)
 end
 
 
-def transform_record(data)
+def load_record(data)
 
     case data[:registration_type]
        when "adopted"
@@ -284,12 +284,12 @@ def transform_record(data)
        	if  data[:person][:mother][:first_name].blank? && !data[:person][:father][:first_name].blank?
        		data[:parents_details_available] = "Father"
        	end
-    else
+      else
     end
 
 		#================== Transforming the marriage date and or estimated marriage date iis partly known
 		unless data[:person][:date_of_marriage].blank?
-			   format_date(data[:person][:date_of_marriage])
+      data[:person][:date_of_marriage] = format_date(data[:person][:date_of_marriage])
     end
 
     if data[:person][:type_of_birth]== 'Single'
@@ -300,19 +300,16 @@ def transform_record(data)
 end
 
 def format_date(date)
-	unless date.blank?
-		if date.split("/")[0]  == "?"
-			 estimated_date = date.split("/")
-			 estimated_date[0] = 15
-			 date = estimated_date.join("/")
-		end
-		if date.split("/")[1]  == "?"
-			 estimated_date = date.split("/")
-			 estimated_date[1] = 7
-			 date = estimated_date.join("/")
-		end
-	 end
-	return date
+  if date.present? && date.to_s.include?('?')
+    d, m, y = date.split(/\/|\-/)
+    d = 15 if d.present? && d.to_s.include?("?")
+    m = 7 if m.present? && m.to_s.include?("?")
+    return nil if y.blank? || y.to_s.include?("?")
+
+    return "#{d}/#{m}/#{y}"
+  else
+    return date
+  end
 end
 
 def get_record_status(rec_status, req_status)
@@ -357,7 +354,7 @@ def get_record_status(rec_status, req_status)
 					'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
 		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
 
-   s = status[rec_status][req_status] rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
+   s = status[rec_status][req_status] #rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
    return s
 end
 
@@ -563,27 +560,36 @@ end
 configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
 db = "#{configs['prefix']}_#{configs['suffix']}".gsub(/^\_|\_$/, '')
 put "Using database : #{db}"
+debug = configs['debug']
+
 put "Loading couch data from couchDB"
 puts "curl -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true"
 records = JSON.parse(`curl -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
 
-#records = Oj.load File.read("#{Rails.root}/data.json")
-
 put "Sorting by date approved"
-
 records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
 
 put "Decrypting and formatting records"
-
 build_client_record(records['rows'])
 
 put "Loading data to SQL database"
 i = 0
+@errored = []
+@successful = []
 @results.each do |id, data|
   i += 1
   ActiveRecord::Base.transaction do
-    transform_record(data)
-  end
+		unless debug
+			begin    
+				load_record(data)
+        @successful << id
+			rescue 
+				@errored << data
+			end
+		else
+			load_record(data)
+		end    
+	end
 
   if (i % 100) == 0
     put i
@@ -593,4 +599,7 @@ end
 puts "building data dump for migration"
 `bash build_migrated_data_dump.sql #{Rails.env}`
 
-puts "DUMP location: #{Rails.root}/bare_data.sql"
+puts "DUMP location: #{Rails.root}/bare_data.sql" 
+
+File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
+puts "Total Records: #{records['rows'].count}  Successful: #{@successful.count} Errored : #{@errored.count}  Skipped #{(records['rows'].count - (@successful.count + @errored.count))}"
