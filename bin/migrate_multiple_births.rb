@@ -1,84 +1,9 @@
-require "csv"
-require'migration-lib/migrate_child'
-require 'migration-lib/migrate_mother'
-require 'migration-lib/migrate_father'
-require 'migration-lib/migrate_informant'
-require "migration-lib/migrate_birth_details"
-require 'migration-lib/person_service'
-require "simple_elastic_search"
-require 'json'
-
 User.current = User.last
 
 OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 
-def get_record_status(rec_status, req_status)
-
-
- status = {"DC OPEN" => {'ACTIVE' =>'DC-ACTIVE',
-                    'IN-COMPLETE' =>'DC-INCOMPLETE',
-                    'COMPLETE' =>'DC-COMPLETE',
-                    'DUPLICATE' =>'DC-DUPLICATE',
-                    'POTENTIAL DUPLICATE' =>'DC-POTENTIAL DUPLICATE',
-                    'GRANTED' =>'DC-GRANTED',
-                    'PENDING' => 'DC-PENDING',
-                    'CAN-REPRINT' => 'HQ-CAN-RE-PRINT',
-                    'CAN RE_PRINT' => 'HQ-CAN-RE-PRINT',
-                    'REJECTED' =>'DC-REJECTED'},
-    		"POTENTIAL DUPLICATE" => {'ACTIVE' =>'FC-POTENTIAL DUPLICATE'},
-    		"POTENTIAL-DUPLICATE" =>{'VOIDED'=>'DC-VOIDED'},
-    		"VOIDED" =>{'CLOSED' =>'DC-VOIDED',
-          	'CLOSED' =>'HQ-VOIDED'},
-    		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
-            'DISPATCHED' =>'HQ-DISPATCHED'},
-    		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
-    		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
-    		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
-    		"HQ OPEN" =>{'ACTIVE' =>'HQ-ACTIVE',
-          	'RE-APPROVED' =>'HQ-RE-APPROVED',
-          	'DC_ASK' =>'DC-ASK',
-          	'GRANTED' =>'HQ-GRANTED',
-          	'REJECTED' =>'HQ-REJECTED',
-          	'COMPLETE' =>'HQ-INCOMPLETE-TBA',
-          	'COMPLETE' =>'HQ-COMPLETE',
-          	'CAN PRINT' =>'HQ-CAN-PRINT',
-          	'CAN REJECT' =>'HQ-CAN-REJECT',
-          	'APPROVED' =>'HQ-APPROVED',
-          	'TBA-CONFLICT' =>'HQ-CONFLICT',
-          	'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
-          	'CAN VOID' =>'HQ-CAN-VOID',
-          	'INCOMPLETE' =>'HQ-INCOMPLETE',
-          	'RE-PRINT' =>'HQ-RE-PRINT',
-          	'CAN RE_PRINT' =>'HQ-CAN-RE-PRINT',
-          	'POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE'},
-    		"DUPLICATE" =>{'VOIDED' =>'HQ-VOIDED'}}
-
-   s = status[rec_status][req_status] rescue (raise "rec:  #{rec_status}   ----   req:   #{req_status}    NOT FOUND!".inspect)
-   return s
-end
-
-def log_error(error_msge, content)
-
-    file_path = "#{Rails.root}/log/migration_multiple_error_log.txt"
-    if !File.exists?(file_path)
-           file = File.new(file_path, 'w')
-    else
-
-       File.open(file_path, 'a') do |f|
-          f.puts "#{error_msge} >>>>>> {\"id\" : #{content[:_id]}, \"rev\" : #{content[:_rev]} }"
-
-      end
-    end
-
-end
-
 def save_data(r,multiple_person=nil)
 	person = nil
-
-	return if r.blank?
-	if defined?(r[:last_name]).blank?
-		raise r.inspect
-	end
 
 	data = { person: {duplicate: "", is_exact_duplicate: "",
                relationship: (r[:relationship] rescue "normal"),
@@ -263,10 +188,14 @@ def save_data(r,multiple_person=nil)
 
     puts "#{data[:person][:last_name]} #{data[:person][:first_name]}"
     data[:record_status] = get_record_status(data[:record_status],data[:request_status]).upcase.squish!
-    begin
-    	person = PersonService.create_record(data)
-    rescue Exception => e
-    	log_error(e, data)
+
+    person = PersonService.create_record(data)
+
+    if !person.blank?
+      if SETTINGS['potential_search']
+        SimpleElasticSearch.add(person_for_elastic_search(person,params))
+      end
+      assign_identifiers(person.person_id, params)
     end
    
 	return person
@@ -326,13 +255,26 @@ end
 i = 0
 start_time = Time.now
 CSV.foreach(OTHER_TYPES_OF_BIRTH, :headers => true) do |row|
-	next unless PersonBirthDetail.where(source_id: row[0]).last.blank?
-	child = Child.find(row[0])
-	person = migrate_record(row[1],child)
-	i = i + 1
-	if i % 500 == 0
-		puts "Time interval : #{(Time.now - start_time) /60}"
-	end
-end
+	next if PersonBirthDetail.where(source_id: row[0]).last.present?
 
-puts "Finished in : #{(Time.now - start_time) /60}"
+  ActiveRecord::Base.transaction do
+    unless debug
+      begin
+        child = Child.find(row[0])
+        person = migrate_record(row[1],child)
+
+        @successful << row[0]
+      rescue
+        @errored << child.to_json
+      end
+    else
+      child = Child.find(row[0])
+      migrate_record(row[1],child)
+    end
+  end
+
+  i = i + 1
+  if i % 100 == 0
+    puts "#{i} multiple births migrated"
+  end
+end
