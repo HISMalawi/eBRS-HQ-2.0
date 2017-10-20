@@ -625,7 +625,12 @@ i = 0
 records.each do |id, data|
   i += 1
   ActiveRecord::Base.transaction do
-    transform_record(data)
+    begin
+        transform_record(data)
+    rescue Exception => e
+        log_error(e, data)
+    end
+    
   end
 
   if (i % 100) == 0

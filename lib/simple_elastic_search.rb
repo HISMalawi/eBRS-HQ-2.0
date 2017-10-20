@@ -131,7 +131,7 @@ class SimpleElasticSearch
       precision = SETTING['precision']
     end
     start_time = Time.now
-    query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?size=#{size rescue 10}&from=#{from rescue 0}&pretty=true' -H 'Content-Type: application/json' -d'
+    query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?size=#{size rescue 10}&from=#{from rescue 0}&pretty=true' -H 'Content-Type: application/json' -d'
             {
               \"query\": {
                   \"match\": {
@@ -187,7 +187,7 @@ class SimpleElasticSearch
     potential_duplicates = []
     content =  "#{person["first_name"]} #{person["last_name"]} #{self.format_content(person)}"
     hits.each do |hit|
-      next if hit["_id"].squish ==(person["id"].squish rescue nil)
+      next if hit["_id"].to_s.squish ==(person["id"].to_s.squish rescue nil)
       hit_content = hit["_source"]["content"]
       potential_duplicates <<  hit if WhiteSimilarity.similarity(content, hit_content) >= (precision/100)
     end
@@ -221,7 +221,7 @@ class SimpleElasticSearch
   end
   
   def self.all(type="")
-    find_all = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{type.present? ? type : SETTING['type']}/_search?pretty=true'"
+    find_all = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{type.present? ? type : SETTING['type']}/_search?pretty=true'"
     return JSON.parse(`#{find_all}`)["hits"]["hits"].collect{|hit| hit["_source"].merge({"id" => hit["_id"]})}
   end
 
@@ -233,7 +233,7 @@ class SimpleElasticSearch
       params_keys.each do |key|
         match << {:match => { key => params[key]}}
       end
-      query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
+      query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
               {
                 \"query\": {
                   \"bool\": {
@@ -256,7 +256,7 @@ class SimpleElasticSearch
       params_keys.each do |key|
         match << {:match => { key => params[key]}}
       end
-      query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
+      query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
               {
                 \"query\": {
                   \"bool\": {
@@ -272,7 +272,7 @@ class SimpleElasticSearch
   end
 
   def self.match_all(query_string)
-    query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
+    query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
               {
                 \"query\": {
                   \"match\": {
@@ -285,7 +285,7 @@ class SimpleElasticSearch
   end
 
   def self.match_by_query(query)
-    query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
+    query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'  -d '
               #{query.to_json.to_s}'"
         puts query
         return JSON.parse(`#{query}`)["hits"]["hits"].collect{|hit| hit["_source"].merge({"id" => hit["_id"]})}   
@@ -313,7 +313,7 @@ class SimpleElasticSearch
   end
 
   def self.count
-    query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'"
+    query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?pretty=true'"
     data = JSON.parse(`#{query}`)["hits"]
     return data["total"]
   end

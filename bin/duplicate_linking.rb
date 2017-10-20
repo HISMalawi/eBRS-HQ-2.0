@@ -1,4 +1,5 @@
 status = [["DC OPEN".soundex, "POTENTIAL DUPLICATE".soundex],["DC OPEN".soundex, "POTENTIAL-DUPLICATE".soundex],["HQ OPEN".soundex,"POTENTIAL DUPLICATE".soundex],["HQ OPEN".soundex,"TBA-POTENTIAL DUPLICATE".soundex],["DUPLICATE".soundex,"VOIDED".soundex]] 
+i = 0
 Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
 		person_details = PersonBirthDetail.where(source_id: child.id).last
 		next if person_details.blank?
@@ -39,8 +40,9 @@ Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
         person["father_current_village"] = child.father.current_village rescue ""
 
         @results = []
+
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision']) 
-            
+	
         duplicates.each do |dup|
             next if DuplicateRecord.where(person_id: person['id']).present?
             @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank? 
@@ -53,6 +55,10 @@ Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
                     potential_duplicate.create_duplicate(result["_id"])
                  end
            end
-        end 
-	puts "#{child.first_name} #{child.last_name} #{child.potentialduplicate}"
+        end
+
+        i = i + 1
+        if i % 5
+        	puts "Linked #{i} duplicates"
+        end
 end
