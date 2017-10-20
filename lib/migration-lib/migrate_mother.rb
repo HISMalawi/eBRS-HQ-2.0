@@ -1,8 +1,8 @@
 module MigrateMother
 	def self.new_mother(person, params,mother_type)
-
+      begin
       mother_person = nil
-	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth])
+	  if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth],params)
 	      mother_person = Person.find(params[:person][:prev_child_id]).mother
       else
 	        if mother_type =="Adoptive-Mother"
@@ -19,7 +19,7 @@ module MigrateMother
 	            :created_at         => params[:person][:created_at].to_date.to_s,
 	            :updated_at         => params[:person][:updated_at].to_date.to_s
 	        )
-	      
+
 	        mother[:citizenship] = 'Malawian' if mother[:citizenship].blank?
 	        mother[:residential_country] = 'Malawi' if mother[:residential_country].blank?
 
@@ -41,7 +41,7 @@ module MigrateMother
 	            :created_at         => params[:person][:created_at].to_date.to_s,
 	            :updated_at         => params[:person][:updated_at].to_date.to_s
 	        )
-	      
+
 		      current_district_id        = Location.where(:name =>"Other").last.id
 		      current_ta_id              = Location.where(:name =>"Other").last.id
 		      current_village_id         = Location.where(:name =>"Other").last.id
@@ -79,7 +79,7 @@ module MigrateMother
 		          cur_village_id         = Location.where(:name =>"Other").last.id
 		          current_village_other  = mother[:foreigner_current_village]
 		      end
-		      
+
 		      home_district_id        = Location.where(:name =>"Other").last.id
 		      home_ta_id              = Location.where(:name =>"Other").last.id
 		      home_village_id         = Location.where(:name =>"Other").last.id
@@ -115,11 +115,11 @@ module MigrateMother
 		          home_village_id = Location.where(:name =>"Other").last.id
 		          home_village_other  = mother[:foreigner_home_village]
 		      end
-	        
+
 	        citizenship = MigrateChild.search_citizenship(mother[:citizenship].squish)
 	        residential_country = MigrateChild.search_citizenship(mother[:residential_country].squish)
 
-	      begin
+
 	      	person_address = PersonAddress.create(
 	            :person_id          => core_person.id,
 	            :current_district   => cur_district_id,
@@ -143,9 +143,7 @@ module MigrateMother
 	            :created_at         => params[:person][:created_at].to_date.to_s,
 	            :updated_at         => params[:person][:updated_at].to_date.to_s
 	        )
-	      rescue Exception => e
-	      		raise mother.inspect
-	      end
+
 
 
 	    end
@@ -158,7 +156,9 @@ module MigrateMother
 	              updated_at: params[:person][:updated_at].to_date.to_s
 	      )
 	    end
-
+		rescue Exception => e
+				raise "#{e.message} >>>>>>>>>>>>>>>>>>>> #{params}".inspect
+		end
 
 	    mother_person
 	end

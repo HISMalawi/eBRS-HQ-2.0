@@ -1,6 +1,6 @@
 module MigrateBirthDetails
 	def self.new_birth_details(person, params)
-	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
 	      return self.birth_details_multiple(person,params)
 	    end
 	    person_id = person.id; place_of_birth_id = nil; location_id = nil; other_place_of_birth = nil
@@ -16,13 +16,18 @@ module MigrateBirthDetails
 	        place_of_birth_id = Location.locate_id_by_tag("Other", 'Place of Birth')
 	      end
 
-	      if person[:place_of_birth] == 'Home'
+
+	      if (person[:place_of_birth].squish rescue nil) == 'Home'
 	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
+					if district_id.blank?
+						district_id = Location.where(name: 'Other').first.location_id
+						other_place_of_birth = "District name not present"
+					end
 	        ta_id = Location.locate_id(person[:birth_ta], 'Traditional Authority', district_id)
 	        village_id = Location.locate_id(person[:birth_village], 'Village', ta_id)
 	        location_id = [village_id, ta_id, district_id].compact.first #Notice the order
 
-	      elsif person[:place_of_birth] == 'Hospital'
+	      elsif (person[:place_of_birth].squish rescue nil) == 'Hospital'
 	        map =  {'Mzuzu City' => 'Mzimba',
 	                'Lilongwe City' => 'Lilongwe',
 	                'Zomba City' => 'Zomba',
@@ -30,8 +35,28 @@ module MigrateBirthDetails
 
 	        person[:birth_district] = map[person[:birth_district]] if person[:birth_district].match(/City$/)
 
+         if !person[:hospital_of_birth].blank?
+					  hospital_of_birth = person[:hospital_of_birth].squish
+				 else
+					 location_id = Location.where(name: 'Other').first.location_id
+					 other_place_of_birth = "Hospital of birth name not present"
+				 end
+
+					if ['Blanytre','Blantyr'].include? person[:birth_district].squish
+            person[:birth_district] = 'Blantyre'
+					end
+
+					if ['Nkhata-bay'].include? person[:birth_district].squish
+						person[:birth_district] = 'Nkhata bay'
+					end
+
 	        district_id = Location.locate_id_by_tag(person[:birth_district], 'District')
-	        location_id = Location.locate_id(person[:hospital_of_birth], 'Health Facility', district_id)
+					if district_id.blank?
+						 location_id = Location.where(name: 'Other').first.location_id
+						 other_place_of_birth = "District not present"
+					end
+
+	        location_id = Location.locate_id(hospital_of_birth, 'Health Facility', district_id)
 
 	        location_id = [location_id, district_id].compact.first
 
@@ -39,7 +64,9 @@ module MigrateBirthDetails
 	        location_id = Location.where(name: 'Other').last.id #Location.locate_id_by_tag(person[:birth_district], 'District')
 	        other_place_of_birth = params[:other_birth_place_details]
 	      end
+
 	    end
+
 
 	    reg_type = SETTINGS['application_mode'] =='FC' ? BirthRegistrationType.where(name: 'Normal').first.birth_registration_type_id :
 	        BirthRegistrationType.where(name: params[:person][:relationship]).last.birth_registration_type_id
@@ -75,6 +102,7 @@ module MigrateBirthDetails
 	   	level = nil
 	  	level = "DC" if params[:district_code].present?
 	  	level = "FC" if params[:facility_code].present?
+
 
 		district_of_birth_id = nil
 		if !params[:person][:birth_district].blank?
@@ -115,19 +143,19 @@ module MigrateBirthDetails
 	        court_order_attached:                     (person[:court_order_attached] == 'Yes' ? 1 : 0),
 	        parents_signed:                           (person[:parents_signed] == 'Yes' ? 1 : 0),
 	        form_signed:                              (person[:form_signed] == 'Yes' ? 1 : 0),
-          district_id_number:                       params[:person][:new_district_id_number],
-          facility_serial_number:                   params[:person][:facility_serial_number],
+            district_id_number:                       params[:person][:new_district_id_number],
+            facility_serial_number:                   params[:person][:facility_serial_number],
 	        informant_designation:                    (params[:person][:informant][:designation].present? ? params[:person][:informant][:designation].to_s : nil),
 	        informant_relationship_to_person:         rel,
 	        other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
-          source_id:                                params[:_id],
+            source_id:                                params[:_id],
 	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
           date_registered:                          (person[:date_registered].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,
 	        updated_at:                               params[:person][:updated_at].to_date.to_s,
-	        level: 									  level
+	        level: 									                  level
 	    )
 
 	    return details

@@ -1,6 +1,6 @@
 module MigrateFather
   def self.new_father(person, params, father_type)
-    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
       father_person = Person.find(params[:person][:prev_child_id]).father
     else
       if father_type =="Adoptive-Father"
@@ -77,7 +77,7 @@ module MigrateFather
           cur_village_id         = Location.where(:name =>"Other").last.id
           current_village_other  = father[:foreigner_current_village]
       end
-      
+
       home_district_id        = Location.where(:name =>"Other").last.id
       home_ta_id              = Location.where(:name =>"Other").last.id
       home_village_id         = Location.where(:name =>"Other").last.id

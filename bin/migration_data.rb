@@ -1,3 +1,4 @@
+require "csv"
 require'migration-lib/migrate_child'
 require 'migration-lib/migrate_mother'
 require 'migration-lib/migrate_father'
@@ -14,6 +15,7 @@ require 'json'
 @failed_to_save = "#{Rails.root}/app/assets/data/failed_to_save.txt"
 @suspected = "#{Rails.root}/app/assets/data/suspected.txt"
 @analysis = "#{Rails.root}/app/assets/data/analysis.txt"
+OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 @results = {}
 
 User.current = User.last
@@ -36,13 +38,9 @@ def write_log(file, content)
 	if !File.exists?(file)
            file = File.new(file, 'w')
     else
-
        File.open(file, 'a') do |f|
           f.puts "#{content}"
-
       end
-
-
     end
 end
 
@@ -62,6 +60,18 @@ def log_error(error_msge, content)
 
  end
 
+ def write_csv_header(file, header)
+    CSV.open(file, 'w' ) do |exporter|
+        exporter << header
+    end
+ end
+
+ def write_csv_content(file, content)
+    CSV.open(file, 'a+' ) do |exporter|
+        exporter << content
+    end
+ end
+
  def person_for_elastic_search(core_person,params)
 
       person = {}
@@ -73,7 +83,7 @@ def log_error(error_msge, content)
       person["birthdate"]= params[:person][:birthdate].to_date.strftime('%Y-%m-%d')
       person["birthdate_estimated"] = params[:person][:birthdate_estimated]
 
-      if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s)
+      if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
          prev_child = Person.find(params[:person][:prev_child_id].to_i)
          if params[:relationship] == "opharned" || params[:relationship] == "adopted"
            mother = prev_child.adoptive_mother
@@ -142,9 +152,9 @@ def log_error(error_msge, content)
         person["mother_home_ta"] = params[:person][:mother][:home_ta] rescue nil
         person["mother_home_village"] = params[:person][:mother][:home_village] rescue nil
 
-        person["mother_current_district"] = params[:person][:mother][:home_district] rescue nil
-        person["mother_current_ta"] = params[:person][:mother][:home_ta] rescue nil
-        person["mother_current_village"] = params[:person][:mother][:home_village] rescue nil
+        person["mother_current_district"] = params[:person][:mother][:current_district] rescue nil
+        person["mother_current_ta"] = params[:person][:mother][:current_ta] rescue nil
+        person["mother_current_village"] = params[:person][:mother][:current_village] rescue nil
 
         person["father_first_name"]= params[:person][:father][:first_name] rescue nil
         person["father_last_name"] =  params[:person][:father][:last_name] rescue nil
@@ -154,9 +164,9 @@ def log_error(error_msge, content)
         person["father_home_ta"] = params[:person][:father][:home_ta] rescue nil
         person["father_home_village"] = params[:person][:father][:home_village] rescue nil
 
-        person["father_current_district"] = params[:person][:father][:home_district] rescue nil
-        person["father_current_ta"] = params[:person][:father][:home_ta] rescue nil
-        person["father_current_village"] = params[:person][:father][:home_village] rescue nil
+        person["father_current_district"] = params[:person][:father][:current_district] rescue nil
+        person["father_current_ta"] = params[:person][:father][:current_ta] rescue nil
+        person["father_current_village"] = params[:person][:father][:current_village] rescue nil
 
       end
       return person
@@ -235,13 +245,16 @@ def save_full_record(params)
   prev = PersonBirthDetail.where(source_id: params[:_id]).first
   return nil if !prev.blank?
 
-  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue (
-    raise "#{params[:record_status]} --- #{params[:request_status]}").to_s
+  params[:record_status] = get_record_status(params[:record_status],params[:request_status]).upcase.squish!
   person = PersonService.create_record(params)
 
-  if !person.blank?
-    #SimpleElasticSearch.add(person_for_elastic_search(person,params))
+  if person.present?
+    if SETTINGS['potential_search']
+      SimpleElasticSearch.add(person_for_elastic_search(person,params))
+    end
     assign_identifiers(person.person_id, params)
+  else
+    raise "no person created".inspect
   end
 end
 
@@ -294,8 +307,8 @@ def load_record(data)
 
     if data[:person][:type_of_birth]== 'Single'
         save_full_record(data)
-    else
-
+    elses
+        write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
 end
 
@@ -564,7 +577,7 @@ debug = configs['debug']
 
 put "Loading couch data from couchDB"
 puts "curl -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true"
-records = JSON.parse(`curl -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
+records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
 
 put "Sorting by date approved"
 records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
@@ -573,9 +586,14 @@ put "Decrypting and formatting records"
 build_client_record(records['rows'])
 
 put "Loading data to SQL database"
+
+write_csv_header(OTHER_TYPES_OF_BIRTH, ["Couch ID","Type of Birth"])
+
 i = 0
 @errored = []
 @successful = []
+
+puts "Migrating Single births"
 @results.each do |id, data|
   i += 1
   ActiveRecord::Base.transaction do
@@ -596,6 +614,9 @@ i = 0
   end
 end
 
+puts "Migrating multiple births"
+load "#{Rails.root}/bin/migrate_multiple_births.rb"
+
 puts "building data dump for migration"
 `bash build_migrated_data_dump.sql #{Rails.env}`
 
@@ -603,3 +624,4 @@ puts "DUMP location: #{Rails.root}/bare_data.sql"
 
 File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
 puts "Total Records: #{records['rows'].count}  Successful: #{@successful.count} Errored : #{@errored.count}  Skipped #{(records['rows'].count - (@successful.count + @errored.count))}"
+
