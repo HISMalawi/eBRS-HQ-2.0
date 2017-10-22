@@ -1,6 +1,6 @@
 User.current = User.last
-
-OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
+configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
+debug = configs['debug']
 
 def save_data(r,multiple_person=nil)
 	person = nil
