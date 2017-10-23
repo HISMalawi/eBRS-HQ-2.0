@@ -143,8 +143,8 @@ module MigrateBirthDetails
 	        court_order_attached:                     (person[:court_order_attached] == 'Yes' ? 1 : 0),
 	        parents_signed:                           (person[:parents_signed] == 'Yes' ? 1 : 0),
 	        form_signed:                              (person[:form_signed] == 'Yes' ? 1 : 0),
-            district_id_number:                       params[:person][:new_district_id_number],
-            facility_serial_number:                   params[:person][:facility_serial_number],
+          district_id_number:                       params[:person][:new_district_id_number],
+          facility_serial_number:                   params[:person][:facility_serial_number],
 	        informant_designation:                    (params[:person][:informant][:designation].present? ? params[:person][:informant][:designation].to_s : nil),
 	        informant_relationship_to_person:         rel,
 	        other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
@@ -166,7 +166,6 @@ module MigrateBirthDetails
 
 	    prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
 
-	    begin
 	    prev_details_keys = prev_details.attributes.keys
 	    exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id"]
 	    prev_details_keys = prev_details_keys - exclude_these
@@ -182,14 +181,9 @@ module MigrateBirthDetails
 
 	    prev_details_keys.each do |field|
 	        details[field] = prev_details[field]
-	    end
+      end
+
 	    details.save!
-
-	    rescue StandardError =>e
-
-	      MigrateChild.log_error(e.message,person)
-
-	    end
 
 	    return details
 	end
