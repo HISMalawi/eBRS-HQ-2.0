@@ -211,6 +211,7 @@ def migrate_record(type, child, multiple_person = nil)
 			if twin.blank?
 				first_twin = Child.find(child.multiple_birth_id)
 				twin = migrate_record("Twin",first_twin)
+        person = save_data(child,twin) 
 			else
 				person = save_data(child, Person.find(twin.person_id)) 
 			end
@@ -225,7 +226,8 @@ def migrate_record(type, child, multiple_person = nil)
 			triplet =  PersonBirthDetail.where(source_id: child.multiple_birth_id).last
 			if triplet.blank?
 				first_triplet = Child.find(child.multiple_birth_id )
-				triplet = migrate_record("Triplet",first_triplet) 
+				triplet = migrate_record("Triplet",first_triplet)
+        person = save_data(child,triplet) 
 			else
 				person = save_data(child, Person.find(triplet.person_id)) 
 			end
@@ -236,8 +238,9 @@ def migrate_record(type, child, multiple_person = nil)
 		if defined?(child.multiple_birth_id).present? && child.multiple_birth_id.present?			
 			triplet =  PersonBirthDetail.where(source_id: child.multiple_birth_id).last
 			if triplet.blank?
-				second_triplet = Child.find(child.multiple_birth_id )
-				triplet = migrate_record("Second Triplet",second_triplet) 
+				second_triplet = Child.find(child.multiple_birth_id)
+				triplet = migrate_record("Second Triplet",second_triplet)
+        person = save_data(child,triplet) 
 			else
 				person = save_data(child, Person.find(triplet.person_id)) 
 			end
