@@ -1,5 +1,6 @@
 protocol: http
 location_id: 356 #default 356 for Lilongwe
+migration_mode: DC # FC/DC
 enable_role_privileges: true #ly works when in development mode
 duplicate_precision: 80
 potential_search: false

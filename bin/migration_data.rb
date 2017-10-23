@@ -28,6 +28,7 @@ $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
 $index = {}
+@location = Location.find(SETTINGS['location_id'])
 
 if password.blank? || $private_key.blank?
   raise "Invalid Decryption Key".inspect
@@ -171,74 +172,6 @@ def log_error(error_msge, content)
       end
       return person
  end
-
- def pre_migration_check(params)
-
-	  if params[:person][:created_by].blank?
-        content = "#{params[:_id]},#{params[:person][:created_at]},#{params[:person][:created_by]},#{params[:person][:approved]},#{params[:person][:approved_by]}"
-        write_log(@missing_doc_creator, content)
-      end
-
-      if ["Second Twin","Second Triplet","Third Triplet"].include? params[:person][:type_of_birth]
-        if params[:person][:multiple_birth_id].blank?
-         content = "#{params[:_id]},#{params[:person][:multiple_birth_id]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_multiple_birth_ids, content)
-        end
-      end
-
-	  if params[:person][:type_of_birth].blank?
-        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-        write_log(@missing_birth_type, content)
-      end
-
-        status = get_record_status(params[:record_status],params[:request_status]).upcase.squish! rescue nil
-	  if  status.blank?
-        content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:record_status]},#{params[:request_status]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-        write_log(@missing_record_statuses, content)
-      end
-
-      if verify_location("Mother", "TA", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_ta]},#{params[:person][:mother][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_tas, content)
-      end
-
-      if verify_location("Mother", "Village", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_village]},#{params[:person][:mother][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_villages, content)
-      end
-
-      if verify_location("Mother", "District", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:home_district]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_districts, content)
-      end
-
-      if verify_location("Mother", "Citizenship", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:mother][:citizenship]},#{params[:person][:mother][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_citizenships, content)
-      end
-
-      if verify_location("Father", "TA", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_ta]},#{params[:person][:father][:home_district]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_tas, content)
-      end
-
-      if verify_location("Father", "Village", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_village]},#{params[:person][:father][:home_ta]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_villages, content)
-      end
-
-      if verify_location("Father", "District", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:home_district]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_districts, content)
-      end
-
-      if verify_location("Father", "Citizenship", params) == false
-      	 content = "#{params[:_id]},#{params[:person][:type_of_birth]},#{params[:person][:father][:citizenship]},#{params[:person][:father][:residential_country]},#{params[:person][:created_at]},#{params[:person][:created_by]}"
-         write_log(@missing_citizenships, content)
-      end
-
-end
-
 
 def save_full_record(params)
 
@@ -386,6 +319,11 @@ def build_client_record(records)
 
   (records || []).each_with_index do |doc, i|
     r = doc["doc"].with_indifferent_access
+
+    if SETTINGS['migration_mode'] == 'FC'
+      next if r[:facility_serial_number].blank? && !r[:facility_serial_number].strip.match(/P5#{@location.code}/)
+    end
+
     data = { person: {duplicate: "", is_exact_duplicate: "",
                       relationship: (r[:relationship].blank? ? 'normal' : r[:relationship]),
                       last_name: decrypt(r[:last_name]),
