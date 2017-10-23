@@ -18,7 +18,13 @@ require 'json'
 OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 @results = {}
 
-User.current = User.last
+user = User.where(username: "admin#{SETTINGS['location_id']}").last
+
+if user.blank?
+  user = create_user
+end
+
+User.current = user
 
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
@@ -211,6 +217,35 @@ def assign_identifiers(person_id, params)
     end
 end
 
+def create_user
+  puts "Creating User"
+
+  person_type = PersonType.where(name: 'User').first
+  core_person = CorePerson.create!(person_type_id: person_type.id)
+  person_name = PersonName.create!(person_id: core_person.person_id,
+                                   first_name: 'System',
+                                   last_name: 'Admin')
+
+  person_name_code = PersonNameCode.create!(person_name_id: person_name.person_name_id,
+                                            first_name_code: 'System'.soundex,
+                                            last_name_code: 'Admin'.soundex )
+
+  role = Role.where(role: 'Administrator', :level => 'HQ').first
+
+  user = User.create!(username: "admin#{SETTINGS['location_id']}",
+                      password_hash: 'adminebrs',
+                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
+                      person_id: core_person.person_id)
+
+  UserRole.create!(user_id: user.id,
+                   role_id: role.id)
+
+  User.current = User.first
+
+  puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
+
+  return user
+end
 
 def load_record(data)
 
@@ -561,10 +596,14 @@ end
 puts "Migrating multiple births"
 load "#{Rails.root}/bin/migrate_multiple_births.rb"
 
-puts "building data dump for migration"
-`bash build_migrated_data_dump.sql #{Rails.env}`
+name = @location.name.gsub(/\s+/, '_')
+dump_name = "#{name}_#{SETTINGS['migration_mode']}.sql"
 
-puts "DUMP location: #{Rails.root}/bare_data.sql" 
+puts "building data dump for migration"
+`bash build_migrated_data_dump.sql #{Rails.env} #{dump_name}`
+
+
+puts "DUMP location: #{Rails.root}/#{dump_name}"
 
 File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
 puts "Total Records: #{@results.keys.count}  Successful: #{@successful.count} Errored : #{@errored.count}"
