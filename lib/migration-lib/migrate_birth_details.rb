@@ -1,5 +1,7 @@
 module MigrateBirthDetails
 	def self.new_birth_details(person, params)
+      flagged = 0
+
 	    if MigrateChild.is_twin_or_triplet(params[:person][:type_of_birth].to_s,params)
 	      return self.birth_details_multiple(person,params)
 	    end
@@ -87,6 +89,7 @@ module MigrateBirthDetails
 
 	    else
 	      type_of_birth_id = PersonTypeOfBirth.where(name:  'Single').last.id
+        flagged = 1
 	    end
 
 
@@ -149,6 +152,7 @@ module MigrateBirthDetails
 	        acknowledgement_of_receipt_date:          (person[:acknowledgement_of_receipt_date].to_date rescue nil),
 	        location_created_at:                      SETTINGS['location_id'],
           source_id:                                params[:_id],
+          flagged:                                  flagged,
 	        date_reported:                            (person[:acknowledgement_of_receipt_date].to_date rescue nil),
           date_registered:                          (person[:date_registered].to_date rescue nil),
 	        created_at:                               params[:person][:created_at].to_date.to_s,
@@ -171,6 +175,7 @@ module MigrateBirthDetails
 
 	    details = PersonBirthDetail.new
 	    details["person_id"] = person.id
+      details["source_id"] = params['_id']
 	    details["birth_weight"] = params[:person][:birth_weight]
 
 	    type_of_birth_id = PersonTypeOfBirth.where(name: params[:person][:type_of_birth]).last.id
@@ -180,10 +185,6 @@ module MigrateBirthDetails
 
 	    prev_details_keys.each do |field|
 	        details[field] = prev_details[field]
-      end
-
-      if PersonTypeOfBirth.find(type_of_birth_id).name == "Single"
-        details['flagged'] = 1
       end
 
 	    details.save!
