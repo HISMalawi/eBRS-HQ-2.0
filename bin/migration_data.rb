@@ -624,5 +624,5 @@ puts "building data dump for migration"
 puts "DUMP location: #{Rails.root}/bare_data.sql" 
 
 File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
-puts "Total Records: #{records['rows'].count}  Successful: #{@successful.count} Errored : #{@errored.count}  Skipped #{(records['rows'].count - (@successful.count + @errored.count))}"
+puts "Total Records: #{records['rows'].count}  Successful: #{@successful.count} Errored : #{@errored.count}"
 

@@ -16,7 +16,7 @@ class PersonName < ActiveRecord::Base
     self.last_name = '@@@@@' if (!self.last_name.blank? && self.last_name.length > 100 rescue true)
   end
   def check_special_chars
-      special = "?<>',?[]}{=)(*&^%$#`~{}"
+      special = "?<>?[]}{=)(*&^%$#`~{}"
       regex = /[#{special.gsub(/./){|char| "\\#{char}"}}]/
       self.first_name = "@@@@@" if (self.first_name =~ regex).to_i > 0
       self.last_name = "@@@@@" if (self.last_name =~ regex).to_i > 0
