@@ -307,7 +307,7 @@ def load_record(data)
 
     if data[:person][:type_of_birth]== 'Single'
         save_full_record(data)
-    elses
+    else
         write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
 end
@@ -601,7 +601,8 @@ puts "Migrating Single births"
 			begin    
 				load_record(data)
         @successful << id
-			rescue 
+      rescue  => e
+        puts e.inspect
 				@errored << data
 			end
 		else
