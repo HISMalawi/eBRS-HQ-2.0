@@ -29,6 +29,11 @@ $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number'
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
 $index = {}
 @location = Location.find(SETTINGS['location_id'])
+puts "MIGRATION MODE:  #{SETTINGS['migration_mode']}"
+puts "LOCATION: #{@location.name}; LOCATION CODE: #{@location.code}"
+
+raise "Missing Migration Mode" if SETTINGS['migration_mode'].blank?
+raise "Missing Location Code" if @location.code.blank?
 
 if password.blank? || $private_key.blank?
   raise "Invalid Decryption Key".inspect
