@@ -175,7 +175,7 @@ module MigrateBirthDetails
 
 	    details = PersonBirthDetail.new
 	    details["person_id"] = person.id
-      	details["source_id"] = params['_id']
+      	details["source_id"] = params[:_id]
 	    details["birth_weight"] = params[:person][:birth_weight]
 
 	    type_of_birth_id = PersonTypeOfBirth.where(name: params[:person][:type_of_birth]).last.id
