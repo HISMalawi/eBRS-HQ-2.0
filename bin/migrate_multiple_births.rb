@@ -265,7 +265,7 @@ CSV.foreach(OTHER_TYPES_OF_BIRTH, :headers => true) do |row|
 
         @successful << row[0]
       rescue
-        @errored << child.to_json
+        @errored << child
       end
     else
       child = Child.find(row[0])
