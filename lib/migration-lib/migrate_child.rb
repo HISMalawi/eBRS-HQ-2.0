@@ -214,7 +214,7 @@ def self.is_twin_or_triplet(type_of_birth,params)
       return response
     end
 
-    if ["second twin","second triplet","third triplet"].include?(type_of_birth.downcase)
+    if ["second twin","second triplet","third triplet"].include?(type_of_birth.downcase.strip)
         if params[:person][:multiple_birth_id].present?
           response = true
         end

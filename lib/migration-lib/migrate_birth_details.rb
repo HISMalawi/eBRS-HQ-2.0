@@ -165,7 +165,8 @@ module MigrateBirthDetails
 	    prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
 
 	    prev_details_keys = prev_details.attributes.keys
-	    exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id"]
+	    exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id", "source_id",
+                       "facility_serial_number", 'national_serial_number', 'district_id_number']
 	    prev_details_keys = prev_details_keys - exclude_these
 
 	    details = PersonBirthDetail.new
@@ -179,6 +180,10 @@ module MigrateBirthDetails
 
 	    prev_details_keys.each do |field|
 	        details[field] = prev_details[field]
+      end
+
+      if PersonTypeOfBirth.find(type_of_birth_id).name == "Single"
+        details['flagged'] = 1
       end
 
 	    details.save!
