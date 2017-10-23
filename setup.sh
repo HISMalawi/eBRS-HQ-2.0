@@ -33,8 +33,8 @@ COUCH_PORT=`ruby -ryaml -e "puts YAML::load_file('config/couchdb.yml')['${ENV}']
 echo 'DROPING DATABASES'
 bundle exec rake db:drop
 
-curl -X DELETE $COUCH_PROTOCOL://$COUCH_USER:$COUCH_PASSWORD@$COUCH_HOST:$COUCH_PORT/$PREFIX$UNDERSCORE$SUFFIX
-curl -X PUT $COUCH_PROTOCOL://$COUCH_USER:$COUCH_PASSWORD@$COUCH_HOST:$COUCH_PORT/$PREFIX$UNDERSCORE$SUFFIX
+#curl -X DELETE $COUCH_PROTOCOL://$COUCH_USER:$COUCH_PASSWORD@$COUCH_HOST:$COUCH_PORT/$PREFIX$UNDERSCORE$SUFFIX
+#curl -X PUT $COUCH_PROTOCOL://$COUCH_USER:$COUCH_PASSWORD@$COUCH_HOST:$COUCH_PORT/$PREFIX$UNDERSCORE$SUFFIX
 
 ESPROTOCOL=`ruby -ryaml -e "puts YAML::load_file('config/elasticsearchsetting.yml')['elasticsearch']['protocol']"`
 ESHOST=`ruby -ryaml -e "puts YAML::load_file('config/elasticsearchsetting.yml')['elasticsearch']['host']"`

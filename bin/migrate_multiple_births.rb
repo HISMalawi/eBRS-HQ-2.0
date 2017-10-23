@@ -186,7 +186,6 @@ def save_data(r,multiple_person=nil)
                 }
     end
 
-    puts "#{data[:person][:last_name]} #{data[:person][:first_name]}"
     data[:record_status] = get_record_status(data[:record_status],data[:request_status]).upcase.squish!
 
     person = PersonService.create_record(data)
@@ -217,7 +216,6 @@ def migrate_record(type, child, multiple_person = nil)
 			end
 			
 		else
-			puts "Multiple ID not present"
 			person = save_data(child)
 		end
 	when "Triplet"
@@ -253,7 +251,6 @@ def migrate_record(type, child, multiple_person = nil)
 end
 
 i = 0
-start_time = Time.now
 CSV.foreach(OTHER_TYPES_OF_BIRTH, :headers => true) do |row|
 	next if PersonBirthDetail.where(source_id: row[0]).last.present?
 
@@ -264,8 +261,9 @@ CSV.foreach(OTHER_TYPES_OF_BIRTH, :headers => true) do |row|
         person = migrate_record(row[1],child)
 
         @successful << row[0]
-      rescue
-        @errored << child.to_json
+      rescue => e
+        puts e
+        @errored << child
       end
     else
       child = Child.find(row[0])
