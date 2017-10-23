@@ -20,6 +20,36 @@ OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.cs
 
 user = User.where(username: "admin#{SETTINGS['location_id']}").last
 
+def create_user
+  puts "Creating User"
+
+  person_type = PersonType.where(name: 'User').first
+  core_person = CorePerson.create!(person_type_id: person_type.id)
+  person_name = PersonName.create!(person_id: core_person.person_id,
+                                   first_name: 'System',
+                                   last_name: 'Admin')
+
+  person_name_code = PersonNameCode.create!(person_name_id: person_name.person_name_id,
+                                            first_name_code: 'System'.soundex,
+                                            last_name_code: 'Admin'.soundex )
+
+  role = Role.where(role: 'Administrator', :level => 'HQ').first
+
+  user = User.create!(username: "admin#{SETTINGS['location_id']}",
+                      password_hash: 'adminebrs',
+                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
+                      person_id: core_person.person_id)
+
+  UserRole.create!(user_id: user.id,
+                   role_id: role.id)
+
+  User.current = User.first
+
+  puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
+
+  return user
+end
+
 if user.blank?
   user = create_user
 end
@@ -34,6 +64,7 @@ $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
 $index = {}
+
 @location = Location.find(SETTINGS['location_id'])
 puts "MIGRATION MODE:  #{SETTINGS['migration_mode']}"
 puts "LOCATION: #{@location.name}; LOCATION CODE: #{@location.code}"
@@ -215,36 +246,6 @@ def assign_identifiers(person_id, params)
     if !params[:person][:facility_serial_number].blank?
       PersonIdentifier.create(value: params[:person][:facility_serial_number], person_id: person_id, person_identifier_type_id: $old_serial_type)
     end
-end
-
-def create_user
-  puts "Creating User"
-
-  person_type = PersonType.where(name: 'User').first
-  core_person = CorePerson.create!(person_type_id: person_type.id)
-  person_name = PersonName.create!(person_id: core_person.person_id,
-                                   first_name: 'System',
-                                   last_name: 'Admin')
-
-  person_name_code = PersonNameCode.create!(person_name_id: person_name.person_name_id,
-                                            first_name_code: 'System'.soundex,
-                                            last_name_code: 'Admin'.soundex )
-
-  role = Role.where(role: 'Administrator', :level => 'HQ').first
-
-  user = User.create!(username: "admin#{SETTINGS['location_id']}",
-                      password_hash: 'adminebrs',
-                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
-                      person_id: core_person.person_id)
-
-  UserRole.create!(user_id: user.id,
-                   role_id: role.id)
-
-  User.current = User.first
-
-  puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
-
-  return user
 end
 
 def load_record(data)
