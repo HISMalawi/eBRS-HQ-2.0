@@ -43,8 +43,6 @@ def create_user
   UserRole.create!(user_id: user.id,
                    role_id: role.id)
 
-  User.current = User.first
-
   puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
 
   return user
@@ -362,7 +360,7 @@ def build_client_record(records)
     r = doc["doc"].with_indifferent_access
 
     if SETTINGS['migration_mode'] == 'FC'
-      next if r[:facility_serial_number].blank? && !r[:facility_serial_number].strip.match(/P5#{@location.code}/)
+      next if r[:facility_serial_number].blank? || (r[:facility_serial_number].present? && !r[:facility_serial_number].strip.match(/P5#{@location.code}/))
     end
 
     data = { person: {duplicate: "", is_exact_duplicate: "",
