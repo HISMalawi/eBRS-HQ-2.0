@@ -11,7 +11,6 @@ module MigrateChild
     #core_person.save
     @rec_count = @rec_count.to_i + 1
     person_id = CorePerson.first.person_id.to_i + @rec_count.to_i
-    begin
     person = Person.create(
         :person_id          => core_person.id,
         :gender             => params[:person][:gender].first,
@@ -28,9 +27,6 @@ module MigrateChild
         :created_at         => params[:person][:created_at].to_date,
         :updated_at         => params[:person][:updated_at].to_date
     )
-   rescue StandardError => e
-      self.log_error(e.message, params)
-   end
     person
   end
 

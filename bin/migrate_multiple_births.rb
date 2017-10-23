@@ -192,9 +192,9 @@ def save_data(r,multiple_person=nil)
 
     if !person.blank?
       if SETTINGS['potential_search']
-        SimpleElasticSearch.add(person_for_elastic_search(person,params))
+        SimpleElasticSearch.add(person_for_elastic_search(person,data))
       end
-      assign_identifiers(person.person_id, params)
+      assign_identifiers(person.person_id, data)
     end
    
 	return person
