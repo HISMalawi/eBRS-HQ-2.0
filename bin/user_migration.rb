@@ -88,6 +88,6 @@ person_id: 1002511,
         user_id: u.id,
         role_id: Role.where(level: level,
                             role: role_name).first.id
-    ) rescue (raise user.inspect)
+    )
   end
 end

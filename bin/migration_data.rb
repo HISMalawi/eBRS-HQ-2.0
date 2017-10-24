@@ -604,8 +604,10 @@ puts "building data dump for migration"
 puts "Migrating Users"
 load "#{Rails.root}/bin/user_migration.rb"
 
+puts "Migrating NPIDs"
+load "#{Rails.root}/bin/npid_migration.rb"
+
 puts "DUMP location: #{Rails.root}/#{dump_name}"
 
 File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
 puts "Total Records: #{@results.keys.count}  Successful: #{@successful.count} Errored : #{@errored.count}"
-
