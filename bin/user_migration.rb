@@ -3,7 +3,7 @@ $database = "#{$configs['prefix']}_local_#{$configs['suffix']}".gsub(/^\_|\_$/, 
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
 $couch_link += "_design/User/_view/all?include_docs=true"
 
-users = JSON.parse(`curl -X GET #{$couch_link}`)
+users = JSON.parse(`curl -s -X GET #{$couch_link}`)
 
 raise " No Users Found".to_s if users.blank?
 
