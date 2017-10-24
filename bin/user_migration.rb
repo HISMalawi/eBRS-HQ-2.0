@@ -42,7 +42,7 @@ person_id: 1002511,
 # created_at: "2017-10-05 13:21:04"
 =end
 
-users['rows'].each do |user|
+(users['rows'] || []).each do |user|
  user = user['doc']
  puts "#{user['_id']}"
  u =  User.where(username: user['_id']).last rescue nil
