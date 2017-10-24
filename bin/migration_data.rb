@@ -595,6 +595,9 @@ end
 puts "Migrating multiple births"
 load "#{Rails.root}/bin/migrate_multiple_births.rb"
 
+puts "Linking duplicates"
+load "#{Rails.root}/bin/duplicates_linking.rb"
+
 name = @location.name.gsub(/\s+/, '_')
 dump_name = "#{name}_#{SETTINGS['migration_mode']}.sql"
 
