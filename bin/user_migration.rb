@@ -5,7 +5,7 @@ $couch_link += "_design/User/_view/all?include_docs=true"
 
 users = JSON.parse(`curl -s -X GET #{$couch_link}`)
 
-raise " No Users Found".to_s if users.blank?
+puts " No Users Found" if users.blank?
 
 =begin
 {"_id"=>"cmponda", "_rev"=>"10-62b438eedf7a8c467fc684361f84ec59",
@@ -59,6 +59,7 @@ person_id: 1002511,
 =end
 
   level = SETTINGS['application_mode']
+  level = SETTINGS['migration_mode'] if level.blank?
   level = 'HQ' if level.blank?
   role_name = user['role']
   role_name = 'Administrator' if role_name == "System Administrator"

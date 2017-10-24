@@ -57,6 +57,8 @@ User.current = user
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
 password = CONFIG["crtkey"] rescue nil
+password = "password" if password.blank?
+
 $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pem"), password)
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
@@ -606,9 +608,6 @@ puts "building data dump for migration"
 
 puts "Migrating Users"
 load "#{Rails.root}/bin/user_migration.rb"
-
-puts "Migrating NPIDs"
-load "#{Rails.root}/bin/npid_migration.rb"
 
 puts "DUMP location: #{Rails.root}/#{dump_name}"
 

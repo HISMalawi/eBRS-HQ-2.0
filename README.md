@@ -34,7 +34,7 @@ MIGRATION PROCESS - DC
 
 1. Using the same couchdb database, changes will be made only in settings.yml
 	  	
-2. In settings.yml, change location_id to be get location_id of district e.g 261 for Machinga
+2. In settings.yml, change location_id to location_id of district e.g 261 for Machinga
 	
 3. In settings.yml, also change migration_mode to 'DC'
 
