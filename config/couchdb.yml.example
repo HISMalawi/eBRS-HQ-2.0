@@ -6,6 +6,7 @@ development: &development
   suffix: hq_development
   username: admin
   password: password
+	crtkey: password
 test:
   <<: *development
   suffix: test
@@ -19,11 +20,11 @@ production:
 #Only when migrating from EBRS 1 to 2
 user_migration:
   <<: *development
-  prefix: ebrsmig
+  prefix: 
   suffix:
 
 npid_migration:
   <<: *development
-  prefix: ebrsmig
+  prefix:
   suffix:
 
