@@ -3,7 +3,7 @@ $database = "#{$configs['prefix']}_local_#{$configs['suffix']}".gsub(/^\_|\_$/, 
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
 $couch_link += "_design/User/_view/all?include_docs=true"
 
-users = JSON.parse(`curl -X GET #{$couch_link}`)
+users = JSON.parse(`curl -s -X GET #{$couch_link}`)
 
 raise " No Users Found".to_s if users.blank?
 
@@ -42,7 +42,7 @@ person_id: 1002511,
 # created_at: "2017-10-05 13:21:04"
 =end
 
-users['rows'].each do |user|
+(users['rows'] || []).each do |user|
  user = user['doc']
  puts "#{user['_id']}"
  u =  User.where(username: user['_id']).last rescue nil
@@ -88,6 +88,6 @@ users['rows'].each do |user|
         user_id: u.id,
         role_id: Role.where(level: level,
                             role: role_name).first.id
-    ) rescue (raise user.inspect)
+    )
   end
 end
