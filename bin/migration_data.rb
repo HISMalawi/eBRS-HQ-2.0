@@ -350,7 +350,7 @@ def decrypt(value)
 
   return value if string.nil?
 
-  return string
+  return string.strip
 
 end
 
