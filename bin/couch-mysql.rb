@@ -116,9 +116,12 @@ end
 
 seq = `mysql -u #{mysql_username} -p#{mysql_password} -h#{mysql_host} #{mysql_db} -e 'SELECT seq FROM couchdb_sequence LIMIT 1'`.split("\n").last rescue nil
 
+
 seq = 0 if seq.blank?
 
-changes_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=100&since=#{seq}"
+puts "Since: #{seq}"
+
+changes_link = "#{couch_protocol}://#{couch_username}:#{couch_password}@#{couch_host}:#{couch_port}/#{couch_db}/_changes?include_docs=true&limit=1000&since=#{seq}"
 
 data = JSON.parse(`curl -s -X GET #{changes_link}`)  #rescue {}
 puts "#{data['results'].length} found" if data['results'].present?
