@@ -396,6 +396,7 @@ def build_client_record(records)
                       foster_mother: {},
                       foster_father: {},
                       form_signed: r[:form_signed],
+                      date_registered: r[:date_registered],
                       acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
     },
              home_address_same_as_physical: "Yes",
