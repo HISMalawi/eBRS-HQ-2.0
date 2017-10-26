@@ -331,7 +331,7 @@ def get_record_status(rec_status, req_status)
 					'COMPLETE' =>'HQ-COMPLETE',
 					'CAN PRINT' =>'HQ-CAN-PRINT',
 					'CAN REJECT' =>'HQ-CAN-REJECT',
-					'APPROVED' =>'HQ-APPROVED',
+					'APPROVED' =>'HQ-COMPLETE',
 					'TBA-CONFLICT' =>'HQ-CONFLICT',
 					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
 					'CAN VOID' =>'HQ-CAN-VOID',
