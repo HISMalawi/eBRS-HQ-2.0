@@ -269,7 +269,7 @@ class PersonController < ApplicationController
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
-                  "Date Reported" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date of Reporting" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
                   "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
                   ["Delayed Registration", "sub"] => "#{@delayed}"
               }
@@ -1180,8 +1180,6 @@ class PersonController < ApplicationController
                           WHERE l.parent_location = #{site_id}") || []).each {|l|
           locations << l.location_id
         }
-
-        puts locations
 
         reported = PersonBirthDetail.find_by_sql(
             "SELECT count(*) c FROM person_birth_details WHERE location_created_at IN (#{locations.join(', ')}) AND COALESCE(district_id_number, '') != '' ")[0]['c']
