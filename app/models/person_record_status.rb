@@ -69,7 +69,7 @@ class PersonRecordStatus < ActiveRecord::Base
     birth_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
     loc_str = ""
     if !locations.blank?
-      loc_str = " AND p.district_of_birth IN (#{locations.join(', ')})"
+      loc_str = " AND p.location_created_at IN (#{locations.join(', ')})"
     end
     Status.all.each do |status|
       result[status.name] = self.find_by_sql("

@@ -57,22 +57,6 @@ class PersonController < ApplicationController
         @sorted_months_years << s
       end
     end
-
-=begin
-    ############################################
-    @pie_stats = {}
-    
-    (locations || []).each_with_index do |l, i|
-      @pie_stats[l.code] = 0 
-    end
-
-    details = PersonBirthDetail.where("district_id_number IS NOT NULL")
-    (details || []).each do |d|
-      code = d.district_id_number.split('/')[0]
-      @pie_stats[code] = 0 if @pie_stats[code].blank?
-      @pie_stats[code] += 1
-    end
-=end
     
     @districts_stats  = {}
 
@@ -285,7 +269,7 @@ class PersonController < ApplicationController
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
-                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date Reported" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
                   "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
                   ["Delayed Registration", "sub"] => "#{@delayed}"
               }
@@ -1209,7 +1193,17 @@ class PersonController < ApplicationController
   end
 
   def get_district_stats
-    stats = PersonRecordStatus.stats(['Normal', 'Adopted', 'Orphaned', 'Abandoned'], true, [params[:location_id]])
+    locations = [params[:location_id]]
+    facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+    (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{params[:location_id]}") || []).each {|l|
+      locations << l.location_id
+    }
+    puts locations
+
+    stats = PersonRecordStatus.stats(['Normal', 'Adopted', 'Orphaned', 'Abandoned'], true, locations)
+
     data = [
         ['Newly Received (HQ)', stats['HQ-ACTIVE']],
         ['Print Queue (HQ)', stats['HQ-CAN-PRINT']],

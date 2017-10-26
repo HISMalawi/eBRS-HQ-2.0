@@ -59,6 +59,7 @@
         if site['online']%>
              color = 'green';
         <% end %>
+
         d3.select("#<%=site['district']%>")
             .style("stroke", 'white')
             .style("fill", color)
@@ -67,16 +68,7 @@
             .attr("last_seen", "<%=site['last_seen']%>")
             .attr("reported", "<%=site['reported']%>")
             .attr("tag", "<%= site['name'] %>")
-                .on("mouseout", function(){
-                document.getElementById('site_name').innerHTML = '&nbsp;';
-                document.getElementById('status').innerHTML = '&nbsp;';
-                document.getElementById('reported').innerHTML = '&nbsp;';
-                var items =  window.parent.document.getElementsByClassName('stat-count');
-                for(var i=0; i<items.length; i++){
-                    items[i].innerHTML = items[i].getAttribute('default-value')
-                }
-                window.parent.document.getElementById('district_label').innerHTML = "&nbsp;"
-            }).on("mousedown", function(){
+                .on("mousedown", function(){
 
                 document.getElementById('site_name').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
                 document.getElementById('status').innerHTML = d3.select("#<%=site['district']%>").attr("last_seen");
@@ -120,6 +112,21 @@
         }
 
         return result;
+    }
+
+    window.parent.document.getElementById('reset').onmousedown = function(){
+        resetStats();
+    }
+
+    function resetStats(){
+        document.getElementById('site_name').innerHTML = '&nbsp;';
+        document.getElementById('status').innerHTML = '&nbsp;';
+        document.getElementById('reported').innerHTML = '&nbsp;';
+        var items =  window.parent.document.getElementsByClassName('stat-count');
+        for(var i=0; i<items.length; i++){
+            items[i].innerHTML = items[i].getAttribute('default-value')
+        }
+        window.parent.document.getElementById('district_label').innerHTML = "&nbsp;"
     }
 
     function resizeMap(){
