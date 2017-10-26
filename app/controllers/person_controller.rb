@@ -359,9 +359,13 @@ class PersonController < ApplicationController
     params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.referrer
     @states = params[:statuses]
+    @states = Status.all.map(&:name).reject{|n| n.match(/DC\-|FC\-/)} if @states.blank?
+
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
     types = []
+
+    @birth_type = params[:birth_type]
 
     search_val = params[:search][:value] rescue nil
     search_val = '_' if search_val.blank?
@@ -383,6 +387,7 @@ class PersonController < ApplicationController
 
       state_ids = @states.collect{|s| Status.find_by_name(s).id} + [-1]
       types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All'
+      types=['Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All Special Cases'
       types=[params[:type]] if types.blank?
 
       person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
@@ -773,12 +778,11 @@ class PersonController < ApplicationController
   def special_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view","/assets/folder3.png"],
-        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view","/assets/folder3.png"],
-        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view","/assets/folder3.png"],
-        ["Printed/Dispatched Certificates", "All approved and printed Special cases", [],"/person/view","/assets/folder3.png", 'Quality Supervisor']
+        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view?birth_type=Abandoned","/assets/folder3.png"],
+        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view?birth_type=Adopted","/assets/folder3.png"],
+        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view?birth_type=Orphaned","/assets/folder3.png"],
+        ["Printed/Dispatched Certificates", "All approved and printed Special cases", ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?birth_type=All Special Cases","/assets/folder3.png"]
     ]
-
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats

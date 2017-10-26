@@ -228,20 +228,34 @@
 </select>
 
 <select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
-  <option value="All">Select Birth Type</option>
-  <option>From NID</option>
-  <option>Normal</option>
-  <option>Abandoned</option>
-  <option>Adopted</option>
-  <option>Orphaned</option>
+  <option value="All">Select Category</option>
+  <option id="nid" >From NID</option>
+  <option id="normal">Normal</option>
+  <option id="abandoned">Abandoned</option>
+  <option id="adopted">Adopted</option>
+  <option id="orphaned">Orphaned</option>
 </select>
+
 
 <script>
     selected = [];
     var table;
     var url = "<%= request.url%>";
 
+    <% if !@birth_type.blank? %>
+        jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);
+        jQuery("#birth_type").prop('disabled', true);
+    <% end %>
+
+    var type;
     $i(document).ready(function() {
+
+        <% if params[:birth_type] != 'All Special Cases'%>
+            type = __$('birth_type').value;
+        <% else %>
+            type = "All Special Cases"
+        <% end %>
+
         initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
@@ -258,7 +272,7 @@
                     "ajax": {
                         "url": url,
                         "data": function(d){
-                            d.type = __$('birth_type').value;
+                            d.type = type;
                             d.district = __$('districts').value;
                         },
                         dataFilter: function(data){
