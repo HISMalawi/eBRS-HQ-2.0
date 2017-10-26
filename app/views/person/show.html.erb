@@ -212,11 +212,13 @@
       </div>
 
 
-      <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
-              onclick= 'ajaxPullComments("view")' >
-        <span class="fa fa-comments"></span>
-        View Comments (<%= @comments.count%>)
-      </button>
+      <% if @comments.count > 0%>
+          <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
+                  onclick= 'ajaxPullComments("view")' >
+            <span class="fa fa-comments"></span>
+            View Comments (<%= @comments.count%>)
+          </button>
+      <% end %>
     </div>
 </div>
 
