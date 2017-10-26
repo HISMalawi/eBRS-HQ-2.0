@@ -1,6 +1,9 @@
 class ActionMatrix
 
   def self.read_actions(role, states = [])
+
+    return [] if role.present? && role.match("Administrator")
+
 		states = states.collect{|s| s.strip.upcase}
 		role = role.strip.upcase
 
@@ -70,10 +73,12 @@ class ActionMatrix
         folders << row[0]
       end
 
+      folders << row[0] if role.present? && role.match("Administrator")
+
       break if row[0] && row[0].strip.upcase == "END ROOT FOLDER PRIVILEGES"
     end
 
-    (folders - ["Folder/Role", "END ROOT FOLDER PRIVILEGES"])
+    (folders.uniq - ["Folder/Role", "END ROOT FOLDER PRIVILEGES", ""])
   end
 
 end

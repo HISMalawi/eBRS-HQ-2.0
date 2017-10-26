@@ -103,7 +103,7 @@
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
-        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
             <div class="checkbox pull-right">
               <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
             </div>
@@ -261,15 +261,7 @@
 
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
 
-                                 <% if admin? %>
-                                    json['data'][i][last_index] += '<td class="act-btn">' +
-                                        '<button onclick="javascript:location=\'/edit/' + person_id + ' \'"' +
-                                        'class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button></td>' +
-                                        '<td class="act-btn"><button onclick="javascript:location=\'/void/' + person_id + '\'"' +
-                                        'class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button></td>'
-                                <% end %>
-
-                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
                                 <% end %>
