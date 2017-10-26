@@ -1,11 +1,12 @@
 $configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")['user_migration']
-$database = "#{$configs['prefix']}_local_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
+$database = "#{$configs['prefix']}_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
 $couch_link += "_design/User/_view/all?include_docs=true"
 
+puts $couch_link
 users = JSON.parse(`curl -s -X GET #{$couch_link}`)
 
-raise " No Users Found".to_s if users.blank?
+puts " No Users Found" if users.blank?
 
 =begin
 {"_id"=>"cmponda", "_rev"=>"10-62b438eedf7a8c467fc684361f84ec59",
@@ -58,10 +59,16 @@ person_id: 1002511,
  next
 =end
 
-  level = SETTINGS['application_mode']
+  level = SETTINGS['migration_mode'] if level.blank?
   level = 'HQ' if level.blank?
+
   role_name = user['role']
   role_name = 'Administrator' if role_name == "System Administrator"
+  puts "User #{user['_id']}, level #{level}, Role: #{role_name}"
+
+  r_ole = Role.where(level: level,
+                     role: role_name).first rescue nil
+  next if r_ole.blank?
 
   if u.blank?
     person = CorePerson.create(
@@ -86,8 +93,7 @@ person_id: 1002511,
 
     UserRole.create(
         user_id: u.id,
-        role_id: Role.where(level: level,
-                            role: role_name).first.id
+        role_id: r_ole.id
     )
   end
 end

@@ -57,6 +57,8 @@ User.current = user
 Duplicate_attribute_type_id = PersonAttributeType.where(name: 'Duplicate Ben').first.id
 
 password = CONFIG["crtkey"] rescue nil
+password = "password" if password.blank?
+
 $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pem"), password)
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
@@ -329,7 +331,7 @@ def get_record_status(rec_status, req_status)
 					'COMPLETE' =>'HQ-COMPLETE',
 					'CAN PRINT' =>'HQ-CAN-PRINT',
 					'CAN REJECT' =>'HQ-CAN-REJECT',
-					'APPROVED' =>'HQ-APPROVED',
+					'APPROVED' =>'HQ-COMPLETE',
 					'TBA-CONFLICT' =>'HQ-CONFLICT',
 					'TBA-POTENTIAL DUPLICATE' =>'HQ-POTENTIAL DUPLICATE-TBA',
 					'CAN VOID' =>'HQ-CAN-VOID',
@@ -348,7 +350,7 @@ def decrypt(value)
 
   return value if string.nil?
 
-  return string
+  return string.strip
 
 end
 
@@ -394,6 +396,7 @@ def build_client_record(records)
                       foster_mother: {},
                       foster_father: {},
                       form_signed: r[:form_signed],
+                      date_registered: r[:date_registered],
                       acknowledgement_of_receipt_date: r[:acknowledgement_of_receipt_date]
     },
              home_address_same_as_physical: "Yes",
@@ -606,9 +609,6 @@ puts "building data dump for migration"
 
 puts "Migrating Users"
 load "#{Rails.root}/bin/user_migration.rb"
-
-puts "Migrating NPIDs"
-load "#{Rails.root}/bin/npid_migration.rb"
 
 puts "DUMP location: #{Rails.root}/#{dump_name}"
 
