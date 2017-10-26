@@ -69,7 +69,7 @@ class ActionMatrix
   
       if found && SETTINGS['enable_role_privileges'].to_s == 'false' && !row[0].blank? && Rails.env.to_s == 'development'
         folders << row[0]
-      elsif index > -1 && !row[index].blank? && row[index].to_s == 'Y'
+      elsif index > -1 && !row[index].blank? && row[index].to_s.strip == 'Y'
         folders << row[0]
       end
 
