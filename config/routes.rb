@@ -143,6 +143,7 @@ Rails.application.routes.draw do
   get "/person/dispatch_certificates"
   get "/person/dispatch_list"
   get "/person/view"
+  get "/person/print_cases"
 
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}

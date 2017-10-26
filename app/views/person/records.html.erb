@@ -220,6 +220,13 @@
   </div>
 </div>
 
+<select id="districts" label="Birth Type" onchange="reloadDataTable(this)">
+  <option value="All">Select District</option>
+  <% districts.each do |d|%>
+      <option value = "<%= d[0]%>"><%= d[1]%></option>
+  <% end %>
+</select>
+
 <select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
   <option value="All">Select Birth Type</option>
   <option>From NID</option>
@@ -238,6 +245,8 @@
         initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
+        holder.appendChild(__$('districts'));
+
     } );
 
     function initTable(){
@@ -250,6 +259,7 @@
                         "url": url,
                         "data": function(d){
                             d.type = __$('birth_type').value;
+                            d.district = __$('districts').value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
