@@ -933,7 +933,7 @@ end
       mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
       father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
       row = [
-          p.brn,
+          details.brn,
           p.ben,
           "#{name} (#{p.gender})",
           p.birthdate.strftime('%d/%b/%Y'),
