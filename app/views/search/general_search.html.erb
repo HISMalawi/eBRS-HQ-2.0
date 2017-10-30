@@ -87,13 +87,13 @@
           <input type="text" class="input-small"  id="last_name" name="filter[names][last_name]">
           <label for="first_name">First name</label>
           <input type="text" class="input-small" id="first_name" name="filter[names][first_name]">
-          <label for="last_name">Middle</label>
+          <label for="last_name">Middle Name</label>
           <input type="text" class="input-small"  id="middle_name" name="filter[names][middle_name]">
         </div>
       </div>
       <div class="control-group" style="padding-bottom: 10px;">
         <div class="controls form-inline ">
-          <input onclick="check(this)" type="checkbox" class="input-small check" id="gender" style="margin-right: 105px;">
+          <input onclick="check(this)" type="checkbox" class="input-small check" style="margin-right: 105px;">
 
           <label for="last_name">Gender</label>
           <select type="text" class="input-small"  id="gender" name="filter[gender]">
@@ -106,7 +106,7 @@
 
       <div class="control-group" style="padding-bottom: 10px;">
         <div class="controls form-inline ">
-          <input onclick="check(this)" type="checkbox" class="input-small check" id="status" style="margin-right: 105px;">
+          <input onclick="check(this)" type="checkbox" class="input-small check" style="margin-right: 105px;">
 
           <label for="last_name">Record status</label>
           <select type="text" class="input-small"  id="status" name="filter[status]">
@@ -169,7 +169,7 @@
     </fieldset>
   </div>
   <div class="buttons">
-    <a class="btn btn-success btn-sm" onmousedown="searchFields();" style="cursor: pointer;">Apply</a>
+    <a class="btn btn-success btn-sm" onmousedown="reloadDataTable();" style="cursor: pointer;">Apply</a>
   </div>
 </form>
 </div>
@@ -178,12 +178,13 @@
   <table id="example" class="display" cellspacing="0" width="100%">
     <thead>
     <tr>
+      <th style="text-align: left;">BRN</th>
       <th style="text-align: left;">BEN</th>
       <th style="text-align: left;">Name</th>
       <th style="text-align: center; width:90px;">Birthdate</th>
-      <th style="text-align: left;">Gender</th>
       <th style="text-align: left;">Mother's Name</th>
       <th style="text-align: left;">Father's Name</th>
+      <th style="text-align: center;">Date Reported</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
       </th>
@@ -200,13 +201,10 @@
   <%(@records || []).each do |record|
   %>
     <tr>
+      <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
       <td style="text-align: left;width: 15%"><%= record['ben'] %>&nbsp;</td>
-      <% if @records.length > 0 && @records[0]['brn'].present? %>
-          <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
-      <% end %>
       <td style="text-align: left;width: 15%"></td>
       <td style="text-align: center;width: 15%"><%= record['dob'] %></td>
-      <td style="text-align: center;width: 3%"><%= record['gender'] %></td>
       <td style="text-align: center;width: 15%"><%= record['mother_name'] %></td>
       <td style="text-align: center;width: 15%"><%= record['father_name'] %></td>
       <td style="text-align: center;"><%= record['status'] %></td>
@@ -217,24 +215,6 @@
               <button onclick="javascript:location='/show_person/<%= record['id']%>'"
                       class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
             </td>
-            <%if admin?%>
-                <td class="act-btn">
-                  <button onclick="javascript:location='/edit/<%= record['person_id']%>'"
-                          class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button>
-                </td>
-                <td class="act-btn">
-                  <button onclick="javascript:location='/void/<%= record['id']%>'"
-                          class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button>
-                </td>
-            <%end%>
-
-            <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
-                <td class="act-btn">
-                  <div class="checkbox">
-                    <label><input class='multi-check' person_id = "<%= record['id']%>" onchange="checkSelections();" type="checkbox" value=""></label>
-                  </div>
-                </td>
-            <% end %>
           </tr>
         </table>
       </td>
@@ -251,8 +231,43 @@
   table = null;
 
   $i(document).ready(function() {
-     table = $i('#example').DataTable();
-  } );
+    initTable();
+  });
+
+  function initTable(){
+      table =  $i('#example').DataTable(
+              {
+                  "processing": true,
+                  "serverSide": true,
+                  "ordering": false,
+                  "ajax": {
+                      "url": "/search_cases",
+                      "data": function(d){
+                          var ids =['serial_num', 'ben', 'brn', 'last_name', 'middle_name', 'first_name', 'gender', 'status',
+                              'place_of_birth', 'district_of_birth', 'ta_of_birth', 'village_of_birth',
+                              'hospital_of_birth', 'other_birth_place'];
+
+                          for(var i = 0; i < ids.length; i++){
+                              var node = document.getElementById(ids[i]);
+                              d[node.getAttribute('name')] = node.value;
+                          }
+                      },
+                      dataFilter: function(data){
+                          var json = jQuery.parseJSON( data );
+                          for(var i = 0; i < json['data'].length; i ++){
+                              var last_index = json['data'][i].length - 1;
+                              var person_id = json['data'][i][last_index]
+                              json['data'][i][last_index] =   '<td class="act-btn"> ' +
+                                      '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+
+                                      '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+                          }
+                          return JSON.stringify( json );
+                      }
+                  }
+              }
+      );
+  }
 
   function check(node){
       var nodes = jQuery(node).parent().children();
@@ -317,30 +332,8 @@
     jQuery("." + clas).show().val('');
   }
 
-  function searchFields(){
-       jQuery("#tbody").empty();
-       table.clear();
-
-      jQuery.ajax({
-          type: "POST",
-          url: '/search_cases',
-          data: jQuery("#form").serialize(),
-          success: function(data)
-          {
-              data = JSON.parse(data);
-              var arr = [];
-              for (var i = 0; i < data.length; i++){
-                 table.row.add([data[i]['ben'], data[i]['name'], data[i]['dob'],
-                      data[i]['gender'], data[i]['mother_name'],
-                     data[i]['father_name'], data[i]['status'], ''])
-                  table.draw();
-              }
-
-          },
-          error: function(e){
-              console.log(e);
-          }
-      });
+  function reloadDataTable(node){
+      table.ajax.reload();
   }
 
     function capitalize(string){
