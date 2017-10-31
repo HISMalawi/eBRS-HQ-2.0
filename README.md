@@ -8,16 +8,19 @@ GENERAL
 
 3. Get a copy of private.pem and public.pem and paste in config/ 
 
-4. Run 
+4. Edit elasticsearchsetting.yml and add a line on index to match one for ebrs application running
+
+5. Run 
 		bundle install --local 
 
-5. Sync all facility records to DC. Both FC and DC Migration will be handled from DC database
-	
-6. Initialie mysql database by running following command
+6. Sync all facility records to DC. Both FC and DC Migration will be handled from DC database
+
+7. Initialie mysql database by running following command
  		
 		./setup.sh development|production
 	
 	  choose one environment
+
 
 MIGRATION PROCESS - FC
 1. Start by migrating facility records
