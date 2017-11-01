@@ -68,6 +68,10 @@
             .attr("last_seen", "<%=site['last_seen']%>")
             .attr("reported", "<%=site['reported']%>")
             .attr("tag", "<%= site['name'] %>")
+                .on('mouseover', function(){
+                    //var tip = d3.select("#<%=site['district']%>").attr("tag");
+
+                })
                 .on("mousedown", function(){
 
                 document.getElementById('site_name').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
