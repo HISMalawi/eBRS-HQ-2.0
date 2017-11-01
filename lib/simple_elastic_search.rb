@@ -131,7 +131,7 @@ class SimpleElasticSearch
       precision = SETTING['precision']
     end
     start_time = Time.now
-    query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?size=#{size rescue 10}&from=#{from rescue 0}&pretty=true' -H 'Content-Type: application/json' -d'
+    query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/_search?size=#{size rescue 10}&from=#{from rescue 0}&pretty=true' -H 'Content-Type: application/json' -d'
             {
               \"query\": {
                   \"match\": {
@@ -211,7 +211,7 @@ class SimpleElasticSearch
 
   #Retriving record from elastic research
   def self.find(id)
-    find_query = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{id}' "
+    find_query = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{id}' "
     begin
       record = JSON.parse(`#{find_query}`)
       return record["_source"].merge({"id" => record["_id"]}) 
@@ -221,7 +221,7 @@ class SimpleElasticSearch
   end
   
   def self.all(type="")
-    find_all = "curl -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{type.present? ? type : SETTING['type']}/_search?pretty=true'"
+    find_all = "curl -s -XGET 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{type.present? ? type : SETTING['type']}/_search?pretty=true'"
     return JSON.parse(`#{find_all}`)["hits"]["hits"].collect{|hit| hit["_source"].merge({"id" => hit["_id"]})}
   end
 
