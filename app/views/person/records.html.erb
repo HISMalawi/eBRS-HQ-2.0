@@ -103,7 +103,7 @@
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
-        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
             <div class="checkbox pull-right">
               <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
             </div>
@@ -220,24 +220,47 @@
   </div>
 </div>
 
-<select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
-  <option value="All">Select Birth Type</option>
-  <option>From NID</option>
-  <option>Normal</option>
-  <option>Abandoned</option>
-  <option>Adopted</option>
-  <option>Orphaned</option>
+<select id="districts" label="Birth Type" onchange="reloadDataTable(this)">
+  <option value="All">Select District</option>
+  <% districts.each do |d|%>
+      <option value = "<%= d[0]%>"><%= d[1]%></option>
+  <% end %>
 </select>
+
+<select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
+  <option value="All">Select Category</option>
+  <option id="nid" >From NID</option>
+  <option id="normal">Normal</option>
+  <option id="abandoned">Abandoned</option>
+  <option id="adopted">Adopted</option>
+  <option id="orphaned">Orphaned</option>
+</select>
+
 
 <script>
     selected = [];
     var table;
     var url = "<%= request.url%>";
 
+    <% if !@birth_type.blank? %>
+        jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);
+        jQuery("#birth_type").prop('disabled', true);
+    <% end %>
+
+    var type;
     $i(document).ready(function() {
+
+        <% if params[:birth_type] != 'All Special Cases'%>
+            type = __$('birth_type').value;
+        <% else %>
+            type = "All Special Cases"
+        <% end %>
+
         initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
+        holder.appendChild(__$('districts'));
+
     } );
 
     function initTable(){
@@ -249,7 +272,8 @@
                     "ajax": {
                         "url": url,
                         "data": function(d){
-                            d.type = __$('birth_type').value;
+                            d.type = type;
+                            d.district = __$('districts').value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
@@ -261,15 +285,7 @@
 
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
 
-                                 <% if admin? %>
-                                    json['data'][i][last_index] += '<td class="act-btn">' +
-                                        '<button onclick="javascript:location=\'/edit/' + person_id + ' \'"' +
-                                        'class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button></td>' +
-                                        '<td class="act-btn"><button onclick="javascript:location=\'/void/' + person_id + '\'"' +
-                                        'class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button></td>'
-                                <% end %>
-
-                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
                                 <% end %>

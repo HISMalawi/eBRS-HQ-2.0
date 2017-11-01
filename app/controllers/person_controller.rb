@@ -57,22 +57,6 @@ class PersonController < ApplicationController
         @sorted_months_years << s
       end
     end
-
-=begin
-    ############################################
-    @pie_stats = {}
-    
-    (locations || []).each_with_index do |l, i|
-      @pie_stats[l.code] = 0 
-    end
-
-    details = PersonBirthDetail.where("district_id_number IS NOT NULL")
-    (details || []).each do |d|
-      code = d.district_id_number.split('/')[0]
-      @pie_stats[code] = 0 if @pie_stats[code].blank?
-      @pie_stats[code] += 1
-    end
-=end
     
     @districts_stats  = {}
 
@@ -285,7 +269,7 @@ class PersonController < ApplicationController
                   "Informant Signed?" => "#{(@birth_details.form_signed == 1 ? 'Yes' : 'No')}"
               },
               {
-                  "Acknowledgement Date" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date of Reporting" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
                   "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
                   ["Delayed Registration", "sub"] => "#{@delayed}"
               }
@@ -375,16 +359,35 @@ class PersonController < ApplicationController
     params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.referrer
     @states = params[:statuses]
+    @states = Status.all.map(&:name).reject{|n| n.match(/DC\-|FC\-/)} if @states.blank?
+
     @section = params[:destination]
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
     types = []
+
+    @birth_type = params[:birth_type]
 
     search_val = params[:search][:value] rescue nil
     search_val = '_' if search_val.blank?
     if !params[:start].blank?
 
+      loc_query = " "
+      locations = []
+      if params[:district].present? && params[:district] != "All"
+        locations = [params[:district]]
+
+        facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+        (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{params[:district]}") || []).each {|l|
+          locations << l.location_id
+        }
+        loc_query = " AND pbd.location_created_at IN (#{locations.join(', ')}) "
+      end
+
       state_ids = @states.collect{|s| Status.find_by_name(s).id} + [-1]
       types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All'
+      types=['Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All Special Cases'
       types=[params[:type]] if types.blank?
 
       person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
@@ -395,7 +398,7 @@ class PersonController < ApplicationController
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
       .where(" prs.status_id IN (#{state_ids.join(', ')})
-              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
+              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
                 person.birthdate, person.gender) REGEXP '#{search_val}' ")
 
@@ -600,6 +603,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
+              ["Print Cases", "Printed records", [],"/person/print_cases","/assets/folder3.png"],
               ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
@@ -642,19 +646,33 @@ class PersonController < ApplicationController
   def manage_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Checking Clerk'],
-              ["Active Records" ,"Record new arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png", 'Data Supervisor'],
-              ["Active Records", "View Cases" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
-             # ["Conflict Cases", "Conflict Cases" , ["HQ-CONFLICT-TBA"],"/person/view","/assets/folder3.png"],
+              ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+              ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Print Cases", "Printed records", ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
 
-    @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
+
+    render :template => "/person/tasks"
+  end
+
+  def print_cases
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
+        ["Print Certificate","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Re-print certificates", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+        ["Approve Re-print from DS", "Approve Re-print from DS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
+    ]
+
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
+    @stats = PersonRecordStatus.stats
+    @section = "Print Cases"
 
     render :template => "/person/tasks"
   end
@@ -724,7 +742,7 @@ class PersonController < ApplicationController
   def print_out
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Approve Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+        ["Approve for Printing" ,"All records pending Approval to generate Registration Number", ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
         ["Print Certificates", "All records pending to be printed " , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
         ["Re-print Certificates", "Conflict Cases" , ["HQ-CAN-RE-PRINT","HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Incomplete records from DV" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
@@ -760,12 +778,11 @@ class PersonController < ApplicationController
   def special_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view","/assets/folder3.png"],
-        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view","/assets/folder3.png"],
-        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view","/assets/folder3.png"],
-        ["Printed/Dispatched Certificates", "All approved and printed Special cases", [],"/person/view","/assets/folder3.png", 'Quality Supervisor']
+        ["Abandoned Cases" ,"All records that were registered as Abandoned ", [],"/person/view?birth_type=Abandoned","/assets/folder3.png"],
+        ["Adopted Cases", "All records that were registered as Adopted" , [],"/person/view?birth_type=Adopted","/assets/folder3.png"],
+        ["Orphaned cases", "All records that were registered as Orphaned" , [],"/person/view?birth_type=Orphaned","/assets/folder3.png"],
+        ["Printed/Dispatched Certificates", "All approved and printed Special cases", ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?birth_type=All Special Cases","/assets/folder3.png"]
     ]
-
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
@@ -1189,6 +1206,17 @@ class PersonController < ApplicationController
           last_seen = "<span style='color: red !important'>Offline</span>".html_safe
         end
 
+        locations = [site_id]
+        facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+        (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{site_id}") || []).each {|l|
+          locations << l.location_id
+        }
+
+        reported = PersonBirthDetail.find_by_sql(
+            "SELECT count(*) c FROM person_birth_details WHERE location_created_at IN (#{locations.join(', ')}) AND COALESCE(district_id_number, '') != '' ")[0]['c']
+
         @sites << {
             'online' => (site['online'] rescue false),
             'region' => l.description,
@@ -1199,8 +1227,7 @@ class PersonController < ApplicationController
             'name' => l.name,
             'last_seen' => last_seen,
             'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
-            'reported' => PersonBirthDetail.find_by_sql(
-                "SELECT count(*) c FROM person_birth_details WHERE district_of_birth = #{l.id} AND COALESCE(district_id_number, '') != '' ")[0]['c']
+            'reported' => reported
         }
       end
     end
@@ -1209,7 +1236,17 @@ class PersonController < ApplicationController
   end
 
   def get_district_stats
-    stats = PersonRecordStatus.stats(['Normal', 'Adopted', 'Orphaned', 'Abandoned'], true, [params[:location_id]])
+    locations = [params[:location_id]]
+    facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+    (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{params[:location_id]}") || []).each {|l|
+      locations << l.location_id
+    }
+
+
+    stats = PersonRecordStatus.stats(['Normal', 'Adopted', 'Orphaned', 'Abandoned'], true, locations)
+
     data = [
         ['Newly Received (HQ)', stats['HQ-ACTIVE']],
         ['Print Queue (HQ)', stats['HQ-CAN-PRINT']],

@@ -164,7 +164,7 @@
         <button id="Confirm Completeness" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="jQuery('#completenessModal').modal('show')">
           <span class="fa fa-check"></span>
-          Confirm
+          Check Completeness
         </button>
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="ajaxify('HQ-CAN-PRINT')">
@@ -212,11 +212,13 @@
       </div>
 
 
-      <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
-              onclick= 'ajaxPullComments("view")' >
-        <span class="fa fa-comments"></span>
-        View Comments (<%= @comments.count%>)
-      </button>
+      <% if @comments.count > 0%>
+          <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
+                  onclick= 'ajaxPullComments("view")' >
+            <span class="fa fa-comments"></span>
+            View Comments (<%= @comments.count%>)
+          </button>
+      <% end %>
     </div>
 </div>
 
@@ -357,7 +359,7 @@
         </span>
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-COMPLETE')">Complete</button>
+          <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-COMPLETE')">Complete</button>
           <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
         </div>
       </div>
@@ -446,7 +448,15 @@
         })
     }
 
-    function ajaxPullComments(mode){
+    function ajaxPullComments(mode, status){
+
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if(role == "Data Checking Clerk" && status == "HQ-COMPLETE"){
+            ajaxify(status);
+            return;
+        }
+
         jQuery("#comment-list").html("");
 
         if (mode && mode == 'view'){
@@ -458,6 +468,12 @@
             __$('textarea').style.display = 'inline';
             __$('submit_btn').style.display = 'inline';
             __$("comment-header").innerHTML = "Add comment to proceed";
+        }
+
+        if(status && status.toLowerCase().match('complete')){
+            jQuery("#comments").attr('next_status', status)
+        }else{
+            jQuery("#comments").attr('next_status', '')
         }
 
         jQuery.ajax(
@@ -519,6 +535,11 @@
         }
 
         var role = '<%= User.current.user_role.role.role%>';
+
+        if (!status) {
+            status = jQuery("#comments").attr('next_status');
+        }
+
         if (!status) {
             status = ({
                 'Data Checking Clerk': 'HQ-INCOMPLETE',
