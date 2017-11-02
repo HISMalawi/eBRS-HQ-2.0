@@ -8,9 +8,9 @@ class PersonRecordStatus < ActiveRecord::Base
 
 
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
-    
-     begin
 
+     begin
+       ActiveRecord::Base.transaction do
       user_id = User.current.id if user_id.blank?
       state_id = Status.where(:name => state).first.id
       trail = self.where(:person_id => person_id, :voided => 0)
@@ -41,13 +41,14 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.created_at = Time.now
             allocation.save
         end
+      end
     rescue StandardError => e
          self.log_error(e.message,person_id)
      end
   end
 
   def self.status(person_id)
-      self.where(:person_id => person_id, :voided => 0).last.status.name
+      self.where(:person_id => person_id, :voided => 0).last.status.name rescue nil
   end
 
   def self.log_error(error_msge, content)
@@ -79,7 +80,7 @@ class PersonRecordStatus < ActiveRecord::Base
     end
 
     unless approved == false
-      excluded_states = ['HQ-REJECTED'].collect{|s| Status.find_by_name(s).id}
+      excluded_states = ['HQ-REJECTED', 'HQ-VOIDED', 'HQ-PRINTED', 'HQ-DISPATCHED'].collect{|s| Status.find_by_name(s).id}
       included_states = Status.where("name like 'HQ-%' ").map(&:status_id)
 
       result['APPROVED BY ADR'] =  self.find_by_sql("
