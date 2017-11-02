@@ -605,6 +605,7 @@ class PersonController < ApplicationController
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
               ["Print Cases", "Printed records", [],"/person/print_cases","/assets/folder3.png"],
               ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
+              ["Edited records from DC" , "Edited records from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
@@ -664,8 +665,8 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
         ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
-        ["Print Certificate","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
-        ["Re-print Certificates", "Re-print certificates", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+        ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from DS", "Approve Re-print from DS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
     ]
