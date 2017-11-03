@@ -5,19 +5,8 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery	#with: :null_session
 
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
-  before_filter :check_last_sync_time
+  before_filter :check_pings
   before_filter :check_couch_loading
-
-  def check_last_sync_time
-    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue nil
-    job_interval = 60
-    now = Time.now
-    if last_run_time.present? && (now - last_run_time).to_f > job_interval
-      Thread.new{
-        load "#{Rails.root}/bin/jobs.rb"
-      }
-    end
-  end
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
@@ -25,7 +14,18 @@ class ApplicationController < ActionController::Base
     now = Time.now
     if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
       Thread.new{
-        load "#{Rails.root}/bin/couch-mysql.rb"
+        RestClient.get("#{SETTINGS['ebrs_services_link']}/api/start_data_loading")
+      }
+    end
+  end
+
+	def check_pings
+    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue nil
+    job_interval = 60
+    now = Time.now
+    if last_run_time.present? && (now - last_run_time).to_f > 7*job_interval
+      Thread.new{
+        RestClient.get("#{SETTINGS['ebrs_services_link']}/api/start_ping")
       }
     end
   end
