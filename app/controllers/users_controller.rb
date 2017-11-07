@@ -65,6 +65,10 @@ class UsersController < ApplicationController
 
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
+    similar_users = User.where(username: username)
+    if similar_users.count > 0
+      raise "User with Username = #{username} Already Exists, Please Try Another Username".to_s
+    end
 
     ActiveRecord::Base.transaction do
       core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
