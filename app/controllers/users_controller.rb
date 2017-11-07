@@ -65,11 +65,10 @@ class UsersController < ApplicationController
 
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
-    gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
 
     ActiveRecord::Base.transaction do
       core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
-      person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
+      #person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
 
       names = PersonName.create(first_name: first_name, last_name: last_name, person_id: core_person.id)
       PersonNameCode.create(first_name_code: first_name.soundex,

@@ -172,6 +172,18 @@
           Approve for Printing
         </button>
 
+        <button id="Approve for Re-printing" class="btn btn-success pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Reprint Reason', 'HQ-CAN-RE-PRINT')">
+          <span class="fa fa-thumbs-o-up"></span>
+          Approve for Re-Printing
+        </button>
+
+        <button id="Request Reprint" class="btn btn-danger  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter reason for Re-print Request', 'HQ-RE-PRINT')">
+          <span class="fa"></span>
+          Request Re-print
+        </button>
+
         <button id="Dispatch" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="jQuery('#printerModal').modal('show')">
           <span class="fa fa-truck"></span>
@@ -207,7 +219,6 @@
           <span class="fa"></span>
           Approve Amendments
         </button>
-        
         <%end%>
       </div>
 
