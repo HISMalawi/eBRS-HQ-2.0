@@ -5,41 +5,39 @@ class ReportController < ApplicationController
   end
 
   def get_printed_certificates
-    district_code     = Location.find(params[:location_id]).code
-    district_code_len = district_code.length
+    locations = Location.where(parent_location: params[:location_id]) + [params[:location_id]]
     person_type       = PersonType.where(name: 'Client').first
-    status_ids        = Status.where(name: ['HQ-DISPATCHED','HQ-PRINTED']).map(&id)
+    status_ids        = Status.where(name: ['HQ-DISPATCHED','HQ-PRINTED']).map(&:id)
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
      
-    data = Person.where("p.person_type_id = ? AND 
-      LEFT(district_id_number, #{district_code_len}) = ?
-      AND s.status_id IN(?) AND s.created_at BETWEEN ? AND ?", 
-      person_type.id, district_code,
+    data = PersonBirthDetail.where("p.person_type_id = ? AND
+      person_birth_details.location_created_at IN (?)
+      AND s.status_id IN(?) AND date_reported BETWEEN ? AND ?",
+      person_type.id, locations,
       status_ids, start_date, end_date).joins("INNER JOIN core_person p 
-      ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
-      ON d.person_id = person.person_id
+      ON person_birth_details.person_id = p.person_id
+      INNER JOIN person ps
+      ON ps.person_id = p.person_id
       INNER JOIN person_name n 
       ON n.person_id = p.person_id
       INNER JOIN person_record_statuses s 
-      ON s.person_id = person.person_id AND s.voided = 0").group('n.person_id')\
-      .select("person.*, n.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      ON s.person_id = ps.person_id AND s.voided = 0").group('n.person_id')\
+      .select("ps.*, n.*, person_birth_details.*").order('p.created_at DESC,
       district_id_number ASC')
 
     records = []
     (data || []).each do |r|
-      p = Person.find(r.person_id)
       records << {
         registration_number: r.national_serial_number,
         birth_entry_number: r.district_id_number,
-        first_name: p.first_name,
-        middle_name: p.middle_name,
-        last_name: p.last_name,
+        first_name: r.first_name,
+        middle_name: r.middle_name,
+        last_name: r.last_name,
         birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
-        gender: p.full_gender,
-        dispatch_date: r.dispatch_date.to_date.strftime('%d/%b/%Y'),
-        person_id: p.person_id
+        gender: r.gender,
+        date_reported: r.date_reported.to_date.strftime('%d/%b/%Y'),
+        person_id: r.person_id
       }
     end
 
