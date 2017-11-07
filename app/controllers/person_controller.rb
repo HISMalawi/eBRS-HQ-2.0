@@ -97,7 +97,7 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
-    elsif ['DC-AMEND','HQ-AMEND'].include? @status 
+    elsif ['HQ-AMEND','HQ-AMEND-GRANTED'].include? @status 
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
@@ -624,16 +624,16 @@ class PersonController < ApplicationController
     @tasks = []
 
     if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
-         @tasks << ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"]
-         @tasks << ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"]
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
     elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
-          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
 
     else
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED","HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
-          @tasks << ["Amendments", "Amendments", ["DC-AMEND","HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
     end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
