@@ -606,7 +606,6 @@ class PersonController < ApplicationController
               ["Print Cases", "Printed records", [],"/person/print_cases","/assets/folder3.png"],
               ["Rejected Cases" , "Rejected Cases" , [],"/person/rejected_cases","/assets/folder3.png"],
               ["Edited records from DC" , "Edited records from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
-              ["Edited Records from DC" , "Edited record from DC" , ['HQ-RE-APPROVED'],"/person/view","/assets/folder3.png"],
               ["Special Cases" ,"Special Cases" , [],"/person/special_cases","/assets/folder3.png" ],
               ["Duplicate Cases" , "Duplicate cases" , [],"/person/duplicates_menu","/assets/folder3.png"],
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
