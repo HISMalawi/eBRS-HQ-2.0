@@ -264,6 +264,7 @@
     } );
 
     function initTable(){
+
         table =  $i('#example').DataTable(
                 {
                     "processing": true,
@@ -298,6 +299,7 @@
     }
 
     function reloadDataTable(node){
+        type = __$('birth_type').value;
         table.ajax.reload();
     }
 
