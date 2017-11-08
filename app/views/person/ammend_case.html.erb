@@ -154,25 +154,25 @@
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
       <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
-      	<button id="DM Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REPRINT-AMEND')">
+         <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-GRANTED')">
           <span class="fa"></span>
-         	Approve for Re-print
-          </button>
-        <button id="DS Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-AMEND')">
-          <span class="fa"></span>
-         	Approve
-         </button>
-		 <button id="Reject" class="btn btn-danger pull-right" style="display:<%= display%>;"
-		                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
-		          <span class="fa"></span>
-		          Reject
+          Grant Request
         </button>
-        <button id="Reject to DC" class="btn btn-danger pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
-	          <span class="fa"></span>
-	          Reject to DC
+        <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
+          <span class="fa"></span>
+          Reject Request to DC
+        </button>
+        <button id="Approve Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-RE-PRINT')">
+          <span class="fa"></span>
+          Approve Request
+        </button>
+        <button id="Reject Request to DS" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('GRANTED','REJECTED'))">
+          <span class="fa"></span>
+            Reject Request to DS
         </button>
       </div>
 
@@ -230,8 +230,14 @@
     <span class="comment" style="width: 100%;"></span>
   </div>
 </div>
-
 <script type="text/javascript">
+      <% (@actions || []).each do |action|
+        next if (SETTINGS['enable_role_privileges'] == false)%>
+
+        if(__$('<%= action['button_name']%>')) {
+            __$('<%= action['button_name']%>').style.display = 'table-cell';
+        }
+     <% end %>
 	var can_not_amend = ['Date of registration','Death Entry Number','Registration Number']
 	function amendField(field){
 		return;
@@ -272,7 +278,6 @@
 
 
     function generalComment(header, status){
-
         ajaxPullComments();
 
         __$('submit_btn').style.display = 'inline';

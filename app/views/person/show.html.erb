@@ -214,10 +214,26 @@
           <span class="fa"></span>
           Approve for Re-print Amendment
           </button>
-        <button id="DS Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-AMEND')">
+        <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-GRANTED')">
           <span class="fa"></span>
-          Approve Amendments
+          Grant Request
+        </button>
+        <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
+          <span class="fa"></span>
+          Reject Request to DC
+        </button>
+
+        <button id="Approve Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-RE-PRINT')">
+          <span class="fa"></span>
+          Approve Request
+        </button>
+        <button id="Reject Request to DS" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-REJECTED')">
+          <span class="fa"></span>
+            Reject Request to DS
         </button>
         <%end%>
       </div>
