@@ -154,13 +154,13 @@
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
       <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
-         <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-GRANTED')">
+        <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('-REJECTED','')+'-GRANTED')">
           <span class="fa"></span>
           Grant Request
         </button>
         <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC').replace('-REJECTED',''))">
           <span class="fa"></span>
           Reject Request to DC
         </button>
