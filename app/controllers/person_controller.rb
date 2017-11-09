@@ -97,7 +97,7 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
-    elsif ['DC-AMEND','HQ-AMEND'].include? @status 
+    elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status 
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
@@ -406,10 +406,10 @@ class PersonController < ApplicationController
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
               #{had_query}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
-      .where(" prs.status_id IN (#{state_ids.join(', ')})
+      .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0
               AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
-                person.birthdate, person.gender) REGEXP '#{search_val}' ")
+              person.birthdate, person.gender) REGEXP '#{search_val}' ")
 
       total = d.select(" count(*) c ")[0]['c'] rescue 0
       page = (params[:start].to_i / params[:length].to_i) + 1
@@ -633,16 +633,16 @@ class PersonController < ApplicationController
     @tasks = []
 
     if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
-         @tasks << ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED"],"/person/view","/assets/folder3.png"]
-         @tasks << ["Amendments", "Amendments", ["DC-AMEND"], "/person/view","/assets/folder3.png"]
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-DAMAGED-REJECTED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
     elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
-          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
 
     else
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["DC-LOST", "DC-DAMAGED","HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
-          @tasks << ["Amendments", "Amendments", ["DC-AMEND","HQ-AMEND"], "/person/view","/assets/folder3.png"]
+          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"],"/person/view","/assets/folder3.png"]
+          @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-GRANTED","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
     end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
@@ -690,6 +690,8 @@ class PersonController < ApplicationController
   def ammend_case
     @person = Person.find(params[:id])
     @prev_details = {}
+    @status = PersonRecordStatus.status(@person.id)
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
     @birth_details = PersonBirthDetail.where(person_id: params[:id]).last
     @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
     @name = @person.person_names.last
