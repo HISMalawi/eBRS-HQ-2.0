@@ -31,13 +31,19 @@ class UsersController < ApplicationController
     @usernames = User.all.map(&:username)
     
     @roles = ['']
-    
-    Role.where(:level => 'HQ').map do |r|
-      @roles << [r.role, r.id]
-    end
-    
+
+
     @gender = ['','Female','Male']
 
+  end
+
+  def get_roles
+    @roles = [['', '']]
+    Role.where(:level => params[:level]).order('role DESC').map do |r|
+      @roles << [r.role, r.id]
+    end
+
+    render text: @roles.to_json
   end
 
   # Edits Selected User

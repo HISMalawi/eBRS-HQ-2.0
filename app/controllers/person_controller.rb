@@ -270,7 +270,7 @@ class PersonController < ApplicationController
               },
               {
                   "Date of Reporting" => "#{@birth_details.acknowledgement_of_receipt_date.to_date.strftime('%d/%b/%Y') rescue ""}",
-                  "Date of Registration" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
+                  "Date Registered" => "#{@birth_details.date_registered.to_date.strftime('%d/%b/%Y') rescue ""}",
                   ["Delayed Registration", "sub"] => "#{@delayed}"
               }
           ]

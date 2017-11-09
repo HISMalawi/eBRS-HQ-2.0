@@ -79,6 +79,8 @@ Rails.application.routes.draw do
 
   get 'users/my_account'
 
+  get 'users/get_roles'
+
   post 'users/update_password'
 
   get 'users/change_password'
