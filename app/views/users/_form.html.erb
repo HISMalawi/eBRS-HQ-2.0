@@ -162,6 +162,28 @@ end%>
 
   <% if @user.username %>
     __$('post_username').setAttribute('disabled', 'disabled')
+    __$('post_level_level').value = '<%= @user.user_role.role.level%>'
+
+      jQuery("#post_user_role_role").val('');
+      jQuery("#post_user_role_role").empty();
+
+      jQuery.ajax({
+          url: '/users/get_roles?level=' + '<%= @user.user_role.role.level%>',
+          success: function(roles){
+              roles = JSON.parse(roles)
+              for(var i=0; i < roles.length; i++){
+                  var opt = document.createElement("option");
+                  opt.setAttribute('value', roles[i][1]);
+                  opt.innerHTML = roles[i][0];
+                  __$("post_user_role_role").appendChild(opt)
+
+                  __$('post_user_role_role').value = '<%= @user.user_role.role.id%>'
+              }
+          }
+      });
+
+
+  __$('post_level_level').setAttribute('disabled', 'disabled')
   <% end %>
 
   __$("post_level_level").onchange = function(){
