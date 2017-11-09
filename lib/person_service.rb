@@ -903,9 +903,8 @@ end
       prev_states = params['had'].split('|')
       prev_state_ids = prev_states.collect{|sn| Status.where(name: sn).last.id  rescue -1 }
       had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id
-            AND prs.created_at < prev_s.created_at AND prv.status_id IN (#{prev_state_ids.join(', ')})"
+            AND prs.created_at <= prev_s.created_at AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
     end
-
 
     search_val = params[:search][:value] rescue nil
     search_val = '_' if search_val.blank?
