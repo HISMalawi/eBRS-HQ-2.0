@@ -219,20 +219,26 @@
           <span class="fa"></span>
           Grant Request
         </button>
-        
+
         <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC').replace('-REJECTED',''))">
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-REJECTED-TBA')">
+          <span class="fa"></span>
+          Reject Request
+        </button>
+        
+        <button id="Reject Request to DC" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
           <span class="fa"></span>
           Reject Request to DC
         </button>
 
         <button id="Approve Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-RE-PRINT')">
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-PRINT')">
           <span class="fa"></span>
           Approve Request
         </button>
         <button id="Reject Request to DS" class="btn btn-warning  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-REJECTED')">
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('GRANTED','REJECTED').replace('-TBA',''))">
           <span class="fa"></span>
             Reject Request to DS
         </button>
@@ -471,7 +477,7 @@
                window.parent.location = return_path;
             },
             error: function(error){
-                alert("Something went wrong!");
+                console.log("Something went wrong! server may be down")
             }
         })
     }

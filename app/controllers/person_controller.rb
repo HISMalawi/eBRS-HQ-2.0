@@ -397,7 +397,7 @@ class PersonController < ApplicationController
         prev_states = params['had'].split('|')
         prev_state_ids = prev_states.collect{|sn| Status.where(name: sn).last.id  rescue -1 }
         had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id
-            AND prs.created_at <= prev_s.created_at AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
+            AND  DATE(prs.created_at) <= DATE(prev_s.created_at) AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
       d = Person.order(" pbd.district_id_number, pbd.national_serial_number, n.first_name, n.last_name, cp.created_at ")
@@ -633,17 +633,20 @@ class PersonController < ApplicationController
     @tasks = []
 
     if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
-         @tasks << ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-DAMAGED-REJECTED"],"/person/view","/assets/folder3.png"]
-         @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
+         @tasks << ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+         @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
+         @tasks << ["Rejected Amended by DM", "Rejected Amended by DM", ["HQ-AMEND-REJECTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"], "/person/view","/assets/folder3.png"]
     elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
           @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
-          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]  
-
+          @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]  
     else
           @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-GRANTED","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
-          @tasks << ["Closed Amended Records", "Closed Amended Records" , ["HQ-CAN-REPRINT-AMEND"],"/person/view","/assets/folder3.png"]         
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]         
+          @tasks << ["Rejected Amended by DM", "Rejected Amended by DM", ["HQ-AMEND-REJECTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"], "/person/view","/assets/folder3.png"]
+          @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]  
     end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
@@ -773,7 +776,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks =
       [
-        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view?HQ-INCOMPLETE-TBA","/assets/folder3.png"],
+        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view?had=HQ-INCOMPLETE-TBA","/assets/folder3.png"],
         ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
         ["Conflict Cases" ,"Conflict Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"]
@@ -947,6 +950,7 @@ class PersonController < ApplicationController
     @potential_records = PotentialDuplicate.where(:person_id => (params[:person_id].to_i)).last
     @similar_records = []
     @comments = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ")
+    
     @potential_records.duplicate_records.each do |record|
       @similar_records << person_details(record.person_id)
     end
