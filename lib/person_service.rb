@@ -898,6 +898,14 @@ end
       end
     end
 
+    had_query = ' '
+    if !params['had'].blank?
+      prev_states = params['had'].split('|')
+      prev_state_ids = prev_states.collect{|sn| Status.where(name: sn).last.id  rescue -1 }
+      had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id
+            AND prs.created_at <= prev_s.created_at AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
+    end
+
     search_val = params[:search][:value] rescue nil
     search_val = '_' if search_val.blank?
 
@@ -905,6 +913,7 @@ end
     main = main.joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
             INNER JOIN person_name n ON person.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id
+             #{had_query}
             INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
 
     main = main.where(" COALESCE(prs.voided, 0) = 0
