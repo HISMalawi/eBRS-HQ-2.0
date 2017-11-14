@@ -781,10 +781,10 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks =
       [
-        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view?had=HQ-INCOMPLETE-TBA","/assets/folder3.png"],
+        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT", "HQ-PRINTED", "HQ-DISPATCHED", "HQ-CAN-RE-PRINT"],
+          "/person/view?had=HQ-INCOMPLETE","/assets/folder3.png"],
         ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
-        ["Conflict Cases" ,"Conflict Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"]
       ]
     
     @tasks.reject{|task| !@folders.include?(task[0]) }
