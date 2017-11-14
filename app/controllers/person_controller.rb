@@ -660,7 +660,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-              ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
+              ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
