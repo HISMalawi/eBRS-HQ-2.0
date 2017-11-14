@@ -704,7 +704,7 @@ class PersonController < ApplicationController
 
     @name = @person.person_names.last
     @person_prev_values = {}
-    name_fields = ['first_name','last_name','middle_name',"gender","birthdate"]
+    name_fields = ['first_name','last_name','middle_name',"gender","birthdate","birth_location_id"]
     name_fields.each do |field|
         trail = AuditTrail.where(person_id: params[:id], field: field).order('created_at').last
         if trail.present?
