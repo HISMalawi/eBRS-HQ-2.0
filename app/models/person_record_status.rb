@@ -89,4 +89,19 @@ class PersonRecordStatus < ActiveRecord::Base
     end
     result
   end
+
+    def self.had_stats(state, role)
+      result = {}
+      user_ids = UserRole.where(role_id: Role.where(role: role).last.id).map(&:user_id)
+
+      prev_status_id = Status.where(name: state).last.id rescue -1
+      Status.all.each do |status|
+        result[status.name] = self.find_by_sql("
+        SELECT COUNT(*) c FROM person_record_statuses s
+          INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id = #{prev_status_id}
+            AND prev_s.creator IN (#{user_ids.join(', ')})
+          WHERE s.voided = 0 AND s.status_id = #{status.id}")[0]['c']
+      end
+      result
+    end
 end
