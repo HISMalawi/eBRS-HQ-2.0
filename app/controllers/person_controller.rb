@@ -394,10 +394,19 @@ class PersonController < ApplicationController
 
       had_query = ' '
       if !params['had'].blank?
+        #probe user who made previous change
+        user_hook = ""
+        if params['had_by'].present?
+
+          had_by_users =  UserRole.where(role_id: Role.where(role: params['had_by']).last.id).map(&:user_id) rescue [-1]
+          had_by_users =  [-1] if had_by_users.blank?
+          user_hook = " AND prev_s.creator IN (#{had_by_users.join(', ')}) " if had_by_users.length > 0
+        end
+
         prev_states = params['had'].split('|')
         prev_state_ids = prev_states.collect{|sn| Status.where(name: sn).last.id  rescue -1 }
-        had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id
-            AND  DATE(prs.created_at) <= DATE(prev_s.created_at) AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
+        had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id #{user_hook}
+             AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
       d = Person.order(" pbd.district_id_number, pbd.national_serial_number, n.first_name, n.last_name, cp.created_at ")
@@ -782,7 +791,7 @@ class PersonController < ApplicationController
     @tasks =
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT", "HQ-PRINTED", "HQ-DISPATCHED", "HQ-CAN-RE-PRINT"],
-          "/person/view?had=HQ-INCOMPLETE","/assets/folder3.png"],
+          "/person/view?had=HQ-COMPLETE&had_by=Data Supervisor","/assets/folder3.png"],
         ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
       ]
