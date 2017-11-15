@@ -61,27 +61,27 @@ class SimpleElasticSearch
          
 
       if person["mother_first_name"].present?
-        search_content = search_content + person["mother_first_name"].soundex + " " 
+        search_content = search_content + (person["mother_first_name"].soundex rescue '') + " " 
       end
 
       if person["mother_middle_name"].present?
-         search_content = search_content + person["mother_middle_name"].soundex + " "
+         search_content = search_content + (person["mother_middle_name"].soundex rescue '') + " "
       end   
 
       if person["mother_last_name"].present?
-        search_content = search_content + person["mother_last_name"].soundex + " "
+        search_content = search_content + (person["mother_last_name"].soundex rescue '') + " "
       end
 
       if person["father_first_name"].present?
-         search_content = search_content + person["father_first_name"].soundex + " "
+         search_content = search_content + (person["father_first_name"].soundex rescue '') + " "
       end 
 
       if person["father_middle_name"].present?
-         search_content = search_content + person["father_middle_name"].soundex + " "
+         search_content = search_content + (person["father_middle_name"].soundex rescue '') + " "
       end 
 
       if person["father_last_name"].present?
-         search_content = search_content + person["father_last_name"].soundex
+         search_content = search_content + (person["father_last_name"].soundex rescue '')
       end 
 
       return search_content.squish
@@ -100,7 +100,7 @@ class SimpleElasticSearch
     
      registration_district = person["district"]
 
-     coded_content = "#{person["first_name"].soundex} #{person["last_name"].soundex} #{self.format_coded_content(person)}"
+     coded_content = "#{person["first_name"].soundex rescue ''} #{person["last_name"].soundex rescue ''} #{self.format_coded_content(person)}"
 
      elastic_search_index = "curl -XPUT 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{person["id"]}'  -d '
               {
