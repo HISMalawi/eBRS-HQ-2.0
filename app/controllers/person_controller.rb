@@ -792,17 +792,17 @@ class PersonController < ApplicationController
       [
         ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT", "HQ-PRINTED", "HQ-DISPATCHED", "HQ-CAN-RE-PRINT"],
           "/person/view?had=HQ-INCOMPLETE-TBA&had_by=Data Supervisor","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA", "HQ-CONFLICT"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
       ]
     
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
-    @stats = PersonRecordStatus.had_stats('HQ-INCOMPLETE-TBA', 'Data Supervisor')
+    @stats = PersonRecordStatus.had_stats('HQ-INCOMPLETE', 'Data Checking Clerk')
     @stats1 = PersonRecordStatus.stats
     @stats['HQ-INCOMPLETE-TBA'] = @stats1['HQ-INCOMPLETE-TBA']
+    @stats['HQ-CONFLICT'] = @stats1['HQ-CONFLICT']
     @stats['HQ-CAN-REJECT'] = @stats1['HQ-CAN-REJECT']
-
 
     @section = "Rejected Cases"
 
