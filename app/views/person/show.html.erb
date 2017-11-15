@@ -491,6 +491,9 @@
             ajaxify(status);
             return;
         }
+        if(role == "Data Supervisor" && status == "HQ-COMPLETE"){
+            status = "HQ-CONFLICT"
+        }
 
         jQuery("#comment-list").html("");
 

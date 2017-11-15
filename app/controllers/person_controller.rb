@@ -393,10 +393,19 @@ class PersonController < ApplicationController
 
       had_query = ' '
       if !params['had'].blank?
+        #probe user who made previous change
+        user_hook = ""
+        if params['had_by'].present?
+
+          had_by_users =  UserRole.where(role_id: Role.where(role: params['had_by']).last.id).map(&:user_id) rescue [-1]
+          had_by_users =  [-1] if had_by_users.blank?
+          user_hook = " AND prev_s.creator IN (#{had_by_users.join(', ')}) " if had_by_users.length > 0
+        end
+
         prev_states = params['had'].split('|')
         prev_state_ids = prev_states.collect{|sn| Status.where(name: sn).last.id  rescue -1 }
-        had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id
-            AND  DATE(prs.created_at) <= DATE(prev_s.created_at) AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
+        had_query = " INNER JOIN person_record_statuses prev_s ON prev_s.person_id = prs.person_id #{user_hook}
+             AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
       d = Person.order(" pbd.district_id_number, pbd.national_serial_number, n.first_name, n.last_name, cp.created_at ")
@@ -659,7 +668,7 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
-              ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
+              ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
@@ -780,15 +789,20 @@ class PersonController < ApplicationController
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks =
       [
-        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT"],"/person/view?had=HQ-INCOMPLETE-TBA","/assets/folder3.png"],
-        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA"],"/person/view","/assets/folder3.png"],
+        ["Approved for Printing" ,"Approved for Printing", ["HQ-CAN-PRINT", "HQ-PRINTED", "HQ-DISPATCHED", "HQ-CAN-RE-PRINT"],
+          "/person/view?had=HQ-INCOMPLETE-TBA&had_by=Data Supervisor","/assets/folder3.png"],
+        ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA", "HQ-CONFLICT"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
-        ["Conflict Cases" ,"Conflict Cases", ["HQ-CONFLICT"],"/person/view","/assets/folder3.png"]
       ]
     
     @tasks.reject{|task| !@folders.include?(task[0]) }
-    
-    @stats = PersonRecordStatus.stats
+
+    @stats = PersonRecordStatus.had_stats('HQ-INCOMPLETE', 'Data Checking Clerk')
+    @stats1 = PersonRecordStatus.stats
+    @stats['HQ-INCOMPLETE-TBA'] = @stats1['HQ-INCOMPLETE-TBA']
+    @stats['HQ-CONFLICT'] = @stats1['HQ-CONFLICT']
+    @stats['HQ-CAN-REJECT'] = @stats1['HQ-CAN-REJECT']
+
     @section = "Rejected Cases"
 
     render :template => "/person/tasks"
