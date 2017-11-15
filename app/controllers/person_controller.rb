@@ -951,10 +951,10 @@ class PersonController < ApplicationController
     @tasks = [
               ["Potential Duplicates","Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
               ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED DUPLICATE","HQ-VOIDED"],"/person/view?had=HQ-POTENTIAL DUPLICATE","/assets/folder3.png"],
+              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED DUPLICATE","HQ-VOIDED"],"/person/view?had=HQ-DUPLICATE","/assets/folder3.png"],
               ["Resolve Potential Duplicates","Resolve Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
               ["Approved for Printing","Approved for printing" , ['HQ-CAN-PRINT'],"/person/view?had=HQ-POTENTIAL DUPLICATE","/assets/folder3.png"],
-              ["Voided Records","Voided Records" , ["HQ-VOIDED DUPLICATE"],"/person/view","/assets/folder3.png"]
+              ["Voided Records","Voided Records" , ["HQ-VOIDED"],"/person/view?had=HQ-POTENTIAL DUPLICATE-TBA","/assets/folder3.png"]
             ]
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
     @section = "Manage duplicate"
