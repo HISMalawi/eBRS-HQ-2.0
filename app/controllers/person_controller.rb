@@ -960,7 +960,11 @@ class PersonController < ApplicationController
             ]
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
     @section = "Manage duplicate"
+
+    @had_stats = PersonRecordStatus.had_stats('HQ-POTENTIAL DUPLICATE', nil)
     @stats = PersonRecordStatus.stats
+    @stats['HQ-CAN-PRINT'] = @had_stats['HQ-CAN-PRINT']
+
     render :template => "/person/tasks"
   end
   def duplicate
