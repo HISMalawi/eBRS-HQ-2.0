@@ -321,9 +321,8 @@ class PersonController < ApplicationController
       if @status == "HQ-ACTIVE"
         @results = []
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision']) 
-            
         duplicates.each do |dup|
-            next if DuplicateRecord.where(person_id: person['person_id']).present?
+            next if DuplicateRecord.where(person_id: person['id']).present?
             @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank? 
         end  
         
@@ -953,10 +952,10 @@ class PersonController < ApplicationController
     @tasks = [
               ["Potential Duplicates","Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
               ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
-              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED DUPLICATE"],"/person/view","/assets/folder3.png"],
+              ["Confirmed Duplicates","Confirmed Duplicate" , ["HQ-VOIDED DUPLICATE","HQ-VOIDED"],"/person/view?had=HQ-DUPLICATE","/assets/folder3.png"],
               ["Resolve Potential Duplicates","Resolve Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA"],"/person/view","/assets/folder3.png"],
-              ["Approved for Printing","Approved for printing" , ['HQ-CAN-PRINT'],"/person/view?had=HQ-POTENTIAL DUPLICATE-TBA","/assets/folder3.png"],
-              ["Voided Records","Voided Records" , ["HQ-VOIDED DUPLICATE"],"/person/view","/assets/folder3.png"]
+              ["Approved for Printing","Approved for printing" , ['HQ-CAN-PRINT'],"/person/view?had=HQ-POTENTIAL DUPLICATE","/assets/folder3.png"],
+              ["Voided Records","Voided Records" , ["HQ-VOIDED"],"/person/view?had=HQ-POTENTIAL DUPLICATE-TBA","/assets/folder3.png"]
             ]
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
     @section = "Manage duplicate"
@@ -970,7 +969,8 @@ class PersonController < ApplicationController
     @potential_records = PotentialDuplicate.where(:person_id => (params[:person_id].to_i)).last
     @similar_records = []
     @comments = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ")
-    
+    @status = PersonRecordStatus.status(params[:person_id])
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
     @potential_records.duplicate_records.each do |record|
       @similar_records << person_details(record.person_id)
     end
@@ -1011,7 +1011,7 @@ class PersonController < ApplicationController
 
     elsif params[:operation] == "Void-duplicate"
 
-        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED DUPLICATE', params[:comment])
+        PersonRecordStatus.new_record_state(params[:id], 'HQ-VOIDED', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
 
     elsif params[:operation] == "Verify-DC"
