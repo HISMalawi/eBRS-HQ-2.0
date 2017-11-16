@@ -95,7 +95,7 @@ class PersonController < ApplicationController
     @person = @core_person.person
 
     @status = PersonRecordStatus.status(@person.id)
-    if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
+    if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
     elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status 
         redirect_to "/person/ammend_case?id=#{@person.id}"
@@ -137,6 +137,7 @@ class PersonController < ApplicationController
     @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
     @status = PersonRecordStatus.status(@person.id)
+
 
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
 
@@ -1048,8 +1049,7 @@ class PersonController < ApplicationController
     person = Person.find(id)
     core_person = CorePerson.find(id)
     birth_details = PersonBirthDetail.find_by_person_id(id)
-    person_record_status = PersonRecordStatus.where(:person_id => id).last
-    person_status = person_record_status.status.name rescue nil
+    person_status = PersonRecordStatus.status(id)
 
     actions = ActionMatrix.read_actions(User.current.user_role.role.role, [person_status]) rescue nil
 
