@@ -356,6 +356,7 @@ class PersonController < ApplicationController
 
   def view
 
+    @type_stats = PersonRecordStatus.type_stats(params[:statuses], params[:had], params[:had_by])
     params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.referrer
     @states = params[:statuses]
