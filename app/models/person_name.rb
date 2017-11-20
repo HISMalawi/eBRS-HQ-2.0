@@ -7,4 +7,12 @@ class PersonName < ActiveRecord::Base
     belongs_to :person
     belongs_to :core_person
     has_one :person_name_code
+
+  after_initialize :strip_special_chars
+
+  def strip_special_chars
+    self.first_name = "" if self.first_name.match("@")
+    self.last_name = "" if self.last_name.match("@")
+    self.middle_name = "" if self.middle_name.match("@")
+  end
 end

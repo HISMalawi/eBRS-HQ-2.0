@@ -90,9 +90,13 @@ class PersonRecordStatus < ActiveRecord::Base
     result
   end
 
-    def self.had_stats(state, role)
+    def self.had_stats(state, role=nil)
       result = {}
-      user_ids = UserRole.where(role_id: Role.where(role: role).last.id).map(&:user_id)
+      if role.blank?
+        user_ids = User.pluck("user_id")
+      else
+        user_ids = UserRole.where(role_id: Role.where(role: role).last.id).map(&:user_id)
+      end
 
       prev_status_id = Status.where(name: state).last.id rescue -1
       Status.all.each do |status|

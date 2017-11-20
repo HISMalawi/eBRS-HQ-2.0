@@ -434,6 +434,10 @@ class PersonController < ApplicationController
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
+        
+        p['first_name'] = '' if p['first_name'].match('@')
+        p['last_name'] = '' if p['last_name'].match('@')
+        p['middle_name'] = '' if p['middle_name'].match('@')
 
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
@@ -694,6 +698,10 @@ class PersonController < ApplicationController
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
     @stats = PersonRecordStatus.stats
+
+    @stats1 = PersonRecordStatus.had_stats('HQ-RE-PRINT')
+    @stats['HQ-DISPATCHED'] = @stats1['HQ-DISPATCHED']
+
     @section = "Print Cases"
 
     render :template => "/person/tasks"
