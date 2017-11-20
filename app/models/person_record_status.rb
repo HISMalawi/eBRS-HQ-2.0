@@ -92,6 +92,8 @@ class PersonRecordStatus < ActiveRecord::Base
 
     def self.had_stats(state, role=nil)
       result = {}
+      user_ids = [-1]
+
       if role.blank?
         user_ids = User.pluck("user_id")
       else
