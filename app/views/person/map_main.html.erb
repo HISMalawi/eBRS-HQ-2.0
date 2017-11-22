@@ -33,9 +33,7 @@
       <tr>
         <td>Sync Status</td><td class='value' id="status"></td>
       </tr>
-      <tr>
-        <td>Reported</td><td class='value' id="reported"></td>
-      </tr>
+
     </table>
 </div>
 
@@ -76,7 +74,7 @@
 
                 document.getElementById('site_name').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
                 document.getElementById('status').innerHTML = d3.select("#<%=site['district']%>").attr("last_seen");
-                document.getElementById('reported').innerHTML = d3.select("#<%=site['district']%>").attr("reported");
+                //document.getElementById('reported').innerHTML = d3.select("#<%=site['district']%>").attr("reported");
 
                 jQuery.ajax({
                     url: "/person/get_district_stats?location_id=<%= site['location_id']%>",
@@ -125,7 +123,7 @@
     function resetStats(){
         document.getElementById('site_name').innerHTML = '&nbsp;';
         document.getElementById('status').innerHTML = '&nbsp;';
-        document.getElementById('reported').innerHTML = '&nbsp;';
+        //document.getElementById('reported').innerHTML = '&nbsp;';
         var items =  window.parent.document.getElementsByClassName('stat-count');
         for(var i=0; i<items.length; i++){
             items[i].innerHTML = items[i].getAttribute('default-value')

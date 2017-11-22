@@ -28,8 +28,8 @@ class PersonController < ApplicationController
       @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
 
       (@last_twelve_months_reported_births.keys || []).each do |code|
-        details = PersonBirthDetail.where("acknowledgement_of_receipt_date BETWEEN ? AND ? 
-          AND LEFT(district_id_number,#{code.length}) = ?", 
+        details = PersonBirthDetail.where("date_reported BETWEEN ? AND ?
+          AND LEFT(district_id_number,#{code.length}) = ?",
           start_date, end_date, code).count
       
         @last_twelve_months_reported_births[code]["#{start_date.to_date.month}#{start_date.to_date.year}".to_i] = details
@@ -1264,9 +1264,6 @@ class PersonController < ApplicationController
           locations << l.location_id
         }
 
-        reported = PersonBirthDetail.find_by_sql(
-            "SELECT count(*) c FROM person_birth_details WHERE location_created_at IN (#{locations.join(', ')}) AND COALESCE(district_id_number, '') != '' ")[0]['c']
-
         @sites << {
             'online' => (site['online'] rescue false),
             'region' => l.description,
@@ -1277,7 +1274,6 @@ class PersonController < ApplicationController
             'name' => l.name,
             'last_seen' => last_seen,
             'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
-            'reported' => reported
         }
       end
     end
