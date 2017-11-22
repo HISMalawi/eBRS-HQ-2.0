@@ -92,14 +92,13 @@ class PersonRecordStatus < ActiveRecord::Base
 
     def self.had_stats(state, role=nil)
       result = {}
-      user_ids = [-1]
-
       if role.blank?
         user_ids = User.pluck("user_id")
       else
         user_ids = UserRole.where(role_id: Role.where(role: role).last.id).map(&:user_id)
       end
 
+      user_ids = [-1] if user_ids.blank?
       prev_status_id = Status.where(name: state).last.id rescue -1
       Status.all.each do |status|
         result[status.name] = self.find_by_sql("
@@ -122,6 +121,8 @@ class PersonRecordStatus < ActiveRecord::Base
 
         if old_state_creator.present?
           user_ids = UserRole.where(role_id: Role.where(role: old_state_creator).last.id).map(&:user_id)
+          user_ids = [-1] if user_ids.blank?
+
           had_query += " AND prev_s.creator IN (#{user_ids.join(', ')})"
         end
       end
