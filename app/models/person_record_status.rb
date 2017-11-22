@@ -99,11 +99,13 @@ class PersonRecordStatus < ActiveRecord::Base
       end
 
       user_ids = [-1] if user_ids.blank?
-      prev_status_id = Status.where(name: state).last.id rescue -1
+
+      prev_status_ids = Status.where(" name IN ('#{state.split("|").join("', '")}')").map(&:status_id) + [-1]
+
       Status.all.each do |status|
         result[status.name] = self.find_by_sql("
         SELECT COUNT(*) c FROM person_record_statuses s
-          INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id = #{prev_status_id}
+          INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id IN (#{prev_status_ids.join(', ')})
             AND prev_s.creator IN (#{user_ids.join(', ')})
           WHERE s.voided = 0 AND s.status_id = #{status.id}")[0]['c']
       end
@@ -116,8 +118,9 @@ class PersonRecordStatus < ActiveRecord::Base
       had_query = ''
 
       if old_state.present?
-        prev_status_id = Status.where(name: old_state).last.id
-        had_query = "INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id = #{prev_status_id}"
+
+        prev_status_ids = Status.where(" name IN ('#{old_state.split("|").join("', '")}')").map(&:status_id)
+        had_query = "INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id IN (#{prev_status_ids.join(', ')})"
 
         if old_state_creator.present?
           user_ids = UserRole.where(role_id: Role.where(role: old_state_creator).last.id).map(&:user_id)
