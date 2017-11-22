@@ -11,8 +11,8 @@ class PersonName < ActiveRecord::Base
   after_initialize :strip_special_chars
 
   def strip_special_chars
-    self.first_name = "" if self.first_name.match("@")
-    self.last_name = "" if self.last_name.match("@")
-    self.middle_name = "" if self.middle_name.match("@")
+    self.first_name = "" if !self.first_name && self.first_name.match("@")
+    self.last_name = "" if !self.last_name.blank? && self.last_name.match("@")
+    self.middle_name = "" if !self.middle_name.blank? && self.middle_name.match("@")
   end
 end

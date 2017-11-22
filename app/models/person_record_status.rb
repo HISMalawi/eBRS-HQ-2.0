@@ -126,7 +126,7 @@ class PersonRecordStatus < ActiveRecord::Base
         end
       end
 
-      status_ids = states.collect{|s| Status.where(name: s).last.id} rescue Status.all.map(:status_id)
+      status_ids = states.collect{|s| Status.where(name: s).last.id} rescue Status.all.map(&:status_id)
 
       data = self.find_by_sql("
       SELECT t.name, COUNT(*) c FROM person_birth_details d

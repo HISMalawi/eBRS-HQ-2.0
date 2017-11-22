@@ -970,8 +970,10 @@ class PersonController < ApplicationController
     @section = "Manage duplicate"
 
     @had_stats = PersonRecordStatus.had_stats('HQ-POTENTIAL DUPLICATE', nil)
+    @had_stats2 = PersonRecordStatus.had_stats('HQ-POTENTIAL DUPLICATE-TBA', nil)
     @stats = PersonRecordStatus.stats
     @stats['HQ-CAN-PRINT'] = @had_stats['HQ-CAN-PRINT']
+    @stats['HQ-VOIDED'] = @had_stats['HQ-VOIDED']
 
     render :template => "/person/tasks"
   end
