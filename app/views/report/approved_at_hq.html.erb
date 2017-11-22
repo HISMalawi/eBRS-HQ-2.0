@@ -72,15 +72,8 @@ function dataT(){
   dataTable = jQuery('#report').dataTable({
       dom: 'Bfrtip',
         buttons: [
-            {
-                extend: 'copyHtml5',
-                exportOptions: {
-                 columns: ':contains("Office")'
-                }
-            },
             'excelHtml5',
-            'csvHtml5',
-            'pdfHtml5'
+            'csvHtml5'
         ],
       "pageLength": 10,
       "processing": true
@@ -101,7 +94,7 @@ function addRows(data) {
     ben           =  records[i]['birth_entry_number'];
     brn           =  records[i]['registration_number'];
 
-    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender]).draw();
+    dataTable.api().row.add([brn, ben, first_name, middle_name, last_name, dob, gender]).draw();
   }
 }
 

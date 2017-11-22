@@ -89,15 +89,15 @@ class ReportController < ApplicationController
     district_code     = Location.find(params[:location_id]).code
     district_code_len = district_code.length
     person_type       = PersonType.where(name: 'Client').first
-    status_ids        = Status.where(name: 'HQ-APPROVED').first.id
+    #    status_ids        = Status.where(name: 'HQ-APPROVED').first.id
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
      
-    data = Person.where("p.person_type_id = ? AND 
+    data = Person.where("national_serial_number IS NOT NULL AND p.person_type_id = ? AND
       LEFT(district_id_number, #{district_code_len}) = ?
-      AND s.status_id IN(?) AND s.created_at BETWEEN ? AND ?", 
+       AND s.created_at BETWEEN ? AND ?",
       person_type.id, district_code,
-      status_ids, start_date, end_date).joins("INNER JOIN core_person p 
+      start_date, end_date).joins("INNER JOIN core_person p
       ON person.person_id = p.person_id
       INNER JOIN person_birth_details d 
       ON d.person_id = person.person_id
@@ -105,20 +105,25 @@ class ReportController < ApplicationController
       ON n.person_id = p.person_id
       INNER JOIN person_record_statuses s 
       ON s.person_id = person.person_id AND s.voided = 0").group('n.person_id')\
-      .select("person.*, n.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      .select("person.*, n.first_name f_n, n.last_name l_n, n.middle_name m_n, d.*, s.created_at dispatch_date").order('p.created_at DESC,
       district_id_number ASC')
 
     records = []
     (data || []).each do |r|
-      p = Person.find(r.person_id)
+      p = r
+
+      n = r.national_serial_number
+      gender = r.gender == 'M' ? '2' : '1'
+      n = n.to_s.rjust(12, '0')
+
       records << {
-        registration_number: r.national_serial_number,
+        registration_number: n.insert(n.length/2, gender),
         birth_entry_number: r.district_id_number,
-        first_name: p.first_name,
-        middle_name: p.middle_name,
-        last_name: p.last_name,
+        first_name: p.f_n,
+        middle_name: p.m_n,
+        last_name: p.l_n,
         birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
-        gender: p.full_gender,
+        gender: {'2' => 'Male', '1' => 'Female'}[gender],
         person_id: p.person_id
       }
     end
