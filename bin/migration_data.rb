@@ -231,6 +231,8 @@ def save_full_record(params)
   else
     raise "no person created".inspect
   end
+
+  person
 end
 
 def assign_identifiers(person_id, params)
@@ -280,10 +282,66 @@ def load_record(data)
     end
 
     if data[:person][:type_of_birth]== 'Single'
-        save_full_record(data)
+        person = save_full_record(data)
+        audit_trail(data, person.person_id) if person.present?
     else
         write_csv_content(OTHER_TYPES_OF_BIRTH, [data[:_id],data[:person][:type_of_birth]])
     end
+end
+
+def audit_trail(record, person_id)
+  trail = Audit.by_record_id.key(record[:_id])
+  return nil if person_id.blank? || record.blank?
+
+  map = {
+      "DC"=>{
+          "DC_ASK"=>"HQ-RE-APPROVED",
+          "Deduplication"=>"DC-POTENTIAL DUPLICATE",
+          "Amendment"=>"DC-AMEND",
+          "Incomplete Record"=>"DC-INCOMPLETE",
+          "DC APPROVED"=>"HQ-ACTIVE"
+      },
+
+      "HQ"=>{
+          "Incomplete Record"=>"HQ-CAN-REJECT",
+          "Record Voided"=>"HQ-VOIDED",
+          "DEDUPLICATION"=>"HQ-POTENTIAL DUPLICATE",
+          "HQ APPROVE"=>"HQ-CAN-PRINT",
+          "HQ Record Rejection"=>"HQ-REJECTED",
+          "Amendment"=>"HQ-GRANTED",
+          "Potential Duplicate"=>"HQ-POTENTIAL DUPLICATE",
+          "Record Rejection"=>"HQ-CAN-REJECT",
+          "HQ RE-APPROVE"=>"HQ-CAN-RE-PRINT",
+          "HQ CAN VOID"=>"HQ-DUPLICATE",
+          "HQ Re-Open"=>"HQ-RE-PRINT"
+      }
+  }
+
+  if trail.length > 0
+    puts  "Trail: #{trail.count} Found"
+  end
+
+  trail.each do |t|
+    status = Status.where(name: map[t.site_type][t.audit_type]).first rescue nil
+    user = User.where(username: t.user_id).last
+    user = User.first if user.blank?
+
+    next if status.blank? || user.blank?
+
+    time_created = t.created_at.to_time rescue nil
+    time_created = t.updated_at.to_time rescue nil if time_created.blank?
+    time_created = Time.now if time_created.blank?
+
+    PersonRecordStatus.create(
+        person_id: person_id,
+        status_id: status.id,
+        voided: 1,
+        creator: user.id,
+        created_at: time_created,
+        updated_at: time_created,
+        comments: t.reason
+    )
+  end
 end
 
 def format_date(date)
@@ -318,7 +376,7 @@ def get_record_status(rec_status, req_status)
           'VOIDED' => 'HQ-VOIDED'},
 		"PRINTED" =>{'CLOSED' =>'HQ-PRINTED',
 					'DISPATCHED' =>'HQ-DISPATCHED',
-          "APPROVED"   => "HQ-APPROVED"},
+          "APPROVED"   => "HQ-CAN-RE-PRINT"},
 		"HQ-PRINTED" =>{'CLOSED' =>'HQ-PRINTED'},
 		"HQ-DISPATCHED" =>{'DISPATCHED' =>'HQ-DISPATCHED'},
 		"HQ-CAN-PRINT" =>{'CAN PRINT' =>'HQ-CAN-RE-PRINT'},
@@ -565,6 +623,9 @@ records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime res
 put "Decrypting and formatting records"
 build_client_record(records['rows'])
 
+puts "Migrating Users"
+load "#{Rails.root}/bin/user_migration.rb"
+
 put "Loading data to SQL database"
 
 write_csv_header(OTHER_TYPES_OF_BIRTH, ["Couch ID","Type of Birth"])
@@ -604,12 +665,10 @@ load "#{Rails.root}/bin/duplicates_linking.rb"
 name = @location.name.gsub(/\s+/, '_')
 dump_name = "#{name}_#{SETTINGS['migration_mode']}.sql"
 
-puts "Migrating Users"
-load "#{Rails.root}/bin/user_migration.rb"
-
 if SETTINGS['migration_mode'] == 'DC'
   puts "Fixing faulty BEN's"
   load "#{Rails.root}/bin/fix_ben.rb"
+
 end
 
 puts "building data dump for migration"
