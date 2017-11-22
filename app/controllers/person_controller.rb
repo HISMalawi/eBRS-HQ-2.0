@@ -1256,14 +1256,7 @@ class PersonController < ApplicationController
           last_seen = "<span style='color: red !important'>Offline</span>".html_safe
         end
 
-        locations = [site_id]
-        facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
-        (Location.find_by_sql("SELECT l.location_id FROM location l
-                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
-                          WHERE l.parent_location = #{site_id}") || []).each {|l|
-          locations << l.location_id
-        }
-
+        
         @sites << {
             'online' => (site['online'] rescue false),
             'region' => l.description,
