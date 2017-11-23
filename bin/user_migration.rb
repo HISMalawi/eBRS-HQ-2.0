@@ -87,7 +87,7 @@ person_id: 1002511,
         creator: User.first.id,
         person_id: person.id,
         active: (user['active'] == true ? 1 : 0),
-        last_password_date: (user['last_password_date'].to_datetime rescue nil),
+        last_password_date: (user['last_password_date'].to_datetime rescue Date.today),
         email: user['email']
     )
 

@@ -677,4 +677,4 @@ puts "building data dump for migration"
 puts "DUMP location: #{Rails.root}/#{dump_name}"
 
 File.open("#{Rails.root}/errors.json", 'w'){|f| f.write @errored}
-puts "Total Records: #{@results.keys.count}  Successful: #{@successful.count} Errored : #{@errored.count}"
+puts "Done"
