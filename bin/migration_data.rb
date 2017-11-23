@@ -604,7 +604,6 @@ def build_client_record(records)
 end
 
 def put(txt)
-  `clear`
   puts txt
 end
 
