@@ -1,10 +1,10 @@
-$configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")['user_migration']
-$database = "#{$configs['prefix']}_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
-$couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
-$couch_link += "_design/User/_view/all?include_docs=true"
+puts ARGV[0]
 
-puts $couch_link
-users = JSON.parse(`curl -s -X GET #{$couch_link}`)
+if ARGV[0].blank?
+  raise "Missing HQ couch link for couch database".to_s
+end
+
+users = JSON.parse(`curl -s -X GET #{ARGV[0]}`)
 
 puts " No Users Found" if users.blank?
 
@@ -59,12 +59,10 @@ person_id: 1002511,
  next
 =end
 
-  level = SETTINGS['migration_mode'] if level.blank?
-  level = 'HQ' if level.blank?
+  level = 'HQ'
 
   role_name = user['role']
   role_name = 'Administrator' if role_name == "System Administrator"
-  puts "User #{user['_id']}, level #{level}, Role: #{role_name}"
 
   r_ole = Role.where(level: level,
                      role: role_name).first rescue nil

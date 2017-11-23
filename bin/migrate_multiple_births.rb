@@ -190,6 +190,8 @@ def save_data(r,multiple_person=nil)
 
     person = PersonService.create_record(data)
 
+    audit_trail(data, person.person_id) if person.present?
+
     if !person.blank?
       if SETTINGS['potential_search']
         SimpleElasticSearch.add(person_for_elastic_search(person,data))

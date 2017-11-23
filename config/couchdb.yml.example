@@ -22,3 +22,8 @@ user_migration:
   <<: *development
   prefix: 
   suffix:
+
+audit_migration:
+  <<: *development
+  prefix:
+  suffix:

@@ -56,5 +56,7 @@ bundle exec rake db:seed
 
 rm public/sites/*.yml
 
+mysql -u$USERNAME -p$PASSWORD $DATABASE < hq_users.sql
+
 echo "Done"
 

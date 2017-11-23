@@ -125,6 +125,12 @@ module MigrateBirthDetails
         location_id = Location.where(name: 'Other').first.id
       end
 
+      facility_serial_number = nil
+      available = PersonBirthDetail.where(facility_serial_number: person[:facility_serial_number]).last rescue nil
+      if available.blank?
+        facility_serial_number = person[:facility_serial_number]
+      end
+
 	    details = PersonBirthDetail.create(
 	        person_id:                                person_id,
 	        birth_registration_type_id:               reg_type,
@@ -146,6 +152,7 @@ module MigrateBirthDetails
 	        court_order_attached:                     (person[:court_order_attached] == 'Yes' ? 1 : 0),
 	        parents_signed:                           (person[:parents_signed] == 'Yes' ? 1 : 0),
 	        form_signed:                              (person[:form_signed] == 'Yes' ? 1 : 0),
+          facility_serial_number:                   facility_serial_number,
 	        informant_designation:                    (params[:person][:informant][:designation].present? ? params[:person][:informant][:designation].to_s : nil),
 	        informant_relationship_to_person:         rel,
 	        other_informant_relationship_to_person:   (params[:person][:informant][:relationship_to_person].to_s == "Other" ? (params[:person][:informant][:other_informant_relationship_to_person] rescue nil) : nil),
@@ -168,6 +175,12 @@ module MigrateBirthDetails
 
 	    prev_details = PersonBirthDetail.where(person_id: params[:person][:prev_child_id].to_s).first
 
+      facility_serial_number = nil
+      available = PersonBirthDetail.where(facility_serial_number: params[:person][:facility_serial_number]).last rescue nil
+      if available.blank?
+        facility_serial_number = params[:person][:facility_serial_number]
+      end #else duplicate serial number
+
 	    prev_details_keys = prev_details.attributes.keys
 	    exclude_these = ['person_id','person_birth_details_id',"birth_weight","type_of_birth","mode_of_delivery_id","document_id", "source_id",
                        "facility_serial_number", 'national_serial_number', 'district_id_number']
@@ -175,8 +188,9 @@ module MigrateBirthDetails
 
 	    details = PersonBirthDetail.new
 	    details["person_id"] = person.id
-      	details["source_id"] = params[:_id]
+      details["source_id"] = params[:_id]
 	    details["birth_weight"] = params[:person][:birth_weight]
+      details["facility_serial_number"] = facility_serial_number
 
 	    type_of_birth_id = PersonTypeOfBirth.where(name: params[:person][:type_of_birth]).last.id
 	    details["type_of_birth"] = type_of_birth_id
