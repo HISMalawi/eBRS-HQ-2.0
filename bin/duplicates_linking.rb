@@ -1,4 +1,4 @@
-status = [["DC OPEN".soundex, "POTENTIAL DUPLICATE".soundex],["DC OPEN".soundex, "POTENTIAL-DUPLICATE".soundex],["HQ OPEN".soundex,"POTENTIAL DUPLICATE".soundex],["HQ OPEN".soundex,"TBA-POTENTIAL DUPLICATE".soundex],["DUPLICATE".soundex,"VOIDED".soundex]] 
+status = [["DC OPEN".soundex, "POTENTIAL DUPLICATE".soundex],["POTENTIAL DUPLICATE".soundex, "ACTIVE".soundex],["DC OPEN".soundex, "POTENTIAL-DUPLICATE".soundex],["HQ OPEN".soundex,"POTENTIAL DUPLICATE".soundex],["HQ OPEN".soundex,"TBA-POTENTIAL DUPLICATE".soundex],["DUPLICATE".soundex,"VOIDED".soundex]] 
 i = 0
 linked = 0
 Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
@@ -14,8 +14,11 @@ Child.by_record_status_code_and_request_status_code.keys(status).each do |child|
                 next if duplicate_details.blank?
                 potential_duplicate.create_duplicate(duplicate_details.person_id,child.created_at)
             end
+            if potential_duplicate.present?
+                    linked = linked + 1
+            end
         end
-        linked = linked + 1
+        
     end
     i = i + 1
     if i % 100

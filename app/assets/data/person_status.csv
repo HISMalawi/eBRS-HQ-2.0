@@ -9,21 +9,33 @@ DC,DC OPEN,DUPLICATE,DC-DUPLICATE,Duplicate record
 DC,HQ OPEN,ACTIVE,HQ-ACTIVE,"Approved record at DC, accessible at HQ. Initial state for record at HQ"
 DC,HQ OPEN,RE-APPROVED,HQ-RE-APPROVED,Record  that was has been re-approved at DC on request and now accessible at HQ
 DC,VOIDED,CLOSED,DC-VOIDED,"A record that has been voided, final state"
-,,,DC-RE-OPENED,A record that has been re-opened at DC
-,,,DC-LOST,A certificate that was lost and re-opened at DC
-,,,DC-DAMAGED,A certificate that was damaged and re-opened at DC
+DC,,,DC-RE-OPENED,A record that has been re-opened at DC
+DC,,,DC-LOST,A certificate that was lost and re-opened at DC
+DC,,,DC-LOST-REJECTED,Lost record rejected by DS
+DC,,,DC-DAMAGED,A certificate that was damaged and re-opened at DC
+DC,,,DC-DAMAGED-REJECTED,Damaged record rejected by DS
 DC ,HQ OPEN,DC_ASK,DC-ASK,Deprecated
 DC,POTENTIAL-DUPLICATE,VOIDED,DC-VOIDED,A voided duplicate record at DC
 DC,DC OPEN,POTENTIAL DUPLICATE,DC-POTENTIAL DUPLICATE,A potential duplicate record at DC
 DC,,,DC-PENDING, A record to be reviewed by ADR
 DC,,,DC-AMEND,A record that has been ammended at DC
+DC,,,DC-AMEND-REJECTED,Amend record rejected by DS
 DC,,,DC-EXACT DUPLICATE,Exact duplicate record at DC
 HQ,VOIDED,CLOSED,HQ-VOIDED,A voided record at HQ
 HQ,HQ OPEN,GRANTED,HQ-GRANTED,Deprecated
-HQ,,,HQ-AMEND,Amended Records approved by DS
+HQ,,,HQ-AMEND,Amended Records approved by ADR
+HQ,,,HQ-AMEND-GRANTED,Amended Records approved by DS
+HQ,,,HQ-AMEND-REJECTED,Amended Records rejected by DM
+HQ,,,HQ-AMEND-REJECTED-TBA,Amended Records rejected by DS
 HQ,,,HQ-CAN-REPRINT-AMEND,Amended Records approved by DM
-HQ,,,HQ-LOST, Lost Records approved by DS after reprint request
-HQ,,,HQ-DAMAGED,Damanged Records approved by DS after reprint request
+HQ,,,HQ-LOST, Lost Records approved by ADR
+HQ,,,HQ-DAMAGED,Damanged Records approved by ADR
+HQ,,,HQ-LOST-GRANTED, Lost Records approved by DS
+HQ,,,HQ-DAMAGED-GRANTED,Damanged Records approved by DS
+HQ,,,HQ-DAMAGED-REJECTED,Request Records rejected by DM
+HQ,,,HQ-LOST-REJECTED,Request Records rejected by DM
+HQ,,,HQ-DAMAGED-REJECTED-TBA,Request Records rejected by DS
+HQ,,,HQ-LOST-REJECTED-TBA,Request Records rejected by DS
 HQ,,,HQ-CAN-REPRINT-LOST, Lost Records approved by DM after reprint request
 HQ,,,HQ-CAN-REPRINT-DAMAGED,Lost Records approved by DM after reprint request
 HQ,HQ OPEN,REJECTED,HQ-REJECTED,Deprecated

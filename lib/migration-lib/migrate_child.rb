@@ -21,9 +21,9 @@ module MigrateChild
 
     PersonName.create(
         :person_id          => core_person.id,
-        :first_name         => params[:person][:first_name],
-        :middle_name        => (params[:person][:middle_name] rescue nil),
-        :last_name          => params[:person][:last_name],
+        :first_name         => (params[:person][:first_name].squish rescue "@@@@@"),
+        :middle_name        => (params[:person][:middle_name].squish rescue nil),
+        :last_name          => (params[:person][:last_name].squish rescue "@@@@@"),
         :created_at         => params[:person][:created_at].to_date,
         :updated_at         => params[:person][:updated_at].to_date
     )

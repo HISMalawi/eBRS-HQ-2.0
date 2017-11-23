@@ -605,7 +605,7 @@ name = @location.name.gsub(/\s+/, '_')
 dump_name = "#{name}_#{SETTINGS['migration_mode']}.sql"
 
 puts "Migrating Users"
-load "#{Rails.root}/bin/user_migration.rb"
+#load "#{Rails.root}/bin/user_migration.rb"
 
 if SETTINGS['migration_mode'] == 'DC'
   puts "Fixing faulty BEN's"
