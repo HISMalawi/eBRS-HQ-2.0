@@ -102,7 +102,7 @@ class PersonController < ApplicationController
     end
 
     session[:list_url] = request.referrer
-    
+
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
     @address = @person.addresses.last

@@ -848,14 +848,33 @@ end
     end
 
     person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
+    old_brn_identifier_join = " "
+    old_brn_type_id = PersonIdentifierType.where(name: "Old Birth Registration Number").first.id
 
+    old_ben_identifier_join = " "
+    old_ben_type_id = PersonIdentifierType.where(name: "Old Birth Entry Number").first.id
 
     (filters || []).each do |k, v|
       case k
         when 'ben'
-          entry_num_query = " AND pbd.district_id_number = '#{v}' " unless v.blank?
+          legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id)
+          legacy_available = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id).length > 0
+          if legacy_available
+            old_ben_identifier_join = " INNER JOIN person_identifiers pid2 ON pid2.person_id = cp.person_id AND pid2.value = '#{v}' "
+          else
+            entry_num_query = " AND pbd.district_id_number = '#{v}' " unless v.blank?
+          end
         when 'brn'
-          serial_num_query = " AND pbd.national_serial_number = '#{v}' " unless v.blank?
+
+          legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_brn_type_id)
+          legacy_available = PersonIdentifier.where(value: v, person_identifier_type_id: old_brn_type_id).length > 0
+          if legacy_available
+            old_brn_identifier_join = " INNER JOIN person_identifiers pid ON pid.person_id = cp.person_id AND pid.value = #{v} "
+          else
+            hf = (v.length / 2) rescue ""
+            v = (v[0 .. (hf -1)] + v[(hf + 1) .. v.length]) rescue ""
+            serial_num_query = " AND pbd.national_serial_number = '#{v}' " unless v.blank?
+          end
         when 'serial_num'
           fac_serial_query =  " AND pbd.facility_serial_number = '#{v}' " unless v.blank?
         when 'names'
@@ -913,6 +932,8 @@ end
     main = main.joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
             INNER JOIN person_name n ON person.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id
+            #{old_brn_identifier_join}
+            #{old_ben_identifier_join}
              #{had_query}
             INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
 

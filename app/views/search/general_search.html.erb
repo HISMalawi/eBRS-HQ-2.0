@@ -68,8 +68,6 @@
         <div class="controls form-inline ">
 
           <input onclick="check(this)" type="checkbox" class="input-small check" id="fsn" style="margin-right: 105px;">
-          <label for="serial_num">Facility serial number</label>
-          <input type="text" class="input-small"  id="serial_num" name="filter[serial_num]">
 
           <label for="ben">BEN</label>
           <input type="text" class="input-small"  id="ben" name="filter[ben]">
@@ -243,7 +241,7 @@
                   "ajax": {
                       "url": "/search_cases",
                       "data": function(d){
-                          var ids =['serial_num', 'ben', 'brn', 'last_name', 'middle_name', 'first_name', 'gender', 'status',
+                          var ids =['ben', 'brn', 'last_name', 'middle_name', 'first_name', 'gender', 'status',
                               'place_of_birth', 'district_of_birth', 'ta_of_birth', 'village_of_birth',
                               'hospital_of_birth', 'other_birth_place'];
 
