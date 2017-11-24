@@ -155,7 +155,7 @@ class ReportController < ApplicationController
         p.m_n,
         p.l_n,
         r.birthdate.to_date.strftime('%d/%b/%Y'),
-        {'M' => 'Male', 'F' => 'Female'}[gender],
+        {'2' => 'Male', '1' => 'Female'}[gender],
         status_map[p.status_id],
         (p.date_reported.to_date.strftime("%d/%b/%Y") rescue nil)
       ]
