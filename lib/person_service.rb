@@ -867,7 +867,7 @@ end
         when 'brn'
 
           legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_brn_type_id)
-          legacy_available = PersonIdentifier.where(value: v, person_identifier_type_id: old_brn_type_id).length > 0
+          legacy_available = legacy.length > 0
           if legacy_available
             old_brn_identifier_join = " INNER JOIN person_identifiers pid ON pid.person_id = cp.person_id AND pid.value = #{v} "
           else
