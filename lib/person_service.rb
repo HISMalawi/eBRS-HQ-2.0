@@ -1029,7 +1029,7 @@ end
         mother_person = Person.create(
             :person_id          => core_person.id,
             :gender             => 'F',
-            :birthdate          =>  nris_person[:MotherBirthdate]
+            :birthdate          =>  nris_person[:MotherBirthdate],
             :birthdate_estimated => nris_person[:MotherBirthdateEstimated]
         )
         #create mother_name
@@ -1084,7 +1084,7 @@ end
       father_person = Person.create(
           :person_id          => core_person.id,
           :gender             => 'M',
-          :birthdate          =>  nris_person[:FatherBirthdate]
+          :birthdate          =>  nris_person[:FatherBirthdate],
           :birthdate_estimated => nris_person[:FatherBirthdateEstimated]
       )
       #create father_name
@@ -1097,9 +1097,9 @@ end
       #create father_address
       PersonAddress.create(
           :person_id          => core_person.id,
-          :current_district   => ""
+          :current_district   => "",
           :current_ta         => "",
-          :current_village    => ""
+          :current_village    => "",
           :home_district  => nris_person[:FatherDistrictId],
           :home_ta => "",
           :home_village => nris_person[:FatherVillageId],
@@ -1125,6 +1125,29 @@ end
     
       end
       return ebrs_person.id
-    end
+  end
+
+  def self.request_nris_id(person_id)
+    person = Person.find(person_id)
+    details = PersonBirthDetail.where(person_id: person_id).last
+
+    m_type = PersonRelationType.find_by_name("Mother")
+    m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last
+
+    m_name = PersonName.where(person_id: m_rel.person_b).last
+    m_address = PersonAddress.where(person_id: m_rel.person_b)
+    m_home_district = Location.find(m_address.home_district) rescue m_address.home_district_other
+    m_home_ta = Location.find(m_address.home_ta) rescue m_address.home_ta_other
+    m_home_village = Location.find(m_address.home_district) rescue m_address.home_village_other
+
+    f_type = PersonRelationType.find_by_name("Father")
+    f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
+
+    f_name = PersonName.where(person_id: f_rel.person_b).last
+    f_address = PersonAddress.where(person_id: f_rel.person_b)
+
+
+
+  end
    
 end
