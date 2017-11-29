@@ -1003,7 +1003,7 @@ end
           :middle_name        => nris_person[:OtherNames],
           :last_name          => nris_person[:Surname]
       )
-      
+      #create person_birth_detail
       PersonBirthDetail.create(
         person_id: core_person.id,
         birth_registration_type_id: "",
@@ -1012,12 +1012,19 @@ end
         district_of_birth:  nris_person[:PlaceOfBirthDistrictId],
         location_created_at: "" 
     )
+    #create nris_id
+    PersonIdentifier.create(
+      person_id: core_person.id,
+      person_identifier_type_id: (PersonIdentifierType.find_by_name("NRIS ID").id),
+      value: nris_person[:NrisPk].upcase
+    )
     
-      PersonIdentifier.create(
-        person_id: father_person.person_id,
-        person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
-        value: nris_person[:BirthCertificateNumber].upcase
-     )
+    #create national_id
+    PersonIdentifier.create(
+      person_id: father_person.person_id,
+      person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
+      value: nris_person[:BirthCertificateNumber].upcase
+    )
      
         #create_mother
         #create mother_core_person
@@ -1060,12 +1067,6 @@ end
                     value: nris_person[:MotherPin].upcase
             )
         end
-    
-        PersonIdentifier.create(
-          person_id: mother_person.person_id,
-          person_identifier_type_id: (PersonIdentifierType.find_by_name("NRIS ID").id),
-          value: nris_person[:NrisPk].upcase
-        )
     
         # create mother_relationship
         PersonRelationship.create(
