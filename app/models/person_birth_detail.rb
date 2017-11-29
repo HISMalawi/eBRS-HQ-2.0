@@ -49,4 +49,9 @@ class PersonBirthDetail < ActiveRecord::Base
   def birth_place
     Location.find(self.place_of_birth)
   end
+   
+  def national_id
+    PersonIdentifier.find_by_person_id_and_person_identifier_type_id(self.person_id,
+    PersonIdentifierType.find_by_name("National ID Number").id)
+  end
 end
