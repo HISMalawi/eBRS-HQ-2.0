@@ -81,7 +81,9 @@
                     success: function(result){
                         result = JSON.parse(result);
                         for(var i = 0; i< result.length; i++){
-                            window.parent.document.getElementById(result[i][0]).innerHTML = result[i][1];
+                            try {
+                                window.parent.document.getElementById(result[i][0]).innerHTML = result[i][1];
+                            }catch(e){}
                         }
                         window.parent.document.getElementById('district_label').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
                     }
