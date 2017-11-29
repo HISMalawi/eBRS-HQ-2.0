@@ -1130,23 +1130,60 @@ end
   def self.request_nris_id(person_id)
     person = Person.find(person_id)
     details = PersonBirthDetail.where(person_id: person_id).last
+    b_name = PersonName.where(person_id: person_id).last
 
     m_type = PersonRelationType.find_by_name("Mother")
     m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last
 
     m_name = PersonName.where(person_id: m_rel.person_b).last
-    m_address = PersonAddress.where(person_id: m_rel.person_b)
+    m_address = PersonAddress.where(person_id: m_rel.person_b).last
     m_home_district = Location.find(m_address.home_district) rescue m_address.home_district_other
     m_home_ta = Location.find(m_address.home_ta) rescue m_address.home_ta_other
-    m_home_village = Location.find(m_address.home_district) rescue m_address.home_village_other
+    m_home_village = Location.find(m_address.home_village) rescue m_address.home_village_other
 
     f_type = PersonRelationType.find_by_name("Father")
     f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
 
     f_name = PersonName.where(person_id: f_rel.person_b).last
-    f_address = PersonAddress.where(person_id: f_rel.person_b)
+    f_address = PersonAddress.where(person_id: f_rel.person_b).last
+    f_home_district = Location.find(f_address.home_district) rescue f_address.home_district_other
+    f_home_ta = Location.find(f_address.home_ta) rescue f_address.home_ta_other
+    f_home_village = Location.find(f_address.home_village) rescue f_address.home_village_other
+    codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
 
 
+    data = {
+        "Surname"=> b_name.last_name,
+        "OtherNames"=>b_name.middle_name,
+        "FirstName"=>b_name.first_name,
+        "DateOfBirthString"=>person.birthdate.to_date.strftime("%d/%m/%Y"),
+        "Sex"=> person.gender == 'M' ? 1 : 2,
+        "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
+        "Nationality2"=> "",
+        "Status"=>0,
+        "MotherPin"=>"PPPP4444",
+        "MotherSurname"=> m_name.last_name,
+        "MotherMaidenName"=> m_name.last_name,
+        "MotherFirstName"=>m_name.first_name,
+        "MotherOtherNames"=>m_name.middle_name,
+        "MotherVillageId"=>-1,
+        "MotherNationality"=>(codes[Location.find(m_address.citizenship).name] rescue nil),
+        "FatherPin"=>"POIHJJYY",
+        "FatherSurname"=>f_name.last_name,
+        "FatherFirstName"=>f_name.first_name,
+        "FatherOtherNames"=>f_name.middle_name,
+        "FatherVillageId"=>-1,
+        "FatherNationality"=>(codes[Location.find(f_address.citizenship).name] rescue nil),
+        "EbrsPk"=> person_id,
+        "NrisPk"=>nil,
+        "PlaceOfBirthDistrictId"=>-1,
+        "PlaceOfBirthVillageId"=>-1,
+        "MotherDistrictId"=>-1,
+        "FatherDistrictId"=>-1,
+        "EditUser"=>User.first.username,
+        "EditMachine"=>"meduser@192.168.43.5",
+        "BirthCertificateNumber"=> details.brn
+    }
 
   end
    
