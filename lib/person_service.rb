@@ -1128,7 +1128,19 @@ end
   end
 
   def self.request_nris_id(person_id)
+
+    nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
+    nris_type = PersonIdentifierType.where(name: "NRIS ID").first.id
+    nid = nil
+    nris_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type)
+
+
     person = Person.find(person_id)
+    if person.birthdate.to_date <= 16.years.ago.to_date
+      puts "AGE LIMIT EXCEEDED"
+      return nil
+    end
+
     details = PersonBirthDetail.where(person_id: person_id).last
     b_name = PersonName.where(person_id: person_id).last
 
@@ -1140,6 +1152,7 @@ end
     m_home_district = Location.find(m_address.home_district) rescue m_address.home_district_other
     m_home_ta = Location.find(m_address.home_ta) rescue m_address.home_ta_other
     m_home_village = Location.find(m_address.home_village) rescue m_address.home_village_other
+    m_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: m_rel.person_b).last.value rescue ""
 
     f_type = PersonRelationType.find_by_name("Father")
     f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
@@ -1149,8 +1162,20 @@ end
     f_home_district = Location.find(f_address.home_district) rescue f_address.home_district_other
     f_home_ta = Location.find(f_address.home_ta) rescue f_address.home_ta_other
     f_home_village = Location.find(f_address.home_village) rescue f_address.home_village_other
+    f_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: f_rel.person_b).last.value rescue ""
+
     codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
 
+
+    get_url = "http://192.168.43.43/api/Person/post"
+    post_url = "http://192.168.43.43/api/pbc/PostNPb"
+    district_url = "http://192.168.43.43/api/District"
+    ta_url = "http://192.168.43.43/api/TA"
+
+    districts = {}
+    JSON.parse(RestClient.get(district_url, :accept => 'json')).each do |h|
+      districts[h['Name']] = h['PrimaryKey']
+    end
 
     data = {
         "Surname"=> b_name.last_name,
@@ -1161,14 +1186,14 @@ end
         "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
         "Nationality2"=> "",
         "Status"=>0,
-        "MotherPin"=>"PPPP4444",
+        "MotherPin"=>m_pin,
         "MotherSurname"=> m_name.last_name,
         "MotherMaidenName"=> m_name.last_name,
         "MotherFirstName"=>m_name.first_name,
         "MotherOtherNames"=>m_name.middle_name,
         "MotherVillageId"=>-1,
         "MotherNationality"=>(codes[Location.find(m_address.citizenship).name] rescue nil),
-        "FatherPin"=>"POIHJJYY",
+        "FatherPin"=>f_pin,
         "FatherSurname"=>f_name.last_name,
         "FatherFirstName"=>f_name.first_name,
         "FatherOtherNames"=>f_name.middle_name,
@@ -1185,6 +1210,46 @@ end
         "BirthCertificateNumber"=> details.brn
     }
 
+    if data['MotherNationality'] != "MWI" && data['MotherNationality'] != "MWI"
+      return nil
+    end
+
+    RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
+      #Save National ID
+      nid = JSON.parse(response) rescue response.to_s
+      nid = nid.gsub("\"", '')
+
+      puts "NID: #{nid}, LENGTH #{nid.length}"
+
+
+      if nid.present? && nid.to_s.length == 8
+        old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
+        old_id = PersonIdentifier.new if old_id.blank?
+
+        old_id.person_id = person_id
+        old_id.person_identifier_type_id = nid_type
+        old_id.value = nid
+        old_id.save
+      end
+    }
+
+    if nid.present?
+      RestClient.post(get_url, nid.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
+        #Save NID Primary Key
+
+        hash = JSON.parse(response) rescue nil
+        puts "NrisPk: #{hash['NrisPk']}"
+        if hash.present? && hash['NrisPk'].present?
+          old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
+          old_key = PersonIdentifier.new if old_key.blank?
+
+          old_key.person_id = person_id
+          old_key.person_identifier_type_id = nris_type
+          old_key.value = hash['NrisPk']
+          old_key.save
+        end
+      }
+    end
   end
    
 end

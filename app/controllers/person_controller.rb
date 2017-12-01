@@ -1174,7 +1174,7 @@ class PersonController < ApplicationController
           'ben'                 => details.ben,
           'dob'                 => p.birthdate.to_date.strftime('%d/%b/%Y'),
           'sex'                 => p.gender,
-          'date_registered'     => p.date_registered.to_date.strftime('%d/%b/%Y')
+          'date_registered'     => (p.date_registered.to_date.strftime('%d/%b/%Y') rescue nil)
       }
     end
 

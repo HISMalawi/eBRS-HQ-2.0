@@ -52,6 +52,6 @@ class PersonBirthDetail < ActiveRecord::Base
    
   def national_id
     PersonIdentifier.find_by_person_id_and_person_identifier_type_id(self.person_id,
-    PersonIdentifierType.find_by_name("National ID Number").id)
+    PersonIdentifierType.find_by_name("National ID Number").id).value rescue ""
   end
 end
