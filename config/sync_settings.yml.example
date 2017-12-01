@@ -1,0 +1,16 @@
+:source:
+  :protocol: 'http'
+  :host: 0.0.0.0
+  :port: '5984'
+  :primary: birth_hq
+  :audit: birth_hq_audits
+  :username: admin
+  :password: password
+:target:
+  :protocol: 'http'
+  :host: 0.0.0.0
+  :port: '5984'
+  :primary: ebrs_dc
+  :audit: ebrs_dc_audits
+  :username: admin
+  :password: password
