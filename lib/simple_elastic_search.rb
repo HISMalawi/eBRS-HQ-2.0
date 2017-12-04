@@ -203,7 +203,7 @@ class SimpleElasticSearch
     person["content"] = "#{self.escape_single_quotes(person["first_name"])} #{self.escape_single_quotes(person["last_name"])} #{content}"
     person["coded_content"] = coded_content
     create_string = self.escape_single_quotes(person.as_json.to_json)
-    create_query = "curl -XPUT 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{person['id']}'  -d '
+    create_query = "curl -XPUT -s 'http://#{SETTING['host']}:#{SETTING['port']}/#{SETTING['index']}/#{SETTING['type']}/#{person['id']}'  -d '
                 #{create_string}'"
     `#{create_query}`             
     return self.find(person["id"])
