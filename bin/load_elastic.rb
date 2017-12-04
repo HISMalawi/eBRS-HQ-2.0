@@ -8,6 +8,9 @@ f_type = PersonRelationType.find_by_name("Father")
   @person = Person.find(d.person_id)
 
   m_rel = PersonRelationship.where(:person_a => d.person_id, :person_relationship_type_id => m_type.id).last
+
+  next if m_rel.blank?
+
   @mother_person = Person.find(m_rel.person_b)
   @mother_name = PersonName.where(person_id: m_rel.person_b).last
   @mother_address = @mother_person.addresses.last rescue nil
