@@ -218,12 +218,7 @@
                         <span>Search</span>
                       </a>
                       <ul class="sub">
-                        <% if @folders.include?('By BRN')%>
-                            <li><a  href="/search/BRN">By BRN</a></li>
-                        <% end %>
-                        <% if @folders.include?('By BEN')%>
-                            <li><a  href="/search/BEN">By BEN</a></li>
-                        <% end %>
+
                         <% if @folders.include?('General Search')%>
                             <li><a  href="/search">General Search</a></li>
                         <% end %>
@@ -274,11 +269,7 @@
                       <ul class="sub">
                           <!--li class="active"><a  href="blank.html">Blank Page</a></li-->
                           <li><a  href="/report/birth_reports">Birth Reports</a></li>
-                          <li><a  href="/printed_certificates">Printed Certificates</a></li>
-                          <li><a  href="/reported_births">Reported Births</a></li>
-                          <li><a  href="/registered_births">Registered Births</a></li>
-                          <li><a  href="/approved_at_hq">Approved at HQ</a></li>
-                          <li><a  href="/voided_records">Voided Records</a></li>
+                          <li><a  href="/approved_at_hq">Records by Category</a></li>
                           <li><a  href="/record_state_and_date">By Period of Record State</a></li>
                           <li><a  href="/user_audit_trail">User Audits</a></li>
                       </ul>

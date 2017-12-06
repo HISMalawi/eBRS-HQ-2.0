@@ -28,15 +28,20 @@ class ReportController < ApplicationController
 
     records = []
     (data || []).each do |r|
+      p = r
+      n = r.national_serial_number
+      gender = r.gender == 'M' ? '2' : '1'
+      n = n.to_s.rjust(12, '0')
+
       records << {
-        registration_number: r.national_serial_number,
+        registration_number: n.insert(n.length/2, gender),
         birth_entry_number: r.district_id_number,
         first_name: r.first_name,
         middle_name: r.middle_name,
         last_name: r.last_name,
         birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
         gender: r.gender,
-        date_reported: r.date_reported.to_date.strftime('%d/%b/%Y'),
+        date_reported: (r.date_reported.to_date.strftime('%d/%b/%Y') rescue ""),
         person_id: r.person_id
       }
     end
@@ -86,41 +91,74 @@ class ReportController < ApplicationController
   end
 
   def get_approved_at_hq
-    district_code     = Location.find(params[:location_id]).code
-    district_code_len = district_code.length
-    person_type       = PersonType.where(name: 'Client').first
-    status_ids        = Status.where(name: 'HQ-APPROVED').first.id
+    locations = [params[:location_id]]
+    facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+    (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{params[:location_id]}") || []).each {|l|
+      locations << l.location_id
+    }
+
+    status_a = []; status_b=[];  #status_a = Record Current Status; status_b = Record Prrevious Status
+    case params[:cat]
+      when 'voided_records'
+        status_a = ['HQ-VOIDED']
+        status_b = []
+      when 'printed_certificates'
+        status_a = ['HQ-PRINTED', 'HQ-DISPATCHED', 'HQ-RE-OPENED', 'HQ-CAN-RE-PRINT', 'DC-AMEND', 'DC-LOST', 'DC-DAMAGED']
+        status_b = []
+      when 'reported_births'
+        status_a = Status.where(" name RLIKE 'HQ' ").map(&:name) + (['DC-LOST', 'DC-DAMAGED', 'DC-AMEND', 'DC-RE-OPENED', 'DC-ASK']) -
+            ['HQ-VOIDED', 'HQ-VOIDED DUPLICATE']
+        status_b = []
+      when 'registered_births'
+        status_a = ['HQ-PRINTED', 'HQ-DISPATCHED', 'HQ-RE-OPENED', 'HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'DC-AMEND', 'DC-LOST', 'DC-DAMAGED']
+        status_b = []
+      when 'all'
+        status_a = []
+        status_b = []
+    end
+
+    s1        = Status.where("name IN ('#{status_a.join("',  '")}')").map(&:status_id) rescue nil
+    s1        = Status.pluck("status_id") if s1.blank?
+
+    s2        = Status.where("name IN ('#{status_b.join("',  '")}')").map(&:status_id) rescue nil
+    s2        = Status.pluck("status_id") if s2.blank?
+
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
-     
-    data = Person.where("p.person_type_id = ? AND 
-      LEFT(district_id_number, #{district_code_len}) = ?
-      AND s.status_id IN(?) AND s.created_at BETWEEN ? AND ?", 
-      person_type.id, district_code,
-      status_ids, start_date, end_date).joins("INNER JOIN core_person p 
-      ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
-      ON d.person_id = person.person_id
-      INNER JOIN person_name n 
-      ON n.person_id = p.person_id
-      INNER JOIN person_record_statuses s 
-      ON s.person_id = person.person_id AND s.voided = 0").group('n.person_id')\
-      .select("person.*, n.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
-      district_id_number ASC')
+    status_map = Status.all.inject({}){|h, s| h[s.status_id] = s.name; h}
+
+    data = Person.find_by_sql(["
+            SELECT p.birthdate, p.gender, n.first_name f_n, n.last_name l_n, n.middle_name m_n, d.*, s1.status_id FROM person p
+              INNER JOIN person_birth_details d ON d.person_id = p.person_id
+              INNER JOIN person_name n ON n.person_id = p.person_id
+              INNER JOIN person_record_statuses s1 ON s1.person_id = p.person_id AND  s1.voided = 0
+              INNER JOIN person_record_statuses s2 ON s2.person_id = p.person_id
+              WHERE s1.status_id IN (#{s1.join(', ')}) AND s2.status_id IN (#{s2.join(', ')})
+                AND d.location_created_at IN (#{locations.join(', ')}) AND d.date_reported BETWEEN ? AND ?
+              GROUP BY p.person_id
+            ", start_date, end_date])
 
     records = []
     (data || []).each do |r|
-      p = Person.find(r.person_id)
-      records << {
-        registration_number: r.national_serial_number,
-        birth_entry_number: r.district_id_number,
-        first_name: p.first_name,
-        middle_name: p.middle_name,
-        last_name: p.last_name,
-        birthdate: r.birthdate.to_date.strftime('%d/%b/%Y'),
-        gender: p.full_gender,
-        person_id: p.person_id
-      }
+      p = r
+
+      n = r.national_serial_number
+      gender = r.gender == 'M' ? '2' : '1'
+      n = n.to_s.rjust(12, '0')
+
+      records << [
+        (r.national_serial_number.blank? ? "" : (n.insert(n.length/2, gender))),
+        r.district_id_number,
+        p.f_n,
+        p.m_n,
+        p.l_n,
+        r.birthdate.to_date.strftime('%d/%b/%Y'),
+        {'2' => 'Male', '1' => 'Female'}[gender],
+        status_map[p.status_id],
+        (p.date_reported.to_date.strftime("%d/%b/%Y") rescue nil)
+      ]
     end
 
     render text: records.to_json
@@ -148,9 +186,14 @@ class ReportController < ApplicationController
 
     records = []
     (data || []).each do |r|
-      p = Person.find(r.person_id)
+      p = r
+
+      n = r.national_serial_number
+      gender = r.gender == 'M' ? '2' : '1'
+      n = n.to_s.rjust(12, '0')
+
       records << {
-        registration_number: r.national_serial_number,
+        registration_number: n.insert(n.length/2, gender),
         birth_entry_number: r.district_id_number,
         first_name: p.first_name,
         middle_name: p.middle_name,
@@ -174,7 +217,7 @@ class ReportController < ApplicationController
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
 
-    data = ActiveRecord::Base.connection.select_all("SELECT person.*, n.*, d.*, s.created_at AS date_of_status, s.* FROM person
+    data = ActiveRecord::Base.connection.select_all("SELECT person.gender, person.birthdate dob, n.*, d.*, s.created_at AS date_of_status, s.* FROM person
       INNER JOIN core_person p
       ON person.person_id = p.person_id
       INNER JOIN person_birth_details d ON d.person_id = person.person_id
@@ -187,17 +230,16 @@ class ReportController < ApplicationController
     records = []
     (data || []).each do |r|
       p = Person.find(r['person_id'])
-      records << {
-          registration_number: r['national_serial_number'],
-          birth_entry_number: r['district_id_number'],
-          first_name: r['first_name'],
-          middle_name: r['middle_name'],
-          last_name: r['last_name'],
-          birthdate: p.birthdate.to_date.strftime('%d/%b/%Y'),
-          gender: p.full_gender,
-          date: r['date_of_status'].to_date.strftime('%d/%b/%Y'),
-          person_id: p.person_id
-      }
+      records << [
+          r['national_serial_number'],
+          r['district_id_number'],
+          r['first_name'],
+          r['middle_name'],
+          r['last_name'],
+          r['dob'].to_date.strftime('%d/%b/%Y'),
+          {'M' => 'Male', 'F' => 'Female'}[r['gender']],
+          r['date_of_status'].to_date.strftime('%d/%b/%Y'),
+      ]
     end
 
     render text: records.to_json

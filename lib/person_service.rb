@@ -848,14 +848,33 @@ end
     end
 
     person_reg_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
+    old_brn_identifier_join = " "
+    old_brn_type_id = PersonIdentifierType.where(name: "Old Birth Registration Number").first.id
 
+    old_ben_identifier_join = " "
+    old_ben_type_id = PersonIdentifierType.where(name: "Old Birth Entry Number").first.id
 
     (filters || []).each do |k, v|
       case k
         when 'ben'
-          entry_num_query = " AND pbd.district_id_number = '#{v}' " unless v.blank?
+          legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id)
+          legacy_available = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id).length > 0
+          if legacy_available
+            old_ben_identifier_join = " INNER JOIN person_identifiers pid2 ON pid2.person_id = cp.person_id AND pid2.value = '#{v}' "
+          else
+            entry_num_query = " AND pbd.district_id_number = '#{v}' " unless v.blank?
+          end
         when 'brn'
-          serial_num_query = " AND pbd.national_serial_number = '#{v}' " unless v.blank?
+
+          legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_brn_type_id)
+          legacy_available = legacy.length > 0
+          if legacy_available
+            old_brn_identifier_join = " INNER JOIN person_identifiers pid ON pid.person_id = cp.person_id AND pid.value = #{v} "
+          else
+            hf = (v.length / 2) rescue ""
+            v = (v[0 .. (hf -1)] + v[(hf + 1) .. v.length]) rescue ""
+            serial_num_query = " AND pbd.national_serial_number = '#{v}' " unless v.blank?
+          end
         when 'serial_num'
           fac_serial_query =  " AND pbd.facility_serial_number = '#{v}' " unless v.blank?
         when 'names'
@@ -913,6 +932,8 @@ end
     main = main.joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
             INNER JOIN person_name n ON person.person_id = n.person_id
             INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id
+            #{old_brn_identifier_join}
+            #{old_ben_identifier_join}
              #{had_query}
             INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
 
@@ -960,5 +981,275 @@ end
         "recordsFiltered" => total,
         "data" => results}
   end
+  
+  def self.create_nris_person(nris_person)
+    
+      # create core_person  
+        core_person = CorePerson.create(
+          :person_type_id     => PersonType.where(name: 'Client').last.id,
+      )
+      
+      ebrs_person = core_person
+      #create person
+      person = Person.create(
+          :person_id          => core_person.id,
+          :gender             => nris_person[:sex] == 1 ? 'M' : 'F',
+          :birthdate          => nris_person[:DateOfBirthString].to_date.to_s
+       )
+      #create person_name
+      PersonName.create(
+          :person_id          => core_person.id,
+          :first_name         => nris_person[:FirstName],
+          :middle_name        => nris_person[:OtherNames],
+          :last_name          => nris_person[:Surname]
+      )
+      
+      PersonBirthDetail.create(
+        person_id: core_person.id,
+        birth_registration_type_id: "",
+        place_of_birth:  "",
+        birth_location_id: nris_person[:PlaceOfBirthVillageId],
+        district_of_birth:  nris_person[:PlaceOfBirthDistrictId],
+        location_created_at: "" 
+    )
+    
+      PersonIdentifier.create(
+        person_id: father_person.person_id,
+        person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
+        value: nris_person[:BirthCertificateNumber].upcase
+     )
+     
+        #create_mother
+        #create mother_core_person
+          core_person = CorePerson.create(
+            :person_type_id     => PersonType.where(name: 'Mother').last.id,
+        )
+        
+        #create mother_person
+        mother_person = Person.create(
+            :person_id          => core_person.id,
+            :gender             => 'F',
+            :birthdate          =>  nris_person[:MotherBirthdate],
+            :birthdate_estimated => nris_person[:MotherBirthdateEstimated]
+        )
+        #create mother_name
+        PersonName.create(
+            :person_id          => core_person.id,
+            :first_name         => nris_person[:MotherFirstName],
+            :middle_name        => nris_person[:MotherMaidenName],
+            :last_name          => nris_person[:MotherLastName]
+        )
+        #create mother_address
+        PersonAddress.create(
+            :person_id          => core_person.id,
+            :current_district   => "",
+            :current_ta         => "",
+            :current_village    => "",
+            :home_district   => nris_person[:MotherDistrictId],
+            :home_ta            => "",
+            :home_village       => nris_person[:MotherVillageId],
+            :citizenship        => Location.where(country: nris_person[:MotherNationality]).last.id,
+            
+        )
+        #create mother_identifier
+        if nris_person[:MotherPin].present?
+    
+          PersonIdentifier.create(
+                    person_id: mother_person.person_id,
+                    person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
+                    value: nris_person[:MotherPin].upcase
+            )
+        end
+    
+        PersonIdentifier.create(
+          person_id: mother_person.person_id,
+          person_identifier_type_id: (PersonIdentifierType.find_by_name("NRIS ID").id),
+          value: nris_person[:NrisPk].upcase
+        )
+    
+        # create mother_relationship
+        PersonRelationship.create(
+            person_a: ebrs_person.id, person_b: core_person.id,
+            person_relationship_type_id: PersonRelationType.where(name: 'Mother').last.id
+        )
+        
+      #create_father
+      #create father_core_person
+      if nris_person[:FatherFirstName].present? && nris_person[:FatherSurname].present?
+        core_person = CorePerson.create(
+          :person_type_id     => PersonType.where(name: 'Father').last.id,
+      )
+      
+      #create father_person
+      father_person = Person.create(
+          :person_id          => core_person.id,
+          :gender             => 'M',
+          :birthdate          =>  nris_person[:FatherBirthdate],
+          :birthdate_estimated => nris_person[:FatherBirthdateEstimated]
+      )
+      #create father_name
+      PersonName.create(
+          :person_id          => core_person.id,
+          :first_name         => nris_person[:FatherFirstName],
+          :middle_name        => nris_person[:FatherOtherNames],
+          :last_name          => nris_person[:FatherSurname]
+      )
+      #create father_address
+      PersonAddress.create(
+          :person_id          => core_person.id,
+          :current_district   => "",
+          :current_ta         => "",
+          :current_village    => "",
+          :home_district  => nris_person[:FatherDistrictId],
+          :home_ta => "",
+          :home_village => nris_person[:FatherVillageId],
+          :citizenship => Location.where(country: nris_person[:FatherNationality]).last.id,
+          
+      )
+      
+      #create father_identifier
+      if nris_person[:FatherPin].present?
+    
+        PersonIdentifier.create(
+                  person_id: father_person.person_id,
+                  person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
+                  value: nris_person[:FatherPin].upcase
+          )
+      end
+    
+       # create father_relationship
+       PersonRelationship.create(
+        person_a: ebrs_person.id, person_b: core_person.id,
+        person_relationship_type_id: PersonRelationType.where(name: 'Father').last.id
+      )
+    
+      end
+      return ebrs_person.id
+  end
 
+  def self.request_nris_id(person_id)
+
+    nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
+    nris_type = PersonIdentifierType.where(name: "NRIS ID").first.id
+    nid = nil
+    nris_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type)
+
+
+    person = Person.find(person_id)
+    if person.birthdate.to_date <= 16.years.ago.to_date
+      puts "AGE LIMIT EXCEEDED"
+      return nil
+    end
+
+    details = PersonBirthDetail.where(person_id: person_id).last
+    b_name = PersonName.where(person_id: person_id).last
+
+    m_type = PersonRelationType.find_by_name("Mother")
+    m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last
+
+    m_name = PersonName.where(person_id: m_rel.person_b).last
+    m_address = PersonAddress.where(person_id: m_rel.person_b).last
+    m_home_district = Location.find(m_address.home_district) rescue m_address.home_district_other
+    m_home_ta = Location.find(m_address.home_ta) rescue m_address.home_ta_other
+    m_home_village = Location.find(m_address.home_village) rescue m_address.home_village_other
+    m_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: m_rel.person_b).last.value rescue ""
+
+    f_type = PersonRelationType.find_by_name("Father")
+    f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
+
+    f_name = PersonName.where(person_id: f_rel.person_b).last
+    f_address = PersonAddress.where(person_id: f_rel.person_b).last
+    f_home_district = Location.find(f_address.home_district) rescue f_address.home_district_other
+    f_home_ta = Location.find(f_address.home_ta) rescue f_address.home_ta_other
+    f_home_village = Location.find(f_address.home_village) rescue f_address.home_village_other
+    f_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: f_rel.person_b).last.value rescue ""
+
+    codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
+
+
+    get_url = "http://192.168.43.43/api/Person/post"
+    post_url = "http://192.168.43.43/api/pbc/PostNPb"
+    district_url = "http://192.168.43.43/api/District"
+    ta_url = "http://192.168.43.43/api/TA"
+
+    districts = {}
+    JSON.parse(RestClient.get(district_url, :accept => 'json')).each do |h|
+      districts[h['Name']] = h['PrimaryKey']
+    end
+
+    data = {
+        "Surname"=> b_name.last_name,
+        "OtherNames"=>b_name.middle_name,
+        "FirstName"=>b_name.first_name,
+        "DateOfBirthString"=>person.birthdate.to_date.strftime("%d/%m/%Y"),
+        "Sex"=> person.gender == 'M' ? 1 : 2,
+        "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
+        "Nationality2"=> "",
+        "Status"=>0,
+        "MotherPin"=>m_pin,
+        "MotherSurname"=> m_name.last_name,
+        "MotherMaidenName"=> m_name.last_name,
+        "MotherFirstName"=>m_name.first_name,
+        "MotherOtherNames"=>m_name.middle_name,
+        "MotherVillageId"=>-1,
+        "MotherNationality"=>(codes[Location.find(m_address.citizenship).name] rescue nil),
+        "FatherPin"=>f_pin,
+        "FatherSurname"=>f_name.last_name,
+        "FatherFirstName"=>f_name.first_name,
+        "FatherOtherNames"=>f_name.middle_name,
+        "FatherVillageId"=>-1,
+        "FatherNationality"=>(codes[Location.find(f_address.citizenship).name] rescue nil),
+        "EbrsPk"=> person_id,
+        "NrisPk"=>nil,
+        "PlaceOfBirthDistrictId"=>-1,
+        "PlaceOfBirthVillageId"=>-1,
+        "MotherDistrictId"=>-1,
+        "FatherDistrictId"=>-1,
+        "EditUser"=>User.first.username,
+        "EditMachine"=>"meduser@192.168.43.5",
+        "BirthCertificateNumber"=> details.brn
+    }
+
+    if data['MotherNationality'] != "MWI" && data['MotherNationality'] != "MWI"
+      return nil
+    end
+
+    RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
+      #Save National ID
+      nid = JSON.parse(response) rescue response.to_s
+      nid = nid.gsub("\"", '')
+
+      puts "NID: #{nid}, LENGTH #{nid.length}"
+
+
+      if nid.present? && nid.to_s.length == 8
+        old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
+        old_id = PersonIdentifier.new if old_id.blank?
+
+        old_id.person_id = person_id
+        old_id.person_identifier_type_id = nid_type
+        old_id.value = nid
+        old_id.save
+      end
+    }
+
+    if nid.present?
+      RestClient.post(get_url, nid.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
+        #Save NID Primary Key
+
+        hash = JSON.parse(response) rescue nil
+        puts "NrisPk: #{hash['NrisPk']}"
+        if hash.present? && hash['NrisPk'].present?
+          old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
+          old_key = PersonIdentifier.new if old_key.blank?
+
+          old_key.person_id = person_id
+          old_key.person_identifier_type_id = nris_type
+          old_key.value = hash['NrisPk']
+          old_key.save
+        end
+      }
+    end
+  end
+   
 end

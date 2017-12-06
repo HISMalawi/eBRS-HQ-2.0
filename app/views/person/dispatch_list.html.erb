@@ -70,11 +70,12 @@ table, tr, td, th, tbody, thead, tfoot, td div {
 	<thead>
 	<tr>
 	    <th rowspan="2" width="10">#</th>
-      <th rowspan="2" width="50">Reg. <br/>Number</th>
+        <th rowspan="2" width="50">Reg. <br/>Number</th>
   		<th rowspan="2" width="50">Birth Entry <br/>Number</th>
-  		<th rowspan="2" width="250">Name</th>
+  		<th rowspan="2" width="150">Name</th>
   		<th rowspan="2" width="50">DOB</th>
   		<th rowspan="2" width="50">Sex</th>
+        <th rowspan="2" width="150">Birth Place</th>
   		<th rowspan="2" width="50">Reg. Date</th>
   		<th rowspan="2" width="50">Disp.At</th>
   		<th rowspan="2" width="50">Approved <br/> By</th>
@@ -97,6 +98,7 @@ table, tr, td, th, tbody, thead, tfoot, td div {
 		    <td style="text-align:left" ><%= data['name'] %></td>
 		    <td><%=data['dob'] %></td>
 		    <td style="text-align:center"><%=data['sex'] %></td>
+            <td style="text-align:left"><%=data['place_of_birth'] %></td>
 		    <td><%=data['date_registered'] %></td>
 		    <td>&nbsp;</td>
 		    <td>&nbsp;</td>

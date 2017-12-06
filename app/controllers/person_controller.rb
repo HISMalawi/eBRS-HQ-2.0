@@ -1,41 +1,9 @@
 class PersonController < ApplicationController
   def index
 
-    @last_twelve_months_reported_births = {}
-    last_year = Date.today.ago(11.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
-    curr_year = Date.today.strftime('%Y-%m-%d 23:59:59') 
-    
-    location_tag = LocationTag.where(name: 'District').first
-
-    locations = Location.group("location.location_id").where("parent_location IS NULL AND t.location_tag_id = ?",
-      location_tag.id).joins("INNER JOIN location_tag_map m 
-      ON m.location_id = location.location_id
-      INNER JOIN location_tag t 
-      ON t.location_tag_id = m.location_tag_id").order("location.location_id ASC")
-
-    (locations || []).each_with_index do |l, i|
-      district_code = l.code
-      if @last_twelve_months_reported_births[district_code].blank?
-        @last_twelve_months_reported_births[district_code] = {} 
-      end
-    end
-
-    @stats_months = []
-
-    (0.upto(11)).each_with_index do |num, i|
-      start_date  = Date.today.ago(num.month).beginning_of_month.strftime('%Y-%m-%d 00:00:00')
-      end_date    = start_date.to_date.end_of_month.strftime('%Y-%m-%d 23:59:59')
-      @stats_months << "#{start_date.to_date.month}#{start_date.to_date.year}".to_i #end_date.to_date.month
-
-      (@last_twelve_months_reported_births.keys || []).each do |code|
-        details = PersonBirthDetail.where("acknowledgement_of_receipt_date BETWEEN ? AND ? 
-          AND LEFT(district_id_number,#{code.length}) = ?", 
-          start_date, end_date, code).count
-      
-        @last_twelve_months_reported_births[code]["#{start_date.to_date.month}#{start_date.to_date.year}".to_i] = details
-      end
-    end
-
+    json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json"))
+    @last_twelve_months_reported_births = json["last_twelve_months_reported_births"]
+    @stats_months = json["stats_months"]
 
     available_years = []
     (@stats_months || []).each do |m|
@@ -100,6 +68,8 @@ class PersonController < ApplicationController
     elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status 
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
+
+    session[:list_url] = request.referrer
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
@@ -205,9 +175,9 @@ class PersonController < ApplicationController
                   "Village/Town" => "#{loc(@mother_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Home Address, Village/Town" => "#{loc(@mother_address.home_district, 'District') rescue nil}",
+                  "Home Address, District" => "#{loc(@mother_address.home_district, 'District') rescue nil}",
                   "T/A" => "#{loc(@mother_address.home_ta, 'Traditional Authority') rescue nil}",
-                  "District" => "#{loc(@mother_address.home_village, 'Village') rescue nil}"
+                  "Village/Town" => "#{loc(@mother_address.home_village, 'Village') rescue nil}"
               },
               {
                   "Gestation age at birth in weeks" => "#{@birth_details.gestation_at_birth rescue nil}",
@@ -240,9 +210,9 @@ class PersonController < ApplicationController
                   "Village/Town" => "#{loc(@father_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Home Address, Village/Town" => "#{loc(@father_address.home_district, 'District') rescue nil}",
+                  "Home Address, DIstrict" => "#{loc(@father_address.home_district, 'District') rescue nil}",
                   "T/A" => "#{loc(@father_address.home_ta, 'Traditional Authority') rescue nil}",
-                  "District" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
+                  "Village/Town" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
               }
           ],
           "Details of Child's Informant" => [
@@ -374,7 +344,14 @@ class PersonController < ApplicationController
 
       loc_query = " "
       locations = []
+
+      if params[:district] == "All"
+        session[:district] = ""
+      end
+
       if params[:district].present? && params[:district] != "All"
+        session[:district] = params[:district]
+
         locations = [params[:district]]
 
         facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
@@ -435,6 +412,10 @@ class PersonController < ApplicationController
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
+        
+        p['first_name'] = '' if p['first_name'].match('@')
+        p['last_name'] = '' if p['last_name'].match('@')
+        p['middle_name'] = '' if p['middle_name'].match('@')
 
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
@@ -619,6 +600,8 @@ class PersonController < ApplicationController
 
   #########################################################################
   def tasks
+
+    session[:district] = ""
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
@@ -695,6 +678,10 @@ class PersonController < ApplicationController
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
     @stats = PersonRecordStatus.stats
+
+    @stats1 = PersonRecordStatus.had_stats('HQ-RE-PRINT')
+    @stats['HQ-DISPATCHED'] = @stats1['HQ-DISPATCHED']
+
     @section = "Print Cases"
 
     render :template => "/person/tasks"
@@ -962,8 +949,10 @@ class PersonController < ApplicationController
     @section = "Manage duplicate"
 
     @had_stats = PersonRecordStatus.had_stats('HQ-POTENTIAL DUPLICATE', nil)
+    @had_stats2 = PersonRecordStatus.had_stats('HQ-POTENTIAL DUPLICATE-TBA', nil)
     @stats = PersonRecordStatus.stats
     @stats['HQ-CAN-PRINT'] = @had_stats['HQ-CAN-PRINT']
+    @stats['HQ-VOIDED'] = @had_stats['HQ-VOIDED']
 
     render :template => "/person/tasks"
   end
@@ -1152,27 +1141,32 @@ class PersonController < ApplicationController
   end
 
   def dispatch_list
-    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered FROM person p
+    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered, d.location_created_at FROM person p
                                  INNER JOIN person_birth_details d ON d.person_id = p.person_id
                                  INNER JOIN person_name n ON n.person_id = p.person_id
                         WHERE d.person_id IN (#{params[:person_ids]}) ")
-    @district = (Location.find(@people.first.birth_location_id).district rescue nil)
-    if @district.blank?
-      @district = (Location.find(@people.first.birth_district_id).name rescue nil)
-    end
+    @districts = []
+
 
     @data = []
     @people.each do |p|
+
+      @districts <<  Location.find(@people.first.location_created_at).district
       details = PersonBirthDetail.where(:person_id => p.person_id).last
+
       @data << {
           'name'                => p.name,
           'brn'                 => details.brn,
           'ben'                 => details.ben,
           'dob'                 => p.birthdate.to_date.strftime('%d/%b/%Y'),
           'sex'                 => p.gender,
-          'date_registered'     => p.date_registered.to_date.strftime('%d/%b/%Y')
+          'place_of_birth'      => details.birthplace,
+          'date_registered'     => (p.date_registered.to_date.strftime('%d/%b/%Y') rescue nil)
       }
     end
+
+    @districts = @districts.uniq
+    @district = @districts.join(", ")
 
     render :layout => false
   end
@@ -1254,17 +1248,7 @@ class PersonController < ApplicationController
           last_seen = "<span style='color: red !important'>Offline</span>".html_safe
         end
 
-        locations = [site_id]
-        facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
-        (Location.find_by_sql("SELECT l.location_id FROM location l
-                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
-                          WHERE l.parent_location = #{site_id}") || []).each {|l|
-          locations << l.location_id
-        }
-
-        reported = PersonBirthDetail.find_by_sql(
-            "SELECT count(*) c FROM person_birth_details WHERE location_created_at IN (#{locations.join(', ')}) AND COALESCE(district_id_number, '') != '' ")[0]['c']
-
+        
         @sites << {
             'online' => (site['online'] rescue false),
             'region' => l.description,
@@ -1275,7 +1259,6 @@ class PersonController < ApplicationController
             'name' => l.name,
             'last_seen' => last_seen,
             'district' => l.district.downcase.gsub(/\-|\_|\s+/, '').strip,
-            'reported' => reported
         }
       end
     end

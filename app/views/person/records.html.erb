@@ -231,14 +231,16 @@
   </div>
 </div>
 
-<select id="districts" label="District" onchange="reloadDataTable(this)">
-  <option value="All">Select District</option>
+<select id="districts" label="District" onchange="reloadDataTable(this)"
+        style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+
+  <option value="All">Select Source District</option>
   <% districts.each do |d|%>
-      <option value = "<%= d[0]%>"><%= d[1]%></option>
+      <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
   <% end %>
 </select>
 
-<select  style="display: none;" id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
+<select  style="display: none;color: #2f4f4f" id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
   <option value="All">Select Category</option>
   <option id="nid" >From NID</option>
   <option id="normal">Normal</option>
@@ -256,6 +258,10 @@
     <% if !@birth_type.blank? %>
         jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);
         jQuery("#birth_type").prop('disabled', true);
+    <% end %>
+
+    <% if !session[:district].blank?%>
+        jQuery("#districts").find("#" + '<%= session[:district]%>').prop('selected', true);
     <% end %>
 
     var type;
