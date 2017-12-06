@@ -82,7 +82,6 @@ class PersonController < ApplicationController
     @father_person = @person.father
     @father_address = @father_person.addresses.last rescue nil
     @father_name = @father_person.person_names.last rescue nil
-
     @informant_person = @person.informant rescue nil
     @informant_address = @informant_person.addresses.last rescue nil
     @informant_name = @informant_person.person_names.last rescue nil
@@ -1281,7 +1280,7 @@ class PersonController < ApplicationController
     data = [
         ['Newly Received (HQ)', stats['HQ-ACTIVE']],
         ['Print Queue (HQ)', stats['HQ-CAN-PRINT']],
-        ['Verified (HQ)', stats['HQ-APPROVED']],
+        ['Rejected to DC', stats['HQ-REJECTED']],
         ['Re-print Que (HQ)', (stats['HQ-RE-PRINT'] + stats['HQ-CAN-RE-PRINT'])],
         ['Suspected Duplicate (HQ)', stats['HQ-POTENTIAL DUPLICATE']],
         ['Incomplete Record (HQ)', stats['HQ-INCOMPLETE']],
