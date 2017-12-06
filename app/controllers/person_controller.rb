@@ -82,7 +82,6 @@ class PersonController < ApplicationController
     @father_person = @person.father
     @father_address = @father_person.addresses.last rescue nil
     @father_name = @father_person.person_names.last rescue nil
-
     @informant_person = @person.informant rescue nil
     @informant_address = @informant_person.addresses.last rescue nil
     @informant_name = @informant_person.person_names.last rescue nil
