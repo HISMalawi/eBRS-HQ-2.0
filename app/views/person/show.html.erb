@@ -283,8 +283,8 @@
           </table>
         <form id="duplicate_form" action="/duplicate_processing/<%=@person.id %>">
               <input type="hidden" name="operation" value="System">
-              <label style="margin:2%; float:left"><h4>Enter comment</h4></label>
-              <input class="form-control" type="textarea" name="comment" style="width: 98%;margin-top: 4px;margin-bottom: 4px;" required>
+              <label class="hidden" style="margin:2%; float:left"><h4>Enter comment</h4></label>
+              <input type ="hidden" class="form-control" type="textarea" name="comment" style="width: 98%;margin-top: 4px;margin-bottom: 4px;" value="System captured the record as duplicate">
               <input type="hidden" name="next_url" value="/person/view?statuses[]=HQ-ACTIVE&destination=Active Records" >
         </form>
         </span>
