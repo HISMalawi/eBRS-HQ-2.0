@@ -13,11 +13,11 @@ class Person < ActiveRecord::Base
 
   def mother
     result = nil
-    relationship_type = PersonRelationType.find_by_name("Mother")
+    relationship_type = PersonRelationType.find_by_name("Adoptive-Mother")
     relationship = PersonRelationship.where(:person_a => self.person_id, :person_relationship_type_id => relationship_type.id).last
 
     if relationship.blank?
-      relationship_type = PersonRelationType.find_by_name("Adoptive-Mother")
+      relationship_type = PersonRelationType.find_by_name("Mother")
       relationship = PersonRelationship.where(:person_a => self.person_id, :person_relationship_type_id => relationship_type.id).last
     end
 
@@ -30,11 +30,11 @@ class Person < ActiveRecord::Base
 
   def father
     result = nil
-    relationship_type = PersonRelationType.find_by_name("Father")
+    relationship_type = PersonRelationType.find_by_name("Adoptive-Father")
     relationship = PersonRelationship.where(:person_a => self.person_id, :person_relationship_type_id => relationship_type.id).last
 
     if relationship.blank?
-      relationship_type = PersonRelationType.find_by_name("Adoptive-Father")
+      relationship_type = PersonRelationType.find_by_name("Father")
       relationship = PersonRelationship.where(:person_a => self.person_id, :person_relationship_type_id => relationship_type.id).last
     end
 
