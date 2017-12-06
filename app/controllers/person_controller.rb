@@ -344,7 +344,14 @@ class PersonController < ApplicationController
 
       loc_query = " "
       locations = []
+
+      if params[:district] == "All"
+        session[:district] = ""
+      end
+
       if params[:district].present? && params[:district] != "All"
+        session[:district] = params[:district]
+
         locations = [params[:district]]
 
         facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
@@ -593,6 +600,8 @@ class PersonController < ApplicationController
 
   #########################################################################
   def tasks
+
+    session[:district] = ""
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],
@@ -1124,27 +1133,32 @@ class PersonController < ApplicationController
   end
 
   def dispatch_list
-    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered FROM person p
+    @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered, d.location_created_at FROM person p
                                  INNER JOIN person_birth_details d ON d.person_id = p.person_id
                                  INNER JOIN person_name n ON n.person_id = p.person_id
                         WHERE d.person_id IN (#{params[:person_ids]}) ")
-    @district = (Location.find(@people.first.birth_location_id).district rescue nil)
-    if @district.blank?
-      @district = (Location.find(@people.first.birth_district_id).name rescue nil)
-    end
+    @districts = []
+
 
     @data = []
     @people.each do |p|
+
+      @districts <<  Location.find(@people.first.location_created_at).district
       details = PersonBirthDetail.where(:person_id => p.person_id).last
+
       @data << {
           'name'                => p.name,
           'brn'                 => details.brn,
           'ben'                 => details.ben,
           'dob'                 => p.birthdate.to_date.strftime('%d/%b/%Y'),
           'sex'                 => p.gender,
+          'place_of_birth'      => details.birthplace,
           'date_registered'     => (p.date_registered.to_date.strftime('%d/%b/%Y') rescue nil)
       }
     end
+
+    @districts = @districts.uniq
+    @district = @districts.join(", ")
 
     render :layout => false
   end
