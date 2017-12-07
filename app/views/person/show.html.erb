@@ -491,7 +491,11 @@
             return;
         }
         if(role == "Data Supervisor" && status == "HQ-COMPLETE"){
-            status = "HQ-CONFLICT"
+            <% if @status == "HQ-RE-APPROVED" %>
+                //status = "HQ-CONFLICT"
+            <% else %>
+                status = "HQ-CONFLICT"
+            <% end %>
         }
 
         jQuery("#comment-list").html("");
