@@ -63,7 +63,7 @@ class PersonController < ApplicationController
     @person = @core_person.person
 
     @status = PersonRecordStatus.status(@person.id)
-    if ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
+    if  ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
     elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status 
         redirect_to "/person/ammend_case?id=#{@person.id}"
@@ -1027,7 +1027,6 @@ class PersonController < ApplicationController
 
     end
   end
-
   def person_details(id)
 
     person_mother_id = PersonRelationType.find_by_name("Mother").id
@@ -1041,25 +1040,30 @@ class PersonController < ApplicationController
 
     #raise @informant.inspect
 
-    person_mother_relation = PersonRelationship.find_by_sql(["select * from person_relationship where person_a = ? and person_relationship_type_id = ?",params[:id], person_mother_id])
-    mother_id = person_mother_relation.map{|relation| relation.person_b} #rescue nil
-    father_id = PersonRelationship.where(person_a: id,
-                                          person_relationship_type_id: person_father_id).first.person_b rescue nil
+
 
     person_name = PersonName.find_by_person_id(id)
     person = Person.find(id)
+
     core_person = CorePerson.find(id)
     birth_details = PersonBirthDetail.find_by_person_id(id)
-    person_status = PersonRecordStatus.status(id)
+
+    person_record_status = PersonRecordStatus.where(:person_id => id).last
+    person_status = person_record_status.status.name rescue nil
 
     actions = ActionMatrix.read_actions(User.current.user_role.role.role, [person_status]) rescue nil
 
-    mother = Person.find(mother_id)
-    mother_name = PersonName.find_by_person_id(mother_id)
-    father = Person.find(father_id) rescue nil
-    father_name = PersonName.find_by_person_id(father_id)
-    mother_address = PersonAddress.find_by_person_id(mother_id)
-    father_address =  PersonAddress.find_by_person_id(father_id)
+
+    #mother = Person.find(mother_id)
+    #mother_name = PersonName.find_by_person_id(mother_id)
+
+    mother = person.mother
+    mother_address = mother.addresses.last rescue nil
+    mother_name = mother.person_names.last rescue nil
+
+    father = person.father
+    father_address = father.addresses.last rescue nil
+    father_name = father.person_names.last rescue nil
 
 
     informant = Person.find(informant_id)
@@ -1114,8 +1118,6 @@ class PersonController < ApplicationController
     return person
     
   end
-  
-
   def dispatch_certificates
 
     @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN (#{params[:person_ids]}) ")
