@@ -1288,7 +1288,7 @@ class PersonController < ApplicationController
         ['Incomplete Record (HQ)', stats['HQ-INCOMPLETE']],
         ['Printed (HQ)', stats['HQ-PRINTED']],
         ['Dispatched(HQ)', stats['HQ-DISPATCHED']],
-        ['Voided (HQ)', stats['HQ-VOIDED']],
+        ['Amendment Request (HQ)', stats['HQ-AMEND']],
     ]
 
     render :text => data.to_json

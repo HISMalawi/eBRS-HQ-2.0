@@ -855,6 +855,8 @@ end
     old_ben_type_id = PersonIdentifierType.where(name: "Old Birth Entry Number").first.id
 
     (filters || []).each do |k, v|
+
+      v = v.strip rescue v 
       case k
         when 'ben'
           legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id)
