@@ -484,7 +484,6 @@
     }
 
     function ajaxPullComments(mode, status){
-
         var role = '<%= User.current.user_role.role.role%>';
 
         if(role == "Data Checking Clerk" && status == "HQ-COMPLETE"){
@@ -492,7 +491,11 @@
             return;
         }
         if(role == "Data Supervisor" && status == "HQ-COMPLETE"){
-            status = "HQ-CONFLICT"
+            <% if @status == "HQ-RE-APPROVED" %>
+                //status = "HQ-CONFLICT"
+            <% else %>
+                status = "HQ-CONFLICT"
+            <% end %>
         }
 
         jQuery("#comment-list").html("");
@@ -537,6 +540,7 @@
                         }
 
                         jQuery("#comments").modal('show');
+                        console.log(status)
 
                         parent.scrollTop = parent.scrollHeight;
 
