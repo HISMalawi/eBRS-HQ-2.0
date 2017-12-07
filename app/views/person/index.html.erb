@@ -56,7 +56,7 @@
           ['Incomplete Record (HQ)', @stats['HQ-INCOMPLETE']],
           ['Printed (HQ)', @stats['HQ-PRINTED']],
           ['Dispatched(HQ)', @stats['HQ-DISPATCHED']],
-          ['Voided (HQ)', @stats['HQ-VOIDED']],
+          ['Amendment Request (HQ)', @stats['HQ-AMEND']],
         ]
 
        # attributes = @stats.collect{|k, v| [k, v] if v.to_i > 0 && k.match(/\HQ/)}.delete_if{|a| a.blank? }
