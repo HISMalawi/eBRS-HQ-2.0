@@ -863,7 +863,7 @@ class PersonController < ApplicationController
 
     print_errors = {}
     print_error_log = Logger.new(Rails.root.join("log","print_error.log"))
-    paper_size = GlobalProperty.find("paper_size").value rescue 'A4'
+    paper_size = GlobalProperty.find_by_property("paper_size").value rescue 'A4'
 
     if paper_size == "A4"
       zoom = 0.83
