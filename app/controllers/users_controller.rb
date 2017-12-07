@@ -100,6 +100,11 @@ class UsersController < ApplicationController
           PersonAttribute.create(person_id: core_person.id, 
                                  person_attribute_type_id: attribute_type.id, 
                                  value: signature)
+          gp = GlobalProperty.find_by_property("signatory")
+          gp.destroy if gp.present?
+          GlobalProperty.create(property: "signatory", 
+                                value: username, 
+                                uuid: SecureRandom.uuid)
         end
       end  
       
