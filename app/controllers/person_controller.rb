@@ -974,26 +974,26 @@ class PersonController < ApplicationController
       PersonRecordStatus.new_record_state(params[:id], "HQ-POTENTIAL DUPLICATE",  (params[:comment].present? ? params[:comment] : "System marked record as duplicate" ))
       redirect_to params[:next_url].to_s
     elsif params[:operation] =="Resolve"
-         potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+         potential_record = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
 
-         if potential_records.present?
+         if potential_record.present?
             if params[:decision] == "NOT DUPLICATE"
               PersonRecordStatus.new_record_state(params[:id], 'HQ-CAN-PRINT', params[:comment])
             else
                 PersonRecordStatus.new_record_state(params[:id], 'HQ-DUPLICATE', params[:comment])
             end
-            potential_records.resolved = 1
-            potential_records.decision = params[:decision]
-            potential_records.comment = params[:comment]
-            potential_records.resolved_at = Time.now
-            potential_records.save
+            potential_record.resolved = 1
+            potential_record.decision = params[:decision]
+            potential_record.comment = params[:comment]
+            potential_record.resolved_at = Time.now
+            potential_record.save
         end
         redirect_to "/person/view?statuses[]=HQ-POTENTIAL DUPLICATE-TBA&statuses[]=HQ-NOT DUPLICATE-TBA&destination=Resolve Potential Duplicates"
 
     elsif params[:operation] == "Confirm-duplicate"
 
-        potential_records = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
-        if potential_records.present?
+        potential_record = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+        if potential_record.present?
             if params[:decision] == "NOT DUPLICATE"
                 PersonRecordStatus.new_record_state(params[:id], 'HQ-NOT DUPLICATE-TBA', params[:comment])
             else
@@ -1008,7 +1008,15 @@ class PersonController < ApplicationController
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
 
     elsif params[:operation] == "Verify-DC"
-
+        potential_record = PotentialDuplicate.where(:person_id => (params[:id].to_i)).last
+        duplicates = potential_record.duplicate_records
+        comment = "Record is duplicate with #{duplicates.count} record(s)<br/><ol>"
+        duplicates.each do |dup|
+            details = person_details(dup.person_id).with_indifferent_access
+            comment = comment + "<li>#{details[:first_name]} #{details[:middle_name] rescue ''} #{details[:last_name]} BEN : #{details[:birth_entry_number]}</li>".squish
+        end
+        comment = comment + "</ol><b>#{params[:comment]}</b>"
+        
         PersonRecordStatus.new_record_state(params[:id], 'DC-VERIFY DUPLICATE', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
 
