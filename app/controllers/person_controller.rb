@@ -1,5 +1,8 @@
 class PersonController < ApplicationController
   def index
+    if User.current.user_role.role.role == "Quality Supervisor"
+      redirect_to "/person/certificate_verification"
+    end
 
     json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json"))
     @last_twelve_months_reported_births = json["last_twelve_months_reported_births"]
@@ -1290,6 +1293,43 @@ class PersonController < ApplicationController
     ]
 
     render :text => data.to_json
+  end
+
+  def check_details
+    result = {}
+    barcode = params[:certificate_serial_number]
+
+    nid_type = PersonIdentifierType.where(name: "Barcode Number").last
+    person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil
+
+    person_id = nil
+    if person_id.blank?
+      nid_type = PersonIdentifierType.where(name: "National ID Number").last
+      person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil
+    end
+
+    if person_id.blank?
+      nid_type = PersonIdentifierType.where(name: "Birth Registration Number").last
+      person_id = PersonBirthDetail.where(national_serial_number: barcode).last.person_id rescue nil
+      person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil if person_id.blank?
+    end
+
+    return person_id
+  end
+
+  def certificate_verification
+    @section = "Verify Certificates"
+
+    if request.post?
+      person_id = check_details
+      if person_id.blank?
+        flash[:error] = "Record Not Found!"
+      elsif params[:verdict] == "No"
+        PersonRecordStatus.new_record_state(person_id, "HQ-RE-PRINT", params['reason'])
+      end
+    end
+
+    render layout: "touch"
   end
 
 end

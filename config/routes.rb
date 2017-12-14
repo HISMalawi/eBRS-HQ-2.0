@@ -186,6 +186,12 @@ Rails.application.routes.draw do
   get "/person/check_background_jobs"
   get "/record_state_and_date" => "report#record_state_and_date"
   get "/ajax_record_state_and_date" => "report#ajax_record_state_and_date"
+
+  get "/person/check_details"
+
+  get "/person/certificate_verification"
+  post "/person/certificate_verification"
+
   resources :person
 
   resources :users
