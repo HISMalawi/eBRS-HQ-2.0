@@ -1,0 +1,3 @@
+Location,Name,Description,Role,Associated Record Status
+HQ,Re-Print Requests,Records ,Data Manager,HQ-RE-PRINT
+HQ,DM Rejection Queue,Records waiting to be rejected to ADR,Data Supervisor,HQ-CAN-REJECT

@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
   before_filter :check_pings
   before_filter :check_couch_loading
-  before_filter :check_notifications, :only => ['index', 'tasks']
+  before_filter :check_notifications, :only => ['index', 'tasks', 'view']
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
@@ -86,6 +86,7 @@ class ApplicationController < ActionController::Base
 
   def check_notifications
     @notifications = Notification.by_role(User.current.user_role.role_id)
+    session[:notifications] = @notifications
   end
 
   private

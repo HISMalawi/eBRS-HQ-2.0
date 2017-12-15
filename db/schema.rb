@@ -523,7 +523,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   create_table "notification", primary_key: "notification_id", force: :cascade do |t|
     t.integer   "notification_type_id",                  null: false
     t.bigint   "person_record_status_id", limit: 100,        null: false
-    t.bigint   "person_id", limit: 100,
+    t.bigint   "person_id", limit: 100
     t.integer  "seen",             limit: 1,   default: 0,     null: false
     t.datetime "created_at",                          null: false
     t.datetime "updated_at",                          null: false
