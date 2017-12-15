@@ -7,6 +7,7 @@ class ApplicationController < ActionController::Base
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
   before_filter :check_pings
   before_filter :check_couch_loading
+  before_filter :check_notifications, :only => ['index', 'tasks']
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
@@ -81,6 +82,10 @@ class ApplicationController < ActionController::Base
 
   def admin?
     ApplicationController.helpers.admin?
+  end
+
+  def check_notifications
+    
   end
 
   private
