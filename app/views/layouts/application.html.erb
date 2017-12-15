@@ -183,10 +183,12 @@
                       <%
                          (session[:notifications] || []).group_by{|a| a['name']}.each do |n, data|
                       %>
-                      <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;">
-                        <a href="#" >
-                          <div >
-                            <i class="fa fa-comment" style="color: mediumvioletred;"></i> You have <span style="color: darkred; font-weight: bold;"><%= data.count%></span> <%= n%>
+                      <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;cursor: pointer;"
+                          onmousedown="window.location = '/person/view?statuses[]=<%= data.first["status"]%>&destination=<%= n%>'" >
+                        <a href="#">
+                          <div>
+                            <i class="fa fa-comment"
+                               style="color: mediumvioletred;"></i> You have <span style="color: darkred; font-weight: bold;"><%= data.count%></span> <%= n%>
                             <span class="pull-right text-muted small" style="color: darkslategray"> 4 minutes ago</span>
                           </div>
                         </a>
