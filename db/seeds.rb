@@ -64,8 +64,10 @@ begin
       require Rails.root.join('db','load_person_identifier_types.rb')
       require Rails.root.join('db','load_birth_registration_type.rb')
       require Rails.root.join("db","load_trail_types.rb")
+      require Rails.root.join("db","load_notification_types.rb")
+
       #require Rails.root.join('db','load_couch_data.rb') #This will be handled by metadata
-      #create_user
+      create_user
     end
 rescue => e
 	puts "Error ::::  #{e.message}  ::  #{e.backtrace.inspect}"

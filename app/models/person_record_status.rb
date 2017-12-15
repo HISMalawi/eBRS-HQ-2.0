@@ -5,7 +5,7 @@ class PersonRecordStatus < ActiveRecord::Base
 
     belongs_to :person, foreign_key: "person_id"
     belongs_to :status, foreign_key: "status_id"
-
+    after_create :run_notification_hooks
 
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
 
@@ -48,7 +48,22 @@ class PersonRecordStatus < ActiveRecord::Base
   end
 
   def self.status(person_id)
-      self.where(:person_id => person_id, :voided => 0).last.status.name rescue nil
+    self.where(:person_id => person_id, :voided => 0).last.status.name rescue nil
+  end
+
+  def run_notification_hooks
+    level = SETTINGS['application_mode']
+    level = 'HQ' if level.blank?
+
+    ntype = NotificationType.where(trigger_status_id: self.status_id).first rescue nil
+    if ntype.present?
+      Notification.create(
+        notification_type_id: ntype.id,
+        person_id: self.person_id,
+        person_record_status_id: self.id,
+        seen: 0
+      )
+    end
   end
 
   def self.log_error(error_msge, content)
