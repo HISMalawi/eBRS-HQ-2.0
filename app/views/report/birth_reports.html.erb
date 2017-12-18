@@ -33,7 +33,17 @@
         width: 70%;
     }
 </style>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
 <%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 50px;">
       <table style="width: 100%;" id="filter_table">
@@ -332,4 +342,6 @@
                 alert(":(")
         }
     }
+
+    jQuery(".date").datepicker();
 </script>
