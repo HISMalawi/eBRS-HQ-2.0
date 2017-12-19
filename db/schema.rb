@@ -511,7 +511,7 @@ ActiveRecord::Schema.define(version: 20170912104756) do
   end
 
   create_table "notification_types", primary_key: "notification_type_id", force: :cascade do |t|
-    t.string   "name",        limit: 45,              null: false
+    t.string   "name",        limit: 100,              null: false
     t.string   "level",        limit: 45,              null: false
     t.string   "description", limit: 100
     t.integer   "trigger_status_id"
