@@ -40,7 +40,7 @@ gem 'mac-address'
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug'
+ # gem 'byebug'
 end
 
 group :development do
@@ -94,3 +94,5 @@ gem "faker", "~> 1.6.6"
 gem "will_paginate", "3.1.6"
 
 gem "activerecord-session_store"
+
+gem "pretty_time"
