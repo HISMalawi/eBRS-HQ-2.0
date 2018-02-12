@@ -58,11 +58,12 @@ class ApplicationController < ActionController::Base
   end
 
   def login!(user)
-    session[:user_id] = user.id 
+    session[:user_id] = user.id
     AuditTrail.ip_address_accessor = request.remote_ip
     AuditTrail.mac_address_accessor = ` arp #{request.remote_ip}`.split(/\n/).last.split(/\s+/)[2]
     AuditTrail.ip_address_accessor.inspect
-    AuditTrail.create(person_id: user.id,
+
+    AuditTrail.create!(person_id: user.id,
                        audit_trail_type_id: AuditTrailType.find_by_name("SYSTEM").id,
                        comment: "User login")
   end
@@ -77,7 +78,7 @@ class ApplicationController < ActionController::Base
 
   def application_couchdb
      con = YAML.load_file(File.join(Rails.root, "config", "couchdb.yml"))
-     return "#{con['prefix']}_#{con['suffix']}" 
+     return "#{con['prefix']}_#{con['suffix']}"
   end
 
   def admin?
@@ -97,7 +98,7 @@ class ApplicationController < ActionController::Base
       if request.filtered_parameters["action"] == 'create' and request.filtered_parameters["controller"] == 'logins'
         return
       end
-      
+
       redirect_to '/login' and return
     else
 
