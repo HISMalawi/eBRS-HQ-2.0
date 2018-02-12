@@ -23,12 +23,12 @@ class PersonController < ApplicationController
         sorted_x << m
         sorted_x = sorted_x.sort
       end
-     
+
       (sorted_x || []).each do |s|
         @sorted_months_years << s
       end
     end
-    
+
     @districts_stats  = {}
 
     (@sorted_months_years || []).each do |period|
@@ -36,7 +36,7 @@ class PersonController < ApplicationController
         @districts_stats[code] = [] if @districts_stats[code].blank?
         (data || {}).sort_by{|x, y| x}.reverse.each do |m, count|
           next unless m.to_i == period.to_i
-          @districts_stats[code] << count 
+          @districts_stats[code] << count
         end
       end
 
@@ -68,7 +68,7 @@ class PersonController < ApplicationController
     @status = PersonRecordStatus.status(@person.id)
     if  ["HQ-POTENTIAL DUPLICATE-TBA","HQ-NOT DUPLICATE-TBA","HQ-POTENTIAL DUPLICATE","HQ-DUPLICATE"].include? @status
         redirect_to "/person/duplicate?person_id=#{@person.id}&index=0"
-    elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status 
+    elsif ['HQ-AMEND','HQ-AMEND-GRANTED','HQ-AMEND-REJECTED'].include? @status
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
@@ -263,10 +263,10 @@ class PersonController < ApplicationController
         person["district"] = birth_loc.district
       else
         person["district"] = "Lilongwe"
-      end      
+      end
       person["mother_first_name"]= @mother_name.first_name rescue ''
       person["mother_last_name"] =  @mother_name.last_name  rescue ''
-      person["mother_middle_name"] = @mother_name.middle_name rescue '' 
+      person["mother_middle_name"] = @mother_name.middle_name rescue ''
 
       person["mother_home_district"] = Location.find(@mother_person.addresses.last.home_district).name rescue nil
       person["mother_home_ta"] = Location.find(@mother_person.addresses.last.home_ta).name rescue nil
@@ -288,17 +288,17 @@ class PersonController < ApplicationController
       person["father_current_ta"] = Location.find(@father_person.addresses.last.current_ta).name rescue nil
       person["father_current_village"] = Location.find(@father_person.addresses.last.current_village).name rescue nil
 
-    
+
       SimpleElasticSearch.add(person)
 
       if @status == "HQ-ACTIVE"
         @results = []
-        duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision']) 
+        duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
         duplicates.each do |dup|
             next if DuplicateRecord.where(person_id: person['id']).present?
-            @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank? 
-        end  
-        
+            @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
+        end
+
         if @results.present? && !@birth_details.birth_type.name.to_s.downcase.include?("twin")
            potential_duplicate = PotentialDuplicate.create(person_id: @person.person_id,created_at: (Time.now))
            if potential_duplicate.present?
@@ -308,7 +308,7 @@ class PersonController < ApplicationController
            end
            #PersonRecordStatus.new_record_state(@person.person_id, "HQ-POTENTIAL DUPLICATE-TBA", "System mark record as potential duplicate")
            @status = "HQ-POTENTIAL DUPLICATE-TBA" #PersonRecordStatus.status(@person.id)
-        end      
+        end
       end
     else
 
@@ -414,7 +414,7 @@ class PersonController < ApplicationController
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
-        
+
         p['first_name'] = '' if p['first_name'].match('@')
         p['last_name'] = '' if p['last_name'].match('@')
         p['middle_name'] = '' if p['middle_name'].match('@')
@@ -450,9 +450,9 @@ class PersonController < ApplicationController
 
   def records
     person_type = PersonType.where(name: 'Client').first
-    @records = Person.where("p.person_type_id = ?", 
+    @records = Person.where("p.person_type_id = ?",
       person_type.id).joins("INNER JOIN core_person p ON person.person_id = p.person_id
-      INNER JOIN person_name n 
+      INNER JOIN person_name n
       ON n.person_id = p.person_id").group('n.person_id').select("person.*, n.*").order('p.created_at DESC')
 
     render :layout => 'data_table'
@@ -471,7 +471,7 @@ class PersonController < ApplicationController
   end
 
   #########################################################################
-  
+
   def get_names
     entry = params["search"].soundex
     if params["last_name"]
@@ -496,12 +496,12 @@ class PersonController < ApplicationController
   def get_nationality
     nationality_tag = LocationTag.where(name: 'Country').first
     data = ['Malawian']
-    Location.where("LENGTH(country) > 0 AND country != 'Malawian' AND country LIKE (?) AND m.location_tag_id = ?", 
+    Location.where("LENGTH(country) > 0 AND country != 'Malawian' AND country LIKE (?) AND m.location_tag_id = ?",
       "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
       ON location.location_id = m.location_id").order('country ASC').map do |l|
       data << l.country
     end
-    
+
     if data.present?
       render text: data.compact.uniq.join("\n") and return
     else
@@ -512,12 +512,12 @@ class PersonController < ApplicationController
   def get_country
     nationality_tag = LocationTag.where(name: 'Country').first
     data = ['Malawi']
-    Location.where("LENGTH(name) > 0 AND country != 'Malawi' AND name LIKE (?) AND m.location_tag_id = ?", 
+    Location.where("LENGTH(name) > 0 AND country != 'Malawi' AND name LIKE (?) AND m.location_tag_id = ?",
       "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
       ON location.location_id = m.location_id").order('name ASC').map do |l|
       data << l.name
     end
-    
+
     if data.present?
       render text: data.compact.uniq.join("\n") and return
     else
@@ -635,13 +635,13 @@ class PersonController < ApplicationController
           @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]
-          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]  
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]
     else
           @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-GRANTED","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
-          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]         
+          @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]
           @tasks << ["Rejected Amended by DM", "Rejected Amended by DM", ["HQ-AMEND-REJECTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"], "/person/view","/assets/folder3.png"]
-          @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]  
+          @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]
     end
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
@@ -674,7 +674,7 @@ class PersonController < ApplicationController
         ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
         ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
         ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
-        ["Approve Re-print from DS", "Approve Re-print from DS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Approve Re-print from QS", "Approve Re-print from QS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
     ]
 
@@ -754,7 +754,7 @@ class PersonController < ApplicationController
                "#{@father_prev_values['middle_name'].present? ? @father_prev_values['middle_name'] : (@father_name.middle_name rescue '')} " +
                "#{@father_prev_values['last_name'].present? ? @father_prev_values['last_name'] : @father_name.last_name}"
         @person_prev_values["father_name"] = father_name
-    end 
+    end
     @section = 'Ammend Case'
   end
 
@@ -785,7 +785,7 @@ class PersonController < ApplicationController
         ["Incomplete Cases" ,"Incomplete Cases", ["HQ-INCOMPLETE-TBA", "HQ-CONFLICT"],"/person/view","/assets/folder3.png"],
         ["Rejected records" ,"Rejected records", ["HQ-CAN-REJECT"],"/person/view","/assets/folder3.png"],
       ]
-    
+
     @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.had_stats('HQ-INCOMPLETE', 'Data Checking Clerk')
@@ -817,7 +817,7 @@ class PersonController < ApplicationController
 
   def get_comments
     @statuses = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ").order('created_at')
-  
+
     @comments = []
 
     @statuses.each do |audit|
@@ -938,7 +938,7 @@ class PersonController < ApplicationController
   ########################### Duplicates ###############################
   def duplicates_menu
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
-   
+
     @tasks = [
               ["Potential Duplicates","Potential Duplicates" , ["HQ-POTENTIAL DUPLICATE"],"/person/view","/assets/folder3.png"],
               ["Can Confirm Duplicates","Can Confirm Duplicate" , ["HQ-DUPLICATE"],"/person/view","/assets/folder3.png"],
@@ -1019,7 +1019,7 @@ class PersonController < ApplicationController
             comment = comment + "<li>#{details[:first_name]} #{details[:middle_name] rescue ''} #{details[:last_name]} BEN : #{details[:birth_entry_number]}</li>".squish
         end
         comment = comment + "</ol><b>#{params[:comment]}</b>"
-        
+
         PersonRecordStatus.new_record_state(params[:id], 'DC-VERIFY DUPLICATE', params[:comment])
         redirect_to "/person/view?statuses[]=HQ-DUPLICATE&destination=Duplicate Cases"
 
@@ -1119,7 +1119,7 @@ class PersonController < ApplicationController
               father_village: (Location.find(father_address.current_village).name rescue nil)
     }
     return person
-    
+
   end
   def dispatch_certificates
 
@@ -1179,15 +1179,15 @@ class PersonController < ApplicationController
   end
 
   def search_by_identifier
-    
+
     if params[:identifier_type] == 'BRN'
       sql = " WHERE d.national_serial_number LIKE '#{params[:identifier].gsub('-','/')}%'"
     else
       sql = " WHERE d.district_id_number LIKE '#{params[:identifier].gsub('-','/')}%'"
     end
 
-    people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, 
-      d.national_serial_number, d.district_id_number, 
+    people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate,
+      d.national_serial_number, d.district_id_number,
       d.date_registered FROM person p
       INNER JOIN person_birth_details d ON d.person_id = p.person_id
       INNER JOIN person_name n ON n.person_id = p.person_id
@@ -1209,7 +1209,7 @@ class PersonController < ApplicationController
       }
     end
 
-    render text: data.to_json 
+    render text: data.to_json
   end
 
   def map_main
@@ -1252,7 +1252,7 @@ class PersonController < ApplicationController
           last_seen = "<span style='color: red !important'>Offline</span>".html_safe
         end
 
-        
+
         @sites << {
             'online' => (site['online'] rescue false),
             'region' => l.description,
