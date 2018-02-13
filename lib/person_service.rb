@@ -1010,6 +1010,7 @@ end
         person_id: core_person.id,
         birth_registration_type_id: "",
         place_of_birth:  "",
+        source_id: -1,
         birth_location_id: nris_person[:PlaceOfBirthVillageId],
         district_of_birth:  nris_person[:PlaceOfBirthDistrictId],
         location_created_at: "" 
@@ -1136,11 +1137,9 @@ end
     nid = nil
     nris_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type)
 
-
     person = Person.find(person_id)
     if person.birthdate.to_date <= 16.years.ago.to_date
-      puts "AGE LIMIT EXCEEDED"
-      return nil
+      return "BELOW AGE LIMIT"
     end
 
     details = PersonBirthDetail.where(person_id: person_id).last
@@ -1212,8 +1211,8 @@ end
         "BirthCertificateNumber"=> details.brn
     }
 
-    if data['MotherNationality'] != "MWI" && data['MotherNationality'] != "MWI"
-      return nil
+    if data['MotherNationality'] != "MWI"
+      return "NOT A MALAWIAN CITIZEN"
     end
 
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
@@ -1222,7 +1221,6 @@ end
       nid = nid.gsub("\"", '')
 
       puts "NID: #{nid}, LENGTH #{nid.length}"
-
 
       if nid.present? && nid.to_s.length == 8
         old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
