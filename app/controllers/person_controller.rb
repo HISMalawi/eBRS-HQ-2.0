@@ -248,6 +248,10 @@ class PersonController < ApplicationController
               }
           ]
       }
+
+
+    @trace_data = PersonRecordStatus.trace_data(@person.id)
+
     if @person.present? && SETTINGS['potential_search']
       person = {}
       person["id"] = @person.person_id.to_s
