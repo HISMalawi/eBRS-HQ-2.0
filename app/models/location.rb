@@ -111,4 +111,60 @@ class Location < ActiveRecord::Base
     return ActiveRecord::Base.connection.select_all("SELECT location_id from location WHERE parent_location = #{self.id}").collect{|s| s["location_id"]}
   end
 
+  def self.find_or_create_ta(name, district_id)
+    l = Location.where(:name => name, :parent_location => district_id).last
+    return l.id if !l.blank?
+
+    ta = Location.create(
+        :name => name,
+        :parent_location => district_id,
+        :description => "nid_ta"
+    )
+
+    tag_id = LocationTag.where(name: "Traditional Authority").last.id
+    LocationTagMap.create(
+        :location_id => ta.id,
+        :location_tag_id => tag_id
+    )
+
+    ta.id
+  end
+
+  def self.find_or_create_village(name, ta_id)
+    l = Location.where(:name => name, :parent_location => ta_id).last
+    return l.id if !l.blank?
+
+    vg = Location.create(
+        :name => name,
+        :parent_location => ta_id,
+        :description => "nid_village"
+    )
+
+    tag_id = LocationTag.where(name: "Village").last.id
+    LocationTagMap.create(
+        :location_id => vg.id,
+        :location_tag_id => tag_id
+    )
+
+    vg.id
+  end
+
+  def self.find_or_create_facility(name, district_id)
+    l = Location.where(:name => name, :parent_location => district_id).last
+    return l.id if !l.blank?
+
+    fa = Location.create(
+        :name => name,
+        :parent_location => district_id,
+        :description => "nid_facility"
+    )
+
+    tag_id = LocationTag.where(name: "Health Facility").id
+    LocationTagMap.create(
+        :location_id => fa.id,
+        :location_tag_id => tag_id
+    )
+
+    fa.id
+  end
 end
