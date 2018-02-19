@@ -3,7 +3,7 @@ module PersonService
   require 'json'
 
   def self.create_record(params)
-    
+
 
     adoption_court_order              = params[:person][:adoption_court_order] rescue nil
     desig              = params[:person][:informant][:designation] rescue nil
@@ -61,7 +61,7 @@ module PersonService
 
     ########################### father details ########################################
 
- 
+
       informant_same_as_mother          = params[:informant_same_as_mother]
       informant_same_as_father          = params[:informant_same_as_father]
 
@@ -85,11 +85,11 @@ module PersonService
       father_home_ta                    = params[:person][:father][:home_ta]
       father_home_village               = params[:person][:father][:home_village]
 
-     
+
 
     ######################### father details (end) #################################
 
-    
+
     informant_last_name               = params[:person][:informant][:last_name]
     informant_first_name              = params[:person][:informant][:first_name]
     informant_middle_name             = params[:person][:informant][:middle_name]
@@ -122,17 +122,17 @@ module PersonService
     ################################ Is record a duplicate ##########################################################
     is_record_a_duplicate = params[:person][:duplicate] rescue nil
   ################################################## Recording client details #####################################
- 
+
  if SETTINGS["application_mode"] == "FC"
-            
+
 
     core_person = CorePerson.create(person_type_id: PersonType.where(name: 'Client').first.id)
 
-    @person = Person.create(person_id: core_person.id, 
-      gender: gender.first, 
+    @person = Person.create(person_id: core_person.id,
+      gender: gender.first,
       birthdate: (birthdate.to_date rescue Date.today))
 
-    person_name = PersonName.create(first_name: first_name, 
+    person_name = PersonName.create(first_name: first_name,
       middle_name: middle_name,
       last_name: last_name, person_id: core_person.id)
 
@@ -142,7 +142,7 @@ module PersonService
       middle_name_code: (middle_name.soundex rescue nil))
 
 
-    
+
 
     PersonBirthDetail.create(
       person_id:                                core_person.id,
@@ -160,7 +160,7 @@ module PersonService
       number_of_children_born_alive_inclusive:  (number_of_children_born_alive_inclusive),
       number_of_children_born_still_alive:      (number_of_children_born_still_alive),
       level_of_education_id:                    (LevelOfEducation.where(name: mother_level_of_education).first.id rescue 1),
-      district_id_number:                       nil,     
+      district_id_number:                       nil,
       national_serial_number:                   nil,
       court_order_attached:                     (court_order_attached == 'No' ? 0 : 1),
       acknowledgement_of_receipt_date:          (acknowledgement_of_receipt_date.to_date rescue nil),
@@ -175,10 +175,10 @@ module PersonService
 
 
 ############################################# recording mother details ##############################################
- 
+
  if !mother_first_name.blank?
 
-  
+
  core_person_mother = CorePerson.create(person_type_id: PersonType.where(name: 'Mother').first.id)
 
        person_mother = Person.create(person_id: core_person_mother.id,
@@ -214,8 +214,8 @@ module PersonService
                     citizenship: Location.where(name: mother_residental_country).first.location_id,
                     residential_country: Location.where(name: mother_residental_country).first.location_id) rescue nil
 
-       
-    
+
+
 end
 #############################################################################################################################
 
@@ -223,8 +223,8 @@ end
 ########################################## Recording father details #################################################
     if !father_first_name.blank?
 
-        
-  
+
+
       core_person_father = CorePerson.create(person_type_id: PersonType.where(name: 'Father').first.id)
             #raise .inspect
             if father_birthdate.blank?
@@ -267,15 +267,15 @@ end
                                  residential_country: father_residental_country == '' ? '' : Location.where(name: father_residental_country).first.location_id) rescue nil
 
            father_address_record.save
-          
+
     end
    ############################################# father details end ###########################################################
 
    ######################################### Recording informant details #############################################
-    
+
     if (informant_same_as_mother == "Yes")
 
-       
+
 
               PersonRelationship.create(person_a: core_person.id, person_b: core_person_mother.id,
               person_relationship_type_id: PersonRelationType.where(name: 'Informant').first.id)
@@ -299,10 +299,10 @@ end
                                  address_line_1: informant_addressline1,
                                  address_line_2: informant_addressline2)
 =end
-              
+
     elsif (informant_same_as_father == "Yes")
 
-            
+
 
               PersonRelationship.create(person_a: core_person.id, person_b: core_person_father.id,
               person_relationship_type_id: PersonRelationType.where(name: 'Informant').first.id)
@@ -325,11 +325,11 @@ end
                                  residential_country: Location.where(name: 'Malawi').first.location_id,
                                  address_line_1: informant_addressline1,
                                  address_line_2: informant_addressline2)
-=end 
+=end
 
    elsif !informant_first_name.blank?
 
-         
+
 
             core_person_informant = CorePerson.create(person_type_id: PersonType.where(name: 'Informant').first.id)
             informant_id = core_person_informant.id
@@ -371,14 +371,14 @@ end
                                  address_line_2: informant_addressline2)
 
    end
-               
+
    ############################################## Informant details end #############################################
-   
+
    ############################################### Person record Status ###############################################
 
    PersonRecordStatus.new_record_state(core_person.id, 'DC-COMPLETE')
 
-   ####################################################################################################################  
+   ####################################################################################################################
 
 elsif SETTINGS["application_mode"] == "DC"
 
@@ -389,11 +389,11 @@ elsif SETTINGS["application_mode"] == "DC"
 
     core_person = CorePerson.create(person_type_id: PersonType.where(name: 'Client').first.id)
 
-    @person = Person.create(person_id: core_person.id, 
-      gender: gender.first, 
+    @person = Person.create(person_id: core_person.id,
+      gender: gender.first,
       birthdate: (birthdate.to_date rescue Date.today))
 
-    person_name = PersonName.create(first_name: first_name, 
+    person_name = PersonName.create(first_name: first_name,
       middle_name: middle_name,
       last_name: last_name, person_id: core_person.id)
 
@@ -401,9 +401,9 @@ elsif SETTINGS["application_mode"] == "DC"
       first_name_code: first_name.soundex,
       last_name_code: last_name.soundex,
       middle_name_code: (middle_name.soundex rescue nil))
- 
 
-     
+
+
     if hospital_of_birth.blank?
 
        birth_location_id = self.is_num?(place_of_birth) == true ? place_of_birth : Location.where(name: place_of_birth).first.location_id
@@ -413,7 +413,7 @@ elsif SETTINGS["application_mode"] == "DC"
       birth_location_id = Location.where(name: hospital_of_birth).first.location_id
 
     end
-    
+
 
     PersonBirthDetail.create(
       person_id:                                core_person.id,
@@ -431,7 +431,7 @@ elsif SETTINGS["application_mode"] == "DC"
       number_of_children_born_alive_inclusive:  (number_of_children_born_alive_inclusive),
       number_of_children_born_still_alive:      (number_of_children_born_still_alive),
       level_of_education_id:                    (LevelOfEducation.where(name: mother_level_of_education).first.id rescue 1),
-      district_id_number:                       nil,     
+      district_id_number:                       nil,
       national_serial_number:                   nil,
       court_order_attached:                     (court_order_attached == 'No' ? 0 : 1),
       acknowledgement_of_receipt_date:          (acknowledgement_of_receipt_date.to_date rescue nil),
@@ -443,7 +443,7 @@ elsif SETTINGS["application_mode"] == "DC"
 ############################################## Client details end ####################################################
 
 ######################################### recording mother details (start) ###############################################
-           
+
           if (parents_details_available == "Both" || parents_details_available == "Mother" || !mother_birthdate.blank?)
 
             core_person_mother = CorePerson.create(person_type_id: PersonType.where(name: 'Mother').first.id)
@@ -511,7 +511,7 @@ elsif SETTINGS["application_mode"] == "DC"
                 person_relationship_type_id: PersonRelationType.where(name: 'Father').first.id)
 
 
-            
+
             record = PersonAddress.new(person_id: core_person_father.id,
                                  current_village: Location.where(name: father_current_village).first.location_id,
                                  current_village_other: "",
@@ -533,14 +533,14 @@ elsif SETTINGS["application_mode"] == "DC"
           end
 
 ############################################# recording father details (end)   ###############################################
-          
+
 ######################################### Recording informant details #############################################
-    
-    
+
+
 
     if (informant_same_as_mother == "Yes")
 
-       
+
 
           PersonRelationship.create(person_a: core_person.id, person_b: core_person_mother.id,
               person_relationship_type_id: PersonRelationType.where(name: 'Informant').first.id)
@@ -565,7 +565,7 @@ elsif SETTINGS["application_mode"] == "DC"
                                      address_line_1: informant_addressline1,
                                      address_line_2: informant_addressline2)
 =end
-              
+
     elsif (informant_same_as_father == "Yes")
 
           PersonRelationship.create(person_a: core_person.id, person_b: core_person_father.id,
@@ -594,7 +594,7 @@ elsif SETTINGS["application_mode"] == "DC"
 
    elsif !informant_first_name.blank?
 
-         
+
 
             core_person_informant = CorePerson.create(person_type_id: PersonType.where(name: 'Informant').first.id)
             informant_id = core_person_informant.id
@@ -638,10 +638,10 @@ elsif SETTINGS["application_mode"] == "DC"
                                  address_line_2: informant_addressline2)
 
   end
-               
+
   ############################################## Informant details end #############################################
   ############################################## person status record ####################################################
- if is_record_a_duplicate.present? 
+ if is_record_a_duplicate.present?
     if SETTINGS["application_mode"] == "FC"
       PersonRecordStatus.new_record_state(core_person.id, 'FC-POTENTIAL DUPLICATE')
     else
@@ -656,29 +656,29 @@ elsif SETTINGS["application_mode"] == "DC"
     end
  else
     PersonRecordStatus.new_record_state(core_person.id, 'DC-ACTIVE')
- end   
-        
+ end
+
   ############################################# Person status record (end) ##############################################
   ############################################### person address details ###############################################
-              
+
 
   #############################################Person address details(end) ###############################################
-   
+
  end
-     
+
     return @person
 
 end
 
   def self.mother(person_id)
     result = nil
-    #raise person_id.inspect 
+    #raise person_id.inspect
     relationship_type = PersonRelationType.find_by_name("Mother")
-    
-   # raise relationship_type.id.inspect 
+
+   # raise relationship_type.id.inspect
 
     relationship = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => relationship_type.id).last
-    #raise relationship.person_b.inspect 
+    #raise relationship.person_b.inspect
     unless relationship.blank?
       result = PersonName.where(:person_id => relationship.person_b).last
     end
@@ -838,7 +838,7 @@ end
     end
     entry_num_query = ''; fac_serial_query = ''; serial_num_query = ''; name_query = ''; limit = ' '
     limit = ' LIMIT 10 ' if filters.blank?
-    gender_query = ''; place_of_birth_query = ''; status_query=''
+    gender_query = ''; place_of_birth_query = ''; status_query=''; date_issued_query=''
 
     types = []
     if params[:type] == 'All' || params[:type].blank?
@@ -856,7 +856,7 @@ end
 
     (filters || []).each do |k, v|
 
-      v = v.strip rescue v 
+      v = v.strip rescue v
       case k
         when 'ben'
           legacy = PersonIdentifier.where(value: v, person_identifier_type_id: old_ben_type_id)
@@ -916,6 +916,14 @@ end
           end
         when 'status'
           status_query = " AND prs.status_id = #{v} "  unless v.blank?
+        when 'date_issued'
+          start_date = filters['date_issued']['start_date']
+          end_date = filters['date_issued']['end_date']
+
+          if filters['date_issued']['start_date'].present? && filters['date_issued']['end_date'].present?
+            id = Status.find_by_name('HQ-DISPATCHED').status_id
+            date_issued_query +=  "AND prs.status_id = #{id} AND prs.created_at BETWEEN '#{start_date}' AND '#{end_date}' "
+          end
       end
     end
 
@@ -983,14 +991,14 @@ end
         "recordsFiltered" => total,
         "data" => results}
   end
-  
+
   def self.create_nris_person(nris_person)
-    
-      # create core_person  
+
+      # create core_person
         core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: 'Client').last.id,
       )
-      
+
       ebrs_person = core_person
       #create person
       person = Person.create(
@@ -1005,28 +1013,28 @@ end
           :middle_name        => nris_person[:OtherNames],
           :last_name          => nris_person[:Surname]
       )
-      
+
       PersonBirthDetail.create(
         person_id: core_person.id,
         birth_registration_type_id: "",
         place_of_birth:  "",
         birth_location_id: nris_person[:PlaceOfBirthVillageId],
         district_of_birth:  nris_person[:PlaceOfBirthDistrictId],
-        location_created_at: "" 
+        location_created_at: ""
     )
-    
+
       PersonIdentifier.create(
         person_id: father_person.person_id,
         person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
         value: nris_person[:BirthCertificateNumber].upcase
      )
-     
+
         #create_mother
         #create mother_core_person
           core_person = CorePerson.create(
             :person_type_id     => PersonType.where(name: 'Mother').last.id,
         )
-        
+
         #create mother_person
         mother_person = Person.create(
             :person_id          => core_person.id,
@@ -1051,37 +1059,37 @@ end
             :home_ta            => "",
             :home_village       => nris_person[:MotherVillageId],
             :citizenship        => Location.where(country: nris_person[:MotherNationality]).last.id,
-            
+
         )
         #create mother_identifier
         if nris_person[:MotherPin].present?
-    
+
           PersonIdentifier.create(
                     person_id: mother_person.person_id,
                     person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
                     value: nris_person[:MotherPin].upcase
             )
         end
-    
+
         PersonIdentifier.create(
           person_id: mother_person.person_id,
           person_identifier_type_id: (PersonIdentifierType.find_by_name("NRIS ID").id),
           value: nris_person[:NrisPk].upcase
         )
-    
+
         # create mother_relationship
         PersonRelationship.create(
             person_a: ebrs_person.id, person_b: core_person.id,
             person_relationship_type_id: PersonRelationType.where(name: 'Mother').last.id
         )
-        
+
       #create_father
       #create father_core_person
       if nris_person[:FatherFirstName].present? && nris_person[:FatherSurname].present?
         core_person = CorePerson.create(
           :person_type_id     => PersonType.where(name: 'Father').last.id,
       )
-      
+
       #create father_person
       father_person = Person.create(
           :person_id          => core_person.id,
@@ -1106,25 +1114,25 @@ end
           :home_ta => "",
           :home_village => nris_person[:FatherVillageId],
           :citizenship => Location.where(country: nris_person[:FatherNationality]).last.id,
-          
+
       )
-      
+
       #create father_identifier
       if nris_person[:FatherPin].present?
-    
+
         PersonIdentifier.create(
                   person_id: father_person.person_id,
                   person_identifier_type_id: (PersonIdentifierType.find_by_name("National ID Number").id),
                   value: nris_person[:FatherPin].upcase
           )
       end
-    
+
        # create father_relationship
        PersonRelationship.create(
         person_a: ebrs_person.id, person_b: core_person.id,
         person_relationship_type_id: PersonRelationType.where(name: 'Father').last.id
       )
-    
+
       end
       return ebrs_person.id
   end
@@ -1253,5 +1261,5 @@ end
       }
     end
   end
-   
+
 end
