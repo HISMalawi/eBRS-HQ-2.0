@@ -1203,7 +1203,7 @@ end
   end
 
 
-  def self.request_nris_id(person_id)
+  def self.request_nris_id(person_id, client_address=nil)
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
     nris_type = PersonIdentifierType.where(name: "NRIS ID").first.id
@@ -1240,16 +1240,26 @@ end
 
     codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
 
-
     get_url = "http://192.168.43.43/api/Person/post"
     post_url = "http://192.168.43.43/api/pbc/PostNPb"
+
+=begin
     district_url = "http://192.168.43.43/api/District"
     ta_url = "http://192.168.43.43/api/TA"
-
     districts = {}
     JSON.parse(RestClient.get(district_url, :accept => 'json')).each do |h|
       districts[h['Name']] = h['PrimaryKey']
     end
+=end
+
+    nris_pkey = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).first rescue nil
+
+    reg_type_id = {
+        "Normal" => 0,
+        "Abandoned" => 1,
+        "Orphaned"  => 2,
+        "Adopted"   => 3
+    }[BirthRegistrationType.where(:birth_registration_type_id => details.birth_registration_type_id).first.name]
 
     data = {
         "Surname"=> b_name.last_name,
@@ -1259,7 +1269,7 @@ end
         "Sex"=> person.gender == 'M' ? 1 : 2,
         "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
         "Nationality2"=> "",
-        "Status"=>0,
+        "Status"=>reg_type_id,
         "MotherPin"=>m_pin,
         "MotherSurname"=> m_name.last_name,
         "MotherMaidenName"=> m_name.last_name,
@@ -1274,7 +1284,7 @@ end
         "FatherVillageId"=>-1,
         "FatherNationality"=>(codes[Location.find(f_address.citizenship).name] rescue nil),
         "EbrsPk"=> person_id,
-        "NrisPk"=>nil,
+        "NrisPk"=> nris_pkey,
         "PlaceOfBirthDistrictId"=>-1,
         "PlaceOfBirthDistrictName"=> (Location.find(details.district_of_birth).district rescue nil),
         "PlaceOfBirthTAName" => (Location.find(details.birth_location_id).ta rescue nil),
@@ -1283,13 +1293,13 @@ end
         "MotherDistrictId"=> m_home_district.id,
         "MotherDistrictName" => (m_home_district.name rescue m_address.home_district_other),
         "MotherTAName" => (m_home_ta.name rescue m_address.home_ta_other),
-        "MotherVillageName" => (m_home_village rescue m_address.home_village_other),
+        "MotherVillageName" => (m_home_village.name rescue m_address.home_village_other),
         "FatherDistrictId"=> (f_home_district.id rescue nil),
         "FatherDistrictName" => (f_home_district.name rescue f_address.home_district_other),
         "FatherTAName" => (f_home_ta.name rescue f_address.home_ta_other),
         "FatherVillageName" => (f_home_village.name rescue f_address.home_village_other),
-        "EditUser"=>"#{User.current.username} (#{User.current.first_name} #{User.current.last_name})",
-        "EditMachine"=>"meduser@192.168.43.5",
+        "EditUser"=>("#{User.current.username} (#{User.current.first_name} #{User.current.last_name})" rescue nil),
+        "EditMachine"=> client_address,
         "BirthCertificateNumber"=> "#{details.brn}"
     }
 
