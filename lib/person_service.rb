@@ -1080,7 +1080,7 @@ end
     PersonIdentifier.create(
         person_id: core_person.id,
         person_identifier_type_id: (PersonIdentifierType.find_by_name("NRIS ID").id),
-        value: nris_person[:NrisPk].to_i
+        value: nris_person[:NrisPk]
     )
 
     #create_mother
@@ -1223,9 +1223,9 @@ end
 
     m_name = PersonName.where(person_id: m_rel.person_b).last
     m_address = PersonAddress.where(person_id: m_rel.person_b).last
-    m_home_district = Location.find(m_address.home_district) rescue m_address.home_district_other
-    m_home_ta = Location.find(m_address.home_ta) rescue m_address.home_ta_other
-    m_home_village = Location.find(m_address.home_village) rescue m_address.home_village_other
+    m_home_district = Location.find(m_address.home_district) rescue nil
+    m_home_ta = Location.find(m_address.home_ta) rescue nil
+    m_home_village = Location.find(m_address.home_village) rescue nil
     m_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: m_rel.person_b).last.value rescue ""
 
     f_type = PersonRelationType.find_by_name("Father")
@@ -1233,9 +1233,9 @@ end
 
     f_name = PersonName.where(person_id: f_rel.person_b).last
     f_address = PersonAddress.where(person_id: f_rel.person_b).last
-    f_home_district = Location.find(f_address.home_district) rescue f_address.home_district_other
-    f_home_ta = Location.find(f_address.home_ta) rescue f_address.home_ta_other
-    f_home_village = Location.find(f_address.home_village) rescue f_address.home_village_other
+    f_home_district = Location.find(f_address.home_district) rescue nil
+    f_home_ta = Location.find(f_address.home_ta) rescue nil
+    f_home_village = Location.find(f_address.home_village) rescue nil
     f_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: f_rel.person_b).last.value rescue ""
 
     codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
@@ -1276,12 +1276,21 @@ end
         "EbrsPk"=> person_id,
         "NrisPk"=>nil,
         "PlaceOfBirthDistrictId"=>-1,
+        "PlaceOfBirthDistrictName"=> (Location.find(details.district_of_birth).district rescue nil),
+        "PlaceOfBirthTAName" => (Location.find(details.birth_location_id).ta rescue nil),
+        "PlaceOfBirthVillageName"=> (Location.find(details.birth_location_id).village rescue nil),
         "PlaceOfBirthVillageId"=>-1,
-        "MotherDistrictId"=>-1,
-        "FatherDistrictId"=>-1,
-        "EditUser"=>User.first.username,
+        "MotherDistrictId"=> m_home_district.id,
+        "MotherDistrictName" => (m_home_district.name rescue m_address.home_district_other),
+        "MotherTAName" => (m_home_ta.name rescue m_address.home_ta_other),
+        "MotherVillageName" => (m_home_village rescue m_address.home_village_other),
+        "FatherDistrictId"=> (f_home_district.id rescue nil),
+        "FatherDistrictName" => (f_home_district.name rescue f_address.home_district_other),
+        "FatherTAName" => (f_home_ta.name rescue f_address.home_ta_other),
+        "FatherVillageName" => (f_home_village.name rescue f_address.home_village_other),
+        "EditUser"=>"#{User.current.username} (#{User.current.first_name} #{User.current.last_name})",
         "EditMachine"=>"meduser@192.168.43.5",
-        "BirthCertificateNumber"=> details.brn
+        "BirthCertificateNumber"=> "#{details.brn}"
     }
 
     if data['MotherNationality'] != "MWI"
