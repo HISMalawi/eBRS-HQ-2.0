@@ -826,9 +826,7 @@ end
 
 
   def self.search_results(params={})
-
     filters = params[:filter]
-
     if filters.blank?
       {
           "draw" => 0,
