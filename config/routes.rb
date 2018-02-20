@@ -186,6 +186,7 @@ Rails.application.routes.draw do
   get "/person/check_background_jobs"
   get "/record_state_and_date" => "report#record_state_and_date"
   get "/ajax_record_state_and_date" => "report#ajax_record_state_and_date"
+  get "/sync_status" => "person#sync_status"
 
   get "/person/check_details"
 

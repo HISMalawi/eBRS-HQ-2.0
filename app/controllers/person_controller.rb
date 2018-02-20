@@ -1338,4 +1338,7 @@ class PersonController < ApplicationController
     render layout: "touch"
   end
 
+  def sync_status
+    render :text => PersonBirthDetail.record_available?(params[:person_id])
+  end
 end

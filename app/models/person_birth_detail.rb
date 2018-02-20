@@ -125,4 +125,8 @@ class PersonBirthDetail < ActiveRecord::Base
 
         return true
     end
+
+    def self.record_available?(person_id)
+      self.where(person_id: person_id).count > 0
+    end
 end
