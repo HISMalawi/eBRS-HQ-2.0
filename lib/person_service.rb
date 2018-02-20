@@ -826,6 +826,7 @@ end
 
 
   def self.search_results(params={})
+
     filters = params[:filter]
     if filters.blank?
       {
@@ -834,6 +835,7 @@ end
           "recordsFiltered" => 0,
           "data" => []}
     end
+
     entry_num_query = ''; fac_serial_query = ''; serial_num_query = ''; name_query = ''; limit = ' '
     limit = ' LIMIT 10 ' if filters.blank?
     gender_query = ''; place_of_birth_query = ''; status_query=''; date_issued_query=''
@@ -914,11 +916,11 @@ end
           end
         when 'status'
           status_query = " AND prs.status_id = #{v} "  unless v.blank?
-        when 'date_issued'
-          start_date = filters['date_issued']['start_date']
-          end_date = filters['date_issued']['end_date']
+        when 'start_date'
 
-          if filters['date_issued']['start_date'].present? && filters['date_issued']['end_date'].present?
+          if filters['start_date'].present? && filters['end_date'].present?
+            start_date = filters['start_date']
+            end_date = filters['end_date']
             id = Status.find_by_name('HQ-DISPATCHED').status_id
             date_issued_query +=  "AND prs.status_id = #{id} AND prs.created_at BETWEEN '#{start_date}' AND '#{end_date}' "
           end
