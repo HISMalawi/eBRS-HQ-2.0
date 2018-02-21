@@ -3,8 +3,13 @@
 <%=javascript_include_tag "datatables/dataTables.bootstrap" %>
 <%=javascript_include_tag "bootstrap/bootstrap.min" %>
 
-<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
 
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
 <style>
     #form select{
         border-radius: 2px;
@@ -164,6 +169,25 @@
           <input type="text" class="input-small place other"  id="other_birth_place" name="filter[other_birth_place]">
         </div>
       </div>
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this,['start_date','end_date'])" type="checkbox" class="input-small check" id="date_issued" style="margin-right: 105px;" name="filter[date_issued]">
+          <label for="date">Date issued: Start date</label>
+           <input type="text" id="start_date"  class = "dates date"
+            data-date-format="dd/mm//yyyy" onkeypress="return false;"
+            value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+             class = "dates date" name="filter[start_date]">
+           <i class="fa fa-calendar"></i>
+
+           <label for="date">End date</label>
+           <input type="text" id="end_date"
+             data-date-format="dd/mm//yyyy" onkeypress="return false;"
+             value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+             class = "dates date" name="filter[end_date]">
+             <i class="fa fa-calendar"></i>
+
+        </div>
+      </div>
     </fieldset>
   </div>
   <div class="buttons">
@@ -243,7 +267,7 @@
                       "data": function(d){
                           var ids =['ben', 'brn', 'last_name', 'middle_name', 'first_name', 'gender', 'status',
                               'place_of_birth', 'district_of_birth', 'ta_of_birth', 'village_of_birth',
-                              'hospital_of_birth', 'other_birth_place'];
+                              'hospital_of_birth', 'other_birth_place','start_date','end_date'];
 
                           for(var i = 0; i < ids.length; i++){
                               var node = document.getElementById(ids[i]);
@@ -267,6 +291,25 @@
       );
   }
 
+  function activeDate() {
+    jQuery(function() {
+      jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
+    jQuery(function() {
+      jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
+  }
+  function enableField(fields){
+        for(var i = 0 ; i< fields.length ; i++){
+            jQuery("#"+fields[i]).removeAttr("disabled")
+        }
+  }
+  function disableField(fields){
+        for(var i = 0 ; i< fields.length ; i++){
+            jQuery("#"+fields[i]).attr("disabled","disabled")
+            jQuery("#"+fields[i]).val("")
+        }
+  }
   function check(node){
       var nodes = jQuery(node).parent().children();
 
@@ -331,7 +374,9 @@
   }
 
   function reloadDataTable(node){
-      table.ajax.reload();
+
+       table.ajax.reload();
+
   }
 
     function capitalize(string){
@@ -402,5 +447,5 @@
           }
       })
   }
-
+activeDate();
 </script>
