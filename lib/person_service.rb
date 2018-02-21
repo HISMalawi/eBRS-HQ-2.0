@@ -772,6 +772,53 @@ end
 
   end
 
+  def self.query_for_crossmatch(birth_district, reg_facilities, start_date, end_date, params={})
+    main = Person.order("pbd.created_at")
+
+    main = main.joins("
+            INNER JOIN core_person cp ON person.person_id = cp.person_id
+            INNER JOIN person_name n ON person.person_id = n.person_id
+            INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
+            INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
+
+    results = []
+
+    main = main.where("pbd.location_created_at IN (#{reg_facilities.join(', ')}) AND district_of_birth = #{birth_district}
+            AND DATE(pbd.created_at) BETWEEN '#{start_date}' AND '#{end_date}' AND pbd.district_id_number IS NOT NULL")
+
+    total = main.select(" count(*) c ")[0]['c']
+    page = (params[:start].to_i / params[:length].to_i) + 1
+
+    main = main.select(" n.*, prs.status_id, pbd.district_id_number, person.gender, person.birthdate, pbd.national_serial_number AS brn ")
+    data = main.page(page)
+    .per_page(params[:length].to_i)
+
+    data.each do |data|
+
+      mother = self.mother(data.person_id)
+      father = self.father(data.person_id)
+      name          = ("#{data['first_name']} #{data['middle_name']} #{data['last_name']}")
+      mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+      father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+      results << [
+          data.district_id_number,
+          name,
+          data.gender,
+          data.birthdate.strftime('%d/%b/%Y'),
+          mother_name,
+          father_name,
+          data.person_id
+      ]
+    end
+
+    {
+        "draw" => params[:draw].to_i,
+        "recordsTotal" => total,
+        "recordsFiltered" => total,
+        "data" => results
+    }
+  end
+
   def self.record_complete?(child)
       name = PersonName.find_by_person_id(child.id)
       pbs = PersonBirthDetail.find_by_person_id(child.id) rescue nil

@@ -312,6 +312,8 @@ class ReportController < ApplicationController
       code_map[d[0]] = d[2]
     end
 
+    session[:code_map] = code_map
+
     @columns = @districts.collect{|d| d[2]}.sort
     #primary_d   = District Of Registration
     #secondary_d = District of Birth
@@ -333,6 +335,23 @@ class ReportController < ApplicationController
       end
     end
 
+  end
+
+  def crossmatch
+    code_map = session[:code_map].invert
+    reg_district = code_map[params[:reg_code]]
+    birth_district = code_map[params[:birth_code]]
+    if params[:draw].blank?
+
+    else
+
+      reg_facilities = [reg_district] + (Location.find_by_sql(" SELECT location_id FROM location WHERE parent_location = #{reg_district} ").map(&:location_id))
+      data = PersonService.query_for_crossmatch(birth_district, reg_facilities, params[:start_date].to_date.to_s, params[:end_date].to_date.to_s, params)
+
+      render :text => data.to_json and return
+    end
+
+    render :layout => false
   end
 
   private

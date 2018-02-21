@@ -170,27 +170,43 @@ function fetchData() {
             color = 'yellow'
            end
         %>
-            <td style="background-color: <%= color%>; color:<%= forcolor%>;cursor: pointer;"><%= ((@data[prim_code][sec_code] || "0") rescue "0")%></td>
+            <td onclick="loadDrilldownFrame('/crossmatch?reg_code=<%= prim_code%>&birth_code=<%= sec_code%>')"
+            style="background-color: <%= color%>; color:<%= forcolor%>;cursor: pointer;"><%= ((@data[prim_code][sec_code] || "0") rescue "0")%></td>
         <% end %>
       </tr>
   <% end %>
   </tbody>
 </table>
 
+<iframe id="iframe"
+style="position: absolute; display: none; width: 82%;min-height: 75vh;left: 13%; top: 7% !important;margin-top: 25px !important;
+        padding: 4px; background: white;z-index: 2500; background: darkslategray;"
+src="" ></iframe>
+<shield id="shield" onmousedown="hideFrame()"
+        style="position: absolute; display: none; height: 300vh; width: 150%;top: 0px; left: 0px; z-index: 2000;background: black; opacity: 0.5;"></shield>
+
 <script>
+    function loadDrilldownFrame(url){
+        url = url + "&start_date=" + jQuery("#start_date").val() + "&end_date=" + jQuery("#end_date").val();
+        __$("iframe").setAttribute("src", url);
+        jQuery("#iframe, #shield").show();
+    }
 
+    function hideFrame(){
+        __$("iframe").setAttribute("src", "");
+        jQuery("#iframe, #shield").hide();
+    }
 
-function activeDate() {
-  jQuery(function() {
-    jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
-  });
+    function activeDate() {
+      jQuery(function() {
+        jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
 
-  jQuery(function() {
-    jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
-  }); 
+      jQuery(function() {
+        jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
 
-}
+    }
 
-activeDate();
-//dataT();
+    activeDate();
 </script>

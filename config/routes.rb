@@ -25,6 +25,8 @@ Rails.application.routes.draw do
   get "/report/birth_reports"
 
   get '/reg_vs_birth_district' => 'report#reg_vs_birth_district'
+  get '/crossmatch' => 'report#crossmatch'
+
 
   ####################### reports end ################################
 
