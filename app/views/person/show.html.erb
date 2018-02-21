@@ -192,7 +192,8 @@
 
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
-      <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
+      <% if params[:viewport].blank?%>
+        <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
         <button class="btn btn-danger pull-left"
                 onclick="window.parent.location = return_path ">
           Cancel
@@ -293,7 +294,12 @@
 
         <%end%>
       </div>
-
+      <% else %>
+          <button class="btn btn-danger pull-left"
+                  onclick="window.location = '<%= request.referrer%>' ">
+            Back
+          </button>
+      <% end %>
 
       <% if @comments.count > 0%>
           <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"

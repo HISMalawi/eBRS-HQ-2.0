@@ -320,6 +320,9 @@ class PersonController < ApplicationController
 
     @section = "View Record"
 
+    if !params[:viewport].blank?
+      render :layout => "viewport" and return
+    end
   end
 
   def parents_married(child, value)

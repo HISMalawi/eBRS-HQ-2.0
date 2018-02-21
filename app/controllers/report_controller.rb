@@ -334,7 +334,6 @@ class ReportController < ApplicationController
         @data[primary_d[2]][code_map[secondary_d['district_of_birth'].to_i]] = secondary_d['total'].to_i
       end
     end
-
   end
 
   def crossmatch
@@ -351,7 +350,7 @@ class ReportController < ApplicationController
       render :text => data.to_json and return
     end
 
-    render :layout => false
+    render :layout => "viewport"
   end
 
   private
