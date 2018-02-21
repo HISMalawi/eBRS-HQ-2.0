@@ -23,6 +23,11 @@ Rails.application.routes.draw do
   get 'get_user_audit_trail' => 'report#get_user_audit_trail'
 
   get "/report/birth_reports"
+
+  get '/reg_vs_birth_district' => 'report#reg_vs_birth_district'
+  get '/crossmatch' => 'report#crossmatch'
+
+
   ####################### reports end ################################
 
   get 'global_property/paper'

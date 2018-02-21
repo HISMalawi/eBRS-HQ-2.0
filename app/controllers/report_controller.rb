@@ -296,6 +296,64 @@ class ReportController < ApplicationController
     @data = Report.births_report(params)
   end
 
+  def reg_vs_birth_district
+    tag_id = LocationTag.where(name: "District").last.id
+    start_date = params[:start_date].to_date rescue "2000-01-01".to_date
+    end_date = params[:end_date].to_date rescue Date.today.to_date
+
+    @data = {}
+    code_map = {}
+    @districts = Location.find_by_sql(" SELECT l.location_id, l.name, l.code FROM location l
+                  INNER JOIN location_tag_map m ON m.location_id = l.location_id
+                    WHERE location_tag_id = #{tag_id} AND parent_location IS NULL")
+    .map{|l| [l.location_id, l.name, l.code]}
+
+    @districts.each do |d|
+      code_map[d[0]] = d[2]
+    end
+
+    session[:code_map] = code_map
+
+    @columns = @districts.collect{|d| d[2]}.sort
+    #primary_d   = District Of Registration
+    #secondary_d = District of Birth
+
+    @districts.each do |primary_d|
+      district_plus_facilities = [primary_d[0]] + (Location.find_by_sql(" SELECT location_id FROM location WHERE parent_location = #{primary_d[0]} ").map(&:location_id))
+
+      break_down = PersonBirthDetail.find_by_sql("
+        SELECT COUNT(*) total, district_of_birth FROM person_birth_details
+          WHERE district_id_number IS NOT NULL
+            AND location_created_at IN (#{district_plus_facilities.join(', ')})
+            AND (DATE(created_at) BETWEEN '#{start_date.to_s(:db)}' AND '#{end_date.to_s(:db)}')
+          GROUP BY district_of_birth
+        ")
+
+      break_down.each do |secondary_d|
+        @data[primary_d[2]] = {} if @data[primary_d[2]].blank?
+        @data[primary_d[2]][code_map[secondary_d['district_of_birth'].to_i]] = secondary_d['total'].to_i
+      end
+    end
+
+  end
+
+  def crossmatch
+    code_map = session[:code_map].invert
+    reg_district = code_map[params[:reg_code]]
+    birth_district = code_map[params[:birth_code]]
+    if params[:draw].blank?
+
+    else
+
+      reg_facilities = [reg_district] + (Location.find_by_sql(" SELECT location_id FROM location WHERE parent_location = #{reg_district} ").map(&:location_id))
+      data = PersonService.query_for_crossmatch(birth_district, reg_facilities, params[:start_date].to_date.to_s, params[:end_date].to_date.to_s, params)
+
+      render :text => data.to_json and return
+    end
+
+    render :layout => false
+  end
+
   private
 
   def districts
