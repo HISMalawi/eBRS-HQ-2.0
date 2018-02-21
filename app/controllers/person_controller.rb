@@ -224,7 +224,7 @@ class PersonController < ApplicationController
                   "Family Name" => "#{@informant_name.last_name rescue nil}"
               },
               {
-                  "Relationship to child" => "#{@birth_details.informant_relationship_to_child rescue ""}",
+                  "Relationship to child" => "#{@birth_details.informant_relationship_to_person rescue ""}",
                   "ID Number" => "#{@informant_person.id_number rescue ""}"
               },
               {
@@ -248,6 +248,10 @@ class PersonController < ApplicationController
               }
           ]
       }
+
+
+    @trace_data = PersonRecordStatus.trace_data(@person.id)
+
     if @person.present? && SETTINGS['potential_search']
       person = {}
       person["id"] = @person.person_id.to_s
@@ -1334,4 +1338,7 @@ class PersonController < ApplicationController
     render layout: "touch"
   end
 
+  def sync_status
+    render :text => PersonBirthDetail.record_available?(params[:person_id])
+  end
 end

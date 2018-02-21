@@ -105,4 +105,10 @@ class Person < ActiveRecord::Base
     name.last_name.gsub(/\s+/, ' ')
   end
 
+  def id_number
+    PersonIdentifier.where(
+        person_id: self.id,
+        person_identifier_type_id: PersonIdentifierType.where(name: "National ID Number").last.id
+    ).last.value
+  end
 end
