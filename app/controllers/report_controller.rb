@@ -354,7 +354,7 @@ class ReportController < ApplicationController
   end
 
   def dispatches
-    start_date = params[:start_date].to_date rescue "2000-01-01".to_date
+    start_date = params[:start_date].to_date rescue "2018-01-01".to_date
     end_date = params[:end_date].to_date rescue Date.today.to_date
     d_id = Status.where(name: "HQ-DISPATCHED").first.id
 
