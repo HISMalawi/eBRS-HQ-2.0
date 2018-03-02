@@ -10,18 +10,18 @@ class ReportController < ApplicationController
     status_ids        = Status.where(name: ['HQ-DISPATCHED','HQ-PRINTED']).map(&:id)
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
-     
+
     data = PersonBirthDetail.where("p.person_type_id = ? AND
       person_birth_details.location_created_at IN (?)
       AND s.status_id IN(?) AND date_reported BETWEEN ? AND ?",
       person_type.id, locations,
-      status_ids, start_date, end_date).joins("INNER JOIN core_person p 
+      status_ids, start_date, end_date).joins("INNER JOIN core_person p
       ON person_birth_details.person_id = p.person_id
       INNER JOIN person ps
       ON ps.person_id = p.person_id
-      INNER JOIN person_name n 
+      INNER JOIN person_name n
       ON n.person_id = p.person_id
-      INNER JOIN person_record_statuses s 
+      INNER JOIN person_record_statuses s
       ON s.person_id = ps.person_id AND s.voided = 0").group('n.person_id')\
       .select("ps.*, n.*, person_birth_details.*").order('p.created_at DESC,
       district_id_number ASC')
@@ -59,21 +59,21 @@ class ReportController < ApplicationController
     district_code_len = district_code.length
     person_type       = PersonType.where(name: 'Client').first
     status_id         = Status.where(name: 'HQ-ACTIVE').first.id
-     
+
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
 
-    data = Person.where("p.person_type_id = ? AND 
+    data = Person.where("p.person_type_id = ? AND
       LEFT(district_id_number, #{district_code_len}) = ?
-      AND status_id = ? AND s.created_at BETWEEN ? AND ?", 
+      AND status_id = ? AND s.created_at BETWEEN ? AND ?",
       person_type.id, district_code,
-      status_id, start_date, end_date).joins("INNER JOIN core_person p 
+      status_id, start_date, end_date).joins("INNER JOIN core_person p
       ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
+      INNER JOIN person_birth_details d
       ON d.person_id = person.person_id
-      INNER JOIN person_record_statuses s 
+      INNER JOIN person_record_statuses s
       ON s.person_id = person.person_id AND s.voided = 0").group('d.person_id')\
-      .select("person.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      .select("person.*, d.*, s.created_at dispatch_date").order('p.created_at DESC,
       district_id_number ASC')
 
     records = {}
@@ -169,19 +169,19 @@ class ReportController < ApplicationController
     status_ids        = Status.where(name: 'HQ-VOIDED').first.id
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
-     
-    data = Person.where("p.person_type_id = ? AND 
-      s.status_id IN(?) AND s.created_at BETWEEN ? AND ?", 
+
+    data = Person.where("p.person_type_id = ? AND
+      s.status_id IN(?) AND s.created_at BETWEEN ? AND ?",
       person_type.id, status_ids, start_date, end_date)\
-      .joins("INNER JOIN core_person p 
+      .joins("INNER JOIN core_person p
       ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
+      INNER JOIN person_birth_details d
       ON d.person_id = person.person_id
-      INNER JOIN person_name n 
+      INNER JOIN person_name n
       ON n.person_id = p.person_id
-      INNER JOIN person_record_statuses s 
+      INNER JOIN person_record_statuses s
       ON s.person_id = person.person_id AND s.voided = 0").group('n.person_id')\
-      .select("person.*, n.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      .select("person.*, n.*, d.*, s.created_at dispatch_date").order('p.created_at DESC,
       district_id_number ASC')
 
     records = []
@@ -254,21 +254,21 @@ class ReportController < ApplicationController
     district_code_len = district_code.length
     person_type       = PersonType.where(name: 'Client').first
     status_id         = Status.where(name: 'DC-ACTIVE').first.id
-     
+
     start_date        = params[:start_date].to_date.strftime('%Y-%m-%d 00:00:00')
     end_date          = params[:end_date].to_date.strftime('%Y-%m-%d 23:59:59')
 
-    data = Person.where("p.person_type_id = ? AND 
+    data = Person.where("p.person_type_id = ? AND
       LEFT(district_id_number, #{district_code_len}) = ?
-      AND status_id = ? AND s.created_at BETWEEN ? AND ?", 
+      AND status_id = ? AND s.created_at BETWEEN ? AND ?",
       person_type.id, district_code,
-      status_id, start_date, end_date).joins("INNER JOIN core_person p 
+      status_id, start_date, end_date).joins("INNER JOIN core_person p
       ON person.person_id = p.person_id
-      INNER JOIN person_birth_details d 
+      INNER JOIN person_birth_details d
       ON d.person_id = person.person_id
-      INNER JOIN person_record_statuses s 
+      INNER JOIN person_record_statuses s
       ON s.person_id = person.person_id AND s.voided = 0").group('d.person_id')\
-      .select("person.*, d.*, s.created_at dispatch_date").order('p.created_at DESC, 
+      .select("person.*, d.*, s.created_at dispatch_date").order('p.created_at DESC,
       district_id_number ASC')
 
     records = {}
@@ -296,77 +296,18 @@ class ReportController < ApplicationController
     @data = Report.births_report(params)
   end
 
-  def reg_vs_birth_district
-    tag_id = LocationTag.where(name: "District").last.id
-    start_date = params[:start_date].to_date rescue "2000-01-01".to_date
-    end_date = params[:end_date].to_date rescue Date.today.to_date
-
-    @data = {}
-    code_map = {}
-    @districts = Location.find_by_sql(" SELECT l.location_id, l.name, l.code FROM location l
-                  INNER JOIN location_tag_map m ON m.location_id = l.location_id
-                    WHERE location_tag_id = #{tag_id} AND parent_location IS NULL")
-    .map{|l| [l.location_id, l.name, l.code]}
-
-    @districts.each do |d|
-      code_map[d[0]] = d[2]
-    end
-
-    session[:code_map] = code_map
-
-    @columns = @districts.collect{|d| d[2]}.sort
-    #primary_d   = District Of Registration
-    #secondary_d = District of Birth
-
-    @districts.each do |primary_d|
-      district_plus_facilities = [primary_d[0]] + (Location.find_by_sql(" SELECT location_id FROM location WHERE parent_location = #{primary_d[0]} ").map(&:location_id))
-
-      break_down = PersonBirthDetail.find_by_sql("
-        SELECT COUNT(*) total, district_of_birth FROM person_birth_details
-          WHERE district_id_number IS NOT NULL
-            AND location_created_at IN (#{district_plus_facilities.join(', ')})
-            AND (DATE(created_at) BETWEEN '#{start_date.to_s(:db)}' AND '#{end_date.to_s(:db)}')
-          GROUP BY district_of_birth
-        ")
-
-      break_down.each do |secondary_d|
-        @data[primary_d[2]] = {} if @data[primary_d[2]].blank?
-        @data[primary_d[2]][code_map[secondary_d['district_of_birth'].to_i]] = secondary_d['total'].to_i
-      end
-    end
-
-  end
-
-  def crossmatch
-    code_map = session[:code_map].invert
-    reg_district = code_map[params[:reg_code]]
-    birth_district = code_map[params[:birth_code]]
-    if params[:draw].blank?
-
-    else
-
-      reg_facilities = [reg_district] + (Location.find_by_sql(" SELECT location_id FROM location WHERE parent_location = #{reg_district} ").map(&:location_id))
-      data = PersonService.query_for_crossmatch(birth_district, reg_facilities, params[:start_date].to_date.to_s, params[:end_date].to_date.to_s, params)
-
-      render :text => data.to_json and return
-    end
-
-    render :layout => false
-  end
-
   private
 
   def districts
     location_tag = LocationTag.where(name: 'District').first
 
     @districts = Location.group("location.location_id").where("t.location_tag_id = ?
-      AND location.name NOT LIKE (?)", location_tag.id, 
-      "%city%").joins("INNER JOIN location_tag_map m 
+      AND location.name NOT LIKE (?)", location_tag.id,
+      "%city%").joins("INNER JOIN location_tag_map m
       ON m.location_id = location.location_id
-      INNER JOIN location_tag t 
+      INNER JOIN location_tag t
       ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
 
   end
 
 end
-  
