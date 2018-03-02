@@ -77,14 +77,14 @@
 
      body{
          width: 98%;
-         margin: auto;
+         : 4px;
          margin-top: 7px !important;
          background: #f8f8ff;
      }
 </style>
 
-<table id="example" class="display" cellspacing="0" width="100%" style="margin: auto; margin-top: 5px !important;color: darkslategray !important;background-color: white !important;">
-  <caption style="font-size: 0.85em">Birth in: <%= params[:reg_code]%>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Reg. in: <%= params[:birth_code]%>
+<table id="example" class="display" cellspacing="0" width="100%" style="margin-left: 10px !important; auto; margin-top: 5px !important;color: darkslategray !important;background-color: white !important;">
+  <caption style="font-size: 1em">Birth in: <%= params[:reg_code]%>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Reg. in: <%= params[:birth_code]%>
     &nbsp;&nbsp;&nbsp;&nbsp; Period: <%= params[:start_date].to_date.strftime("%d/%b/%Y")%> - <%= params[:end_date].to_date.strftime("%d/%b/%Y")%></caption>
   <thead>
     <tr>
@@ -123,7 +123,7 @@
                                 var last_index = json['data'][i].length - 1;
                                 var person_id = json['data'][i][last_index];
                                 json['data'][i][last_index] =   '<td class="act-btn"> ' +
-                                        '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+                                        '<button onclick="javascript:location=\'/show_person/' + person_id + '?viewport=true \'"     ' +
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
                             }
 

@@ -320,6 +320,9 @@ class PersonController < ApplicationController
 
     @section = "View Record"
 
+    if !params[:viewport].blank?
+      render :layout => "viewport" and return
+    end
   end
 
   def parents_married(child, value)
@@ -1136,7 +1139,6 @@ class PersonController < ApplicationController
 
     print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?person_ids=#{params[:person_ids]} #{path}.pdf\n"
 
-    puts print_url
     t4 = Thread.new {
       Kernel.system print_url
       sleep(4)
@@ -1155,6 +1157,13 @@ class PersonController < ApplicationController
                         WHERE d.person_id IN (#{params[:person_ids]}) ")
     @districts = []
 
+    #Unify dispatch time
+    dispatch_time = PersonRecordStatus.find_by_sql("SELECT MAX(created_at) m FROM person_record_statuses WHERE person_id IN (#{params[:person_ids]})
+                      AND status_id = (SELECT status_id FROM statuses WHERE name = 'HQ-DISPATCHED' LIMIT 1) ").last.as_json['m']
+
+    PersonRecordStatus.where("person_id IN (#{params[:person_ids]}) AND status_id = (SELECT status_id FROM statuses WHERE name = 'HQ-DISPATCHED') ").each do |s|
+      s.update_attribute('created_at', dispatch_time)
+    end
 
     @data = []
     @people.each do |p|
