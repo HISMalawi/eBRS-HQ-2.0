@@ -394,3 +394,4 @@ class ReportController < ApplicationController
   end
 
 end
+  
