@@ -1,7 +1,7 @@
 $configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")['user_migration']
 $database = "#{$configs['prefix']}_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
-$couch_link += "_design/User/_view/all?include_docs=true"
+$couch_link += "_design/Users/_view/by_username?include_docs=true"
 
 puts $couch_link
 users = JSON.parse(`curl -s -X GET #{$couch_link}`)

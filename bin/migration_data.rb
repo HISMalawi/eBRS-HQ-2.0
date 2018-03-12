@@ -18,6 +18,10 @@ require 'json'
 OTHER_TYPES_OF_BIRTH = "#{Rails.root}/app/assets/data/multiple_birth_children.csv"
 @results = {}
 
+put "Initializing CouchDB Views"
+Child.count
+Users.count
+
 user = User.where(username: "admin#{SETTINGS['location_id']}").last
 
 def create_user

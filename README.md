@@ -1,3 +1,12 @@
+Before syncing ensure that you have the following
+
+'main' database e.g ebrs_dedza, have facility main database synced to this database
+'local' database e.g ebrs_local_dedza, have facility local database synced to this database
+'audit' database e.g ebrs_audit_dedza, have facility audit database synced to this database
+
+get a copy of metadata.sql from HQ
+get a copy of hq_users.sql from team members / developers and put it in this app root folder (this file is not pushed on github for security purposes).
+
 0. Follow instructions properly
 
 GENERAL
