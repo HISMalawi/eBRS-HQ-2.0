@@ -9,5 +9,11 @@ FROM person_identifiers
 count = 0
 data.each do |d|
   count = count + 1
+<<<<<<< HEAD
   PersonBirthDetail.where(person_id: d.person_id).first.update_columns(national_serial_number: count)
 end
+=======
+  puts count
+  PersonBirthDetail.where(person_id: d.person_id).first.update_columns(national_serial_number: count)
+end
+>>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6

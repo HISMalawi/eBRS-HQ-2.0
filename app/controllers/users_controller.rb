@@ -31,13 +31,19 @@ class UsersController < ApplicationController
     @usernames = User.all.map(&:username)
     
     @roles = ['']
-    
-    Role.where(:level => 'HQ').map do |r|
-      @roles << [r.role, r.id]
-    end
-    
+
+
     @gender = ['','Female','Male']
 
+  end
+
+  def get_roles
+    @roles = [['', '']]
+    Role.where(:level => params[:level]).order('role DESC').map do |r|
+      @roles << [r.role, r.id]
+    end
+
+    render text: @roles.to_json
   end
 
   # Edits Selected User
@@ -65,11 +71,14 @@ class UsersController < ApplicationController
 
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
-    gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
+    similar_users = User.where(username: username)
+    if similar_users.count > 0
+      raise "User with Username = #{username} Already Exists, Please Try Another Username".to_s
+    end
 
     ActiveRecord::Base.transaction do
       core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
-      person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
+      #person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
 
       names = PersonName.create(first_name: first_name, last_name: last_name, person_id: core_person.id)
       PersonNameCode.create(first_name_code: first_name.soundex,
@@ -91,6 +100,11 @@ class UsersController < ApplicationController
           PersonAttribute.create(person_id: core_person.id, 
                                  person_attribute_type_id: attribute_type.id, 
                                  value: signature)
+          gp = GlobalProperty.find_by_property("signatory")
+          gp.destroy if gp.present?
+          GlobalProperty.create(property: "signatory", 
+                                value: username, 
+                                uuid: SecureRandom.uuid)
         end
       end  
       

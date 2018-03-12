@@ -7,3 +7,5 @@ potential_search: false
 printer_name: test1|tst2|test3
 barcodes_path: /var/www/barcodes/
 certificates_path: /var/www/certificates/
+ebrs_services_link: http://0.0.0.0:9002
+

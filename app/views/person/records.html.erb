@@ -53,12 +53,14 @@
         left: 55%;
         top: 40%;
     }
-    #birth_type, #example_filter{
+    #districts, #example_filter{
         margin-left: 15px;
         float: right;
     }
 
 </style>
+
+<% @type_stats = {} if @type_stats.blank?%>
 <div class="panel panel-default">
   <div class="panel-heading" style="height: 50px;">
     <table style="width: 100%;">
@@ -66,15 +68,24 @@
         <td>
           <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
         </td>
-        <td colspan="8" style="width: 60%;">
-
+        <td colspan="8" style="width: 80%;" class="pull-right">
+          <button onclick="selectBadge('All')" type="button" style="float: right;margin: 0px !important;border-radius: 0px !important;" class="btn btn-default">Total
+            <span class="badge" style="background: #2e6da4"><%=@type_stats.values.sum || 0%></span></button>
+          <button onclick="selectBadge('Abandoned')" type="button" style="float: right;margin: 0px !important;border-radius: 0px !important;" class="btn btn-default">Abandoned
+            <span class="badge" style="background: #2e6da4"><%=@type_stats['Abandoned'] || 0%></span></button>
+          <button onclick="selectBadge('Orphaned')" type="button" style="float: right;margin: 0px !important;border-radius: 0px !important;" class="btn btn-default">Orphaned
+            <span class="badge"  style="background: #2e6da4"><%=@type_stats['Orphaned'] || 0%></span></button>
+          <button onclick="selectBadge('Adopted')" type="button" style="float: right;margin: 0px !important;border-radius: 0px !important;" class="btn btn-default">Adopted
+            <span class="badge"  style="background: #2e6da4"><%=@type_stats['Adopted'] || 0%></span></button>
+          <button onclick="selectBadge('Normal')" type="button" style="float: right;margin: 0px !important;border-radius: 0px !important;width: 150px;" class="btn btn-default">Normal
+            <span class="badge"  style="background: #2e6da4"><%=@type_stats['Normal'] || 0%></span></button>
         </td>
       </tr>
     </table>
   </div>
 
   <div class="fix-middle" style="height: 40px; margin-top: 0px;">
-    <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT'] & params['statuses']).length > 0%>
+    <%if (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'] & params['statuses']).length > 0%>
         <button id="print-all" onclick="printAll()"
                 class=" action-btn btn btn-sm btn-success"><i class="fa fa-print"></i>Print Selected</button>
     <% end %>
@@ -103,7 +114,7 @@
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
-        <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+        <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
             <div class="checkbox pull-right">
               <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
             </div>
@@ -220,27 +231,57 @@
   </div>
 </div>
 
-<select id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
-  <option value="All">Select Birth Type</option>
-  <option>From NID</option>
-  <option>Normal</option>
-  <option>Abandoned</option>
-  <option>Adopted</option>
-  <option>Orphaned</option>
+<select id="districts" label="District" onchange="reloadDataTable(this)"
+        style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+
+  <option value="All">Select Source District</option>
+  <% districts.each do |d|%>
+      <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
+  <% end %>
 </select>
+
+<select  style="display: none;color: #2f4f4f" id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
+  <option value="All">Select Category</option>
+  <option id="nid" >From NID</option>
+  <option id="normal">Normal</option>
+  <option id="abandoned">Abandoned</option>
+  <option id="adopted">Adopted</option>
+  <option id="orphaned">Orphaned</option>
+</select>
+
 
 <script>
     selected = [];
     var table;
     var url = "<%= request.url%>";
 
+    <% if !@birth_type.blank? %>
+        jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);
+        jQuery("#birth_type").prop('disabled', true);
+    <% end %>
+
+    <% if !session[:district].blank?%>
+        jQuery("#districts").find("#" + '<%= session[:district]%>').prop('selected', true);
+    <% end %>
+
+    var type;
     $i(document).ready(function() {
+
+        <% if params[:birth_type] != 'All Special Cases'%>
+            type = __$('birth_type').value;
+        <% else %>
+            type = "All Special Cases"
+        <% end %>
+
         initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
+        holder.appendChild(__$('districts'));
+
     } );
 
     function initTable(){
+
         table =  $i('#example').DataTable(
                 {
                     "processing": true,
@@ -249,7 +290,8 @@
                     "ajax": {
                         "url": url,
                         "data": function(d){
-                            d.type = __$('birth_type').value;
+                            d.type = type;
+                            d.district = __$('districts').value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
@@ -261,15 +303,7 @@
 
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
 
-                                 <% if admin? %>
-                                    json['data'][i][last_index] += '<td class="act-btn">' +
-                                        '<button onclick="javascript:location=\'/edit/' + person_id + ' \'"' +
-                                        'class=" hidden action-btn btn btn-primary btn-xs"><i class="fa fa-pencil"></i></button></td>' +
-                                        '<td class="act-btn"><button onclick="javascript:location=\'/void/' + person_id + '\'"' +
-                                        'class="action-btn btn btn-danger btn-xs"><i class="fa fa-trash-o"></i></button></td>'
-                                <% end %>
-
-                                <%if (['HQ-CAN-PRINT', 'HQ-CAN-REPRINT', 'HQ-PRINTED'] & params['statuses']).length > 0%>
+                                <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
                                 <% end %>
@@ -282,6 +316,13 @@
     }
 
     function reloadDataTable(node){
+        type = __$('birth_type').value;
+        table.ajax.reload();
+    }
+
+    function selectBadge(name){
+        type = name;
+        __$("birth_type").value = name;
         table.ajax.reload();
     }
 
@@ -348,6 +389,7 @@
 
     checkSelections();
 
+    jQuery("#example_filter").find("input")
 </script>
 
 <style>

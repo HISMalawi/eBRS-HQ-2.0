@@ -8,6 +8,7 @@ class PersonName < ActiveRecord::Base
     belongs_to :core_person
     has_one :person_name_code
 
+<<<<<<< HEAD
     before_create :check_length, :check_special_chars
 
   def check_length
@@ -21,5 +22,13 @@ class PersonName < ActiveRecord::Base
       self.first_name = "@@@@@" if (self.first_name =~ regex).to_i > 0
       self.last_name = "@@@@@" if (self.last_name =~ regex).to_i > 0
       self.middle_name = "@@@@@" if (self.middle_name =~ regex).to_i > 0
+=======
+  after_initialize :strip_special_chars
+
+  def strip_special_chars
+    self.first_name = "" if !self.first_name && self.first_name.match("@")
+    self.last_name = "" if !self.last_name.blank? && self.last_name.match("@")
+    self.middle_name = "" if !self.middle_name.blank? && self.middle_name.match("@")
+>>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
   end
 end

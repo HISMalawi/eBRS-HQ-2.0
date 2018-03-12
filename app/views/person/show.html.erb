@@ -41,11 +41,59 @@
     overflow: auto;
     width: 100%;
 }
+
+#trace-tbl td{
+    border: 1px solid #d3d3d3;
+    padding: 5px !important;
+}
+#trace-row td{
+    font-size: 1em !important;
+}
+
 </style>
 <script>
   return_path = '<%= session[:list_url]%>'
 </script>
 <%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<div id="trace-btn"
+     class="btn btn-primary blue"
+     style="position: absolute; top: 11%; right: 5.2%;cursor: pointer;padding: 5px;"
+     onclick="ajaxTrace()"
+> Trace</div>
+
+<shield id="shieldd"
+        onclick="jQuery('#shieldd, #trace-div').hide(); "
+        style="position: absolute; display: none; top: 0px; left: 0px; width: 300vh; height: 300vh; background: black; opacity: 0.3;">
+</shield>
+
+<div id="trace-div" style="position: absolute; height: 56vh; overflow-y: auto; display: none; top: 18%; left: 18%;width: 65%;background: white;border: 2px solid gray;border-radius: 5px;z-index: 3000">
+
+  <table id="trace-tbl" style="width: 100%;color: darkslategray;">
+    <caption style="background: ghostwhite;padding: 6px; font-size: 1.2em;">
+      Record Movements
+    </caption>
+    <tr >
+      <td style="width: 1%;background: lightsteelblue;font-weight: bold;">Site</td>
+      <td style="width: 14%;background: lightsteelblue;font-weight: bold;">Date</td>
+      <td style="width: 12%;background: lightsteelblue;font-weight: bold;">Time</td>
+      <td style="width: 20%;background: lightsteelblue;font-weight: bold;">User</td>
+      <td style="width: 30%;background: lightsteelblue;font-weight: bold;">Action Taken</td>
+      <td style="background: lightsteelblue;font-weight: bold;">Comments</td>
+    </tr>
+
+    <% (@trace_data || []).each do |data|%>
+        <tr class="trace-row">
+          <td><%= data['site']%></td>
+          <td><%= data['date']%></td>
+          <td><%= data['time']%></td>
+          <td><%= data['user'].html_safe%></td>
+          <td><%= data['action']%></td>
+          <td><%= data['comment']%></td>
+        </tr>
+    <% end %>
+  </table>
+</div>
 
 <div class="panel panel-default">
     <div class="panel-heading" style="height: 50px;">
@@ -144,7 +192,8 @@
 
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
-      <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
+      <% if params[:viewport].blank?%>
+        <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
         <button class="btn btn-danger pull-left"
                 onclick="window.parent.location = return_path ">
           Cancel
@@ -164,12 +213,24 @@
         <button id="Confirm Completeness" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="jQuery('#completenessModal').modal('show')">
           <span class="fa fa-check"></span>
-          Confirm
+          Check Completeness
         </button>
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="ajaxify('HQ-CAN-PRINT')">
           <span class="fa fa-thumbs-o-up"></span>
           Approve for Printing
+        </button>
+
+        <button id="Approve for Re-printing" class="btn btn-success pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Reprint Reason', 'HQ-CAN-RE-PRINT')">
+          <span class="fa fa-thumbs-o-up"></span>
+          Approve for Re-Printing
+        </button>
+
+        <button id="Request Reprint" class="btn btn-danger  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter reason for Re-print Request', 'HQ-RE-PRINT')">
+          <span class="fa"></span>
+          Request Re-print
         </button>
 
         <button id="Dispatch" class="btn btn-success pull-right" style="display:<%= display%>;"
@@ -183,7 +244,7 @@
           Print
         </button>
         <button id="Reject" class="btn btn-danger pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')">
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REJECT')">
           <span class="fa"></span>
           Reject
         </button>
@@ -202,21 +263,51 @@
           <span class="fa"></span>
           Approve for Re-print Amendment
           </button>
-        <button id="DS Approve Amendment" class="btn btn-success  pull-right" style="display:<%= display%>;"
-                onclick="generalComment('Enter rejection reason to proceed', 'HQ-AMEND')">
+        <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('-REJECTED','')+'-GRANTED')">
           <span class="fa"></span>
-          Approve Amendments
+          Grant Request
+        </button>
+
+        <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-REJECTED-TBA')">
+          <span class="fa"></span>
+          Reject Request
         </button>
         
+        <button id="Reject Request to DC" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
+          <span class="fa"></span>
+          Reject Request to DC
+        </button>
+
+        <button id="Approve Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-PRINT')">
+          <span class="fa"></span>
+          Approve Request
+        </button>
+        <button id="Reject Request to DS" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('GRANTED','REJECTED').replace('-TBA',''))">
+          <span class="fa"></span>
+            Reject Request to DS
+        </button>
+
         <%end%>
       </div>
+      <% else %>
+          <button class="btn btn-danger pull-left"
+                  onclick="window.location = '<%= request.referrer%>' ">
+            Back
+          </button>
+      <% end %>
 
-
-      <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
-              onclick= 'ajaxPullComments("view")' >
-        <span class="fa fa-comments"></span>
-        View Comments (<%= @comments.count%>)
-      </button>
+      <% if @comments.count > 0%>
+          <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
+                  onclick= 'ajaxPullComments("view")' >
+            <span class="fa fa-comments"></span>
+            View Comments (<%= @comments.count%>)
+          </button>
+      <% end %>
     </div>
 </div>
 
@@ -225,7 +316,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <button type="button"  style="display:none" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="duplicateModalLabel" style="text-align: left;">
            Record is potential duplicate with <%= @results.count %> record(s)
         </h4>
@@ -246,7 +337,7 @@
           </table>
         <form id="duplicate_form" action="/duplicate_processing/<%=@person.id %>">
               <input type="hidden" name="operation" value="System">
-              <label style="margin:2%; float:left"><h4>Enter comment</h4></label>
+              <label class="hidden" style="margin:2%; float:left"><h4>Enter comment</h4></label>
               <input class="form-control" type="textarea" name="comment" style="width: 98%;margin-top: 4px;margin-bottom: 4px;" required>
               <input type="hidden" name="next_url" value="/person/view?statuses[]=HQ-ACTIVE&destination=Active Records" >
         </form>
@@ -357,7 +448,7 @@
         </span>
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-COMPLETE')">Complete</button>
+          <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-COMPLETE')">Complete</button>
           <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
         </div>
       </div>
@@ -441,12 +532,26 @@
                window.parent.location = return_path;
             },
             error: function(error){
-                alert("Something went wrong!");
+                console.log("Something went wrong! server may be down")
             }
         })
     }
 
-    function ajaxPullComments(mode){
+    function ajaxPullComments(mode, status){
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if(role == "Data Checking Clerk" && status == "HQ-COMPLETE"){
+            ajaxify(status);
+            return;
+        }
+        if(role == "Data Supervisor" && status == "HQ-COMPLETE"){
+            <% if @status == "HQ-RE-APPROVED" %>
+                //status = "HQ-CONFLICT"
+            <% else %>
+                status = "HQ-CONFLICT"
+            <% end %>
+        }
+
         jQuery("#comment-list").html("");
 
         if (mode && mode == 'view'){
@@ -458,6 +563,12 @@
             __$('textarea').style.display = 'inline';
             __$('submit_btn').style.display = 'inline';
             __$("comment-header").innerHTML = "Add comment to proceed";
+        }
+
+        if(status && status.toLowerCase().match('complete')){
+            jQuery("#comments").attr('next_status', status)
+        }else{
+            jQuery("#comments").attr('next_status', '')
         }
 
         jQuery.ajax(
@@ -483,6 +594,7 @@
                         }
 
                         jQuery("#comments").modal('show');
+                        console.log(status)
 
                         parent.scrollTop = parent.scrollHeight;
 
@@ -519,6 +631,11 @@
         }
 
         var role = '<%= User.current.user_role.role.role%>';
+
+        if (!status) {
+            status = jQuery("#comments").attr('next_status');
+        }
+
         if (!status) {
             status = ({
                 'Data Checking Clerk': 'HQ-INCOMPLETE',
@@ -564,6 +681,12 @@
             return;
         }
         window.location = "/person/dispatch_certificates?person_ids=<%= params[:person_id]%>&printer_name=" + printer_name;
+    }
+
+    function ajaxTrace(){
+        jQuery("#shieldd, #trace-div").show();
+        console.log("In")
+
     }
 </script>
 

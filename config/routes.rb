@@ -23,6 +23,13 @@ Rails.application.routes.draw do
   get 'get_user_audit_trail' => 'report#get_user_audit_trail'
 
   get "/report/birth_reports"
+
+  get '/reg_vs_birth_district' => 'report#reg_vs_birth_district'
+  get '/dispatches' => 'report#dispatches'
+
+  get '/crossmatch' => 'report#crossmatch'
+
+
   ####################### reports end ################################
 
   get 'global_property/paper'
@@ -78,6 +85,8 @@ Rails.application.routes.draw do
   get "/view_users" => "users#view"
 
   get 'users/my_account'
+
+  get 'users/get_roles'
 
   post 'users/update_password'
 
@@ -143,6 +152,7 @@ Rails.application.routes.draw do
   get "/person/dispatch_certificates"
   get "/person/dispatch_list"
   get "/person/view"
+  get "/person/print_cases"
 
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}
@@ -183,6 +193,13 @@ Rails.application.routes.draw do
   get "/person/check_background_jobs"
   get "/record_state_and_date" => "report#record_state_and_date"
   get "/ajax_record_state_and_date" => "report#ajax_record_state_and_date"
+  get "/sync_status" => "person#sync_status"
+
+  get "/person/check_details"
+
+  get "/person/certificate_verification"
+  post "/person/certificate_verification"
+
   resources :person
 
   resources :users

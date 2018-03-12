@@ -4,20 +4,16 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
   #protect_from_forgery	#with: :null_session
 
+<<<<<<< HEAD
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
   #before_filter :check_last_sync_time
   #before_filter :check_couch_loading
-
-  def check_last_sync_time
-    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue nil
-    job_interval = 60
-    now = Time.now
-    if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
-      Thread.new{
-        load "#{Rails.root}/bin/jobs.rb"
-      }
-    end
-  end
+=======
+  before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list', 'sync_status']
+  before_filter :check_pings, :except => ["sync_status"]
+  before_filter :check_couch_loading, :except => ["sync_status"]
+  before_filter :check_notifications, :only => ['index', 'tasks', 'view']
+>>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
@@ -25,7 +21,18 @@ class ApplicationController < ActionController::Base
     now = Time.now
     if last_run_time.present? && (now - last_run_time).to_f > 2*job_interval
       Thread.new{
-        load "#{Rails.root}/bin/couch-mysql.rb"
+        RestClient.get("#{SETTINGS['ebrs_services_link']}/api/start_data_loading")
+      }
+    end
+  end
+
+	def check_pings
+    last_run_time = File.mtime("#{Rails.root}/public/ping_sentinel").to_time rescue nil
+    job_interval = 60
+    now = Time.now
+    if last_run_time.present? && (now - last_run_time).to_f > 7*job_interval
+      Thread.new{
+        RestClient.get("#{SETTINGS['ebrs_services_link']}/api/start_ping")
       }
     end
   end
@@ -57,11 +64,12 @@ class ApplicationController < ActionController::Base
   end
 
   def login!(user)
-    session[:user_id] = user.id 
+    session[:user_id] = user.id
     AuditTrail.ip_address_accessor = request.remote_ip
     AuditTrail.mac_address_accessor = ` arp #{request.remote_ip}`.split(/\n/).last.split(/\s+/)[2]
     AuditTrail.ip_address_accessor.inspect
-    AuditTrail.create(person_id: user.id,
+
+    AuditTrail.create!(person_id: user.id,
                        audit_trail_type_id: AuditTrailType.find_by_name("SYSTEM").id,
                        comment: "User login")
   end
@@ -76,11 +84,16 @@ class ApplicationController < ActionController::Base
 
   def application_couchdb
      con = YAML.load_file(File.join(Rails.root, "config", "couchdb.yml"))
-     return "#{con['prefix']}_#{con['suffix']}" 
+     return "#{con['prefix']}_#{con['suffix']}"
   end
 
   def admin?
     ApplicationController.helpers.admin?
+  end
+
+  def check_notifications
+    @notifications = Notification.by_role(User.current.user_role.role_id)
+    session[:notifications] = @notifications
   end
 
   private
@@ -91,7 +104,7 @@ class ApplicationController < ActionController::Base
       if request.filtered_parameters["action"] == 'create' and request.filtered_parameters["controller"] == 'logins'
         return
       end
-      
+
       redirect_to '/login' and return
     else
 

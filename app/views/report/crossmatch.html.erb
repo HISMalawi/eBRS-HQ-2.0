@@ -1,0 +1,141 @@
+
+
+<%=javascript_include_tag "datatables/jquery"%>
+<script>
+    var $j = jQuery.noConflict();
+</script>
+<%=javascript_include_tag "js/jquery"%>
+<script>
+    var $i = jQuery.noConflict();
+</script>
+<%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
+<%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>
+<%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>
+<%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
+<%=javascript_include_tag "js/jquery.scrollTo.min"%>
+<%=javascript_include_tag "js/jquery.nicescroll"%>
+
+<%= stylesheet_link_tag "bootstrap/bootstrap" %>
+<!--external css-->
+<!--link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" /-->
+<%#= stylesheet_link_tag "font/font-awesome" %>
+<%= stylesheet_link_tag "extras/font-awesome.min" %>
+<%= stylesheet_link_tag "alert" %>
+
+<!-- Custom styles for this template -->
+<%= stylesheet_link_tag "extras/style" %>
+<%= stylesheet_link_tag "extras/style-responsive" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+
+<style>
+
+    #example{
+        background-color: #d3d3d3;
+        margin-top: 30px;
+    }
+    #example tr td{
+        background-color: white !important;
+        border-left: 0.5px dotted lightgray;
+        padding: 7px;
+        font-size: 0.9em !important;
+    }
+
+    .action-btn .fa{
+        min-width: 35px;
+        font-size: 17px;
+
+    }
+
+    .checkbox{
+        margin-left: 5px;
+
+    }
+
+    th{
+        background: lightsteelblue;
+        color: black;
+    }
+
+    .panel-heading{
+        margin-bottom: 20px;
+    }
+
+    .action-btn{
+        border: none !important;
+        margin-top: 0px;
+        min-width: 50px;
+        padding: 3px;
+        margin-left: 5px;
+
+    }
+
+     body{
+         width: 98%;
+         : 4px;
+         margin-top: 7px !important;
+         background: #f8f8ff;
+     }
+</style>
+
+<table id="example" class="display" cellspacing="0" width="100%" style="margin-left: 10px !important; auto; margin-top: 5px !important;color: darkslategray !important;background-color: white !important;">
+  <caption style="font-size: 1em">Birth in: <%= params[:reg_code]%>, &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  Reg. in: <%= params[:birth_code]%>
+    &nbsp;&nbsp;&nbsp;&nbsp; Period: <%= params[:start_date].to_date.strftime("%d/%b/%Y")%> - <%= params[:end_date].to_date.strftime("%d/%b/%Y")%></caption>
+  <thead>
+    <tr>
+      <th style="text-align: left;">BEN</th>
+      <th style="text-align: left;">Name</th>
+      <th style="text-align: left">Gender</th>
+      <th style="text-align: left;">Birthdate</th>
+      <th style="text-align: left;">Mother's Name</th>
+      <th style="text-align: left;">Father's Name</th>
+      <th>&nbsp;</th>
+  </tr>
+  </thead>
+
+  <tbody>
+  </tbody>
+</table>
+
+<script>
+
+    $i(document).ready(function() {
+        initTable();
+    } );
+
+    function initTable(){
+        var url = "/crossmatch?reg_code=<%= params['reg_code']%>&birth_code=<%= params['birth_code']%>&start_date=<%= params['start_date']%>&end_date=<%= params['end_date']%>"
+        table =  $i('#example').DataTable(
+                {
+                    "processing": true,
+                    "serverSide": true,
+                    "ordering": false,
+                    "ajax": {
+                        "url": url,
+                        dataFilter: function(data){
+                            var json = $i.parseJSON( data );
+                            for(var i = 0; i < json['data'].length; i ++){
+                                var last_index = json['data'][i].length - 1;
+                                var person_id = json['data'][i][last_index];
+                                json['data'][i][last_index] =   '<td class="act-btn"> ' +
+                                        '<button onclick="javascript:location=\'/show_person/' + person_id + '?viewport=true \'"     ' +
+                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+                            }
+
+                            return JSON.stringify( json );
+                        }
+                    }
+                }
+        );
+    }
+
+    function reloadDataTable(node){
+        table.ajax.reload();
+    }
+
+</script>

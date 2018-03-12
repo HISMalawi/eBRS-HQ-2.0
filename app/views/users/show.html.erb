@@ -110,13 +110,13 @@
 
     <tr>
       <td>
-        <strong>Gender:</strong>
+        <strong>Level:</strong>
       </td>
       <td>
         :
       </td>
       <td>
-        <%= Person.find(@user.person_id).gender == 'F' ? 'Female' : 'Male' rescue '' %>
+        <%= @user.user_role.role.level rescue '' %>
       </td>
     </tr>
 

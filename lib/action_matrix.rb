@@ -1,6 +1,9 @@
 class ActionMatrix
 
   def self.read_actions(role, states = [])
+
+    return [] if role.present? && role.match("Administrator")
+
 		states = states.collect{|s| s.strip.upcase}
 		role = role.strip.upcase
 
@@ -66,14 +69,16 @@ class ActionMatrix
   
       if found && SETTINGS['enable_role_privileges'].to_s == 'false' && !row[0].blank? && Rails.env.to_s == 'development'
         folders << row[0]
-      elsif index > -1 && !row[index].blank? && row[index].to_s == 'Y'
+      elsif index > -1 && !row[index].blank? && row[index].to_s.strip == 'Y'
         folders << row[0]
       end
+
+      folders << row[0] if role.present? && role.match("Administrator")
 
       break if row[0] && row[0].strip.upcase == "END ROOT FOLDER PRIVILEGES"
     end
 
-    (folders - ["Folder/Role", "END ROOT FOLDER PRIVILEGES"])
+    (folders.uniq - ["Folder/Role", "END ROOT FOLDER PRIVILEGES", ""])
   end
 
 end

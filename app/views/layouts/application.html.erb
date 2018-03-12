@@ -15,8 +15,9 @@
     <!--external css-->
     <!--link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" /-->
     <%#= stylesheet_link_tag "font/font-awesome" %>                                         
-    <%= stylesheet_link_tag "extras/font-awesome.min" %>                                         
-        
+    <%= stylesheet_link_tag "extras/font-awesome.min" %>
+    <%= stylesheet_link_tag "alert" %>
+
     <!-- Custom styles for this template -->
     <%= stylesheet_link_tag "extras/style" %>                                         
     <%= stylesheet_link_tag "extras/style-responsive" %>                                         
@@ -168,24 +169,42 @@
             <!--logo start-->
             <a href="/" class="logo"><b><span style="text-transform: lowercase;color:white;">e</span>BRS</b></a>
             <!--logo end-->
-            <div class="nav notify-row" id="top_menu">
-                <!--  notification start -->
-                <ul class="nav top-menu">
-                    <!-- settings start -->
-                    <li class="dropdown"><!--
 
-                    </li>
-                    <!-- settings end -->
-                    <!-- inbox dropdown start-->
-                    <li id="header_inbox_bar" class="dropdown"><!--
+            <div class="top-menu" style="padding-top: 7px;font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif';">
+              <ul class="nav navbar-top-links navbar-right">
+                <table cellspacing="0" cellpadding="0" style="background: none;margin: 10px !important; padding: 0px;"><tr><td>
+                  <li class="chat-panel dropdown">
+                    <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
+                      <span class="label count-label" style="font-size: 14px;margin-bottom: 2px;color: red;"><%= (session[:notifications] || []).length%></span>
+                      <i class="fa fa-comments-o"></i>&nbsp; <i class="fa fa-chevron-down"></i>
+                    </a>
 
+                    <ul class="dropdown-menu dropdown-alerts" style="width: 360px; !important;margin-top: 4px;">
+                      <%
+                         (session[:notifications] || []).group_by{|a| a['name']}.each do |n, data|
+                      %>
+                      <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;cursor: pointer;"
+                          onmousedown="window.location = '/person/view?statuses[]=<%= data.first["status"]%>&destination=<%= n%>'" >
+                        <a href="#">
+                          <div>
+                            <i class="fa fa-comment"
+                               style="color: mediumvioletred;"></i> You have <span style="color: darkred; font-weight: bold;"><%= data.count%></span> <%= n%>
+                            <span class="pull-right text-muted small" style="color: darkslategray"> 4 minutes ago</span>
+                          </div>
+                        </a>
+                      </li>
+                      <% end %>
+                    </ul>
+                  </li>
+                </td>
+               <td>
+                <li class="chat-panel dropdown chat-panel">
+                    <a style="color: black; padding: 5px; class="fa fa-sign-out logout" href="/logout">Logout</a>
+                </li>
+                  </td>
+                  </tr>
+                </table>
                 </ul>
-                <!--  notification end -->
-            </div>
-            <div class="top-menu">
-            	<ul class="nav pull-right top-menu">
-                    <li><a style="color: black; background: lightgray;" class="fa fa-sign-out logout" href="/logout">Logout</a></li>
-            	</ul>
             </div>
         </header>
       <!--header end-->
@@ -218,12 +237,7 @@
                         <span>Search</span>
                       </a>
                       <ul class="sub">
-                        <% if @folders.include?('By BRN')%>
-                            <li><a  href="/search/BRN">By BRN</a></li>
-                        <% end %>
-                        <% if @folders.include?('By BEN')%>
-                            <li><a  href="/search/BEN">By BEN</a></li>
-                        <% end %>
+
                         <% if @folders.include?('General Search')%>
                             <li><a  href="/search">General Search</a></li>
                         <% end %>
@@ -274,13 +288,11 @@
                       <ul class="sub">
                           <!--li class="active"><a  href="blank.html">Blank Page</a></li-->
                           <li><a  href="/report/birth_reports">Birth Reports</a></li>
-                          <li><a  href="/printed_certificates">Printed Certificates</a></li>
-                          <li><a  href="/reported_births">Reported Births</a></li>
-                          <li><a  href="/registered_births">Registered Births</a></li>
-                          <li><a  href="/approved_at_hq">Approved at HQ</a></li>
-                          <li><a  href="/voided_records">Voided Records</a></li>
+                          <li><a  href="/approved_at_hq">Records by Category</a></li>
                           <li><a  href="/record_state_and_date">By Period of Record State</a></li>
                           <li><a  href="/user_audit_trail">User Audits</a></li>
+                          <li><a  href="/reg_vs_birth_district">Birth Vs Reg. District </a></li>
+                          <li><a  href="/dispatches">Dispatch Batches </a></li>
                       </ul>
                   </li>
                 <% end %>

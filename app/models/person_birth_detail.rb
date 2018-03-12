@@ -46,7 +46,87 @@ class PersonBirthDetail < ActiveRecord::Base
     self.facility_serial_number
   end
 
+  def birthplace
+    place_of_birth = Location.find(self.place_of_birth).name
+    r = nil
+    if place_of_birth == "Hospital"
+        r = Location.find(self.birth_location_id).name
+    elsif place_of_birth == "Home"
+      l =  Location.find(self.birth_location_id) rescue ""
+      r = "#{r.village}, #{l.ta}, #{r.district}" rescue ""
+    else
+       d = Location.find(self.district_of_birth).name rescue nil
+       d = "" if d == "Other"
+       r = "#{d}, #{self.other_birth_location}"
+    end
+
+    r
+  end
+   
+  def national_id
+    PersonIdentifier.find_by_person_id_and_person_identifier_type_id(self.person_id,
+    PersonIdentifierType.find_by_name("National ID Number").id).value rescue ""
+  end
+
   def birth_place
     Location.find(self.place_of_birth)
   end
+
+    def record_complete?()
+
+      complete = false
+      name = PersonName.where(person_id: self.person_id).last
+      person = Person.where(person_id: self.person_id).last
+      mother_person = person.mother
+      father_person = person.father
+
+      if self.district_id_number.blank?
+        return complete
+      end
+
+      if name.first_name.blank?
+        return complete
+      end
+
+      if name.last_name.blank?
+        return complete
+      end
+
+      if person.birthdate.blank?
+        return complete
+      end
+
+      if person.gender.blank?
+        return complete
+      end
+
+      if (mother_person.person_names.last.first_name.blank? rescue true)
+        return complete
+      end
+
+      if (mother_person.person_names.last.last_name.blank? rescue true)
+        return complete
+      end
+
+      if (mother_person.birthdate.blank? rescue true)
+        return complete
+      end
+
+      if self.parents_married_to_each_other.to_s == '1'
+
+        if (father_person.person_names.last.first_name.blank? rescue true)
+          return complete
+        end
+
+        if (father_person.person_names.last.last_name.blank? rescue true)
+          return complete
+        end
+      end
+
+        return true
+    end
+
+    def self.record_available?(person_id)
+      self.where(person_id: person_id).count > 0
+    end
 end

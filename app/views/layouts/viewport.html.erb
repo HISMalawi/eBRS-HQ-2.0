@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="Dashboard">
+    <meta name="keyword" content="Dashboard, Bootstrap, Admin, Template, Theme, Responsive, Fluid, Retina">
+    
+    <%= favicon_link_tag 'fav.ico' %>
+    <title>eBRS - HQ</title>
+
+    <!-- Bootstrap core CSS -->
+    <%= stylesheet_link_tag "bootstrap/bootstrap" %>                                         
+    <!--external css-->
+    <!--link href="assets/font-awesome/css/font-awesome.css" rel="stylesheet" /-->
+    <%#= stylesheet_link_tag "font/font-awesome" %>                                         
+    <%= stylesheet_link_tag "extras/font-awesome.min" %>
+    <%= stylesheet_link_tag "alert" %>
+
+    <!-- Custom styles for this template -->
+    <%= stylesheet_link_tag "extras/style" %>                                         
+    <%= stylesheet_link_tag "extras/style-responsive" %>                                         
+    <script>
+        function __$(id){
+            return document.getElementById(id)
+        }
+    </script>
+  </head>
+    <%
+        @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    %>
+  <body>
+  <style type="text/css">
+     
+      body {
+        color: #333 !important;
+        font-size: 13.5px;
+        font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+        /*font-size: 16px;*/
+        -webkit-user-select: none;  /* Chrome all / Safari all */
+        -moz-user-select: none;     /* Firefox all */
+        -ms-user-select: none;      /* IE 10+ */
+        user-select: none;          /* Likely future */      
+      }
+
+
+      img {
+        user-drag: none;
+        user-select: none;
+        -moz-user-select: none;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        pointer-events: none;
+      }
+
+      .divbtn {
+        height: 155px;
+        width: 99%;
+        display: table;
+        margin-top: 10px;
+        cursor:pointer;
+        box-shadow: 2px 2px 1px #888888;
+        text-align: center; 
+        background-color:#ffffff;
+        border: 1px solid #d1d1d1;
+        padding: 1em;
+      }
+      .icon-attr {
+        height: 50%;
+        width: 50%;
+        padding-top: 10px;
+      }
+      .mt a{
+          padding: 0px;
+          font-size: 15px;
+      }
+
+      .black-bg{
+          border-bottom: 1px solid white !important;
+      }
+      #sidebar{
+          background: #006f95 none repeat scroll 0 0 !important;
+      }
+
+      .wrapper{
+          background: white;;
+      }
+
+      .panel{
+          width: 100% !important;
+          border: 1px solid #d3d3d3;
+          margin-top: 10px !important;
+          padding: 5px;
+          color: #333;
+      }
+
+  </style>
+<script>
+  function alert(data){
+    try {
+      __$('alert-msg').innerHTML = data;
+      jQuery('#alert-modal').modal('show');
+    }catch(q) {} ;
+  }
+
+  function padZeros(number, positions) {
+      var zeros = parseInt(positions) - String(number).length;
+      var padded = "";
+
+      for (var i = 0; i < zeros; i++) {
+          padded += "0";
+      }
+
+      padded += String(number);
+
+      return padded;
+  }
+
+  Object.defineProperty(Date.prototype, "format", {
+   value: function (format) {
+           var date = this;
+           var result = "";
+
+           if (!format) {
+
+                        format = ""
+
+           }
+
+            var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+                        "October", "November", "December"];
+
+            if (format.match(/YYYY\-mm\-dd/)) {
+
+                        result = date.getFullYear() + "-" + padZeros((parseInt(date.getMonth()) + 1), 2) + "-" + padZeros(date.getDate(), 2);
+
+            } else if (format.match(/mmm\/d\/YYYY/)) {
+
+                        result = months[parseInt(date.getMonth())] + "/" + date.getDate() + "/" + date.getFullYear();
+
+            } else if (format.match(/d\smmmm,\sYYYY/)) {
+
+                        result = date.getDate() + " " + monthNames[parseInt(date.getMonth())] + ", " + date.getFullYear();
+
+            } else {
+
+                        result = date.getDate() + "/" + months[parseInt(date.getMonth())] + "/" + date.getFullYear();
+
+            }
+
+                    return result;
+           }
+});
+
+</script>
+  <section id="container" >
+
+    <!-- js placed at the end of the document so the pages load faster -->
+    <%=javascript_include_tag "datatables/jquery"%>
+    <script>
+      // sleep time expects milliseconds
+      function sleep (time) {
+            return new Promise((resolve) => setTimeout(resolve, time));
+      }
+
+      var $j = jQuery.noConflict();
+    </script> 
+    <%=javascript_include_tag "js/jquery"%>
+    <script>
+      var $i = jQuery.noConflict();
+    </script>
+    <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
+    <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         
+    <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>                                         
+    <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
+    <%=javascript_include_tag "js/jquery.scrollTo.min"%>
+    <%=javascript_include_tag "js/jquery.nicescroll"%>                                         
+
+
+    <!--common script for all pages-->
+    <%=javascript_include_tag "js/common-scripts"%>
+
+    <!--script for this page-->
+    
+    <script>
+        //custom select box
+        try {
+          //$(function(){
+              $('select.styled').customSelect();
+          //});
+        }catch(z){
+        }
+
+    </script>
+
+        <!--main content start-->
+          <section class="wrappers sites-min-height">
+            <%= yield %>
+          </section>
+        <!--main content end-->
+      
+
+  </body>
+
+<style>
+    .btn{
+        border-left: 3px solid darkslategray !important;
+    }
+
+    .callout-info {
+        padding: 2px;color: darkslategray;
+        background: -webkit-linear-gradient(-90deg, lightblue,white); /* For Safari 5.1 to 6.0 */
+        background: -o-linear-gradient(-90deg,lightblue,white); /* For Opera 11.1 to 12.0 */
+        background: -moz-linear-gradient(-90deg,lightblue, white); /* For Firefox 3.6 to 15 */
+        background: linear-gradient(-90deg, lightblue, white); /* Standard syntax */
+        border: 1px solid #d3d3d3;
+    }
+
+        #search-params{
+            padding: 0px !important;
+            margin: 0px !important;
+        }
+</style>
+</html>
