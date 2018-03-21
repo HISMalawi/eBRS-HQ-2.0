@@ -56,21 +56,25 @@ class AllocationQueue
           end
 
           last = (PersonBirthDetail.select(" MAX(national_serial_number) AS last_num")[0]['last_num'] rescue 0).to_i
+
           brn = last + 1
-          person_birth_detail.update_attributes(national_serial_number: brn)
-          record.update_attributes(assigned: 1)
+          current_count = PersonBirthDetail.select(" COUNT(national_serial_number) AS c ").where(" national_serial_number IS NOT NULL")[0]['c'].to_i rescue 0
 
-          PersonIdentifier.new_identifier(record.person_id,
-                                          'Birth Registration Number', person_birth_detail.national_serial_number)
-          barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
+          if brn == (current_count + 1)
+            person_birth_detail.update_attributes(national_serial_number: brn)
+            record.update_attributes(assigned: 1)
 
-          if barcode.present?
             PersonIdentifier.new_identifier(record.person_id,
-                                            'Barcode Number', barcode.value)
-            barcode.update_columns(assigned: 1,
-                                   person_id: record.person_id)
-          end
+                                            'Birth Registration Number', person_birth_detail.national_serial_number)
+            barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
 
+            if barcode.present?
+              PersonIdentifier.new_identifier(record.person_id,
+                                              'Barcode Number', barcode.value)
+              barcode.update_columns(assigned: 1,
+                                     person_id: record.person_id)
+            end
+          end
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
           if !fsn.blank?

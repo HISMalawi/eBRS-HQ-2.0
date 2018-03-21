@@ -14,13 +14,11 @@ if ARGV.length > 2
 
   barcode = Barby::Code128B.new(ARGV[0])
 
-	file = File.open("#{ARGV[2]}/#{ARGV[1]}.png", "wb")
+  file = File.open("#{ARGV[2]}/#{ARGV[1]}.png", "wb")
 	
-	file.write barcode.to_png(:height => 50, :xdim => 2)
+  file.write barcode.to_png(:height => 50, :xdim => 2)
 
   file.close
-
-
 else 
 
 	puts "\n\n\tUsage:\n\t\texpected: #{__FILE__}/ BARCODE_VALUE FILE_NAME PATH_NAME\n\n\n"

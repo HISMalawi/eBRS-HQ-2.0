@@ -510,6 +510,8 @@ ActiveRecord::Schema.define(version: 20170912104756) do
     t.datetime "created_at"
   end
 
+  change_column :barcode_identifiers, :barcode_identifier_id, 'bigint(20) NOT NULL AUTO_INCREMENT'
+
   create_table "notification_types", primary_key: "notification_type_id", force: :cascade do |t|
     t.string   "name",        limit: 100,              null: false
     t.string   "level",        limit: 45,              null: false

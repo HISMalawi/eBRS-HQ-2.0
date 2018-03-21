@@ -2,7 +2,7 @@ $configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")['npid_migration']
 $database = "#{$configs['prefix']}_npid_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
 $couch_link += "_design/Npid/_view/all?include_docs=true"
-
+puts $couch_link
 =begin
 {"id"=>"99999",
 "key"=>"99999",
