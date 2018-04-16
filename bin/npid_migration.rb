@@ -3,6 +3,7 @@ $database = "#{$configs['prefix']}_npid_#{$configs['suffix']}".gsub(/^\_|\_$/, '
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
 $couch_link += "_design/Npid/_view/all?include_docs=true"
 puts $couch_link
+$npid_type = PersonIdentifierType.where(name: "Barcode Number").last.id
 =begin
 {"id"=>"99999",
 "key"=>"99999",
@@ -33,10 +34,13 @@ total = npids['rows'].count
 npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
   puts "#{i}/#{total} NPIDs Migrated"
+  person_id = PersonIdentifier.where(value: pid['national_id'], person_identifier_type_id: $npid_type).last.person_id rescue nil
+
 
   BarcodeIdentifier.create(
     value: pid['national_id'],
     assigned: (pid['assigned'] == true ? 1 : 0),
+    person_id: person_id,
     created_at: (pid['created_at'].to_datetime rescue nil),
     updated_at: (pid['updated_at'].to_datetime rescue nil)
   )
