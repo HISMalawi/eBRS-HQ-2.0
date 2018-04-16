@@ -175,21 +175,21 @@
                 <table cellspacing="0" cellpadding="0" style="background: none;margin: 10px !important; padding: 0px;"><tr><td>
                   <li class="chat-panel dropdown">
                     <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
-                      <span class="label count-label" style="font-size: 14px;margin-bottom: 2px;color: red;"><%= (session[:notifications] || []).length%></span>
+                      <span class="label count-label" style="font-size: 14px;margin-bottom: 2px;color: red;"><%= ((@notifications || []).group_by{|a| a['name']} || []).length%></span>
                       <i class="fa fa-comments-o"></i>&nbsp; <i class="fa fa-chevron-down"></i>
                     </a>
 
                     <ul class="dropdown-menu dropdown-alerts" style="width: 360px; !important;margin-top: 4px;">
                       <%
-                         (session[:notifications] || []).group_by{|a| a['name']}.each do |n, data|
+                         (@notifications || []).group_by{|a| a['name']}.each do |n, data|
                       %>
                       <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;cursor: pointer;"
                           onmousedown="window.location = '/person/view?statuses[]=<%= data.first["status"]%>&destination=<%= n%>'" >
                         <a href="#">
                           <div>
                             <i class="fa fa-comment"
-                               style="color: mediumvioletred;"></i> You have <span style="color: darkred; font-weight: bold;"><%= data.count%></span> <%= n%>
-                            <span class="pull-right text-muted small" style="color: darkslategray"> 4 minutes ago</span>
+                               style="color: mediumvioletred;"></i> You have <span style="color: darkred; font-weight: bold;"></span> <%= n%>
+                            <span class="pull-right text-muted small" style="color: darkslategray"> </span>
                           </div>
                         </a>
                       </li>

@@ -87,7 +87,6 @@ class ApplicationController < ActionController::Base
 
   def check_notifications
     @notifications = Notification.by_role(User.current.user_role.role_id)
-    session[:notifications] = @notifications
   end
 
   private
