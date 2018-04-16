@@ -7,7 +7,7 @@ class ApplicationController < ActionController::Base
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list', 'sync_status']
   before_filter :check_pings, :except => ["sync_status"]
   before_filter :check_couch_loading, :except => ["sync_status"]
-  before_filter :check_notifications, :only => ['index', 'tasks', 'view']
+  before_filter :check_notifications
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
