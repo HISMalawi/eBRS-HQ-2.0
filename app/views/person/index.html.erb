@@ -41,21 +41,26 @@
     <iframe id="map" style="border: 1px solid lightgray; border-top: none; height: 50vh; width: 98%" scrolling="no" id="main-display" src="/person/map_main"></iframe>
   </div>
 
-  <div class="col-lg-8 main-chart" style="padding-top: 0px;">
+  <div class="col-lg-8 main-chart" style="padding-top: 0px; height: 350px;overflow:auto;">
     <h3 style="width: 100%; text-align: center;padding: 0px;" id="district_label">&nbsp;</h3>
     <div class="row " style="width: 97%; margin: auto;  box-shadow: 0px 5px 5px darkslategray, 0px 5px 5px black; padding: 15px;">
+      <button id="reset" class="btn-btn-sm" style="cursor: pointer;position: absolute; z-index: 1500; top: 60px; left: 45px;
+              background: darkslategray; color: white;">reset</button>
       <%
         attributes = [
           ['Newly Received (HQ)', @stats['HQ-ACTIVE']],
           ['Print Queue (HQ)', @stats['HQ-CAN-PRINT']],
-          ['Verified (HQ)', @stats['HQ-APPROVED']],
-          ['Re-print Que (HQ)', @stats['HQ-RE-PRINT']],
+          ['Rejected to DC', @stats['HQ-REJECTED']],
+          ['Re-print Que (HQ)', (@stats['HQ-RE-PRINT'] + @stats['HQ-CAN-RE-PRINT'])],
           ['Suspected Duplicate (HQ)', @stats['HQ-POTENTIAL DUPLICATE']],
           ['Incomplete Record (HQ)', @stats['HQ-INCOMPLETE']],
           ['Printed (HQ)', @stats['HQ-PRINTED']],
           ['Dispatched(HQ)', @stats['HQ-DISPATCHED']],
-          ['Voided (HQ)', @stats['HQ-VOIDED']],
+          ['Amendment Request (HQ)', @stats['HQ-AMEND']],
         ]
+
+       # attributes = @stats.collect{|k, v| [k, v] if v.to_i > 0 && k.match(/\HQ/)}.delete_if{|a| a.blank? }
+
       %>
 
       <%(attributes || []).each do |a, count|%>

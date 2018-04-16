@@ -1,0 +1,27 @@
+Location,Name,Description,Role,Associated Record Status
+HQ,Re-Print Requests Awaiting your Approval,Records that Quality Supervisor added  to Re-print Queue,Data Manager,HQ-RE-PRINT
+HQ,Rejected Records Pending,Records waiting to be rejected to ADR,Data Supervisor,HQ-CAN-REJECT
+HQ,Potential Duplicates Requiring your Attention,,Data Supervisor,HQ-POTENTIAL DUPLICATE
+HQ,Duplicate Records to Approve,,Data Manager,HQ-POTENTIAL DUPLICATE-TBA
+HQ,Certificate Amendment Requests to Approve,,Data Manager,HQ-AMEND-GRANTED
+HQ,Lost Certificate Reprint Requests to Approve,,Data Manager,HQ-LOST-GRANTED
+HQ,Damaged Certificate Reprint Requests to Approve,,Data Manager,HQ-DAMAGED-GRANTED
+HQ,Rejected Lost Record Reprint Requests Pending your Approval,,Data Manager,HQ-LOST-REJECTED-TBA
+HQ,Rejected Damaged Record Reprint Requests Pending your Approval,,Data Manager,HQ-DAMAGED-REJECTED-TBA
+HQ,Rejected Amendment Requests Pending your Approval,,Data Manager,HQ-AMEND-REJECTED-TBA
+HQ,Incomplete Records Requiring your Attention,,Data Manager,HQ-INCOMPLETE-TBA
+HQ,Cases from DV to Approve,,Data Manager,HQ-COMPLETE
+HQ,Certificates to Print,,Data Manager,HQ-CAN-RE-PRINT
+HQ,Incomplete Records (from DV) Requiring your Attention,,Data Supervisor,HQ-INCOMPLETE
+HQ,Records Pending Dispatch to ADR,,Data Manager,HQ-PRINTED
+HQ,Edited Records from ADR,,Data Supervisor,HQ-RE-APPROVED
+HQ,Duplicates (from DM) to Resolve,,Data Supervisor,HQ-DUPLICATE
+HQ,Amendment Requests from ADR,,Data Supervisor,HQ-AMEND
+HQ,Lost Certificate Reprint Requests from ADR,,Data Supervisor,HQ-LOST
+HQ,Damaged Certificate Reprint Requests from ADR,,Data Supervisor,HQ-DAMAGED
+HQ,Rejected Lost Certificate Reprint Requests ,,Data Supervisor,HQ-LOST-REJECTED
+HQ,Rejected Damaged Certificate Reprint Requests,,Data Supervisor,HQ-DAMAGED-REJECTED
+HQ,Rejected Amendment Requests,,Data Supervisor,HQ-AMEND-REJECTED
+HQ,Conflict Cases between DV and DS,,Data Manager,HQ-CONFLICT
+HQ,Records From ADR,,Data Checking Clerk,HQ-ACTIVE
+HQ,Records in Print Queue,,Data Manager,HQ-CAN-PRINT

@@ -3,6 +3,11 @@ class LoginsController < ApplicationController
 
   def login
     #@coa = icoFolder("coa")
+
+    if (User.current.user_role.role.role == "Quality Supervisor" rescue false)
+      render :layout => "touch", :template => "logins/touch_login" and return
+    end
+
     render :layout => false
   end
 
@@ -14,7 +19,7 @@ class LoginsController < ApplicationController
       
       login! user
 
-      if (Time.now.to_date - user.last_password_date.to_date).to_i >= 90
+      if (Time.now.to_date - (user.last_password_date.to_date rescue Date.today)).to_i >= 90
          if user.password_attempt >= 5 && username.downcase != 'admin'
            logout!
            flash[:error] = 'Your password has expired.Please contact your System Administrator.'
@@ -26,7 +31,7 @@ class LoginsController < ApplicationController
          end
       else
       
-         if (Time.now.to_date - user.last_password_date.to_date).to_i >= 85 && (Time.now.to_date - user.last_password_date.to_date).to_i < 90
+         if (Time.now.to_date - (user.last_password_date.to_date rescue Date.today)).to_i >= 85 && (Time.now.to_date - user.last_password_date.to_date).to_i < 90
             flash[:info] = 'Your password will expire soon. Please change it.'
          end
           
@@ -44,7 +49,6 @@ class LoginsController < ApplicationController
 
   def logout
     logout!
-    flash[:notice] = 'You have been logged out. Good Bye!'
     redirect_to "/", referrer_param => referrer_path
   end
 

@@ -1,20 +1,20 @@
 class Pusher <  CouchRest::Model::Base
   configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")[Rails.env]
   connection.update({
-      :protocol => "#{configs['protocol']}",
-      :host     => "#{configs['host']}",
-      :port     => "#{configs['port']}",
-      :prefix   => "#{configs['prefix']}",
-      :suffix   => "#{configs['suffix']}",
-      :join     => '_',
-      :username => "#{configs['username']}",
-      :password => "#{configs['password']}"
-  })
+                        :protocol => "#{configs['protocol']}",
+                        :host     => "#{configs['host']}",
+                        :port     => "#{configs['port']}",
+                        :prefix   => "#{configs['prefix']}",
+                        :suffix   => "#{configs['suffix']}",
+                        :join     => '_',
+                        :username => "#{configs['username']}",
+                        :password => "#{configs['password']}"
+                    })
 end
 module EbrsAttribute
 
   def send_data(hash)
-    id = "#{self.class.table_name}_#{self.id}"
+    raw_id = hash.id
     hash = hash.as_json
     hash.each {|k, v|
       hash[k] = v.to_s(:db) if (['Time', 'Date', 'Datetime'].include?(v.class.name))
@@ -23,28 +23,50 @@ module EbrsAttribute
     district_id = nil
     location_id = nil
     person_id = hash['person_id']
-    if !person_id.blank?
-      p_id = "person_#{person_id}"
-      district_id = Pusher.database.get(p_id)['district_id'] rescue nil
-      location_id = Pusher.database.get(p_id)['location_id'] rescue nil
+    person_id = hash['person_a'] if person_id.blank?
+    person_id = PersonName.where(person_name_id: hash['person_name_id']).first.person_id rescue nil if person_id.blank?
+    person_id = User.where(user_id: hash['user_id']).first.person_id rescue nil if person_id.blank?
+
+    created_at = PersonBirthDetail.where(person_id: person_id).last.location_created_at rescue nil
+
+    if !created_at.blank?
+      district_id = Location.find(created_at).parent_location rescue nil
+      district_id = created_at if district_id.blank?
     end
 
-    district_id = Location.find(SETTINGS['location_id']).parent_location unless !district_id.blank?
-    location_id = (SETTINGS['location_id']) unless !location_id.blank?
+    if !person_id.blank?
+      district_id = Pusher.database.get(person_id)['district_id'] rescue nil if district_id.blank?
+      location_id = created_at.present? ? created_at : (Pusher.database.get(person_id)['location_id'] rescue nil)
+    end
+    if district_id.blank?
+      district_id = SETTINGS['application_mode'] == 'FC' ? Location.find(SETTINGS['location_id']).parent_location : SETTINGS['location_id']
+    end
 
-    h = Pusher.database.get(id) rescue nil
+    location_id = (SETTINGS['location_id']) if location_id.blank?
+    h = Pusher.database.get(person_id.to_s) rescue nil
+
     if h.present?
+
       h['location_id'] = location_id || h['location_id'] || SETTINGS['location_id']
       h['district_id'] = district_id
-      h[self.class.table_name] = hash
+      data = h[self.class.table_name]
+      if data.blank?
+        data = Hash.new
+      end
+
+      data["#{raw_id}"] = hash
+      h[self.class.table_name] = data
     else
 
+      data = Hash.new
+      data["#{raw_id}"] = hash
+
       temp_hash = {
-          '_id' => id,
+          '_id' => person_id.to_s,
           'type' => 'data',
           'location_id' => location_id,
           'district_id' => district_id,
-          self.class.table_name => hash
+          self.class.table_name =>  data
       }
       h = temp_hash
     end
@@ -66,7 +88,11 @@ module EbrsAttribute
       before_create :generate_key
       #after_create :create_or_update_in_couch
       #after_create :create_audit_trail_after_create
+<<<<<<< HEAD
       #after_save :create_or_update_in_couch, :create_audit_trail
+=======
+      after_save :create_or_update_in_couch#, :create_audit_trail
+>>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
     end
   end
 
@@ -112,24 +138,24 @@ module EbrsAttribute
 
     if !["audit_trails","person_name_code","core_person"].include? self.class.table_name
       if self.prev.present?
-          fields = self.attributes.keys
-          prev = self.prev
-          fields.each do |key|
-              next if ["created_at"].include? key
-              next if key.include? "password"
-              if prev[key] != self.attributes[key]
-                 AuditTrail.create(table_name: self.class.table_name,
-                          table_row_id:self.id,
-                          person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
-                          previous_value: prev[key],
-                          field: key,
-                          current_value: self.attributes[key],
-                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
-                          comment: "#{self.class.table_name.humanize} record updated")
-              else
-                next
-              end
+        fields = self.attributes.keys
+        prev = self.prev
+        fields.each do |key|
+          next if ["created_at"].include? key
+          next if key.include? "password"
+          if prev[key] != self.attributes[key]
+            AuditTrail.create(table_name: self.class.table_name,
+                              table_row_id:self.id,
+                              person_id: (self.person_id rescue (self.person.person_id rescue (self.user_id rescue self.person_a))),
+                              previous_value: prev[key],
+                              field: key,
+                              current_value: self.attributes[key],
+                              audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                              comment: "#{self.class.table_name.humanize} record updated")
+          else
+            next
           end
+        end
       else
         AuditTrail.create(table_name: self.class.table_name,
                           table_row_id:self.id,
@@ -140,10 +166,11 @@ module EbrsAttribute
     end
   end
   def create_method( name, &block )
-        self.class.send(:define_method, name, &block )
+    self.class.send(:define_method, name, &block )
   end
 
   def create_attr( name )
+<<<<<<< HEAD
         create_method( "#{name}=".to_sym ) { |val|
             instance_variable_set( "@" + name, val)
         }
@@ -165,14 +192,37 @@ module EbrsAttribute
        else
           self.prev = self.class.find(self.id) rescue nil
        end
+=======
+    create_method( "#{name}=".to_sym ) { |val|
+      instance_variable_set( "@" + name, val)
+    }
+
+    create_method( name.to_sym ) {
+      instance_variable_get( "@" + name )
+    }
+  end
+  def keep_prev_value
+    self.create_attr("prev")
+    self.prev = nil
+    if self.class.table_name =="person_name"
+      last_name = ActiveRecord::Base.connection.select_all("SELECT * FROM person_name WHERE person_id=#{self.person_id} ORDER BY updated_at").last rescue nil
+      if last_name.present?
+        self.prev = self.class.new(last_name)
+      else
+        self.prev = nil
+      end
+    else
+      self.prev = self.class.find(self.id) rescue nil
+    end
+>>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
   end
   def create_audit_trail_after_update
     if self.class.table_name != "audit_trails"
-        AuditTrail.create(table_name: self.class.table_name,
-                          table_row_id:self.id,
-                          person_id: (self.person_id rescue (self.person.person_id rescue self.user_id)),
-                          audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
-                          comment: "#{self.class.table_name.humanize} record created")
+      AuditTrail.create(table_name: self.class.table_name,
+                        table_row_id:self.id,
+                        person_id: (self.person_id rescue (self.person.person_id rescue self.user_id)),
+                        audit_trail_type_id: AuditTrailType.find_by_name("UPDATE").id,
+                        comment: "#{self.class.table_name.humanize} record created")
     end
   end
 

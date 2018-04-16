@@ -1,5 +1,5 @@
 class PersonName < ActiveRecord::Base
-    self.table_name = :person_name
+  self.table_name = :person_name
     self.primary_key = :person_name_id
     include EbrsAttribute
     default_scope { where(voided: 0) }
@@ -21,5 +21,5 @@ class PersonName < ActiveRecord::Base
       self.first_name = "_" if (self.first_name =~ regex).to_i > 0
       self.last_name = "_" if (self.last_name =~ regex).to_i > 0
       self.middle_name = "_" if (self.middle_name =~ regex).to_i > 0
-  end
+end
 end

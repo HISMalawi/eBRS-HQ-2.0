@@ -100,7 +100,7 @@ function addRows(data) {
     ben           =  records[i]['birth_entry_number'];
     brn           =  records[i]['registration_number'];
 
-    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, '']).draw();
+    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, "--"]).draw();
   }
 }
 
@@ -185,7 +185,7 @@ function fetchData() {
       <th>Last name</th>
       <th>Birthdate</th>
       <th>Gender</th>
-      <th>Dispatched at</th>
+      <th>Date Reported</th>
     </tr>
   </thead>
   </tbody>

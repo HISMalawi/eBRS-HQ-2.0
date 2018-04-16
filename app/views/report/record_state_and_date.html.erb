@@ -68,15 +68,8 @@ function dataT(){
   dataTable = jQuery('#report').dataTable({
       dom: 'Bfrtip',
         buttons: [
-            {
-                extend: 'copyHtml5',
-                exportOptions: {
-                 columns: ':contains("Office")'
-                }
-            },
             'excelHtml5',
-            'csvHtml5',
-            'pdfHtml5'
+            'csvHtml5'
         ],
       "pageLength": 10,
       "processing": true
@@ -103,6 +96,7 @@ function addRows(data) {
 }
 
 function fetchData() {
+    dataTable.fnClearTable();
     var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
     var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
     var status    = document.getElementById('status').value.replace(/\//g, '-');
@@ -110,8 +104,8 @@ function fetchData() {
     jQuery.ajax({
         url: "/ajax_record_state_and_date?start_date=" + start_date + "&end_date=" + end_date + "&status=" + status,
         success: function(results){
-            dataTable.fnClearTable();
-            addRows(results);
+            results = JSON.parse(results);
+            dataTable.api().rows.add(results).draw();
         }
     })
 }
@@ -153,7 +147,7 @@ function fetchData() {
  <select id="status" name="status" value="" class="pull-left">
     <option></option>
    <% @statuses.each do |s|%>
-    <option value="<%= s.id%>" > <%=s.name.titleize.gsub(/HQ/i, 'HO').gsub(/DC/i, 'DC').gsub(/FC/i, 'FC').gsub(/TBA/i, 'TBA')%> </option>
+    <option value="<%= s.id%>" > <%=s.name.titleize.gsub(/HQ/i, 'HQ').gsub(/DC/i, 'DC').gsub(/FC/i, 'FC').gsub(/TBA/i, 'TBA')%> </option>
    <% end %>
  </select>
   <i class="fa fa-calendar"></i>
