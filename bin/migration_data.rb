@@ -67,6 +67,7 @@ $private_key = OpenSSL::PKey::RSA.new(File.read("#{Rails.root}/config/private.pe
 $old_ben_type = PersonIdentifierType.where(name: 'Old Birth Entry Number').first.id
 $old_brn_type = PersonIdentifierType.where(name: 'Old Birth Registration Number').first.id
 $old_serial_type = PersonIdentifierType.where(name: 'Old Facility Number').first.id
+$barcode_type = PersonIdentifierType.where(name: 'Barcode Number').first.id
 $index = {}
 
 @location = Location.find(SETTINGS['location_id'])
@@ -251,6 +252,10 @@ def assign_identifiers(person_id, params)
 
     if !params[:person][:facility_serial_number].blank?
       PersonIdentifier.create(value: params[:person][:facility_serial_number], person_id: person_id, person_identifier_type_id: $old_serial_type)
+    end
+
+    if !params[:person][:npid].blank?
+      PersonIdentifier.create(value: params[:person][:npid], person_id: person_id, person_identifier_type_id: $barcode_type)
     end
 end
 
