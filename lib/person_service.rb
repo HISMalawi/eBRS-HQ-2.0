@@ -956,7 +956,7 @@ end
             place_of_birth_query += " AND  birth_location_id = #{village_id} "
           end
 
-          hospital_id = Location.locate_id(filters['hospital_of_birth'], 'Health Facility', district_id)
+          hospital_id = Location.locate_id(Location.find(filters['hospital_of_birth']).name, 'Health Facility', district_id) rescue nil
           if hospital_id.present?
             place_of_birth_query += " AND  birth_location_id = #{hospital_id} "
           end
