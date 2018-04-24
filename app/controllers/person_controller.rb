@@ -653,7 +653,7 @@ class PersonController < ApplicationController
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
     @stats = PersonRecordStatus.stats
-    @section = "Manage Cases"
+    @section = "Amendment Cases"
 
     render :template => "/person/tasks"
   end
