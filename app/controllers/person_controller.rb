@@ -931,10 +931,20 @@ class PersonController < ApplicationController
       
       barcode = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png") rescue nil
       if barcode.nil?
-	nid_type = PersonIdentifierType.where(name: "Barcode Number").last
-    	barcode_value = PersonIdentifier.where(person_id: data['person'].id, 
+
+        nid_type = PersonIdentifierType.where(name: "Barcode Number").last
+    	  barcode_value = PersonIdentifier.where(person_id: data['person'].id,
 						person_identifier_type_id: nid_type, 
 						voided: 0).last.value rescue nil
+
+        if barcode_value.blank?
+          bcd = BarcodeIdentifier.where(assigned: 0).first
+          bcd.person_id = data['person'].id
+          bcd.assigned  = 1
+          bcd.save
+
+          barcode_value = bcd.value
+        end
 
         `bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
       end
@@ -1146,9 +1156,8 @@ class PersonController < ApplicationController
 
     t4 = Thread.new {
       Kernel.system print_url
-      sleep(4)
+      sleep(3)
       Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
-      sleep(5)
     }
     sleep(1)
 

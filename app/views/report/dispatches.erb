@@ -62,6 +62,8 @@ th{
 <%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
 <%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
 <%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
 <script>
 
 function dataT(){          
@@ -118,7 +120,6 @@ function fetchData() {
     <th style="border-right: 1px solid #f8f8ff;width: 16%;">Total Dispatched</th>
     <th style="border-right: 1px solid #f8f8ff;width: 17%;">&nbsp;</th>
 
-
   </tr>
   </thead>
   <tbody>
@@ -130,8 +131,7 @@ function fetchData() {
             <td><%= d['user_names']%></td>
             <td><%= d['count']%></td>
             <td>
-              <div type='button' class='btn btn-success btn-sm'>View List</div>
-              <div type='button' class='btn btn-primary btn-sm'>Re-Print List</div>
+              <div type='button' class='btn btn-success btn-sm' onclick="load('<%=d['datetime']%>')">Re-Print</div>
             </td>
         </tr>
   <% end %>
@@ -145,7 +145,42 @@ src="" ></iframe>
 <shield id="shield" onmousedown="hideFrame()"
         style="position: absolute; display: none; height: 300vh; width: 150%;top: 0px; left: 0px; z-index: 2000;background: black; opacity: 0.5;"></shield>
 
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Select Printer for Certificate(s) List
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="printers">
+            <% @available_printers.each do |printer| %>
+                <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                  <td><input class='printer-radio' type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                  <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+                </tr>
+            <% end %>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="dispatch_btn">Print Dispatch Note</button>
+          <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+    printer_name = '';
+
+    function updateValue(obj){
+        printer_name = obj.getAttribute('value');
+    }
+
     function loadDrilldownFrame(url){
         url = url + "&start_date=" + jQuery("#start_date").val() + "&end_date=" + jQuery("#end_date").val();
         __$("iframe").setAttribute("src", url);
@@ -167,6 +202,28 @@ src="" ></iframe>
       });
 
     }
+
+    function load(date){
+
+        jQuery("#printerModal").modal('show');
+        __$('dispatch_btn').onmousedown = function(){
+            doPrint(date, printer_name);
+        }
+    }
+
+    function doPrint(date, printer_name){
+        jQuery.ajax({
+            url: ("/dispatch_note_reprint?date=" + date + "&printer_name=" + printer_name),
+            success: function(response){
+                jQuery("#printerModal").modal('hide');
+            },
+            error: function(response){
+                alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    jQuery(".printer-radio").prop('checked', false);
 
     activeDate();
      dataT()

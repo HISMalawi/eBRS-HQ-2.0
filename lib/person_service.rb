@@ -735,7 +735,7 @@ end
           WHERE prs.status_id IN (#{state_ids.join(', ')})
             AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
           GROUP BY p.person_id
-          ORDER BY p.updated_at DESC
+          ORDER BY p.pbd.district_id_number ASC
            "
     )
 

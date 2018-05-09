@@ -29,6 +29,9 @@ Rails.application.routes.draw do
 
   get '/crossmatch' => 'report#crossmatch'
 
+  get '/dispatch_note_reprint' => 'report#view_dispatches'
+
+
 
   ####################### reports end ################################
 
@@ -153,6 +156,8 @@ Rails.application.routes.draw do
   get "/person/dispatch_list"
   get "/person/view"
   get "/person/print_cases"
+  get "/report/dispatch_list"
+
 
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}
