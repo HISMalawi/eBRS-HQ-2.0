@@ -7,4 +7,6 @@ printer_name: test1|tst2|test3
 barcodes_path: /var/www/barcodes/
 certificates_path: /var/www/certificates/
 ebrs_services_link: http://0.0.0.0:9002
-
+activate_nid_integration: true
+query_by_nid_address:  http://192.168.43.43/api/Person/post
+request_for_nid_address: http://192.168.43.43/api/pbc/PostNPb

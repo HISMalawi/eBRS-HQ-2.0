@@ -1261,6 +1261,10 @@ end
 
 
   def self.request_nris_id(person_id, client_address=nil)
+	
+    if SETTINGS["activate_nid_integration"].to_s != "true"
+	return "NID INTEGRATION NOT ACTIVATED"
+    end
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
     nris_type = PersonIdentifierType.where(name: "NRIS ID").first.id
@@ -1297,9 +1301,8 @@ end
 
     codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
 
-    get_url = "http://192.168.43.43/api/Person/post"
-    post_url = "http://192.168.43.43/api/pbc/PostNPb"
-
+    get_url = SETTINGS['query_by_nid_address']
+    post_url = SETTINGS['request_for_nid_address']
 =begin
     district_url = "http://192.168.43.43/api/District"
     ta_url = "http://192.168.43.43/api/TA"
