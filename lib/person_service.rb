@@ -1269,7 +1269,7 @@ end
 
     person = Person.find(person_id)
     if person.birthdate.to_date <= 16.years.ago.to_date
-      return "BELOW AGE LIMIT"
+      return "AGE LIMIT EXCEEDED"
     end
 
     details = PersonBirthDetail.where(person_id: person_id).last

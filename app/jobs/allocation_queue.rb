@@ -74,7 +74,10 @@ class AllocationQueue
               barcode.update_columns(assigned: 1,
                                      person_id: record.person_id)
             end
+
+	    PersonService.request_nris_id(person_id)
           end
+
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
           if !fsn.blank?
