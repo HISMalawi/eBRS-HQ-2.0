@@ -1394,7 +1394,7 @@ end
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
       nid = JSON.parse(response) rescue response.to_s
-			
+
       nid = nid.gsub("\"", '')
 
       puts "NID: #{nid}, LENGTH #{nid.length}"

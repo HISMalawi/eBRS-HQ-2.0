@@ -40,6 +40,8 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "Birth Registration Number").last.person_identifier_type_id
             allocation.created_at = Time.now
             allocation.save
+
+          PersonService.request_nris_id(person_id, "Test Machine", User.current)
         end
       end
     rescue StandardError => e
