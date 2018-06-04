@@ -1260,7 +1260,7 @@ end
   end
 
 
-  def self.request_nris_id(person_id, client_address="N/A")
+  def self.request_nris_id(person_id, client_address="N/A", username=nil)
 
     if SETTINGS["activate_nid_integration"].to_s != "true"
 	    return "NID INTEGRATION NOT ACTIVATED"
@@ -1334,7 +1334,6 @@ end
         "Adopted"   => 3
     }[BirthRegistrationType.where(:birth_registration_type_id => details.birth_registration_type_id).first.name]
 
-    puts User.current.username
     data = {
         "Surname"=> b_name.last_name,
         "OtherNames"=>b_name.middle_name,
@@ -1383,7 +1382,7 @@ end
         "InformantVillageName" => (inf_home_village.name rescue inf_address.home_village_other),
         "InformantPhoneNumber" => (inf_person.get_attribute('Cell Phone Number') rescue nil),
         "InformantAddress" => ((inf_address.addressline1 + " " + inf_address.addressline2).strip rescue nil),
-        "EditUser"=>("#{User.current.username} (#{User.current.first_name} #{User.current.last_name})" rescue nil),
+        "EditUser"=>("#{cur_user.username} (#{cur_user.first_name} #{cur_user.last_name})" rescue nil),
         "EditMachine"=> client_address,
         "BirthCertificateNumber"=> "#{details.brn}"
     }
