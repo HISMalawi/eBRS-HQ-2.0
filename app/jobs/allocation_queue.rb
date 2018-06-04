@@ -60,7 +60,7 @@ class AllocationQueue
           brn = last + 1
           current_count = PersonBirthDetail.select(" COUNT(national_serial_number) AS c ").where(" national_serial_number IS NOT NULL")[0]['c'].to_i rescue 0
 
-          if brn == (current_count + 1)
+          #if brn == (current_count + 1)
             person_birth_detail.update_attributes(national_serial_number: brn)
             record.update_attributes(assigned: 1)
 
@@ -75,8 +75,8 @@ class AllocationQueue
                                      person_id: record.person_id)
             end
 
-	    PersonService.request_nris_id(record.person_id)
-          end
+	          PersonService.request_nris_id(record.person_id)
+          #end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
