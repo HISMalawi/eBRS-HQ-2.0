@@ -1390,11 +1390,12 @@ end
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
       res = JSON.parse(response) rescue response.to_s
+      puts res
       array = res.split("#")
       nid = array[0]
       nid = nid.gsub("\"", '')
       puts "NID: #{nid}, LENGTH #{nid.length}"
-      puts "NRIS KEY: #{array[0]}"
+      puts "NRIS KEY: #{array[1]}"
 
       if nid.present? && nid.to_s.length == 8
         old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
