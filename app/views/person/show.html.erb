@@ -216,7 +216,7 @@
           Check Completeness
         </button>
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
-                onclick="ajaxify('HQ-CAN-PRINT')">
+                onclick="ajaxify('HQ-CAN-PRINT');">
           <span class="fa fa-thumbs-o-up"></span>
           Approve for Printing
         </button>
@@ -503,6 +503,10 @@
   </div>
 </div>
 
+<div id="ajaxshield" style="display: none; background: black; opacity: 0.5; position: absolute; top: 0px; left: 0px; height: 300vh; width: 3000px;z-index: 2000">
+    &nbsp;
+</div>
+
 <script>
     <% (@actions || []).each do |action|
         next if (SETTINGS['enable_role_privileges'] == false)%>
@@ -526,12 +530,18 @@
 
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
+        if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
+           jQuery("#ajaxshield").show();
+        }
+
         jQuery.ajax({
             url: url,
             success: function(feedback){
+               jQuery("#ajaxshield").hide();
                window.parent.location = return_path;
             },
             error: function(error){
+                jQuery("#ajaxshield").hide();
                 console.log("Something went wrong! server may be down")
             }
         })
