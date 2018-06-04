@@ -1260,8 +1260,8 @@ end
   end
 
 
-  def self.request_nris_id(person_id, client_address=nil)
-	
+  def self.request_nris_id(person_id, client_address="N/A")
+
     if SETTINGS["activate_nid_integration"].to_s != "true"
 	    return "NID INTEGRATION NOT ACTIVATED"
     end
