@@ -1334,6 +1334,7 @@ end
         "Adopted"   => 3
     }[BirthRegistrationType.where(:birth_registration_type_id => details.birth_registration_type_id).first.name]
 
+    puts User.current.username
     data = {
         "Surname"=> b_name.last_name,
         "OtherNames"=>b_name.middle_name,
