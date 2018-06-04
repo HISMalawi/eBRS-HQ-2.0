@@ -1316,14 +1316,6 @@ end
 
     get_url = SETTINGS['query_by_nid_address']
     post_url = SETTINGS['request_for_nid_address']
-=begin
-    district_url = "http://192.168.43.43/api/District"
-    ta_url = "http://192.168.43.43/api/TA"
-    districts = {}
-    JSON.parse(RestClient.get(district_url, :accept => 'json')).each do |h|
-      districts[h['Name']] = h['PrimaryKey']
-    end
-=end
 
     nris_pkey = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).first rescue nil
 
@@ -1397,11 +1389,12 @@ end
 
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
-      nid = JSON.parse(response) rescue response.to_s
-
+      res = JSON.parse(response) rescue response.to_s
+      array = res.split("#")
+      nid = array[0]
       nid = nid.gsub("\"", '')
-
       puts "NID: #{nid}, LENGTH #{nid.length}"
+      puts "NRIS KEY: #{array[0]}"
 
       if nid.present? && nid.to_s.length == 8
         old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
@@ -1412,25 +1405,17 @@ end
         old_id.value = nid
         old_id.save
       end
+
+      if array[1].present?
+        old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
+        old_key = PersonIdentifier.new if old_key.blank?
+
+        old_key.person_id = person_id
+        old_key.person_identifier_type_id = nris_type
+        old_key.value = array[1]
+        old_key.save
+      end
     }
-
-    if nid.present?
-      RestClient.post(get_url, nid.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
-        #Save NID Primary Key
-
-        hash = JSON.parse(response) rescue nil
-        puts "NrisPk: #{hash['NrisPk']}"
-        if hash.present? && hash['NrisPk'].present?
-          old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
-          old_key = PersonIdentifier.new if old_key.blank?
-
-          old_key.person_id = person_id
-          old_key.person_identifier_type_id = nris_type
-          old_key.value = hash['NrisPk']
-          old_key.save
-        end
-      }
-    end
   end
 
 end
