@@ -1387,6 +1387,10 @@ end
         "BirthCertificateNumber"=> "#{details.brn}"
     }
 
+    data.each do |k, v|
+      data[k] = "" if v.blank?
+    end
+
     if data['MotherNationality'] != "MWI"
       return "NOT A MALAWIAN CITIZEN"
     end
