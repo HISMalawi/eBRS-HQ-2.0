@@ -1326,6 +1326,23 @@ end
         "Adopted"   => 3
     }[BirthRegistrationType.where(:birth_registration_type_id => details.birth_registration_type_id).first.name]
 
+=begin
+These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return a Validation Message
+   EditUser
+   EditMachine
+   Surname
+   FirstName
+   DateOfBirth
+   Sex
+   Nationality
+   Status
+   MotherSurname
+   MotherFirstName
+   MotherNationality
+   PlaceOfBirthDistrictId
+   BirthCertificateNumber
+=end
+
     data = {
         "Surname"=> b_name.last_name,
         "OtherNames"=>b_name.middle_name,
@@ -1390,6 +1407,8 @@ end
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
       res = JSON.parse(response) rescue response.to_s
+
+      return "Failed" if !res.match("#")
       puts res
       array = res.split("#")
       nid = array[0]
