@@ -110,7 +110,7 @@
           2.
         </td>
         <td align="left" style="width: 300px;">
-          Registration Number
+          <%= (birth.national_id.present? ? "National ID" : "Registration Number") %>
         </td>
         <td align="left">
           <%= (birth.national_id.present? ? birth.national_id : birth.brn) %>
