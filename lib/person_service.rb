@@ -1263,7 +1263,7 @@ end
   def self.request_nris_id(person_id, client_address=nil)
 	
     if SETTINGS["activate_nid_integration"].to_s != "true"
-	return "NID INTEGRATION NOT ACTIVATED"
+	    return "NID INTEGRATION NOT ACTIVATED"
     end
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
@@ -1292,13 +1292,26 @@ end
     f_type = PersonRelationType.find_by_name("Father")
     f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
 
-    f_name = PersonName.where(person_id: f_rel.person_b).last
-    f_address = PersonAddress.where(person_id: f_rel.person_b).last
+    f_name = PersonName.where(person_id: f_rel.person_b).last rescue nil
+    f_address = PersonAddress.where(person_id: f_rel.person_b).last rescue nil
     f_home_district = Location.find(f_address.home_district) rescue nil
     f_home_ta = Location.find(f_address.home_ta) rescue nil
     f_home_village = Location.find(f_address.home_village) rescue nil
     f_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: f_rel.person_b).last.value rescue ""
 
+
+    inf_type = PersonRelationType.find_by_name("Informant")
+    inf_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => inf_type.id).last
+
+    inf_person = Person.where(person_id: inf_rel.person_b).last
+    inf_name = PersonName.where(person_id: inf_rel.person_b).last
+    inf_address = PersonAddress.where(person_id: inf_rel.person_b).last
+    inf_home_district = Location.find(inf_address.home_district) rescue nil
+    inf_home_ta = Location.find(inf_address.home_ta) rescue nil
+    inf_home_village = Location.find(inf_address.home_village) rescue nil
+    inf_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: inf_rel.person_b).last.value rescue ""
+
+    
     codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
 
     get_url = SETTINGS['query_by_nid_address']
@@ -1338,9 +1351,9 @@ end
         "MotherVillageId"=>-1,
         "MotherNationality"=>(codes[Location.find(m_address.citizenship).name] rescue nil),
         "FatherPin"=>f_pin,
-        "FatherSurname"=>f_name.last_name,
-        "FatherFirstName"=>f_name.first_name,
-        "FatherOtherNames"=>f_name.middle_name,
+        "FatherSurname"=> (f_name.last_name rescue nil),
+        "FatherFirstName"=> (f_name.first_name rescue nil),
+        "FatherOtherNames"=> (f_name.middle_name rescue nil),
         "FatherVillageId"=>-1,
         "FatherNationality"=>(codes[Location.find(f_address.citizenship).name] rescue nil),
         "EbrsPk"=> person_id,
@@ -1352,12 +1365,23 @@ end
         "PlaceOfBirthVillageId"=>-1,
         "MotherDistrictId"=> m_home_district.id,
         "MotherDistrictName" => (m_home_district.name rescue m_address.home_district_other),
-        "MotherTAName" => (m_home_ta.name rescue m_address.home_ta_other),
+        "MotherTAName" => ((m_home_ta.name rescue m_address.home_ta_other) rescue nil),
         "MotherVillageName" => (m_home_village.name rescue m_address.home_village_other),
         "FatherDistrictId"=> (f_home_district.id rescue nil),
-        "FatherDistrictName" => (f_home_district.name rescue f_address.home_district_other),
-        "FatherTAName" => (f_home_ta.name rescue f_address.home_ta_other),
-        "FatherVillageName" => (f_home_village.name rescue f_address.home_village_other),
+        "FatherDistrictName" => ((f_home_district.name rescue f_address.home_district_other) rescue nil),
+        "FatherTAName" => ((f_home_ta.name rescue f_address.home_ta_other) rescue nil),
+        "FatherVillageName" => ((f_home_village.name rescue f_address.home_village_other) rescue nil),
+        "InformantPin"=> inf_pin,
+        "InformantSurname"=> inf_name.last_name,
+        "InformantFirstName"=> inf_name.first_name,
+        "InformantOtherNames"=> inf_name.middle_name,
+        "InformantNationality"=> (codes[Location.find(inf_address.citizenship).name] rescue nil),
+        "InformantDistrictId"=> (inf_home_district.id rescue nil),
+        "InformantDistrictName" => (inf_home_district.name rescue inf_address.home_district_other),
+        "InformantTAName" => (inf_home_ta.name rescue inf_address.home_ta_other),
+        "InformantVillageName" => (inf_home_village.name rescue inf_address.home_village_other),
+        "InformantPhoneNumber" => (inf_person.get_attribute('Cell Phone Number') rescue nil),
+        "InformantAddress" => ((inf_address.addressline1 + " " + inf_address.addressline2).strip rescue nil),
         "EditUser"=>("#{User.current.username} (#{User.current.first_name} #{User.current.last_name})" rescue nil),
         "EditMachine"=> client_address,
         "BirthCertificateNumber"=> "#{details.brn}"
@@ -1370,6 +1394,7 @@ end
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
       nid = JSON.parse(response) rescue response.to_s
+			
       nid = nid.gsub("\"", '')
 
       puts "NID: #{nid}, LENGTH #{nid.length}"
