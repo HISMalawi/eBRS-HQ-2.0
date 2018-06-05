@@ -297,11 +297,9 @@
                         "data": function(d){
                             d.type = type;
                             d.district = __$('districts').value;
-                            d.destination = "<%= params[:destination]%>";
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
-                            console.log(json);
                             for(var i = 0; i < json['data'].length; i ++){
                                 var last_index = json['data'][i].length - 1;
                                 var person_id = json['data'][i][last_index]
