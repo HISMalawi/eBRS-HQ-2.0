@@ -19,7 +19,7 @@ class AllocationQueue
       (queue || []).each do |record|
 
         person_birth_detail = PersonBirthDetail.where(person_id: record.person_id).first
-        brn = person_birth_detail.national_serial_number
+        brn = person_birth_detail.brn
         ben = person_birth_detail.district_id_number
         fsn = person_birth_detail.facility_serial_number
 
