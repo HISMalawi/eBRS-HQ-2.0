@@ -429,12 +429,12 @@ class PersonController < ApplicationController
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
         father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
-        @records << [
+        arr = [
             p.ben,
             details.brn]
 
-        @records  << (p.id_number rescue "") if @section == "Print Certificate"
-        @records = @records + [name,
+        arr  << (p.id_number rescue "") if @section == "Print Certificate"
+        arr = arr + [name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
             mother_name,
@@ -442,6 +442,8 @@ class PersonController < ApplicationController
             Status.find(p.status_id).name,
             p.person_id
         ]
+
+        @records << arr
       end
 
       render :text => {
