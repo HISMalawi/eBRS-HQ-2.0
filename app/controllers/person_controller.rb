@@ -433,7 +433,7 @@ class PersonController < ApplicationController
             p.ben,
             details.brn]
 
-        @records = @records + [(p.national_id rescue nil)] if params[:destination].match("Print Certificate")
+        @records  << (p.id_number rescue "") if @section == "Print Certificate"
         @records = @records + [name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
