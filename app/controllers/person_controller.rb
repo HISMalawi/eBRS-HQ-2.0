@@ -433,7 +433,7 @@ class PersonController < ApplicationController
             p.ben,
             details.brn]
 
-        arr  << (p.id_number rescue "") if @section == "Print Certificate"
+        arr  << (p.id_number rescue "") if ["Print Certificate", "Re-print Certificates"].include?(@section)
         arr = arr + [name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
