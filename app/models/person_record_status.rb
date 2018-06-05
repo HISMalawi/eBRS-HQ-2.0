@@ -163,21 +163,28 @@ class PersonRecordStatus < ActiveRecord::Base
       result
     end
 
-    def self.trace_data(person_id)
-      return [] if person_id.blank?
-      result = []
-      PersonRecordStatus.where(person_id: person_id).order("created_at DESC").each do |status|
-        user = User.find(status.creator)
-        result << {
-            "date" => status.created_at.strftime("%d-%b-%Y"),
-            "time" => status.created_at.strftime("%I:%M %p"),
-            "site" => user.user_role.role.level,
-            "action" => "Status changed to:  '#{status.status.name.titleize.gsub(/^Hq/, "HQ").gsub(/^Dc/, 'DC').gsub(/^Fc/, 'FC')}'",
-            "user"   => "#{user.first_name} #{user.last_name} <br /> <span style='font-size: 0.8em;'><i>(#{user.user_role.role.role})</i></span>",
-            "comment" => status.comments
-        }
-      end
+   def self.trace_data(person_id)
+    return [] if person_id.blank?
+    result = []
+    PersonRecordStatus.where(person_id: person_id).order("created_at DESC").each do |status|
+      user = User.find(status.creator)
+			action = "Status changed to:  '#{status.status.name.titleize.gsub(/^Hq/, "HQ").gsub(/^Dc/, 'DC').gsub(/^Fc/, 'FC')}'"
+			if status.status.name.upcase == "DC-ACTIVE"
+				action  = "New Record Created"
+			elsif status.status.name.upcase == "HQ-ACTIVE"
+				action = "Record Approved By ADR"
+			end
 
-      result
+      result << {
+          "date" => status.created_at.strftime("%d-%b-%Y"),
+          "time" => status.created_at.strftime("%I:%M %p"),
+          "site" => user.user_role.role.level,
+          "action" => action,
+          "user"   => "#{user.first_name} #{user.last_name} <br /> <span style='font-size: 0.8em;'><i>(#{user.user_role.role.role})</i></span>",
+          "comment" => status.comments
+      }
     end
+
+    result
+  end
 end
