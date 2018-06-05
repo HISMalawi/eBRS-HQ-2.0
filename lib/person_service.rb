@@ -1350,7 +1350,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
         "DateOfBirthString"=>person.birthdate.to_date.strftime("%d/%m/%Y"),
         "Sex"=> person.gender == 'M' ? 1 : 2,
         "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
-        "Nationality2"=> "",
+        "Nationality2"=> (codes[Location.find(f_address.citizenship).name] rescue nil),
         "Status"=>reg_type_id,
         "MotherPin"=>m_pin,
         "MotherSurname"=> m_name.last_name,

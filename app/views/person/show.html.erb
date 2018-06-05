@@ -102,8 +102,8 @@
           <td>
             <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Record Details</h3>
           </td>
-          <td colspan="8" style="width: 60%;">
-            <div class="pull-right" style="height: 40px; margin-top: 0px;">
+          <td colspan="8" style="width: 70%;">
+            <div class="pull-left" style="height: 40px; margin-top: 0px;">
 
             </div>
           </td>
@@ -503,9 +503,8 @@
   </div>
 </div>
 
-<div id="ajaxshield" style="display: none; background: black; opacity: 0.5; position: absolute; top: 0px; left: 0px; height: 300vh; width: 3000px;z-index: 2000">
-    &nbsp;
-</div>
+<div id="query-msg" style='display: none; position:  fixed; left: 43%; top: 14%; background: green !important; color: ghostwhite;padding: 5px;  font-size: 1.3em; !important; z-index: 3500;'>
+  Querying National ID from NRIS  .... </div>
 
 <script>
     <% (@actions || []).each do |action|
@@ -515,6 +514,36 @@
             __$('<%= action['button_name']%>').style.display = 'table-cell';
         }
     <% end %>
+
+    function createShield(){
+       var shield = document.createElement("div");
+        shield.id = "ajaxshield";
+        shield.innerHTML = "&nbsp;";
+        jQuery(shield).css({
+            position: "absolute",
+            width: (5*screen.width + "px"),
+            height: (5*screen.height + "px"),
+            top: "0px",
+            left: "0px",
+            zIndex: "3000",
+            background: "black",
+            opacity: "0.5",
+            textAlign: "center",
+            align: "middle"
+        })
+
+
+        document.body.appendChild(shield);
+        __$("query-msg").style.display = "inline-block";
+    }
+
+    function removeShield(){
+        if (__$("ajaxshield")){
+            __$("ajaxshield").parentNode.removeChild(__$("ajaxshield"));
+        }
+
+        __$("query-msg").style.display = "none";
+    }
 
     function ajaxify(status){
         var role = '<%= User.current.user_role.role.role%>';
@@ -531,17 +560,17 @@
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
         if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
-           jQuery("#ajaxshield").show();
+           createShield();
         }
 
         jQuery.ajax({
             url: url,
             success: function(feedback){
-               jQuery("#ajaxshield").hide();
+               removeShield();
                window.parent.location = return_path;
             },
             error: function(error){
-                jQuery("#ajaxshield").hide();
+                removeShield();
                 console.log("Something went wrong! server may be down")
             }
         })
