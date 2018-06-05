@@ -107,6 +107,11 @@
       <% if true %>
         <th style="text-align: left;">BRN</th>
       <% end %>
+
+      <% if (params[:destination].match("Print Certificate")) %>
+          <th style="text-align: left;">National ID</th>
+      <% end %>
+
       <th style="text-align: left;">Name</th>
       <th style="text-align: center; width:90px;">Birthdate</th>
       <th style="text-align: left;">Gender</th>
@@ -292,6 +297,7 @@
                         "data": function(d){
                             d.type = type;
                             d.district = __$('districts').value;
+                            d.destination = "<%= params[:destination]%>";
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );

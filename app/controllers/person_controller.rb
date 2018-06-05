@@ -431,8 +431,10 @@ class PersonController < ApplicationController
         father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
         @records << [
             p.ben,
-            details.brn,
-            name,
+            details.brn]
+
+        @records = @records + [(p.national_id rescue nil)] if params[:destination].match("Print Certificate")
+        @records = @records + [name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
             mother_name,
