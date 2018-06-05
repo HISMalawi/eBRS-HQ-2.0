@@ -1400,7 +1400,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       data[k] = "" if v.blank?
     end
 
-    if data['MotherNationality'] != "MWI"
+    if data['MotherNationality'] != "MWI" && data['FatherNationality'] != "MWI"
       return "NOT A MALAWIAN CITIZEN"
     end
 
