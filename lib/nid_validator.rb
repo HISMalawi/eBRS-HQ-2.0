@@ -62,6 +62,7 @@ class NIDValidator
     mother_name = PersonService.mother(person.person_id)
     mother_person = Person.where(person_id: mother_name.person_id).first
     mother_address = PersonAddress.where(person_id: mother_person.person_id).first
+    codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
 
     local_data = {
         "FirstName"         => name.first_name,
@@ -72,7 +73,8 @@ class NIDValidator
         "MotherFirstName"   => mother_person.first_name,
         "MotherDistrictName" => Location.find(mother_address.home_district).name,
         "MotherTaName"       => Location.find(mother_address.home_ta).name,
-        "MotherVillageName"  => Location.find(mother_address.home_village).name
+        "MotherVillageName"  => Location.find(mother_address.home_village).name,
+        "MotherNationality"   => Location.find(mother_address.citizenship).name,
     }
 
     get_url = SETTINGS['query_by_nid_address']
@@ -80,12 +82,15 @@ class NIDValidator
 
       data = JSON.parse(response)
 
-      local_data.each do |key, value|
+      if data.present?
+        data["MotherNationality"] = codes[data["MotherNationality"]]
+        local_data.each do |key, value|
 
-        if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
-          mismatch[key] = {
-              remote: data[key], local: local_data[key]
-          }
+          if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
+            mismatch[key] = {
+                remote: data[key], local: local_data[key]
+            }
+          end
         end
       end
     }
