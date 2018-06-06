@@ -27,7 +27,7 @@
 	        <form class="form-login" method="post" accept-charset="UTF-8" action="/login" autocomplete="off" enctype="multipart/form-data">
 		        <h2 class="form-login-heading">electronic birth registration</h2>
 		        <div class="login-wrap">
-                <%= text_field(:user, :username, :placeholder => "username", :class => 'form-control') %>
+                <%= text_field(:user, :username, :placeholder => "username", :autocomplete=> "off", :class => 'form-control') %>
 		            <br>
                 <%= password_field(:user, :password, :placeholder => "password", :class => 'form-control', :tabindex => 2) %>
 		            <label class="checkbox">
