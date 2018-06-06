@@ -5,5 +5,6 @@ ActiveRecord::Base.connection.execute <<EOF
       `passed` SMALLINT(6) NOT NULL,
       `data`   TEXT,
       `created_at`  TIMESTAMP NOT NULL,
-      PRIMARY KEY (`person_id`));
+      PRIMARY KEY (`person_id`),
+      UNIQUE INDEX `person_id_UNIQUE` (`person_id` ASC));
 EOF
