@@ -296,7 +296,7 @@
         var nonids =  document.getElementsByClassName("nonid");
         for(var i = 0; i < nonids.length; i ++){
             console.log(nonids[i].parentNode.parentNode);
-            nonids[i].parentNode.parentNode.style.backgroundColor = "red";
+            jQuery(nonids[i].parentNode.parentNode).css({backgroundColor: "red", fontColor: "green"});
         }
     }
 
