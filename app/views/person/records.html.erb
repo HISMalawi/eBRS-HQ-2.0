@@ -300,24 +300,8 @@
                     "serverSide": true,
                     "ordering": false,
                     "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
-                        if ( aData[1] == "FAILURE" )
-                        {
-                            $i('td', nRow).css('background-color', '#f2dede' );
-                        }
-                        else if ( aData[1] == "SUCCESS" )
-                        {
-                            $i('td', nRow).css('background-color', '#dff0d8');
-                        }
-                        else if ( aData[1] == "UNSTABLE" )
-                        {
-                            $i('td', nRow).css('background-color', '#fcf8e3');
-                        }
-                        else
-                        {
-                            $i('td', nRow).css('background-color', '#d9edf7');
-                        }
+                        $('td', nRow).css('background-color', '#d9edf7');
                     },
-
                     "ajax": {
                         "url": url,
                         "data": function(d){
