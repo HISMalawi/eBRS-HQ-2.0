@@ -82,7 +82,7 @@ class NIDValidator
 
       local_data.each do |key, value|
 
-        if data[key].upcase.squish != local_data[key].upcase.squish
+        if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
           mismatch[key] = {
               remote: data[key], local: local_data[key]
           }
