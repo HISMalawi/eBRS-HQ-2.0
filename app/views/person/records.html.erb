@@ -292,14 +292,6 @@
 
     } );
 
-    function highlightRow(){
-        var nonids =  document.getElementsByClassName("nonid");
-        for(var i = 0; i < nonids.length; i ++){
-            console.log(nonids[i].parentNode.parentNode);
-            jQuery(nonids[i].parentNode.parentNode).css({backgroundColor: "red", fontColor: "green"});
-        }
-    }
-
     function initTable(){
 
         table =  $i('#example').DataTable(
@@ -307,6 +299,25 @@
                     "processing": true,
                     "serverSide": true,
                     "ordering": false,
+                    "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                        if ( aData[1] == "FAILURE" )
+                        {
+                            $('td', nRow).css('background-color', '#f2dede' );
+                        }
+                        else if ( aData[1] == "SUCCESS" )
+                        {
+                            $('td', nRow).css('background-color', '#dff0d8');
+                        }
+                        else if ( aData[1] == "UNSTABLE" )
+                        {
+                            $('td', nRow).css('background-color', '#fcf8e3');
+                        }
+                        else
+                        {
+                            $('td', nRow).css('background-color', '#d9edf7');
+                        }
+                    },
+
                     "ajax": {
                         "url": url,
                         "data": function(d){
