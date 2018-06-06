@@ -78,22 +78,26 @@ class NIDValidator
     }
 
     get_url = SETTINGS['query_by_nid_address']
-    RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|response, request, result|
 
-      data = JSON.parse(response)
+    begin
+      RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|response, request, result|
 
-      if data.present?
-        data["MotherNationality"] = codes[data["MotherNationality"]]
-        local_data.each do |key, value|
+        data = JSON.parse(response)
 
-          if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
-            mismatch[key] = {
+        if data.present?
+          data["MotherNationality"] = codes[data["MotherNationality"]]
+          local_data.each do |key, value|
+
+            if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
+              mismatch[key] = {
                 remote: data[key], local: local_data[key]
-            }
+              }
+            end
           end
         end
-      end
-    }
+      }
+    rescue
+    end
 
     mismatch
   end
