@@ -11,26 +11,32 @@ class PersonRecordStatus < ActiveRecord::Base
 
      begin
        ActiveRecord::Base.transaction do
-      user_id = User.current.id if user_id.blank?
-      state_id = Status.where(:name => state).first.id
-      trail = self.where(:person_id => person_id, :voided => 0)
-      trail.each do |state|
-        state.update_attributes(
-            voided: 1,
-            date_voided: Time.now,
-            voided_by: user_id
+        user_id = User.current.id if user_id.blank?
+        state_id = Status.where(:name => state).first.id
+        trail = self.where(:person_id => person_id, :voided => 0)
+        trail.each do |state|
+          state.update_attributes(
+              voided: 1,
+              date_voided: Time.now,
+              voided_by: user_id
+          )
+        end
+
+        self.create(
+            person_id: person_id,
+            status_id: state_id,
+            voided: 0,
+            creator: user_id,
+            comments: change_reason
         )
-      end
 
-      self.create(
-          person_id: person_id,
-          status_id: state_id,
-          voided: 0,
-          creator: user_id,
-          comments: change_reason
-      )
+        birth_details = PersonBirthDetail.where(person_id: person_id).last
+        person = Person.find(person_id)
+        national_id = person.id_number
 
-      birth_details = PersonBirthDetail.where(person_id: person_id).last
+        if ['HQ-COMPLETE'].include?(state) && !national_id.blank?
+          NIDValidator.validate(person, national_id)
+        end
 
         if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(state) && birth_details.national_serial_number.blank?
             allocation = IdentifierAllocationQueue.new
@@ -43,7 +49,7 @@ class PersonRecordStatus < ActiveRecord::Base
 
           PersonService.request_nris_id(person_id, "Test Machine", User.current)
         end
-      end
+    end
     rescue StandardError => e
          self.log_error(e.message,person_id)
      end

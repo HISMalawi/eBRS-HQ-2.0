@@ -78,7 +78,7 @@ class NIDValidator
     }
 
     get_url = SETTINGS['query_by_nid_address']
-
+    passed = 0
     begin
       RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|response, request, result|
 
@@ -98,6 +98,15 @@ class NIDValidator
       }
     rescue
     end
+
+    if mismatch.blank?
+      passed = 1
+    end
+
+
+    ActiveRecord::Base.connection.execute <<EOF
+        INSERT INTO nid_verification_data(person_id, passed, data) VALUES (#{person.person_id}, #{passed}, "#{mismatch.to_json}")
+EOF
 
     mismatch
   end
