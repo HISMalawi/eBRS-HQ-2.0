@@ -25,11 +25,6 @@
         function __$(id){
             return document.getElementById(id)
         }
-
-        history.pushState(null, null, null);                                                                                                                                      │··············
-        window.addEventListener('popstate', function(event) {                                                                                                                     │··············
-            history.pushState(null, null, null);                                                                                                                                    │··············
-        })
     </script>
   </head>
     <%
@@ -405,4 +400,11 @@
             margin: 0px !important;
         }
 </style>
+
+<script>
+    history.pushState(null, null, null);                                                                                                                                      │··············
+    window.addEventListener('popstate', function(event) {                                                                                                                     │··············
+            history.pushState(null, null, null);                                                                                                                                    │··············
+    })
+</script>
 </html>
