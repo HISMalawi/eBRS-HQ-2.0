@@ -105,7 +105,7 @@ class NIDValidator
 
 
     ActiveRecord::Base.connection.execute <<EOF
-        INSERT INTO nid_verification_data(person_id, passed, data) VALUES (#{person.person_id}, #{passed}, "#{mismatch.to_json}")
+        INSERT INTO nid_verification_data(person_id, passed, data) VALUES (#{person.person_id}, #{passed}, \"#{mismatch.to_json}\")
 EOF
 
     mismatch
