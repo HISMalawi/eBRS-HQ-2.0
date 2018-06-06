@@ -76,7 +76,7 @@ class NIDValidator
     }
 
     get_url = SETTINGS['query_by_nid_address']
-    RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|request, response, result|
+    RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|response, request, result|
 
       data = JSON.parse(response)
 
