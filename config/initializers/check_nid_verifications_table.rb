@@ -1,10 +1,11 @@
 
 ActiveRecord::Base.connection.execute <<EOF
     CREATE TABLE IF NOT EXISTS `nid_verification_data` (
-      `person_id` INT(20) NOT NULL,
+      `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+      `person_id` BIGINT(20) NOT NULL,
       `passed` SMALLINT(6) NOT NULL,
       `data`   TEXT,
       `created_at`  TIMESTAMP NOT NULL,
-      PRIMARY KEY (`person_id`),
-      UNIQUE INDEX `person_id_UNIQUE` (`person_id` ASC));
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `id_UNIQUE` (`id` ASC));
 EOF
