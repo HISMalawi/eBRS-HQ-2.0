@@ -418,6 +418,7 @@ class PersonController < ApplicationController
       .per_page(params[:length].to_i)
 
       @records = []
+      nid_data = []
       data.each do |p|
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
@@ -430,11 +431,24 @@ class PersonController < ApplicationController
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
         father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+
         arr = [
             p.ben,
             details.brn]
 
-        arr  << (p.id_number rescue "") if ["Print Certificate", "Re-print Certificates"].include?(@section)
+        national_id = p.id_number rescue ""
+        arr  << (national_id) if ["Print Certificate", "Re-print Certificates"].include?(@section)
+
+        unless national_id.blank?
+          nid = ActiveRecord::Base.connection.select_one <<EOF
+          SELECT * FROM nid_verification_data WHERE person_id = #{p.person_id} ORDER BY id DESC;
+EOF
+
+          if nid['passed'].to_i == 0
+            nid_data << nid['person_id'].to_i
+          end unless nid.blank?
+
+        end
         arr = arr + [name,
             p.birthdate.strftime('%d/%b/%Y'),
             p.gender,
@@ -451,6 +465,7 @@ class PersonController < ApplicationController
           "draw" => params[:draw].to_i,
           "recordsTotal" => total,
           "recordsFiltered" => total,
+          "failed_nids" => nid_data,
           "data" => @records}.to_json and return
     end
 

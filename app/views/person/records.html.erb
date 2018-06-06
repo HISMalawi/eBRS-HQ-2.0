@@ -300,10 +300,19 @@
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
+                            var failed_nids = json['failed_nids'];
+
                             for(var i = 0; i < json['data'].length; i ++){
+
                                 var last_index = json['data'][i].length - 1;
                                 var person_id = json['data'][i][last_index]
-                                json['data'][i][last_index] =   '<td class="act-btn"> ' +
+
+                                var clas = "nonid";
+                                if(failed_nids.indexOf(person_id) >= 0){
+                                    clas = "redd"
+                                }
+
+                                json['data'][i][last_index] =   '<td class="act-btn ' + clas + ' "> ' +
                                         '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
 
                                         '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
