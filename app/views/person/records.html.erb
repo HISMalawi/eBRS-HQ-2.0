@@ -295,7 +295,7 @@
     function highlightRow(){
         var nonids =  document.getElementsByClassName("nonid");
         for(var i = 0; i < nonids.length; i ++){
-            console.log(nonids[i]);
+            console.log(nonids[i].parentNode.parentNode);
             nonids[i].parentNode.parentNode.style.background = "red";
         }
     }
