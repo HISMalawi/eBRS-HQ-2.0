@@ -60,16 +60,16 @@ class NIDValidator
     mismatch = {}
     name = PersonName.where(person_id: person.person_id).first
     mother_name = PersonService.mother(person.person_id)
-    mother_person = Person.where(person_id: mother_name.person_id)
-    mother_address = PersonAddress.where(person_id: mother_person.person_id)
+    mother_person = Person.where(person_id: mother_name.person_id).first
+    mother_address = PersonAddress.where(person_id: mother_person.person_id).first
 
     local_data = {
         "FirstName"         => name.first_name,
         "Surname"           => name.last_name,
         "DateOfBirthString" => person.birthdate.to_date.strftime("%d/%m/%Y"),
         "Sex"               => {"M" => 1, "F" => 2}[person.gender],
-        "MotherSurname"     => mother_person.last_name.upcase,
-        "MotherFirstName"   => mother_person.first_name.upcase,
+        "MotherSurname"     => mother_person.last_name,
+        "MotherFirstName"   => mother_person.first_name,
         "MotherDistrictName" => Location.find(mother_address.home_district).name,
         "MotherTaName"       => Location.find(mother_address.home_ta).name,
         "MotherVillageName"  => Location.find(mother_address.home_village).name
@@ -82,7 +82,7 @@ class NIDValidator
 
       local_data.each do |key, value|
 
-        if data[key] != local_data[key]
+        if data[key].upcase.squish != local_data[key].upcase.squish
           mismatch[key] = {
               remote: data[key], local: local_data[key]
           }
