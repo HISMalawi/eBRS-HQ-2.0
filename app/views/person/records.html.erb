@@ -307,15 +307,15 @@
                                 var last_index = json['data'][i].length - 1;
                                 var person_id = json['data'][i][last_index]
 
-                                var clas = "act-btn nonid";
+                                var clas = "nonid";
                                 if(failed_nids.indexOf(person_id) >= 0){
-                                    clas = "act-btn redd"
+                                    clas = "redd"
                                 }
 
-                                json['data'][i][last_index] =   '<td class="' + clas + '"> ' +
+                                json['data'][i][last_index] =   '<td> ' +
                                         '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
 
-                                        '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+                                        '    class="action-btn btn btn-success btn-xs ' + clas + '"><i class="fa fa-eye"></i></button></td>';
 
                                 <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
