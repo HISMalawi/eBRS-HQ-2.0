@@ -18,12 +18,6 @@
         padding: 7px;
     }
 
-    #example tr .nonid > td {
-        background-color: yellow !important;
-        border-left: 0.5px dotted lightgray;
-        padding: 7px;
-    }
-
     .action-btn .fa{
         min-width: 35px;
         font-size: 18px;
@@ -298,6 +292,13 @@
 
     } );
 
+    function highlightRow(){
+        var nonids =  document.getElementsByClassName("nonid");
+        for(var i = 0; i < nonids.length; i ++){
+            console.log(nonids[i]);
+            nonids[i].parentNode.parentNode.style.background = "red";
+        }
+    }
 
     function initTable(){
 
