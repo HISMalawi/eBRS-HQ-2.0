@@ -543,7 +543,7 @@
             <tr class="nris-row">
               <td class="labell">Mother First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_name.first_name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherSurname"]["remote"] rescue nil) || @mother_name.first_name) %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherFirstName"]["remote"] rescue nil) || @mother_name.first_name) %></td>
             </tr>
             <tr class="nris-row">
               <td class="labell">Mother Last Name</td>
