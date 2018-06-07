@@ -1406,6 +1406,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
 
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
+
       res = JSON.parse(response) rescue response.to_s
 
       return "Failed" if !res.match("#")

@@ -49,7 +49,12 @@
 #trace-row td{
     font-size: 1em !important;
 }
-
+#completeness_details td{
+    padding: 8px;
+    border: 1px dotted ghostwhite;
+}
+#completeness_details .labell{
+}
 </style>
 <script>
   return_path = '<%= session[:list_url]%>'
@@ -456,7 +461,7 @@
   </div>
 </div>
 
- <div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+ <div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 3000">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header btn-primary">
@@ -496,6 +501,87 @@
 </div>
 </div>
 
+
+<div class="modal fade" id="nidcomparison" tabindex="-1" role="dialog" aria-labelledby="nidcomparisonlLabel" aria-hidden="true" style="z-index: 2700">
+  <div class="modal-dialog">
+    <div class="modal-content" style="width: 770px;">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabels" style="text-align: left;">
+          EBRS - NRIS Data Differences
+        </h4>
+      </div>
+      <div class="modal-body" style="width: 100%;">
+        <span style="text-align:center;width: 100%;">
+          <table align="center" id="completeness_details" style="width:100%;">
+            <tr>
+              <td class="labell" style="min-width: 200px;background: white;">&nbsp;</td>
+              <th style="text-align: left; padding-left:50px;background: darkslategrey;color: white;min-width: 200px;border: 1px solid white;">EBRS</th>
+              <th style="text-align: left; padding-left:50px;background: darkslategrey;color: white;min-width: 200px;border: 1px solid white;">NRIS</th>
+            <tr>
+            <tr>
+              <td class="labell">First Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= @name.first_name %></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Last Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= @name.last_name %></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Sex</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Child Date of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.strftime("%d/%b/%Y") %></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother First Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_name.first_name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother Last Name</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_name.last_name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother Home District</td>
+              <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_district).name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother Home TA</td>
+              <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_ta).name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother Home Village</td>
+              <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_village).name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+            <tr>
+              <td class="labell">Mother Nationality</td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+            </tr>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT');">Approve for Printing</button>
+          <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Reject</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
   <div class="media-body" style="width: 550px;">
     <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
@@ -534,7 +620,9 @@
 
 
         document.body.appendChild(shield);
+        <% if @person.id_number.blank? %>
         __$("query-msg").style.display = "inline-block";
+        <% end %>
     }
 
     function removeShield(){
@@ -560,7 +648,7 @@
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
         if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
-           createShield();
+                createShield();
         }
 
         jQuery.ajax({
@@ -697,7 +785,7 @@
                             window.location = return_path;
                         }else if(result == "duplicate"){
 
-                        }else{
+                        }else{_pe
                             alert("Something went wrong!")
                         }
                     },
@@ -708,7 +796,7 @@
         )
     }
 
-    printer_name = ""
+    printer_name = "";
 
     function updateValue(obj){
         printer_name = obj.getAttribute('value');
@@ -727,6 +815,10 @@
         console.log("In")
 
     }
+
+    <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>
+        jQuery("#nidcomparison").modal("show");
+    <% end %>
 </script>
 
 <style>

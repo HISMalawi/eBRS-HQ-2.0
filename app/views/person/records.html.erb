@@ -13,7 +13,6 @@
         background-color: #d3d3d3;
     }
     #example tr td{
-        background-color: white !important;
         border-left: 0.5px dotted lightgray;
         padding: 7px;
     }
@@ -56,14 +55,6 @@
     #districts, #example_filter{
         margin-left: 15px;
         float: right;
-    }
-
-    .nonid > td > tr{
-        background: red !important;
-    }
-
-    .redd > td > tr {
-        background: lightyellow !important;
     }
 </style>
 
@@ -299,6 +290,10 @@
                     "processing": true,
                     "serverSide": true,
                     "ordering": false,
+                    "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+                        jQuery('td .action-btn', nRow).parent().parent().css('background', 'white');
+                        jQuery('td .redd', nRow).parent().parent().css('background', '#FFBAD2');
+                    },
                     "ajax": {
                         "url": url,
                         "data": function(d){
@@ -315,12 +310,14 @@
                                 var person_id = json['data'][i][last_index]
 
                                 var clas = "nonid";
+                                var popup = "";
                                 if(failed_nids.indexOf(person_id) >= 0){
-                                    clas = "redd"
+                                    clas = "redd";
+                                    popup = "?side_by_side=true"
                                 }
 
                                 json['data'][i][last_index] =   '<td> ' +
-                                        '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+                                        '<button onclick="javascript:location=\'/show_person/' + person_id + popup + ' \'"     ' +
 
                                         '    class="action-btn btn btn-success btn-xs ' + clas + '"><i class="fa fa-eye"></i></button></td>';
 

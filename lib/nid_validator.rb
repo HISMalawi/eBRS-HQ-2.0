@@ -74,7 +74,7 @@ class NIDValidator
         "MotherDistrictName" => Location.find(mother_address.home_district).name,
         "MotherTaName"       => Location.find(mother_address.home_ta).name,
         "MotherVillageName"  => Location.find(mother_address.home_village).name,
-        "MotherNationality"   => Location.find(mother_address.citizenship).name,
+        "MotherNationality"   => Location.find(mother_address.citizenship).name
     }
 
     get_url = SETTINGS['query_by_nid_address']
@@ -94,13 +94,13 @@ class NIDValidator
               }
             end
           end
+
+          if mismatch.blank?
+            passed = 1
+          end
         end
       }
     rescue
-    end
-
-    if mismatch.blank?
-      passed = 1
     end
 
     dt = "'#{mismatch.to_json}'"

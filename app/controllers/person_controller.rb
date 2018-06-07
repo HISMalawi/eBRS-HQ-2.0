@@ -253,6 +253,13 @@ class PersonController < ApplicationController
 
     @trace_data = PersonRecordStatus.trace_data(@person.id)
 
+    @nid_data = {}
+    nid_data = ActiveRecord::Base.connection.select_one <<EOF
+          SELECT * FROM nid_verification_data WHERE person_id = #{@person.person_id} ORDER BY id DESC;
+EOF
+
+    @nid_data = nid_data["data"] if !nid_data.blank?
+
     if @person.present? && SETTINGS['potential_search']
       person = {}
       person["id"] = @person.person_id.to_s

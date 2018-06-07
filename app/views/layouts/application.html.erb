@@ -32,10 +32,10 @@
     %>
   <body>
   <style type="text/css">
-     
+
       body {
         color: #333 !important;
-        font-size: 13.5px;
+        font-size: 14px;
         font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
         /*font-size: 16px;*/
         -webkit-user-select: none;  /* Chrome all / Safari all */
@@ -216,7 +216,7 @@
       <aside>
           <div id="sidebar"  class="nav-collapse ">
               <!-- sidebar menu start-->
-              <ul class="sidebar-menu" id="nav-accordion">
+              <ul class="sidebar-menu" id="nav-accordion" style="">
               
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coa.png', class: '', width: '60' %></a></p>
@@ -224,7 +224,7 @@
 
               	  	
                   <li class="">
-                      <a href="/" style="color: white;">
+                      <a href="/" style="color: white;font-size: 14px !important;">
                           <i class="fa fa-home"></i>
                           <span>Home</span>
                       </a>
@@ -232,7 +232,7 @@
 
                 <% if (['Search'] & @folders).length > 0%>
                     <li class="sub-menu">
-                      <a href="javascript:;" style="color: white;">
+                      <a href="javascript:;" style="color: white;font-size: 14px !important;">
                         <i class="fa fa-search"></i>
                         <span>Search</span>
                       </a>
@@ -247,7 +247,7 @@
 
                 <% if (['Tasks'] & @folders).length > 0%>
                   <li class="">
-                      <a href="/tasks" style="color: white;">
+                      <a href="/tasks" style="color: white;font-size: 14px !important;">
                           <i class="fa fa-desktop"></i>
                           <span >Tasks</span>
                       </a>
@@ -256,7 +256,7 @@
 
                 <% if (['Settings'] & @folders).length > 0%>
                   <li class="sub-menu">
-                      <a href="javascript:;" style="color: white;">
+                      <a href="javascript:;" style="color: white;font-size: 14px !important;">
                           <i class="fa fa-cogs"></i>
                           <span>Settings</span>
                       </a>
@@ -281,7 +281,7 @@
 
                 <% if (['Reports'] & @folders).length > 0%>
                   <li class="sub-menu">
-                      <a href="javascript:;" style="color: white;">
+                      <a href="javascript:;" style="color: white;font-size: 14px !important;">
                           <i class="fa fa-book"></i>
                           <span>Reports</span>
                       </a>
