@@ -513,58 +513,58 @@
       </div>
       <div class="modal-body" style="width: 100%;">
         <span style="text-align:center;width: 100%;">
-          <table align="center" id="completeness_details" style="width:100%;">
-            <tr>
+          <table align="center" id="completeness_details" style="width:100%;" class="nris-diff">
+            <tr class="nris-row">
               <td class="labell" style="min-width: 200px;background: white;">&nbsp;</td>
               <th style="text-align: left; padding-left:50px;background: darkslategrey;color: white;min-width: 200px;border: 1px solid white;">EBRS</th>
               <th style="text-align: left; padding-left:50px;background: darkslategrey;color: white;min-width: 200px;border: 1px solid white;">NRIS</th>
             <tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @name.first_name %></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["FirstName"]["remote"] rescue nil) || @name.first_name)%></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Last Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @name.last_name %></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["Surname"]["remote"] rescue nil) || @name.last_name) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Sex</td>
               <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
               <td style="text-align: left; padding-left:50px;"><%= (({1 => "Male", 2 => "Female"}[@nid_data["Sex"]["remote"]] rescue nil) || (@person.gender == 'F' ? 'Female' : 'Male')) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Date of Birth</td>
               <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["DateOfBirthString"]["remote"].to_date.strftime("%d/%b/%Y") rescue nil) || @person.birthdate.to_date.strftime("%d/%b/%Y")) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_name.first_name rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherSurname"]["remote"] rescue nil) || @mother_name.first_name) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother Last Name</td>
-              <td style="text-align: left; padding-left:50px;"><%= @mother_name.last_name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%= @mother_name.last_name rescue nil %></td>
               <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherSurname"]["remote"] rescue nil) || @mother_name.last_name) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother Home District</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_district).name rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherDistrictName"]["remote"] rescue nil) || (Location.find(@mother_address.home_district).name rescue nil)) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother Home TA</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_ta).name rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherTaName"]["remote"] rescue nil) || (Location.find(@mother_address.home_ta).name rescue nil)) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother Home Village</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_village).name rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherVillageName"]["remote"] rescue nil) || (Location.find(@mother_address.home_village).name rescue nil)) %></td>
             </tr>
-            <tr>
+            <tr class="nris-row">
               <td class="labell">Mother Nationality</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherNationality"]["remote"] rescue nil) || (@mother_person.citizenship rescue nil)) %></td>
@@ -600,6 +600,20 @@
             __$('<%= action['button_name']%>').style.display = 'table-cell';
         }
     <% end %>
+
+    function highlightNRISDiff(){
+
+        var rows = document.getElementsByClassName("nris-row");
+        for(var i = 1; i < rows.length; i++) {
+            var tds = rows[i].getElementsByTagName("td");
+            if (tds[1].innerHTML.trim() != tds[2].innerHTML.trim()) {
+                tds[1].style.background = "#FFBAD2";
+                tds[2].style.background = "#FFBAD2";
+            }
+        }
+    }
+
+    highlightNRISDiff();
 
     function createShield(){
        var shield = document.createElement("div");
