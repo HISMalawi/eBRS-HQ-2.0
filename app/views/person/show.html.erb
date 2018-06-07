@@ -522,52 +522,52 @@
             <tr>
               <td class="labell">First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @name.first_name %></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["FirstName"]["remote"] rescue nil) || @name.first_name)%></td>
             </tr>
             <tr>
               <td class="labell">Last Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @name.last_name %></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["Surname"]["remote"] rescue nil) || @name.last_name) %></td>
             </tr>
             <tr>
               <td class="labell">Sex</td>
               <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["Sex"]["remote"] rescue nil) || (@person.gender == 'F' ? 'Female' : 'Male')) %></td>
             </tr>
             <tr>
-              <td class="labell">Child Date of Birth</td>
-              <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.strftime("%d/%b/%Y") %></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td class="labell">Date of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["DateOfBirthString"]["remote"].to_date.strftime("%d/%b/%Y") rescue nil) || @person.birthdate.to_date.strftime("%d/%b/%Y")) %></td>
             </tr>
             <tr>
               <td class="labell">Mother First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_name.first_name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherSurname"]["remote"] rescue nil) || @mother_name.first_name) %></td>
             </tr>
             <tr>
               <td class="labell">Mother Last Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_name.last_name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherSurname"]["remote"] rescue nil) || @mother_name.last_name) %></td>
             </tr>
             <tr>
               <td class="labell">Mother Home District</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_district).name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherDistrictName"]["remote"] rescue nil) || (Location.find(@mother_address.home_district).name rescue nil)) %></td>
             </tr>
             <tr>
               <td class="labell">Mother Home TA</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_ta).name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherTaName"]["remote"] rescue nil) || (Location.find(@mother_address.home_ta).name rescue nil)) %></td>
             </tr>
             <tr>
               <td class="labell">Mother Home Village</td>
               <td style="text-align: left; padding-left:50px;"><%= Location.find(@mother_address.home_village).name rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherVillageName"]["remote"] rescue nil) || (Location.find(@mother_address.home_village).name rescue nil)) %></td>
             </tr>
             <tr>
               <td class="labell">Mother Nationality</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil%></td>
-              <td style="text-align: left; padding-left:50px;"><%= "" %></td>
+              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherNationality"]["remote"] rescue nil) || (@mother_person.citizenship rescue nil)) %></td>
             </tr>
           </table>
         </span>
@@ -785,7 +785,7 @@
                             window.location = return_path;
                         }else if(result == "duplicate"){
 
-                        }else{_pe
+                        }else{
                             alert("Something went wrong!")
                         }
                     },
