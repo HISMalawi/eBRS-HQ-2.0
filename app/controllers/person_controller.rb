@@ -453,7 +453,7 @@ EOF
 
           if nid['passed'].to_i == 0
             nid_data << nid['person_id'].to_i
-          end unless nid.blank?
+          end unless (nid.blank? || !details.brn.blank?)
 
         end
         arr = arr + [name,
