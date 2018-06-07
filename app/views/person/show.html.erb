@@ -512,6 +512,7 @@
         </h4>
       </div>
       <div class="modal-body" style="width: 100%;">
+        <% if !@nid_data.blank? %>
         <span style="text-align:center;width: 100%;">
           <table align="center" id="completeness_details" style="width:100%;" class="nris-diff">
             <tr class="nris-row">
@@ -571,6 +572,12 @@
             </tr>
           </table>
         </span>
+        <% else %>
+        <div style="width: 100%;text-align: center;"> <br /> <br />
+          Could Not Validate National ID <span style="color: blue; font-weight: bold;"><i><%= (@person.id_number rescue nil)%></i></span>
+        <br /><br /> <br /><br /></div>
+        <% end %>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
           <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT');">Approve for Printing</button>
@@ -612,8 +619,6 @@
             }
         }
     }
-
-    highlightNRISDiff();
 
     function createShield(){
        var shield = document.createElement("div");
@@ -832,6 +837,7 @@
 
     <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>
         jQuery("#nidcomparison").modal("show");
+        highlightNRISDiff();
     <% end %>
 </script>
 
