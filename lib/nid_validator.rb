@@ -71,10 +71,10 @@ class NIDValidator
         "Sex"               => {"M" => 1, "F" => 2}[person.gender],
         "MotherSurname"     => mother_person.last_name,
         "MotherFirstName"   => mother_person.first_name,
-        "MotherDistrictName" => Location.find(mother_address.home_district).name,
-        "MotherTaName"       => Location.find(mother_address.home_ta).name,
-        "MotherVillageName"  => Location.find(mother_address.home_village).name,
-        "MotherNationality"   => Location.find(mother_address.citizenship).name
+        "MotherDistrictName" => (Location.find(mother_address.home_district).name rescue ""),
+        "MotherTaName"       => (Location.find(mother_address.home_ta).name rescue ""),
+        "MotherVillageName"  => (Location.find(mother_address.home_village).name rescue ""),
+        "MotherNationality"   => (Location.find(mother_address.citizenship).name rescue "")
     }
 
     get_url = SETTINGS['query_by_nid_address']
