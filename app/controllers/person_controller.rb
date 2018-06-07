@@ -258,7 +258,7 @@ class PersonController < ApplicationController
           SELECT * FROM nid_verification_data WHERE person_id = #{@person.person_id} ORDER BY id DESC;
 EOF
 
-    @nid_data = nid_data["data"] if !nid_data.blank?
+    @nid_data = JSON.parse(nid_data["data"]) if !nid_data.blank?
 
     if @person.present? && SETTINGS['potential_search']
       person = {}

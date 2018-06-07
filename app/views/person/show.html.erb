@@ -532,7 +532,7 @@
             <tr>
               <td class="labell">Sex</td>
               <td style="text-align: left; padding-left:50px;"><%= @person.gender == 'F' ? 'Female' : 'Male' %></td>
-              <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["Sex"]["remote"] rescue nil) || (@person.gender == 'F' ? 'Female' : 'Male')) %></td>
+              <td style="text-align: left; padding-left:50px;"><%= (({1 => "Male", 2 => "Female"}[@nid_data["Sex"]["remote"]] rescue nil) || (@person.gender == 'F' ? 'Female' : 'Male')) %></td>
             </tr>
             <tr>
               <td class="labell">Date of Birth</td>
