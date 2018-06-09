@@ -88,11 +88,7 @@ module EbrsAttribute
       before_create :generate_key
       #after_create :create_or_update_in_couch
       #after_create :create_audit_trail_after_create
-<<<<<<< HEAD
       #after_save :create_or_update_in_couch, :create_audit_trail
-=======
-      after_save :create_or_update_in_couch#, :create_audit_trail
->>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
     end
   end
 
@@ -170,29 +166,6 @@ module EbrsAttribute
   end
 
   def create_attr( name )
-<<<<<<< HEAD
-        create_method( "#{name}=".to_sym ) { |val|
-            instance_variable_set( "@" + name, val)
-        }
-
-        create_method( name.to_sym ) {
-            instance_variable_get( "@" + name )
-        }
-  end
-  def keep_prev_value
-       self.create_attr("prev")
-       self.prev = nil
-       if self.class.table_name =="person_name"
-          last_name = ActiveRecord::Base.connection.select_all("SELECT * FROM person_name WHERE person_id=#{self.person_id} ORDER BY updated_at").last rescue nil
-          if last_name.present?
-            self.prev = self.class.new(last_name)
-          else
-            self.prev = nil
-          end
-       else
-          self.prev = self.class.find(self.id) rescue nil
-       end
-=======
     create_method( "#{name}=".to_sym ) { |val|
       instance_variable_set( "@" + name, val)
     }
@@ -214,7 +187,6 @@ module EbrsAttribute
     else
       self.prev = self.class.find(self.id) rescue nil
     end
->>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
   end
   def create_audit_trail_after_update
     if self.class.table_name != "audit_trails"

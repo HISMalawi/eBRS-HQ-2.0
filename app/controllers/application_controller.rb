@@ -4,16 +4,9 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
   #protect_from_forgery	#with: :null_session
 
-<<<<<<< HEAD
   before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list']
   #before_filter :check_last_sync_time
   #before_filter :check_couch_loading
-=======
-  before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list', 'sync_status']
-  before_filter :check_pings, :except => ["sync_status"]
-  before_filter :check_couch_loading, :except => ["sync_status"]
-  before_filter :check_notifications, :only => ['index', 'tasks', 'view']
->>>>>>> 4bd8ddc20931d6baca6990c9acd6300a43c372a6
 
   def check_couch_loading
     last_run_time = File.mtime("#{Rails.root}/public/tap_sentinel").to_time rescue nil
