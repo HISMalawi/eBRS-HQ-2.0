@@ -75,7 +75,6 @@ class AllocationQueue
                                      person_id: record.person_id)
             end
 
-	          #PersonService.request_nris_id(record.person_id, "N/A", User.find(record.creator))
           #end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(

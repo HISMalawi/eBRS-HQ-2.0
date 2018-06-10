@@ -35,14 +35,16 @@ npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
   puts "#{i}/#{total} NPIDs Migrated"
   person_id = PersonIdentifier.where(value: pid['national_id'], person_identifier_type_id: $npid_type).last.person_id rescue nil
-
-
-  BarcodeIdentifier.create(
-    value: pid['national_id'],
-    assigned: (pid['assigned'] == true ? 1 : 0),
-    person_id: person_id,
-    created_at: (pid['created_at'].to_datetime rescue nil),
-    updated_at: (pid['updated_at'].to_datetime rescue nil)
-  )
+	barcode = BarcodeIdentifier.where(:person_id => person_id).last rescue nil
+	
+	if barcode.blank?
+		BarcodeIdentifier.create(
+		  value: pid['national_id'],
+		  assigned: (pid['assigned'] == true ? 1 : 0),
+		  person_id: person_id,
+		  created_at: (pid['created_at'].to_datetime rescue nil),
+		  updated_at: (pid['updated_at'].to_datetime rescue nil)
+		)
+	end
 end
 
