@@ -623,7 +623,13 @@ debug = configs['debug']
 
 put "Loading couch data from couchDB"
 puts "curl -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true"
-records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
+#records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
+
+if if SETTINGS['migration_mode'] == 'FC' && !@location.code.blank?
+	records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/by_facility?key=\["#{@location.code}"\]include_docs=true`)
+else
+	records = JSON.parse(`curl -s -X GET #{configs['protocol']}://#{configs['username']}:#{configs['password']}@#{configs['host']}:#{configs['port']}/#{db}/_design/Child/_view/all?include_docs=true`)
+end
 
 put "Sorting by date approved"
 records['rows'] = records['rows'].sort_by { |r| (r[:approved_at].to_datetime rescue nil)}
