@@ -33,7 +33,7 @@ total = npids['rows'].count
 
 npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
-  puts "#{i}/#{total} NPIDs Migrated"
+  puts "#{pid["national_id"]}  #{i}/#{total} NPIDs Migrated"
   person_id = PersonIdentifier.where(value: pid['national_id'], person_identifier_type_id: $npid_type).last.person_id rescue nil
 	barcode = BarcodeIdentifier.where(:person_id => person_id).last rescue nil
 	
