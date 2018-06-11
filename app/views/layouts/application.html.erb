@@ -320,6 +320,10 @@
     <%=javascript_include_tag "js/jquery"%>
     <script>
       var $i = jQuery.noConflict();
+
+      function preventBack() { window.history.forward(); }
+      setTimeout('preventBack()',0);
+      window.onload = function () { null };
     </script>
     <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
     <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         

@@ -86,7 +86,7 @@ class ApplicationController < ActionController::Base
   end
 
   def check_notifications
-    @notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
+    #@notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
   end
 
   private
