@@ -645,13 +645,14 @@
     }
 
     function assignmentOrder(person_id){
-         __$("query-msg").innerHTML = "Assigning BRN   ...."
+         __$("query-msg").style.display = "inline-block";
+         __$("query-msg").innerHTML = "Assigning BRN   ....";
         jQuery.ajax({
             url: "/ajax_check_brn?person_id=<%= @person.id%>",
             success: function(result){
                 console.log(result);
                 if(result == "OK"){
-                    queryNID(person_id);
+                    queryNID();
                 }else{
                     setTimeout(function(){assignmentOrder()}, 250);
                 }
@@ -663,6 +664,7 @@
     }
 
     function queryNID(){
+        __$("query-msg").style.display = "inline-block";
         __$("query-msg").innerHTML = "Querying National ID from NRIS  .... "
 
         jQuery.ajax({
@@ -703,17 +705,18 @@
 
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
-
+        createShield();
         jQuery.ajax({
             url: url,
             success: function(feedback){
                 if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
-                    createShield();
-                    assignmentOrder();
-                    removeShield();
+                    <% if @person.id_number.blank? %>
+                        assignmentOrder();
+                    <% else %>
+                        removeShield();
+                        window.parent.location = return_path;
+                    <% end %>
                 }
-
-               //window.parent.location = return_path;
             },
             error: function(error){
                 removeShield();
