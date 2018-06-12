@@ -63,18 +63,21 @@ class AllocationQueue
           #if brn == (current_count + 1)
             person_birth_detail.update_attributes(national_serial_number: brn)
             record.update_attributes(assigned: 1)
-          SuckerPunch.logger.info "Point 5 ======================"
 
             PersonIdentifier.new_identifier(record.person_id,
                                             'Birth Registration Number', person_birth_detail.national_serial_number, User.find(record.creator))
             barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
-          SuckerPunch.logger.info "Point 6 ======================"
             if barcode.present?
-              SuckerPunch.logger.info "Point 7 ======================"
 
-              PersonIdentifier.new_identifier(record.person_id,
-                                              'Barcode Number', barcode.value, User.find(record.creator))
-              barcode.update_columns(assigned: 1,
+              PersonIdentifier.create(
+                  person_id: record.person_id,
+                  value: barcode.value,
+                  person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
+                  voided: 0,
+                  creator: record.creator
+              )
+
+              barcode.update_attributes(assigned: 1,
                                      person_id: record.person_id)
             end
 
