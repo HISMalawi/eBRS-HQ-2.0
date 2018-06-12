@@ -905,27 +905,28 @@ EOF
     if paper_size == "A4"
       zoom = 0.83
     elsif paper_size == "A5"
-      zoom = 0.6
+      zoom = 0.89
     end
 
     person_ids = params[:person_ids].split(',')
     person_ids.each do |person_id|
-      begin
+      #begin
         PersonRecordStatus.new_record_state(person_id, 'HQ-PRINTED', 'Printed Child Record')
-        print_url = "wkhtmltopdf --zoom #{zoom} --page-size #{paper_size} #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/birth_certificate?person_ids=#{person_id} #{SETTINGS['certificates_path']}#{person_id}.pdf\n"
+        print_url = "wkhtmltopdf --zoom #{zoom} --page-size #{paper_size} #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/birth_certificate?person_ids=#{person_id.strip} #{SETTINGS['certificates_path']}#{person_id.strip}.pdf\n"
 
         puts print_url
+
         t4 = Thread.new {
           Kernel.system print_url
           sleep(4)
-          Kernel.system "lp -d #{params[:printer_name]} #{SETTINGS['certificates_path']}#{person_id}.pdf\n"
+          Kernel.system "lp -d #{params[:printer_name]} #{SETTINGS['certificates_path'].strip}#{person_id.strip}.pdf\n"
           sleep(5)
         }
         sleep(1)
 
-      rescue => e
-        print_errors[person_id] = e.message + ":" + e.backtrace.inspect
-      end
+      #rescue => e
+        #print_errors[person_id] = e.message + ":" + e.backtrace.inspect
+      ##end
     end
 
     if print_errors.present?
