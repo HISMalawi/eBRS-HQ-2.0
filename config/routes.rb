@@ -158,6 +158,9 @@ Rails.application.routes.draw do
   get "/person/print_cases"
   get "/report/dispatch_list"
 
+  get '/ajax_check_brn' => 'person#ajax_check_brn'
+  get '/ajax_request_brn_national_id' => 'person#ajax_request_national_id'
+
 
   ########################### (create record form) routes
   get '/get_last_names' => 'person#get_names', :defaults => {last_name: 'last_name'}

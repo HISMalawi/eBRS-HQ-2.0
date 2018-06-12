@@ -1392,4 +1392,32 @@ EOF
   def sync_status
     render :text => PersonBirthDetail.record_available?(params[:person_id])
   end
+
+  def ajax_request_national_id
+    person_id = params[:person_id]
+    result = PersonService.request_nris_id(person_id, request.remote_ip, User.current)
+
+    if result == true
+      render plain: "OK"
+    else
+      render plain: "PENDING"
+    end
+  end
+
+  def ajax_check_brn
+    person_id = params[:person_id]
+    birth = BirthBirthDetail.where(person: person_id).first
+
+    if !birth.blank? && !birth.national_serial_number.blank?
+      render plain: "OK"
+    else
+      workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil
+      if workers.blank? || workers["total"] == 0 || workers["busy"] > 0
+        AllocationQueue.perfom_in(1)
+      end
+
+      render plain: "PENDING"
+    end
+  end
+
 end

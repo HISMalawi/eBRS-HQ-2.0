@@ -597,7 +597,7 @@
 </div>
 
 <div id="query-msg" style='display: none; position:  fixed; left: 43%; top: 14%; background: green !important; color: ghostwhite;padding: 5px;  font-size: 1.3em; !important; z-index: 3500;'>
-  Querying National ID from NRIS  .... </div>
+  </div>
 
 <script>
     <% (@actions || []).each do |action|
@@ -637,11 +637,48 @@
             align: "middle"
         })
 
-
         document.body.appendChild(shield);
         <% if @person.id_number.blank? %>
+
         __$("query-msg").style.display = "inline-block";
         <% end %>
+    }
+
+    function assignmentOrder(person_id){
+         __$("query-msg").innerHTML = "Assigning BRN   ...."
+        jQuery.ajax({
+            url: "/ajax_check_brn?person_id=<%= @person.id%>",
+            success: function(result){
+                console.log(result);
+                if(result == "OK"){
+                    queryNID(person_id);
+                }else{
+                    setTimeout(function(){assignmentOrder()}, 250);
+                }
+            },
+            error: function(error){
+                alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    function queryNID(){
+        __$("query-msg").innerHTML = "Querying National ID from NRIS  .... "
+
+        jQuery.ajax({
+            url: "/ajax_request_national_id?person_id=<%= @person.id%>&national_id=<%= @person.id_number%>",
+            success: function(result){
+                console.log(result);
+                if(result == "OK"){
+                    window.parent.location = return_path;
+                }else{
+                    setTimeout(function(){queryNID()}, 250);
+                }
+            },
+            error: function(error){
+                alert("Something Went Wrong!")
+            }
+        })
     }
 
     function removeShield(){
@@ -666,14 +703,16 @@
 
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
-        if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
-                createShield();
-        }
 
         jQuery.ajax({
             url: url,
             success: function(feedback){
-               removeShield();
+                if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
+                    createShield();
+                    assignmentOrder();
+                    removeShield();
+                }
+
                window.parent.location = return_path;
             },
             error: function(error){

@@ -47,7 +47,6 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.created_at = Time.now
             allocation.save
 
-          PersonService.request_nris_id(person_id, "Test Machine", User.current) if national_id.blank?
         end
     end
     rescue StandardError => e

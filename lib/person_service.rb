@@ -1404,6 +1404,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       return "NOT A MALAWIAN CITIZEN"
     end
 
+    success = false;
     RestClient.post(post_url, data.to_json, :content_type => "application/json", :accept => 'json'){|response, request, result|
       #Save National ID
 
@@ -1418,6 +1419,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       puts "NRIS KEY: #{array[1]}"
 
       if nid.present? && nid.to_s.length == 8
+        success = true
         old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
         old_id = PersonIdentifier.new if old_id.blank?
 
@@ -1437,6 +1439,8 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
         old_key.save
       end
     }
+
+    return success
   end
 
 end
