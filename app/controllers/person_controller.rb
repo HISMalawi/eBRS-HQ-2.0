@@ -1414,7 +1414,7 @@ EOF
     else
       workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil
       if workers.blank? || workers["total"] == 0 || workers["busy"] > 0
-        AllocationQueue.perfom_in(1)
+        AllocationQueue.perform_in(1)
       end
 
       render plain: "PENDING"
