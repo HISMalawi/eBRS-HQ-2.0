@@ -60,28 +60,13 @@ class AllocationQueue
           brn = last + 1
           current_count = PersonBirthDetail.select(" COUNT(national_serial_number) AS c ").where(" national_serial_number IS NOT NULL")[0]['c'].to_i rescue 0
 
-          #if brn == (current_count + 1)
-            person_birth_detail.update_attributes(national_serial_number: brn)
-            record.update_attributes(assigned: 1)
+          person_birth_detail.update_attributes(national_serial_number: brn)
+          record.update_attributes(assigned: 1)
 
-            PersonIdentifier.new_identifier(record.person_id,
-                                            'Birth Registration Number', person_birth_detail.national_serial_number, User.find(record.creator))
-            barcode = BarcodeIdentifier.where(:assigned => 0).first rescue nil
-            if barcode.present?
+          PersonIdentifier.new_identifier(record.person_id,
+                                          'Birth Registration Number', person_birth_detail.national_serial_number, User.find(record.creator))
 
-              PersonIdentifier.create(
-                  person_id: record.person_id,
-                  value: barcode.value,
-                  person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
-                  voided: 0,
-                  creator: record.creator
-              )
 
-              barcode.update_attributes(assigned: 1,
-                                     person_id: record.person_id)
-            end
-
-          #end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id

@@ -963,8 +963,8 @@ EOF
       if barcode.nil?
 
     	  barcode_value = PersonIdentifier.where(person_id: person_id,
-						person_identifier_type_id: nid_type.id,
-						voided: 0).last.value rescue nil
+						person_identifier_type_id: nid_type.id
+					).last.value rescue nil
 
         if barcode_value.blank?
           bcd = BarcodeIdentifier.where(assigned: 0).first
@@ -1410,6 +1410,21 @@ EOF
     birth = PersonBirthDetail.where(person_id: person_id).first
 
     if !birth.blank? && !birth.national_serial_number.blank?
+
+      barcode = BarcodeIdentifier.where(:assigned => 0).first
+      if !barcode.blank?
+        PersonIdentifier.create(
+            person_id: person_id,
+            value: barcode.value,
+            person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
+            voided: 0,
+            creator: User.current.id
+        )
+
+        barcode.update_attributes(assigned: 1,
+                                  person_id: record.person_id)
+      end
+
       render plain: "OK"
     else
       workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil

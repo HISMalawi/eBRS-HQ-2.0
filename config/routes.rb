@@ -159,7 +159,7 @@ Rails.application.routes.draw do
   get "/report/dispatch_list"
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
-  get '/ajax_request_brn_national_id' => 'person#ajax_request_national_id'
+  get '/ajax_request_national_id' => 'person#ajax_request_national_id'
 
 
   ########################### (create record form) routes
