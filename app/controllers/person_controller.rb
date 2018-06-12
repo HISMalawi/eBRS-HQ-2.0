@@ -952,6 +952,8 @@ EOF
     @signature = PersonAttribute.find_by_person_id_and_person_attribute_type_id(signatory.id,signatory_attribute_type.id).value rescue nil
 
     person_ids = params[:person_ids].split(',')
+    nid_type = PersonIdentifierType.where(name: "Barcode Number").last
+
     person_ids.each do |person_id|
       data = {}
       data['person'] = Person.find(person_id) rescue nil
@@ -960,9 +962,8 @@ EOF
       barcode = File.read("#{SETTINGS['barcodes_path']}#{person_id}.png") rescue nil
       if barcode.nil?
 
-        nid_type = PersonIdentifierType.where(name: "Barcode Number").last
     	  barcode_value = PersonIdentifier.where(person_id: person_id,
-						person_identifier_type_id: nid_type, 
+						person_identifier_type_id: nid_type.id,
 						voided: 0).last.value rescue nil
 
         if barcode_value.blank?
