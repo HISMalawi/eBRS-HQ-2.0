@@ -957,17 +957,17 @@ EOF
       data['person'] = Person.find(person_id) rescue nil
       data['birth']  = PersonBirthDetail.where(person_id: person_id).last
       
-      barcode = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png") rescue nil
+      barcode = File.read("#{SETTINGS['barcodes_path']}#{person_id}.png") rescue nil
       if barcode.nil?
 
         nid_type = PersonIdentifierType.where(name: "Barcode Number").last
-    	  barcode_value = PersonIdentifier.where(person_id: data['person'].id,
+    	  barcode_value = PersonIdentifier.where(person_id: person_id,
 						person_identifier_type_id: nid_type, 
 						voided: 0).last.value rescue nil
 
         if barcode_value.blank?
           bcd = BarcodeIdentifier.where(assigned: 0).first
-          bcd.person_id = data['person'].id
+          bcd.person_id = person_id
           bcd.assigned  = 1
           bcd.save
 
@@ -977,7 +977,7 @@ EOF
         `bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
       end
 
-      data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{data['person'].id}.png")
+      data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{person_id}.png")
 
       @data << data
     end
