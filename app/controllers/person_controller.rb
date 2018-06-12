@@ -1407,7 +1407,7 @@ EOF
 
   def ajax_check_brn
     person_id = params[:person_id]
-    birth = PersonBirthDetail.where(person: person_id).first
+    birth = PersonBirthDetail.where(person_id: person_id).first
 
     if !birth.blank? && !birth.national_serial_number.blank?
       render plain: "OK"
