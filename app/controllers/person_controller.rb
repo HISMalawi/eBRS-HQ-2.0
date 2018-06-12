@@ -1421,7 +1421,7 @@ EOF
         )
 
         barcode.update_attributes(assigned: 1,
-                                  person_id: record.person_id)
+                                  person_id: person_id)
       end
 
       render plain: "OK"
