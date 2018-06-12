@@ -11,8 +11,7 @@ class PersonIdentifier < ActiveRecord::Base
           person_id: person_id,
           person_identifier_type_id: type_id,
           value: value,
-          voided: 0,
-          creator: user.id
+          voided: 0
       )
     end
 end

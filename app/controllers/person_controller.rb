@@ -1417,8 +1417,7 @@ EOF
             person_id: person_id,
             value: barcode.value,
             person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
-            voided: 0,
-            creator: User.current.id
+            voided: 0
         )
 
         barcode.update_attributes(assigned: 1,
