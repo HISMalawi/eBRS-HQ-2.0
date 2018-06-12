@@ -110,7 +110,8 @@
               Date of Birth
             </td>
             <td align="left">
-              <%= person.birthdate.to_date.strftime("%d/%b/%Y")%>
+	      <%= person.birthdate.to_date.strftime("%d").to_i %><sup><%= person.birthdate.to_date.strftime("%d").to_i.ordinalize.gsub(/\d+/, "") rescue nil
+              %></sup> <%= person.birthdate.to_date.strftime("%B") rescue nil %>, <%= person.birthdate.to_date.strftime("%Y") rescue nil %>
             </td>
           </tr>
           <tr>
