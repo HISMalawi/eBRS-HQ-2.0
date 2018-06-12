@@ -33,18 +33,39 @@ total = npids['rows'].count
 
 npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
-  puts "#{pid["national_id"]}  #{i}/#{total} NPIDs Migrated"
+
+  bcd = BarcodeIdentifier.where(:value => pid['national_id'])
   person_id = PersonIdentifier.where(value: pid['national_id'], person_identifier_type_id: $npid_type).last.person_id rescue nil
-	barcode = BarcodeIdentifier.where(:person_id => person_id).last rescue nil
-	
-	if barcode.blank?
-		BarcodeIdentifier.create(
-		  value: pid['national_id'],
-		  assigned: (pid['assigned'] == true ? 1 : 0),
-		  person_id: person_id,
-		  created_at: (pid['created_at'].to_datetime rescue nil),
-		  updated_at: (pid['updated_at'].to_datetime rescue nil)
-		)
-	end
+  puts "#{person_id}-#{i}/#{total} NPIDs Migrated"
+
+  next if !bcd.blank?
+
+  value      = pid['national_id']
+  assigned   =  (pid['assigned'] == true ? 1 : 0)
+  created_at = (pid['created_at'].to_datetime.to_s(:db) rescue nil)
+  updated_at = (pid['updated_at'].to_datetime.to_s(:db) rescue nil)
+
+if person_id.blank?
+  ActiveRecord::Base.connection.execute <<EOF
+        INSERT INTO barcode_identifiers(value, assigned, created_at, updated_at) VALUES ('#{value}', '#{assigned}', '#{created_at}', '#{updated_at}')
+EOF
+
+else
+  ActiveRecord::Base.connection.execute <<EOF
+        INSERT INTO barcode_identifiers(person_id, value, assigned, created_at, updated_at) VALUES (#{person_id}, '#{value}', '#{assigned}', '#{created_at}', '#{updated_at}')
+EOF
+  
+end
+
+=begin
+  BarcodeIdentifier.create(
+    value: pid['national_id'],
+    assigned: (pid['assigned'] == true ? 1 : 0),
+    person_id: person_id,
+    created_at: (pid['created_at'].to_datetime rescue nil),
+    updated_at: (pid['updated_at'].to_datetime rescue nil)
+  )
+=end
+
 end
 
