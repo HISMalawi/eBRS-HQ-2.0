@@ -27,7 +27,7 @@ gem 'jbuilder', '~> 2.0'
 gem 'sdoc', '~> 0.4.0', group: :doc
 
 gem "whitesimilarity"
-gem "wkhtmltopdf-binary"
+#gem "wkhtmltopdf-binary"
 gem 'mac-address'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
