@@ -1263,7 +1263,7 @@ end
   def self.request_nris_id(person_id, client_address="N/A", cur_user)
 
     if SETTINGS["activate_nid_integration"].to_s != "true"
-	    return false
+	    return "NID INTEGRATION NOT ACTIVATED"
     end
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
@@ -1273,7 +1273,7 @@ end
 
     person = Person.find(person_id)
     if person.birthdate.to_date <= 16.years.ago.to_date
-      return false
+      return "AGE LIMIT EXCEEDED"
     end
 
     details = PersonBirthDetail.where(person_id: person_id).last
@@ -1401,7 +1401,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     end
 
     if data['MotherNationality'] != "MWI" && data['FatherNationality'] != "MWI"
-      return false
+      return "NOT A MALAWIAN CITIZEN"
     end
 
     success = false;

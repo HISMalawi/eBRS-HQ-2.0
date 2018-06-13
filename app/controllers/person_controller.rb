@@ -1401,7 +1401,7 @@ EOF
     person_id = params[:person_id]
     result = PersonService.request_nris_id(person_id, request.remote_ip, User.current)
 
-    if result == true
+    if result == true || result == "NOT A MALAWIAN CITIZEN" || result == "AGE LIMIT EXCEEDED" || "NID INTEGRATION NOT ACTIVATED"
       render plain: "OK"
     else
       render plain: "PENDING"
