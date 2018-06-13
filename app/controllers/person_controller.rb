@@ -1,7 +1,7 @@
 class PersonController < ApplicationController
   def index
     if User.current.user_role.role.role == "Quality Supervisor"
-      redirect_to "/person/certificate_verification"
+      #redirect_to "/person/certificate_verification"
     end
 
     json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json"))
@@ -967,10 +967,17 @@ EOF
 					).last.value rescue nil
 
         if barcode_value.blank?
+
           bcd = BarcodeIdentifier.where(assigned: 0).first
           bcd.person_id = person_id
           bcd.assigned  = 1
           bcd.save
+
+          p = PersonIdentifier.new
+          p.person_id = person_id
+          p.value = bcd.value
+          p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
+          p.save
 
           barcode_value = bcd.value
         end
