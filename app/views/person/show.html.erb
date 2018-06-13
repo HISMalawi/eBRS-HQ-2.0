@@ -712,10 +712,11 @@
                 if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
                     <% if @person.id_number.blank? %>
                         assignmentOrder();
-                    <% else %>
-                        removeShield();
-                        window.parent.location = return_path;
+
                     <% end %>
+                }else{
+                    removeShield();
+                    window.parent.location = return_path;
                 }
             },
             error: function(error){
