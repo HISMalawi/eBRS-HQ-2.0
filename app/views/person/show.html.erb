@@ -220,8 +220,9 @@
           <span class="fa fa-check"></span>
           Check Completeness
         </button>
+
         <button id="Approve for Printing" class="btn btn-success pull-right" style="display:<%= display%>;"
-                onclick="ajaxify('HQ-CAN-PRINT');">
+                onclick="jQuery('#completenessModal').modal('show');">
           <span class="fa fa-thumbs-o-up"></span>
           Approve for Printing
         </button>
@@ -451,11 +452,20 @@
             </tr>
           </table>
         </span>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-COMPLETE')">Complete</button>
-          <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
-        </div>
+
+        <% unless User.current.user_role.role.role == "Data Manager" && ["HQ-COMPLETE", "HQ-CONFLICT"].include?(@status) %>';
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-COMPLETE')">Complete</button>
+              <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
+            </div>
+        <% else %>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT')">Approve</button>
+              <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Reject</button>
+            </div>
+        <% end %>
       </div>
     </div>
   </div>
