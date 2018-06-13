@@ -1413,20 +1413,24 @@ EOF
     birth = PersonBirthDetail.where(person_id: person_id).first
 
     if !birth.blank? && !birth.national_serial_number.blank?
-      ActiveRecord::Base.transaction do
             barcode = BarcodeIdentifier.where(:assigned => 0).last
-            if !barcode.blank?
-              PersonIdentifier.create(
-                  person_id: person_id,
-                  value: barcode.value,
-                  person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
-                  voided: 0
-              )
+						idf = PersonIdentifier.where(person_id: person_id, 
+								person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
+								voided: 0
+						).first 
+
+            if !barcode.blank? && idf.blank?
+
+              p = PersonIdentifier.new
+              p.person_id = person_id
+              p.value = barcode.value
+              p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
+              p.save
 
               barcode.update_attributes(assigned: 1,
                                         person_id: person_id)
             end
-      end
+      
 
       render plain: "OK"
     else
