@@ -8,7 +8,7 @@ class PersonRecordStatus < ActiveRecord::Base
     after_create :run_notification_hooks
 
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
-
+			status = nil
      begin
        ActiveRecord::Base.transaction do
         user_id = User.current.id if user_id.blank?
@@ -22,7 +22,7 @@ class PersonRecordStatus < ActiveRecord::Base
           )
         end
 
-        self.create(
+        status = self.create(
             person_id: person_id,
             status_id: state_id,
             voided: 0,
@@ -52,6 +52,8 @@ class PersonRecordStatus < ActiveRecord::Base
     rescue StandardError => e
          self.log_error(e.message,person_id)
      end
+
+		return status
   end
 
   def self.status(person_id)

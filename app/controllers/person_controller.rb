@@ -1175,8 +1175,11 @@ EOF
   def dispatch_certificates
 
     @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN (#{params[:person_ids]}) ")
+		time = Time.now
     @people.each do |person|
-      PersonRecordStatus.new_record_state(person.id, 'HQ-DISPATCHED')
+      s = PersonRecordStatus.new_record_state(person.id, 'HQ-DISPATCHED')
+			s.created_at = time
+			s.save
     end
 
     path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"

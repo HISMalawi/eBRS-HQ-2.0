@@ -354,7 +354,7 @@ class ReportController < ApplicationController
   end
 
   def dispatches
-    start_date = params[:start_date].to_date rescue "2018-01-01".to_date
+    start_date = params[:start_date].to_date rescue "2018-06-11".to_date
     end_date = params[:end_date].to_date rescue Date.today.to_date
     d_id = Status.where(name: "HQ-DISPATCHED").first.id
     @available_printers = SETTINGS["printer_name"].split('|')
@@ -367,7 +367,7 @@ class ReportController < ApplicationController
           INNER JOIN person_name n ON u.person_id = n.person_id
           WHERE  DATE(s.created_at) BETWEEN '#{start_date.to_s}' AND '#{end_date.to_s}'
           GROUP BY s.created_at, s.creator
-          ORDER BY s.created_at DESC
+          ORDER BY s.status_id DESC LIMIT 1000
       ").each do |s|
       @data << {
           'count'    => s.c,
