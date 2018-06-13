@@ -935,7 +935,11 @@ EOF
       end
     end
 
-    redirect_to session[:list_url]
+    if !session[:list_url].blank?
+      redirect_to session[:list_url]
+    else
+      redirect_to "/"
+    end
   end
 
   def print_preview
