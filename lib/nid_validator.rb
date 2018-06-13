@@ -59,26 +59,46 @@ class NIDValidator
 =end
     mismatch = {}
     name = PersonName.where(person_id: person.person_id).first
+    details = PersonBirthDetail.where(person_id: person_id).first
+
     mother_name = PersonService.mother(person.person_id)
     mother_person = Person.where(person_id: mother_name.person_id).first
     mother_address = PersonAddress.where(person_id: mother_person.person_id).first
+
+    father_name = PersonService.father(person.person_id) rescue nil
+    father_person = Person.where(person_id: father_name.person_id).first rescue nil
+    father_address = PersonAddress.where(person_id: father_person.person_id).first rescue nil
+
     codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
 
     local_data = {
-        "FirstName"         => name.first_name,
-        "Surname"           => name.last_name,
-        "DateOfBirthString" => person.birthdate.to_date.strftime("%d/%m/%Y"),
-        "Sex"               => {"M" => 1, "F" => 2}[person.gender],
-        "MotherSurname"     => mother_person.last_name,
-        "MotherFirstName"   => mother_person.first_name,
-        "MotherDistrictName" => (Location.find(mother_address.home_district).name rescue ""),
-        "MotherTaName"       => (Location.find(mother_address.home_ta).name rescue ""),
-        "MotherVillageName"  => (Location.find(mother_address.home_village).name rescue ""),
-        "MotherNationality"   => (Location.find(mother_address.citizenship).name rescue "")
+        "FirstName"                => name.first_name,
+        "Surname"                  => name.last_name,
+        "DateOfBirthString"        => person.birthdate.to_date.strftime("%d/%m/%Y"),
+        "Sex"                      => {"M" => 1, "F" => 2}[person.gender],
+        "PlaceOfBirthDistrictName" => (Location.find(details.district_of_birth).name rescue nil),
+        "MotherSurname"            => mother_person.last_name,
+        "MotherFirstName"          => mother_person.first_name,
+        "MotherOtherNames"         => mother_person.middle_name,
+        "MotherDistrictName"       => (Location.find(mother_address.home_district).name rescue ""),
+        "MotherTaName"             => (Location.find(mother_address.home_ta).name rescue ""),
+        "MotherVillageName"        => (Location.find(mother_address.home_village).name rescue ""),
+        "MotherNationality"        => (Location.find(mother_address.citizenship).name rescue "")
     }
+
+    if !father_name.blank?
+      local_data["FatherSurname"]       = father_name.last_name
+      local_data["FatherFirstName"]     = father_name.first_name
+      local_data["FatherOtherNames"]    = father_name.middle_name
+      local_data["FatherDistrictName"]  = (Location.find(father_address.home_district).name rescue ""),
+      local_data["FatherTaName"]        = (Location.find(father_address.home_ta).name rescue ""),
+      local_data["FatherVillageName"]   = (Location.find(father_address.home_village).name rescue ""),
+      local_data["FatherNationality"]   = (Location.find(father_address.citizenship).name rescue "")
+    end
 
     get_url = SETTINGS['query_by_nid_address']
     passed = 0
+
     begin
       RestClient.post(get_url, national_id.to_json, :content_type => 'application/json', :accept => 'json'){|response, request, result|
 

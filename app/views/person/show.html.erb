@@ -518,7 +518,7 @@
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="printerModalLabels" style="text-align: left;">
-          EBRS - NRIS Data Differences
+          EBRS - NRIS Data
         </h4>
       </div>
       <div class="modal-body" style="width: 100%;">
@@ -551,6 +551,11 @@
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["DateOfBirthString"]["remote"].to_date.strftime("%d/%b/%Y") rescue nil) || @person.birthdate.to_date.strftime("%d/%b/%Y")) %></td>
             </tr>
             <tr class="nris-row">
+              <td class="labell">Place of Birth</td>
+              <td style="text-align: left; padding-left:50px;"><%= Location.find(@birth_details.district_of_birth).name rescue nil%></td>
+              <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["PlaceOfBirthDistrictName"]["remote"] rescue nil) || (Location.find(@birth_details.district_of_birth).name rescue nil)) %></td>
+            </tr>
+            <tr class="nris-row">
               <td class="labell">Mother First Name</td>
               <td style="text-align: left; padding-left:50px;"><%= @mother_name.first_name rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["MotherFirstName"]["remote"] rescue nil) || @mother_name.first_name) %></td>
@@ -580,6 +585,40 @@
               <td style="text-align: left; padding-left:50px;"><%= @mother_person.citizenship rescue nil%></td>
               <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["MotherNationality"]["remote"] rescue nil) || (@mother_person.citizenship rescue nil)) %></td>
             </tr>
+
+            <% if !@father_name.blank? %>
+                <tr class="nris-row">
+                  <td class="labell">Father First Name</td>
+                  <td style="text-align: left; padding-left:50px;"><%= @father_name.first_name rescue nil%></td>
+                  <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["FatherFirstName"]["remote"] rescue nil) || @father_name.first_name) %></td>
+                </tr>
+                <tr class="nris-row">
+                  <td class="labell">Father Last Name</td>
+                  <td style="text-align: left; padding-left:50px;"><%= @father_name.last_name rescue nil %></td>
+                  <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["FatherSurname"]["remote"] rescue nil) || @father_name.last_name) %></td>
+                </tr>
+                <tr class="nris-row">
+                  <td class="labell">Father Home District</td>
+                  <td style="text-align: left; padding-left:50px;"><%= Location.find(@father_address.home_district).name rescue nil%></td>
+                  <td style="text-align: left; padding-left:50px;"><%=  ((@nid_data["FatherDistrictName"]["remote"] rescue nil) || (Location.find(@father_address.home_district).name rescue nil)) %></td>
+                </tr>
+                <tr class="nris-row">
+                  <td class="labell">Father Home TA</td>
+                  <td style="text-align: left; padding-left:50px;"><%= Location.find(@father_address.home_ta).name rescue nil%></td>
+                  <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["FatherTaName"]["remote"] rescue nil) || (Location.find(@father_address.home_ta).name rescue nil)) %></td>
+                </tr>
+                <tr class="nris-row">
+                  <td class="labell">Father Home Village</td>
+                  <td style="text-align: left; padding-left:50px;"><%= Location.find(@father_address.home_village).name rescue nil%></td>
+                  <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["FatherVillageName"]["remote"] rescue nil) || (Location.find(@father_name.home_village).name rescue nil)) %></td>
+                </tr>
+                <tr class="nris-row">
+                  <td class="labell">Father Nationality</td>
+                  <td style="text-align: left; padding-left:50px;"><%= @father_person.citizenship rescue nil%></td>
+                  <td style="text-align: left; padding-left:50px;"><%= ((@nid_data["FatherNationality"]["remote"] rescue nil) || (@father_person.citizenship rescue nil)) %></td>
+                </tr>
+            <% end %>
+
           </table>
         </span>
         <% else %>
