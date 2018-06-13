@@ -1359,6 +1359,7 @@ EOF
   def check_details
     result = {}
     barcode = params[:certificate_serial_number]
+    ben = barcode if ((barcode.scan("/").length == 2) rescue false)
 
     nid_type = PersonIdentifierType.where(name: "Barcode Number").last
     person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil
@@ -1373,6 +1374,14 @@ EOF
       nid_type = PersonIdentifierType.where(name: "Birth Registration Number").last
       person_id = PersonBirthDetail.where(national_serial_number: barcode).last.person_id rescue nil
       person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil if person_id.blank?
+
+      if person_id.blank? && !ben.blank?
+        person_id = PersonBirthDetail.where(district_id_number: ben).last.person_id rescue nil
+
+        if person_id.blank?
+         person_id = PersonIdentifier.where(person_identifier_type_id: PersonIdentifierType.where(name: "Old Birth Entry Number", value: ben).last.id).last.person_id rescue nil
+        end
+      end
     end
 
     return person_id
