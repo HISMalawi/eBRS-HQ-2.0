@@ -251,9 +251,10 @@
 
   selected = [];
   table = null;
+  initt = false;
 
   $i(document).ready(function() {
-    initTable();
+
   });
 
   function initTable(){
@@ -375,7 +376,13 @@
 
   function reloadDataTable(node){
 
-       table.ajax.reload();
+      if (initt == true) {
+          table.ajax.reload();
+      }else{
+          initt = true;
+          initTable();
+      }
+
 
   }
 

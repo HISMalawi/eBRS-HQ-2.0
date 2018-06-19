@@ -52,6 +52,7 @@ def mass_data
   data.each do |nid_child|
     ActiveRecord::Base.transaction do
       PersonService.create_nris_person(nid_child.with_indifferent_access)
+
     end
   end
 end

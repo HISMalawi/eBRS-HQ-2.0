@@ -3,11 +3,6 @@ class LoginsController < ApplicationController
 
   def login
     #@coa = icoFolder("coa")
-
-    if (User.current.user_role.role.role == "Quality Supervisor" rescue false)
-      render :layout => "touch", :template => "logins/touch_login" and return
-    end
-
     render :layout => false
   end
 
