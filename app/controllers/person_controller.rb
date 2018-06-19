@@ -1,7 +1,7 @@
 class PersonController < ApplicationController
   def index
     if User.current.user_role.role.role == "Quality Supervisor"
-      redirect_to "/person/certificate_verification"
+      #redirect_to "/person/certificate_verification"
     end
 
     json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json"))
