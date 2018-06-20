@@ -59,7 +59,7 @@ class NIDValidator
 =end
     mismatch = {}
     name = PersonName.where(person_id: person.person_id).first
-    details = PersonBirthDetail.where(person_id: person_id).first
+    details = PersonBirthDetail.where(person_id: person.person_id).first
 
     mother_name = PersonService.mother(person.person_id)
     mother_person = Person.where(person_id: mother_name.person_id).first
