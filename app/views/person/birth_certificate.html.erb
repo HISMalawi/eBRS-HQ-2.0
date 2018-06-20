@@ -317,33 +317,22 @@
         %></sup> <%= Date.today.strftime("%B") rescue nil %>, <%= Date.today.strftime("%Y") rescue nil %>
         </td>
       </tr>
-      <tr>
-        <td colspan="2" style="font-size: 18px; font-weight: normal;">
-          <!--div style="border: 1px dotted #ccc; width: 180px; height: 100px; margin-left: 80px;">&nbsp;</div-->
-        </td>
-        <td align="right">
-          <table style="border: 0px solid #000; margin-right: 0px;" cellpadding="5" cellspacing="10">
-            <tr>
-              <td style="border-bottom: 0px dotted #000; font-size: 32px; height: 50px; padding-top: 110px;padding-right: 95px;">
-               <% raw = File.read(Rails.root.join("public","uploads",@signature)) rescue nil %>
+            <%end%>
+            
+            
+        </table>
+    </div>
+    <div id="signature">
+      <% raw = File.read(Rails.root.join("public","uploads",@signature)) rescue nil %>
                  
                  <% if raw
                       sig = Base64.encode64(raw)
                     end %>
                     
                  <% if sig.present? %>
-		   <img src ="data:image/png;base64,<%= @sig %>" width="120" height="50" />
+       <img src ="data:image/png;base64,<%= @sig %>" width="120" height="50" align="right" style="padding-right: 40px;margin-right: 40px;" />
                  <% end %>
-              </td>
-            </tr>
-
-
-            <%end%>
-            
-            
-        </table>
-    </div>
-    	
+   </div>	
  </div>  
 </body>
 </html>

@@ -1,8 +1,7 @@
 $configs = YAML.load_file("#{Rails.root}/config/couchdb.yml")['npid_migration']
 $database = "#{$configs['prefix']}_npid_#{$configs['suffix']}".gsub(/^\_|\_$/, '')
 $couch_link = "#{$configs['protocol']}://#{$configs['username']}:#{$configs['password']}@#{$configs['host']}:#{$configs['port']}/#{$database}/"
-$couch_link += "_design/Npid/_view/all?include_docs=true"
-puts $couch_link
+$couch_link += "_design/Npid/_view/all?include_docs=true&limit=10"
 $npid_type = PersonIdentifierType.where(name: "Barcode Number").last.id
 =begin
 {"id"=>"99999",
@@ -16,7 +15,7 @@ $npid_type = PersonIdentifierType.where(name: "Barcode Number").last.id
     "assigned"=>false
   }
 }
-
+ 
 #<BarcodeIdentifier
   barcode_identifier_id: nil,
   value: nil,
@@ -26,46 +25,23 @@ $npid_type = PersonIdentifierType.where(name: "Barcode Number").last.id
   created_at: nil
 >
 =end
-
+puts $couch_link
 npids = JSON.parse(`curl -s -X GET #{$couch_link}`) rescue {}
 npids['rows'] = [] if npids['rows'].blank?
 total = npids['rows'].count
-
+puts "#{total}".to_s
 npids['rows'].each_with_index do |pid, i|
   pid = pid['doc']
 
-  bcd = BarcodeIdentifier.where(:value => pid['national_id'])
-  person_id = PersonIdentifier.where(value: pid['national_id'], person_identifier_type_id: $npid_type).last.person_id rescue nil
-  puts "#{person_id}-#{i}/#{total} NPIDs Migrated"
-
+  bcd = BarcodeIdentifier.where(:value => pid['national_id'].strip)
   next if !bcd.blank?
+  next if pid['assigned'] == true
 
-  value      = pid['national_id']
-  assigned   =  (pid['assigned'] == true ? 1 : 0)
-  created_at = (pid['created_at'].to_datetime.to_s(:db) rescue nil)
-  updated_at = (pid['updated_at'].to_datetime.to_s(:db) rescue nil)
-
-if person_id.blank?
+  if ((i + 1) % 1000 == 0)
+    puts "Position #: #{(i + 1)}"
+  end 
   ActiveRecord::Base.connection.execute <<EOF
-        INSERT INTO barcode_identifiers(value, assigned, created_at, updated_at) VALUES ('#{value}', '#{assigned}', '#{created_at}', '#{updated_at}')
+        INSERT INTO barcode_identifiers(value, assigned) VALUES ('#{pid["national_id"].strip}', 0)
 EOF
-
-else
-  ActiveRecord::Base.connection.execute <<EOF
-        INSERT INTO barcode_identifiers(person_id, value, assigned, created_at, updated_at) VALUES (#{person_id}, '#{value}', '#{assigned}', '#{created_at}', '#{updated_at}')
-EOF
-  
-end
-
-=begin
-  BarcodeIdentifier.create(
-    value: pid['national_id'],
-    assigned: (pid['assigned'] == true ? 1 : 0),
-    person_id: person_id,
-    created_at: (pid['created_at'].to_datetime rescue nil),
-    updated_at: (pid['updated_at'].to_datetime rescue nil)
-  )
-=end
-
 end
 
