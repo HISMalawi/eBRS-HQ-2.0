@@ -27,7 +27,7 @@
 .labell{
     text-align: left;
     font-weight: bold !important;
-    padding: 1px;
+    padding: 0px;
 }
 .modal-header{
     background: #006f95 none repeat scroll 0 0;
@@ -928,6 +928,11 @@
     }
 
     <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>
+        jQuery("#nidcomparison").css({
+            width: "90%",
+            marginLeft: "5%"
+        });
+
         jQuery("#nidcomparison").modal("show");
         highlightNRISDiff();
     <% end %>

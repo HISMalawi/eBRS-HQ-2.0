@@ -106,7 +106,10 @@ class NIDValidator
 
         if data.present?
           data["MotherNationality"] = codes[data["MotherNationality"]]
-          data["FatherNationality"] = codes[data["FatherNationality"]] if !data["FatherNationality"].blank?
+          if !data["FatherNationality"].blank?
+            data["FatherNationality"] = codes[data["FatherNationality"]]
+          end
+
           local_data.each do |key, value|
 
             if data[key].to_s.upcase.squish != local_data[key].to_s.upcase.squish
