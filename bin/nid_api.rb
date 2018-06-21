@@ -1,5 +1,18 @@
-def mass_data
+$counter = 0
+def assign_next_ben(person_id, district_code)
 
+  $counter = $counter.to_i + 1
+  mid_number = $counter.to_s.rjust(8,'0')
+  ben = "#{district_code}/#{mid_number}/2017"
+  ActiveRecord::Base.connection.execute <<EOF
+    UPDATE person_birth_details SET district_id_number = '#{ben}' WHERE person_id = #{person_id}
+EOF
+
+  PersonIdentifier.new_identifier(person_id, 'Birth Entry Number', ben)
+end
+
+def mass_data
+=begin
     data = [{
         "Surname"=> "Ferrirad",
         "OtherNames"=> "Moses",
@@ -47,12 +60,43 @@ def mass_data
         "MotherAge" => "30",
         "FatherAge" => "30",
         "DateRegistered" => "02/11/2017"
+        "Category" => ""
     }]
+=end
+
+  district = Location.find(SETTINGS['location_id'])
+  district_name = district.name
+  district_code = district.code
+  puts "DISTRICT: #{district_name}, CODE: #{district_code}"
+  last_2017_ben =  data = ActiveRecord::Base.connection.execute <<EOF
+    SELECT MAX(district_id_number) ben FROM person_birth_details WHERE district_id_number LIKE '#{district_code}/%2017';
+EOF
+  last_2017_ben =  last_2017_ben.first[0]
+  ben_counter = last_2017_ben.split("/")[1].to_i
+
+
+  columns = ActiveRecord::Base.connection.execute <<EOF
+    SHOW columns FROM mass_data;
+EOF
+
+  columns = columns.collect{|c| c[0]}
+  data = ActiveRecord::Base.connection.execute <<EOF
+    SELECT * FROM mass_data WHERE DistrictOfRegistration = '#{district_name}' AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+EOF
 
   data.each do |nid_child|
-    ActiveRecord::Base.transaction do
-      PersonService.create_nris_person(nid_child.with_indifferent_access)
 
+    hash = {}
+    nid_child.each_with_index do |value, i|
+      hash[columns[i]] = value
+    end
+
+
+    ActiveRecord::Base.transaction do
+      person_id = PersonService.create_nris_person(nid_child)
+      if !person_id.blank?
+        #Assign BEN
+      end
     end
   end
 end
