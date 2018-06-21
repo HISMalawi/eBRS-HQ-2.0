@@ -629,11 +629,11 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <%= if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank?) %>;
+          <% if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank?) %>;
             <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT');">Approve for Printing</button>
           <% end %>
 
-          <%= if User.current.user_role.role.role == "Data Manager"  %>;
+          <% if User.current.user_role.role.role == "Data Manager"  %>;
             <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Reject </button>
           <% else %>
             <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')" >Reject </button>
