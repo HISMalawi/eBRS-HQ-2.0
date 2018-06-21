@@ -930,9 +930,9 @@
     <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>
         jQuery("#nidcomparison-content").css({
             position: "absolute",
-            top: "5px",
-            left: "5px",
-            width: (screen.width*0.85 + "px")
+            top: "-20px",
+            left: "-340px",
+            width: (screen.width*0.80 + "px")
         });
 
         jQuery("#nidcomparison").modal("show");
