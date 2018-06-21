@@ -662,7 +662,7 @@
         var rows = document.getElementsByClassName("nris-row");
         for(var i = 1; i < rows.length; i++) {
             var tds = rows[i].getElementsByTagName("td");
-            if (tds[1].innerHTML.trim() != tds[2].innerHTML.trim()) {
+            if (tds[1].innerHTML.trim().toUpperCase() != tds[2].innerHTML.trim().toUpperCase()) {
                 tds[1].style.background = "#FFBAD2";
                 tds[2].style.background = "#FFBAD2";
             }
