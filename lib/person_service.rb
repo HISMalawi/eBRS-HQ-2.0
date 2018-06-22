@@ -1398,7 +1398,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
         "InformantDistrictId"=> (inf_home_district.id rescue nil),
         "InformantDistrictName" => ((inf_home_district.name rescue inf_address.home_district_other) rescue nil),
         "InformantTAName" => ((inf_home_ta.name rescue inf_address.home_ta_other) rescue nil),
-        "InformantVillageName" => (inf_home_village.name rescue inf_address.home_village_other),
+        "InformantVillageName" => ((inf_home_village.name rescue inf_address.home_village_other) rescue false),
         "InformantPhoneNumber" => (inf_person.get_attribute('Cell Phone Number') rescue nil),
         "InformantAddress" => ((inf_address.addressline1 + " " + inf_address.addressline2).strip rescue nil),
         "EditUser"=>("#{cur_user.username} (#{cur_user.first_name} #{cur_user.last_name})" rescue nil),
