@@ -1,7 +1,17 @@
 $counter = 0
 $codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
 
-Rails.join
+PersonTypeOfBirth.create(
+    name: "Unknown"
+) if PersonTypeOfBirth.where(name: "Unknown").blank?
+
+ModeOfDelivery.create(
+    name: "Unknown"
+) if ModeOfDelivery.where(name: "Unknown").blank?
+
+LevelOfEducation.create(
+    name: "Unknown"
+) if LevelOfEducation.where(name: "Unknown").blank?
 
 def assign_next_ben(person_id, district_code)
 

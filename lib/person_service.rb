@@ -1134,13 +1134,13 @@ end
         birth_location_id: village_id,
         district_of_birth:  district_id,
         other_birth_location: other_place,
-        type_of_birth: PersonTypeOfBirth.where(name: "Single").last.id,
-        mode_of_delivery_id: ModeOfDelivery.where(name: "Breech").last.id,
+        type_of_birth: PersonTypeOfBirth.where(name: "Unknown").last.id,
+        mode_of_delivery_id: ModeOfDelivery.where(name: "Unknown").last.id,
         location_created_at: Location.locate_id_by_tag(nris_person["DistrictOfRegistration"], "District"),
         acknowledgement_of_receipt_date: nris_person["DateRegistered"].to_date.to_s,
         date_reported: nris_person["DateRegistered"].to_date.to_s,
         date_registered: nris_person["DateRegistered"].to_date.to_s,
-        level_of_education_id: LevelOfEducation.where(name: "None").last.id,
+        level_of_education_id: LevelOfEducation.where(name: "Unknown").last.id,
         flagged: 1,
         creator: user_id
     )
