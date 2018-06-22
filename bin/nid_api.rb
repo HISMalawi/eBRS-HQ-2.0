@@ -1,4 +1,8 @@
 $counter = 0
+$codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
+
+Rails.join
+
 def assign_next_ben(person_id, district_code)
 
   $counter = $counter.to_i + 1
@@ -9,6 +13,8 @@ def assign_next_ben(person_id, district_code)
 EOF
 
   PersonIdentifier.new_identifier(person_id, 'Birth Entry Number', ben)
+
+  ben
 end
 
 def mass_data
@@ -68,11 +74,11 @@ def mass_data
   district_name = district.name
   district_code = district.code
   puts "DISTRICT: #{district_name}, CODE: #{district_code}"
-  last_2017_ben =  data = ActiveRecord::Base.connection.execute <<EOF
+  last_2017_ben = ActiveRecord::Base.connection.execute <<EOF
     SELECT MAX(district_id_number) ben FROM person_birth_details WHERE district_id_number LIKE '#{district_code}/%2017';
 EOF
   last_2017_ben =  last_2017_ben.first[0]
-  ben_counter = last_2017_ben.split("/")[1].to_i
+  $counter = last_2017_ben.split("/")[1].to_i
 
 
   columns = ActiveRecord::Base.connection.execute <<EOF
@@ -81,21 +87,80 @@ EOF
 
   columns = columns.collect{|c| c[0]}
   data = ActiveRecord::Base.connection.execute <<EOF
-    SELECT * FROM mass_data WHERE DistrictOfRegistration = '#{district_name}' AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+    SELECT * FROM mass_data WHERE DistrictOfRegistration = '#{district_name}'
+      AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+EOF
+
+  ActiveRecord::Base.connection.execute <<EOF
+    UPDATE mass_data SET load_status = NULL WHERE DistrictOfRegistration = '#{district_name}'
+      AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
 EOF
 
   data.each do |nid_child|
 
     hash = {}
     nid_child.each_with_index do |value, i|
+      value = (value.to_s.split.map(&:capitalize).join(' ') rescue value) unless ["FathePin", "MotherPin", "DateOfBirthString"].include?(columns[i])
       hash[columns[i]] = value
     end
 
 
     ActiveRecord::Base.transaction do
-      person_id = PersonService.create_nris_person(nid_child)
-      if !person_id.blank?
-        #Assign BEN
+      hash = hash.with_indifferent_access
+
+      person = {}
+      person["id"] = ""
+      person["first_name"]= hash["FirstName"] rescue ''
+      person["last_name"] =  hash["Surname"] rescue ''
+      person["middle_name"] = hash["OtherNames"] rescue ''
+      person["gender"] = hash["Sex"]
+      person["birthdate"]= ((hash["DateOfBirthString"].to_date) rescue (raise hash["DateOfBirthString"]))
+      person["birthdate_estimated"] = 0
+      person["nationality"]=  $codes[hash["Nationality"]]
+      person["place_of_birth"] = "Other"
+      person["district"] = hash["PlaceOfBirthDistrictName"]
+
+      person["mother_first_name"]= hash["MotherFirstName"]
+      person["mother_last_name"] =  hash["MotherSurname"]
+      person["mother_middle_name"] = hash["MotherOtherNames"]
+
+      person["mother_home_district"] = hash["MotherDistrictName"]
+      person["mother_home_ta"] = hash["MotherTaName"]
+      person["mother_home_village"] = hash["MotherVillageName"]
+
+      person["mother_current_district"] = nil
+      person["mother_current_ta"] = nil
+      person["mother_current_village"] = nil
+
+      person["father_first_name"]= hash["FatherFirstName"]
+      person["father_last_name"] =  hash["FatherSurname"]
+      person["father_middle_name"] = hash["FatherOtherNames"]
+
+      person["father_home_district"] = hash["FatherDistrictName"]
+      person["father_home_ta"] = hash["FatherTaName"]
+      person["father_home_village"] = hash["FatherVillageName"]
+
+      person["father_current_district"] = nil
+      person["father_current_ta"] = nil
+      person["father_current_village"] = nil
+
+      duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
+
+      if duplicates.present?
+        puts "Duplicate found!"
+        ActiveRecord::Base.connection.execute <<EOF
+    UPDATE mass_data SET load_status = 'Duplicate' WHERE DistrictOfRegistration = '#{district_name}' AND id = #{nid_child[0]}
+EOF
+      else
+        SimpleElasticSearch.add(person)
+
+        person_id = PersonService.create_nris_person(hash)
+        ben = assign_next_ben(person_id, district_code)
+        puts "#{person_id} # #{ben}"
+
+        ActiveRecord::Base.connection.execute <<EOF
+    UPDATE mass_data SET load_status = 'Success' WHERE DistrictOfRegistration = '#{district_name}' AND id = #{nid_child[0]}
+EOF
       end
     end
   end

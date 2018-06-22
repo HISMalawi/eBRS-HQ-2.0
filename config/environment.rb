@@ -9,4 +9,3 @@ require "simple_elastic_search"
 require "pretty_time"
 require "nid_validator"
 
-

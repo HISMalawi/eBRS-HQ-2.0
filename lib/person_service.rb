@@ -1100,7 +1100,7 @@ end
 
     person = Person.create(
         :person_id          => core_person.id,
-        :gender             => nris_person[:sex] == 1 ? 'M' : 'F',
+        :gender             => nris_person[:sex] == "Male" ? 'M' : 'F',
         :birthdate          => nris_person[:DateOfBirthString].to_date.to_s
     )
 
@@ -1113,10 +1113,19 @@ end
     )
 
     #create person_birth_detail
+    other_place = nil
+    nris_person["PlaceOfBirthDistrictName"] = "Nkhotakota" if nris_person["PlaceOfBirthDistrictName"].upcase == "NKHOTA-KOTA"
+    nris_person["DistrictOfRegistration"] = "Nkhotakota" if nris_person["DistrictOfRegistration"].upcase == "NKHOTA-KOTA"
+
     district_id = Location.locate_id_by_tag(nris_person["PlaceOfBirthDistrictName"], "District")
     ta_id = Location.locate_id(nris_person["PlaceOfBirthTAName"], "Traditional Authority", district_id)
     village_id = Location.locate_id(nris_person["PlaceOfBirthVillageName"], "Village", ta_id)
-    reg_type = BirthRegistrationType.where(name: nris_person["Status"]).last.id rescue Birt
+    reg_type = BirthRegistrationType.where(name: "Normal").last.id
+
+    if village_id.blank?
+      other_place = nris_person["PlaceOfBirthVillageName"]
+      village_id = Location.locate_id_by_tag("Other", "Place Of Birth")
+    end
 
     details = PersonBirthDetail.create(
         person_id: core_person.id,
@@ -1124,12 +1133,14 @@ end
         place_of_birth:  Location.locate_id_by_tag("Other", "Place Of Birth"),
         birth_location_id: village_id,
         district_of_birth:  district_id,
-        type_of_birth: PersonTypeOfBirth.where(name: nris_person["TypeOfBirth"]).last.id,
-        mode_of_delivery_id: ModeOfDelivery.where(name: nris_person["ModeOfDelivery"]).last.id,
+        other_birth_location: other_place,
+        type_of_birth: PersonTypeOfBirth.where(name: "Single").last.id,
+        mode_of_delivery_id: ModeOfDelivery.where(name: "Breech").last.id,
         location_created_at: Location.locate_id_by_tag(nris_person["DistrictOfRegistration"], "District"),
         acknowledgement_of_receipt_date: nris_person["DateRegistered"].to_date.to_s,
         date_reported: nris_person["DateRegistered"].to_date.to_s,
-        level_of_education_id: LevelOfEducation.where(name: nris_person["LevelOfEducation"]).last.id,
+        date_registered: nris_person["DateRegistered"].to_date.to_s,
+        level_of_education_id: LevelOfEducation.where(name: "None").last.id,
         flagged: 1,
         creator: user_id
     )
@@ -1164,7 +1175,7 @@ end
     m_district_id = Location.locate_id_by_tag(nris_person["MotherDistrictName"], "District")
     m_ta_id = Location.locate_id(nris_person["MotherTAName"], "Traditional Authority", district_id)
     m_village_id = Location.locate_id(nris_person["MotherVillageName"], "Village", ta_id)
-    m_citizenship = Location.locate_id_by_tag(codes[nris_person["MotherNationality"]], "Country")
+    m_citizenship = Location.locate_id_by_tag(codes[nris_person["MotherNationality"].upcase], "Country")
 
     pam = PersonAddress.new(
         :person_id          => core_person.id,
@@ -1222,7 +1233,7 @@ end
       f_district_id = Location.locate_id_by_tag(nris_person["FatherDistrictName"], "District")
       f_ta_id = Location.locate_id(nris_person["FatherTAName"], "Traditional Authority", district_id)
       f_village_id = Location.locate_id(nris_person["FatherVillageName"], "Village", ta_id)
-      f_citizenship = Location.locate_id_by_tag(codes[nris_person["FatherNationality"]], "Country")
+      f_citizenship = Location.locate_id_by_tag(codes[nris_person["FatherNationality"].upcase], "Country")
 
       paf = PersonAddress.new(
           :person_id          => core_person.id,
@@ -1265,6 +1276,8 @@ end
     )
 
     details.update_attribute("informant_relationship_to_person", "Mother")
+
+    PersonRecordStatus.new_record_state(ebrs_person.id, "HQ-ACTIVE", "New Record From Mass Data", user_id)
 
     return ebrs_person.id
   end
