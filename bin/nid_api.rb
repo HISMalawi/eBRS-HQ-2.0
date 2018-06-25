@@ -94,7 +94,7 @@ def mass_data
 EOF
   last_2017_ben =  last_2017_ben.first[0]
   $counter = last_2017_ben.split("/")[1].to_i
-  $counter = "9884"
+#  $counter = "9884"
   puts "Last BEN: #{$counter}"
 
   columns = ActiveRecord::Base.connection.execute <<EOF
