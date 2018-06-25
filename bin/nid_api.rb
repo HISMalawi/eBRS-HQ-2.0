@@ -13,6 +13,11 @@ LevelOfEducation.create(
     name: "Unknown"
 ) if LevelOfEducation.where(name: "Unknown").blank?
 
+l = Location.create(
+    name: "Mass Data Location",
+    code: "LL"
+) if Location.where(name: "Mass Data Location").blank?
+
 def assign_next_ben(person_id, district_code)
 
   $counter = $counter.to_i + 1
@@ -89,22 +94,36 @@ def mass_data
 EOF
   last_2017_ben =  last_2017_ben.first[0]
   $counter = last_2017_ben.split("/")[1].to_i
-
+  $counter = "9884"
+  puts "Last BEN: #{$counter}"
 
   columns = ActiveRecord::Base.connection.execute <<EOF
     SHOW columns FROM mass_data;
 EOF
 
   columns = columns.collect{|c| c[0]}
+
+=begin
   data = ActiveRecord::Base.connection.execute <<EOF
-    SELECT * FROM mass_data WHERE DistrictOfRegistration = '#{district_name}'
-      AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+    SELECT * FROM mass_data WHERE
+      DistrictOfRegistration = 'Lilongwe' AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+EOF
+
+=end
+
+
+  data = ActiveRecord::Base.connection.execute <<EOF
+     SELECT * FROM mass_data
+  WHERE PlaceOfBirthVillageName = "Kauma" AND PlaceOfBirthDistrictName = "Lilongwe"
+  AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
+  AND DistrictOfRegistration IN ('Lilongwe');
 EOF
 
   ActiveRecord::Base.connection.execute <<EOF
     UPDATE mass_data SET load_status = NULL WHERE DistrictOfRegistration = '#{district_name}'
       AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
 EOF
+
 
   data.each do |nid_child|
 
@@ -124,7 +143,7 @@ EOF
       person["last_name"] =  hash["Surname"] rescue ''
       person["middle_name"] = hash["OtherNames"] rescue ''
       person["gender"] = hash["Sex"]
-      person["birthdate"]= ((hash["DateOfBirthString"].to_date) rescue (raise hash["DateOfBirthString"]))
+      person["birthdate"]= hash["DateOfBirthString"].to_date
       person["birthdate_estimated"] = 0
       person["nationality"]=  $codes[hash["Nationality"]]
       person["place_of_birth"] = "Other"

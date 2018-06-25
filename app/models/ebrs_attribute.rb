@@ -15,6 +15,9 @@ end
 module EbrsAttribute
 
   def send_data(hash)
+
+    return nil if SETTINGS["mass_data_migration_mode"].to_s == "true"
+
     raw_id = hash.id
     hash = hash.as_json
     hash.each {|k, v|

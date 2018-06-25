@@ -1142,7 +1142,8 @@ end
         date_registered: nris_person["DateRegistered"].to_date.to_s,
         level_of_education_id: LevelOfEducation.where(name: "Unknown").last.id,
         flagged: 1,
-        creator: user_id
+        creator: user_id,
+        source_id: nris_person['id']
     )
 
     PersonIdentifier.create(
