@@ -357,6 +357,22 @@ EOF
 
     search_val = params[:search][:value] rescue nil
     search_val = '_' if search_val.blank?
+    search_category = ''
+
+
+    if !params[:category].blank?
+
+      if params[:category] == 'continuous'
+        search_category = " AND (pbd.source_id IS NULL OR LENGTH(pbd.source_id) >  50)  "
+      elsif params[:category] == 'mass_data'
+        search_category = " AND (pbd.source_id IS NOT NULL AND LENGTH(pbd.source_id) <  30 ) "
+      else
+        search_category = ""
+      end
+
+      session[:category] = params[:category]
+    end
+
     if !params[:start].blank?
 
       loc_query = " "
@@ -413,7 +429,7 @@ EOF
       .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0
               AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
-              person.birthdate, person.gender) REGEXP '#{search_val}' ")
+              person.birthdate, person.gender) REGEXP '#{search_val}'  #{search_category} ")
 
       total = d.select(" count(*) c ")[0]['c'] rescue 0
       page = (params[:start].to_i / params[:length].to_i) + 1
@@ -641,6 +657,8 @@ EOF
   def tasks
 
     session[:district] = ""
+    session[:category] = ""
+
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
               ["Manage Cases","Manage Cases" , [], "/person/manage_cases","/assets/folder3.png"],

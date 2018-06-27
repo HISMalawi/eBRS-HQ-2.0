@@ -52,9 +52,13 @@
         left: 55%;
         top: 40%;
     }
-    #districts, #example_filter{
-        margin-left: 15px;
-        float: right;
+
+    #roll-options{
+        width: 100%;
+    }
+
+    #roll-options td{
+        padding-right: 20px;
     }
 </style>
 
@@ -234,14 +238,37 @@
   </div>
 </div>
 
-<select id="districts" label="District" onchange="reloadDataTable(this)"
-        style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+<table id="roll-options">
+  <tr>
+    <td id="p_h_1" style="width: 40%">
 
-  <option value="All">Select Source District</option>
-  <% districts.each do |d|%>
-      <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
-  <% end %>
-</select>
+    </td>
+
+    <td>
+      <select id="category" label="Category" onchange="reloadDataTable(this)"
+              style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+        <option id="continuous" value = "continuous" >Continuous Registration</option>
+        <option id="mass_data" value = "mass_data" >Mass Data</option>
+        <option value="All">All Categories</option>
+      </select>
+    </td>
+
+    <td>
+        <select id="districts" label="District" onchange="reloadDataTable(this)"
+                style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+
+        <option value="All">Select Registration District</option>
+          <% districts.each do |d|%>
+              <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
+          <% end %>
+        </select>
+    </td>
+
+    <td id="p_h_2">
+
+    </td>
+  </tr>
+</table>
 
 <select  style="display: none;color: #2f4f4f" id="birth_type" label="Birth Type" onchange="reloadDataTable(this)">
   <option value="All">Select Category</option>
@@ -267,6 +294,12 @@
         jQuery("#districts").find("#" + '<%= session[:district]%>').prop('selected', true);
     <% end %>
 
+    <% if !session[:category].blank?%>
+        jQuery("#category").find("#" + '<%= session[:category]%>').prop('selected', true);
+    <% else %>
+        jQuery("#category").find("#continuous").prop('selected', true);
+    <% end %>
+
     var type;
     $i(document).ready(function() {
 
@@ -279,7 +312,11 @@
         initTable();
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
-        holder.appendChild(__$('districts'));
+        holder.appendChild(__$('roll-options'));
+        __$("p_h_2").appendChild(__$('example_filter'))
+        __$("p_h_1").appendChild(__$('example_length'))
+
+        holder.style.width = "100%";
 
     } );
 
@@ -299,6 +336,7 @@
                         "data": function(d){
                             d.type = type;
                             d.district = __$('districts').value;
+                            d.category = __$('category').value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
