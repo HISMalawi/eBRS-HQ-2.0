@@ -1100,7 +1100,7 @@ end
 
     person = Person.create(
         :person_id          => core_person.id,
-        :gender             => nris_person[:sex] == "Male" ? 'M' : 'F',
+        :gender             => nris_person[:Sex].upcase.first == "M" ? 'M' : 'F',
         :birthdate          => nris_person[:DateOfBirthString].to_date.to_s
     )
 

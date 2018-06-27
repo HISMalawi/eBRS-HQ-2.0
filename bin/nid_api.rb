@@ -180,6 +180,7 @@ EOF
         ActiveRecord::Base.connection.execute <<EOF
     UPDATE mass_data SET load_status = 'Duplicate' WHERE DistrictOfRegistration = '#{district_name}' AND id = #{nid_child[0]}
 EOF
+
       else
         SimpleElasticSearch.add(person)
 
