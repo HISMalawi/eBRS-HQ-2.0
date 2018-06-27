@@ -363,9 +363,9 @@ EOF
     if !params[:category].blank?
 
       if params[:category] == 'continuous'
-        search_category = " AND (pbd.source_id IS NULL OR LENGTH(pbd.source_id) >  50)  "
+        search_category = " AND (pbd.source_id IS NULL OR LENGTH(pbd.source_id) >  19)  "
       elsif params[:category] == 'mass_data'
-        search_category = " AND (pbd.source_id IS NOT NULL AND LENGTH(pbd.source_id) <  30 ) "
+        search_category = " AND (pbd.source_id IS NOT NULL AND LENGTH(pbd.source_id) <  20 ) "
       else
         search_category = ""
       end
