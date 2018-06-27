@@ -127,10 +127,7 @@ class NIDValidator
     rescue
     end
 
-    record = NidVerification.new
-    record.person_id = person.person_id
-    record.passed    = passed
-    record.data      = mismatch.to_json
+    record = NidVerificationData
     record.save
 
     mismatch
