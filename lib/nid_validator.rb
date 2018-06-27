@@ -127,10 +127,11 @@ class NIDValidator
     rescue
     end
 
-    dt = "'#{mismatch.to_json}'"
-    ActiveRecord::Base.connection.execute <<EOF
-        INSERT INTO nid_verification_data(person_id, passed, data) VALUES (#{person.person_id}, #{passed}, #{dt})
-EOF
+    record = NidVerification.new
+    record.person_id = person.person_id
+    record.passed    = passed
+    record.data      = mismatch.to_json
+    record.save
 
     mismatch
   end
