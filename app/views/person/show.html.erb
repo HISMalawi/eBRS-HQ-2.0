@@ -629,7 +629,12 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <% if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank? ) %>;
+
+          <% if @nid_data.blank? && !(@person.id_number rescue nil).blank? %>
+              <button type="button" class="btn btn-primary" onclick="revalidate()">Re-Validate</button>
+          <% end %>
+
+          <% if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank? ) %>
               <% if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(@status) %>
                   <button type="button" class="btn btn-success"
                           onclick="window.location = '/print_preview?person_ids=<%= params[:person_id]%>&no_print=true' " >Print</button>
@@ -638,7 +643,7 @@
               <% end %>
           <% end %>
 
-          <% if User.current.user_role.role.role == "Data Manager"  %>;
+          <% if User.current.user_role.role.role == "Data Manager"  %>
             <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')" >Reject </button>
           <% else %>
             <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')" >Reject </button>
@@ -943,8 +948,25 @@
 
     function ajaxTrace(){
         jQuery("#shieldd, #trace-div").show();
-        console.log("In")
 
+    }
+
+    function revalidate(){
+
+        var url = "/revalidate?person_id=<%= params[:person_id]%>";
+        jQuery.ajax(
+                {
+                    url: url,
+                    success: function(result){
+                        console.log(result);
+                        window.location = window.location + "&revalidation=true";
+                    },
+                    error: function(e){
+                        console.log(result);
+                        alert("Something went wrong!");
+                    }
+                }
+        )
     }
 
     <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>

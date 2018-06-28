@@ -30,6 +30,7 @@ Rails.application.routes.draw do
   get '/crossmatch' => 'report#crossmatch'
 
   get '/dispatch_note_reprint' => 'report#view_dispatches'
+  get '/revalidate' => 'person#revalidate'
 
 
 

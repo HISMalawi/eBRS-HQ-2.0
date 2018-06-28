@@ -72,7 +72,7 @@ class PersonController < ApplicationController
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
-    session[:list_url] = request.referrer
+    session[:list_url] = request.referrer if params[:revalidation].blank? 
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
@@ -1482,6 +1482,13 @@ EOF
 
       render plain: "PENDING"
     end
+  end
+
+  def revalidate
+    person = Person.find(params[:person_id])
+    puts NIDValidator.validate(person, person.id_number)
+
+    render :text => "OK"
   end
 
 end
