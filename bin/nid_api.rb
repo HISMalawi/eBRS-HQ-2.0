@@ -1,7 +1,9 @@
 $counter = 0
 $codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
 $user_id = User.where(username: 'admin279').first
-$print_queue_status_id = Status.where()
+$district_tag_id = LocationTag.where(name: "DISTRICT").first.id
+$ta_tag_id = LocationTag.where(name: "TRADITIONAL AUTHORITY").first.id
+$village_tag_id = LocationTag.where(name: "VILLAGE").first.id
 
 PersonTypeOfBirth.create(
     name: "Unknown"
@@ -146,7 +148,7 @@ def mass_data
   puts "DISTRICT: #{district_name}, CODE: #{district_code}"
 
   if district_code.blank?
-    raise district_code.inspect
+    raise "Missing District Code".inspect
   end
 
   last_2017_ben = ActiveRecord::Base.connection.execute <<EOF
@@ -174,9 +176,9 @@ EOF
 
   data = ActiveRecord::Base.connection.execute <<EOF
      SELECT * FROM mass_data
-  WHERE PlaceOfBirthVillageName = "Kauma" AND PlaceOfBirthDistrictName = "Lilongwe"
+  WHERE
   AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
-  AND DistrictOfRegistration IN ('Lilongwe');
+  AND DistrictOfRegistration IN ('Lilongwe', 'Lilongwe City');
 EOF
 
 =begin
@@ -186,7 +188,7 @@ EOF
 EOF
 =end
 
-  data.each do |nid_child|
+  data.each_with_index do |nid_child, index|
 
     hash = {}
     nid_child.each_with_index do |value, i|
@@ -200,17 +202,103 @@ EOF
 
       person_id = PersonService.create_nris_person(hash)
       person = format_person(hash, person_id)
-      ben = assign_next_ben(person_id, district_code)
+      load_status = "Success"
+
+      #Filter for Complete Cases
+      if load_status == "Success"
+        if ([person["Surname"], person["FirstName"], person["DateOfBirthString"], person["Nationality"],
+         person["MotherSurname"], person["MotherFirstName"], person["MotherPin"], person["MotherNationality"]] & ["", nil]).length > 0
+          load_status = "Record Incomplete"
+        end
+      end
+
+      #Filter For Other Country
+
+      if load_status == "Success"
+          if [person["PlaceOfBirthDistrictName"], person["PlaceOfBirthTaName"], person["PlaceOfBirthVillageName"],
+          person[" MotherDistrictName"], person[" MotherTAName"], person[" MotherVillageName"],
+          person[" FatherDistrictName"], person[" FatherTAName"], person[" FatherVillageName"]].include("Other Country")
+            load_status = "Other Country Found"
+          end
+      end
+
+      #Filter For Missing District
+      if load_status == "Success"
+        [person["PlaceOfBirthDistrictName"], person[" MotherDistrictName"], person[" FatherDistrictName"]].each do |district|
+
+          found = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{district}' AND tm.location_tag_id = #{$district_tag_id}
+              ").length > 0
+
+          if found == false
+            load_status = "Missing District"
+            break;
+          end
+        end
+      end
+
+      #Filter For Missing TA
+      if load_status == "Success"
+        [[person["PlaceOfBirthTAName"], person["PlaceOfBirthDistrictName"]],
+         [person[" MotherTAName"], person["MotherDistrictName"]],
+         [person[" FatherTAName"], person["FatherDistrictName"]]].each do |ta, district|
+          district_id = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{district}' AND tm.location_tag_id = #{$district_tag_id}
+                                                     ").first.location_id rescue nil
+          found = (Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{ta}' AND tm.location_tag_id = #{$ta_tag_id} AND l.parent_location = #{district_id}
+                                       ").length > 0)
+
+          if found == false
+            load_status = "Missing TA"
+            break;
+          end
+        end
+      end
+
+      #Filter For Missing Village
+      if load_status == "Success"
+        [[person["PlaceOfBirthVillageName"], person["PlaceOfBirthTAName"], person["PlaceOfBirthDistrictName"]],
+         [person[" MotherVillageName"], person[" MotherTAName"], person["MotherDistrictName"]],
+         [person[" FatherVillageName"], person[" FatherTAName"], person["FatherDistrictName"]]].each do |village, ta, district|
+          district_id = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{district}' AND tm.location_tag_id = #{$district_tag_id}
+                                             ").first.location_id rescue nil
+          ta_id = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{ta}' AND tm.location_tag_id = #{$ta_tag_id} AND l.parent_location = #{district_id}
+                                        ").first.location_id
+
+          found = (Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = '#{village}' AND tm.location_tag_id = #{$village_tag_id} AND l.parent_location = #{ta_id}
+                                        ").length > 0)
+
+          if found == false
+            load_status = "Missing TA"
+            break;
+          end
+        end
+      end
+
+      puts "#{(index + 1)} # #{load_status}"
+      next
+      puts "Proceeding"
+
+      #Filter for Existing mother
+      #Filter for Existing father
+
+      status = "HQ-CAN-PRINT"
 
       #Filter Potential Duplicates
       duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
 
       #Filter Exact Duplicates
       exact_duplicates = SimpleElasticSearch.query_duplicate_coded(person, 100)
-
-      load_status = "Success"
-      status = "HQ-ACTIVE"
-
       if exact_duplicates.present?
         load_status = "Exact Duplicate(s) Found"
         status = "HQ-EXACT-DUPLICATE"
@@ -219,28 +307,24 @@ EOF
         status = "HQ-POTENTIAL-DUPLICATE"
       end
 
-      #Filter for Complete Cases
-      #Filter For Other Country
-      #Filter For Missing District
-      #Filter For Missing TA
-      #Filter For Missing Village
-      #Filter for Existing mother
-      #Filter for Existing father
+      #Assign Birth Entry Number - BEN
+      ben = assign_next_ben(person_id, district_code)
 
-      #Assign BRN
+      #Assign Birth Registration Number - BRN
       brn = assign_next_brn(person_id)
       puts "#{person_id} # #{ben } # #{brn}"
 
       #Initialize record status
-      status = PersonRecordStatus.new
-      status.person_id = person_id
-      status.voided = 0
-      status.status_id = $print_queue_status_id
-      status.comment = "New Record From Mass Data"
-      status.creator = $user_id
-      status.save
+      s = PersonRecordStatus.new
+      s.person_id = person_id
+      s.voided = 0
+      s.status_id = Status.where(name: status).first.id
+      s.comment = "New Record From Mass Data"
+      s.creator = $user_id
+      s.save
 
       SimpleElasticSearch.add(person)
+
       ActiveRecord::Base.connection.execute <<EOF
     UPDATE mass_data SET load_status = '#{load_status}' WHERE AND id = #{nid_child[0]}
 EOF
