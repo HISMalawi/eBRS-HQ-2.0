@@ -1466,8 +1466,15 @@ EOF
               p.person_id = person_id
               p.value = barcode.value
               p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
-              p.save rescue nil
-              p.save
+              t1 = p.save rescue false
+
+              if t1 == false
+                p = PersonIdentifier.new
+                p.person_id = person_id
+                p.value = barcode.value
+                p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
+                p.save
+              end
 
               barcode.update_attributes(assigned: 1,
                                         person_id: person_id)
