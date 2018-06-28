@@ -1278,8 +1278,6 @@ end
 
     details.update_attribute("informant_relationship_to_person", "Mother")
 
-    PersonRecordStatus.new_record_state(ebrs_person.id, "HQ-ACTIVE", "New Record From Mass Data", user_id)
-
     return ebrs_person.id
   end
 

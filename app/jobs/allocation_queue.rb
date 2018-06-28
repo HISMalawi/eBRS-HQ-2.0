@@ -64,8 +64,7 @@ class AllocationQueue
           record.update_attributes(assigned: 1)
 
           PersonIdentifier.new_identifier(record.person_id,
-                                          'Birth Registration Number', person_birth_detail.national_serial_number, User.find(record.creator))
-
+                                          'Birth Registration Number', person_birth_detail.national_serial_number)
 
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(

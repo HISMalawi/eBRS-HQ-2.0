@@ -1,5 +1,7 @@
 $counter = 0
 $codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
+$user_id = User.where(username: 'admin279').first
+$print_queue_status_id = Status.where()
 
 PersonTypeOfBirth.create(
     name: "Unknown"
@@ -56,6 +58,19 @@ def format_person(hash, person_id=nil)
   person["father_current_ta"] = nil
   person["father_current_village"] = nil
   person
+end
+
+def assign_next_brn(person_id)
+
+  last = (PersonBirthDetail.select(" MAX(national_serial_number) AS last_num")[0]['last_num'] rescue 0).to_i
+  birth_detail = PersonBirthDetail.where(person_id: person_id).first
+  brn = last + 1
+  birth_detail.update_attributes(national_serial_number: brn)
+
+  PersonIdentifier.new_identifier(person_id,
+                                  'Birth Registration Number', birth_detail.national_serial_number)
+
+  brn
 end
 
 def assign_next_ben(person_id, district_code)
@@ -186,10 +201,13 @@ EOF
       person_id = PersonService.create_nris_person(hash)
       person = format_person(hash, person_id)
       ben = assign_next_ben(person_id, district_code)
-      puts "#{person_id} # #{ben}"
 
+      #Filter Potential Duplicates
       duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
+
+      #Filter Exact Duplicates
       exact_duplicates = SimpleElasticSearch.query_duplicate_coded(person, 100)
+
       load_status = "Success"
       status = "HQ-ACTIVE"
 
@@ -201,10 +219,26 @@ EOF
         status = "HQ-POTENTIAL-DUPLICATE"
       end
 
+      #Filter for Complete Cases
       #Filter For Other Country
       #Filter For Missing District
       #Filter For Missing TA
       #Filter For Missing Village
+      #Filter for Existing mother
+      #Filter for Existing father
+
+      #Assign BRN
+      brn = assign_next_brn(person_id)
+      puts "#{person_id} # #{ben } # #{brn}"
+
+      #Initialize record status
+      status = PersonRecordStatus.new
+      status.person_id = person_id
+      status.voided = 0
+      status.status_id = $print_queue_status_id
+      status.comment = "New Record From Mass Data"
+      status.creator = $user_id
+      status.save
 
       SimpleElasticSearch.add(person)
       ActiveRecord::Base.connection.execute <<EOF

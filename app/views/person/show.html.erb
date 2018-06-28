@@ -629,12 +629,17 @@
 
         <div class="modal-footer">
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-          <% if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank?) %>;
-            <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT');">Approve for Printing</button>
+          <% if (User.current.user_role.role.role == "Data Manager" && !@nid_data.blank? ) %>;
+              <% if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(@status) %>
+                  <button type="button" class="btn btn-success"
+                          onclick="window.location = '/print_preview?person_ids=<%= params[:person_id]%>&no_print=true' " >Print</button>
+              <% elsif @status == 'HQ-COMPLETE' %>
+                  <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT');">Approve for Printing</button>
+              <% end %>
           <% end %>
 
           <% if User.current.user_role.role.role == "Data Manager"  %>;
-            <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Reject </button>
+            <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')" >Reject </button>
           <% else %>
             <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-REJECTED')" >Reject </button>
           <% end %>
@@ -730,6 +735,7 @@
                 if(result == "OK"){
                     window.parent.location = return_path;
                 }else{
+                    console.log("NID");
                     setTimeout(function(){queryNID()}, 250);
                 }
             },
@@ -749,7 +755,6 @@
 
     function ajaxify(status){
         var role = '<%= User.current.user_role.role.role%>';
-
         if (status == "HQ-COMPLETE") {
             var status = ({
                 'Data Checking Clerk': 'HQ-COMPLETE',
@@ -762,13 +767,16 @@
         var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status+"&comment=";
 
         createShield();
+
         jQuery.ajax({
             url: url,
             success: function(feedback){
                 if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
+
                     <% if @person.id_number.blank? %>
                         assignmentOrder();
-
+                    <% else %>
+                        window.parent.location = return_path;
                     <% end %>
                 }else{
                     removeShield();
