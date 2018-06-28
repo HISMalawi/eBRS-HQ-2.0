@@ -704,7 +704,7 @@
         __$("query-msg").style.display = "inline-block";
         <% end %>
     }
-
+    var brn_tries = 0
     function assignmentOrder(person_id){
          __$("query-msg").style.display = "inline-block";
          __$("query-msg").innerHTML = "Assigning BRN   ....";
@@ -719,7 +719,12 @@
                 }
             },
             error: function(error){
-                alert("Something Went Wrong!")
+                if (brn_tries < 3) {
+                    setTimeout(function(){assignmentOrder()}, 250);
+                    brn_tries += 1;
+                }else{
+                    alert("Something Went Wrong!");
+                }
             }
         })
     }
