@@ -72,7 +72,7 @@ class PersonController < ApplicationController
         redirect_to "/person/ammend_case?id=#{@person.id}"
     end
 
-    session[:list_url] = request.referrer if params[:revalidation].blank? 
+    session[:list_url] = request.referrer if params[:revalidation].blank?
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
     @name = @person.person_names.last
