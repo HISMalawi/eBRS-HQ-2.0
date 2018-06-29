@@ -98,7 +98,7 @@ class Location < ActiveRecord::Base
   def self.locate_id(name, tag, parent_id)
     tag_id = LocationTag.where(name: tag).last.id rescue nil
     if tag.upcase == "TRADITIONAL AUTHORITY"
-      name = [name, ("SC " + name), ("S/C " + name)]
+      name = [name, ("SC " + name), ("S/C " + name), ("TA " + name), ("STA " + name)]
     else
       name = [name]
     end
@@ -115,7 +115,7 @@ class Location < ActiveRecord::Base
 
   def self.locate_id_by_tag(name, tag)
     if tag.upcase == "TRADITIONAL AUTHORITY"
-      name = [name, ("SC " + name), ("S/C " + name)]
+      name = [name, ("SC " + name), ("S/C " + name), ("TA " + name), ("STA " + name)]
     else
       name = [name]
     end
