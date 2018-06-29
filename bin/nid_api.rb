@@ -207,6 +207,7 @@ EOF
       hash[columns[i]] = value
     end
 
+    next if (PersonBirthDetail.where(source_id: nid_child[0]).count > 0)
 
     ActiveRecord::Base.transaction do
       hash = hash.with_indifferent_access
