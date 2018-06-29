@@ -125,6 +125,20 @@ class PersonController < ApplicationController
 
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
 
+    if !@birth_details.source_id.blank? && @birth_details.source_id.to_s.length < 25
+      parents_married    = "Unknown"
+      parents_signed     = "Unknown"
+      number_of_children = "Unknown"
+      still_alive       = "Unknown"
+      court_order_attached = "Unknown"
+    else
+      parents_married = (@birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil
+      parents_signed = (@birth_details.parents_signed == "1" ? 'Yes' : 'No') rescue nil
+      number_of_children = @birth_details.number_of_children_born_alive_inclusive rescue nil
+      still_alive        = @birth_details.number_of_children_born_still_alive rescue nil
+      court_order_attached = (@birth_details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil
+    end
+
     @record = {
           "Details of Child" => [
               {
@@ -158,13 +172,13 @@ class PersonController < ApplicationController
                   "Other birth specified" => "#{@birth_details.other_type_of_birth rescue nil}"
               },
               {
-                  "Are the parents married to each other?" => "#{(@birth_details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil}",
+                  "Are the parents married to each other?" => "#{parents_married}",
                   "If yes, date of marriage" => "#{@birth_details.date_of_marriage.to_date.strftime('%d/%b/%Y')  rescue nil}"
               },
 
               {
-                  "Court Order Attached?" => "#{(@birth_details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil}",
-                  "Parents Signed?" => "#{(@birth_details.parents_signed == "1" ? 'Yes' : 'No') rescue nil}",
+                  "Court Order Attached?" => "#{court_order_attached}",
+                  "Parents Signed?" => "#{parents_signed}",
                   "Record Complete?" => (@birth_details.record_complete? rescue false) ? "Yes" : "No"
               },
               {
@@ -201,8 +215,8 @@ class PersonController < ApplicationController
               },
               {
                   "Mode of delivery" => "#{@birth_details.mode_of_delivery.name rescue nil}",
-                  "Number of children born to the mother, including this child" => "#{@birth_details.number_of_children_born_alive_inclusive rescue nil}",
-                  "Number of children born to the mother, and still living" => "#{@birth_details.number_of_children_born_still_alive rescue nil}"
+                  "Number of children born to the mother, including this child" => "#{number_of_children}",
+                  "Number of children born to the mother, and still living" => "#{still_alive}"
               },
               {
                   "Level of education" => "#{@birth_details.level_of_education rescue nil}"
@@ -225,7 +239,7 @@ class PersonController < ApplicationController
                   "Village/Town" => "#{loc(@father_address.current_village, 'Village') rescue nil}"
               },
               {
-                  "Home Address, DIstrict" => "#{loc(@father_address.home_district, 'District') rescue nil}",
+                  "Home Address, District" => "#{loc(@father_address.home_district, 'District') rescue nil}",
                   "T/A" => "#{loc(@father_address.home_ta, 'Traditional Authority') rescue nil}",
                   "Village/Town" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
               }
