@@ -110,6 +110,18 @@ class PersonController < ApplicationController
 
     @status = PersonRecordStatus.status(@person.id)
 
+    if @mother_person.present?
+      mother_birth_date = @mother_person.birthdate.present? && @mother_person.birthdate.to_date.strftime('%Y-%m-%d') =='1900-01-01' ? 'N/A':  @mother_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil
+    else
+      mother_birth_date = nil
+    end
+
+    if @father_person.present?
+      father_birth_date = @father_person.birthdate.present? && @father_person.birthdate.to_date.strftime('%Y-%m-%d') =='1900-01-01' ? 'N/A':  @father_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil
+    else
+      father_birth_date = nil
+    end
+
 
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
 
@@ -168,7 +180,7 @@ class PersonController < ApplicationController
                   ["Maiden Surname", "mandatory"] => "#{@mother_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@mother_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
+                  "Date of birth" => mother_birth_date,
                   "Nationality" => "#{@mother_person.citizenship rescue nil}",
                   "ID Number" => "#{@mother_person.id_number rescue nil}"
               },
@@ -203,7 +215,7 @@ class PersonController < ApplicationController
                   "Surname" => "#{@father_name.last_name rescue nil}"
               },
               {
-                  "Date of birth" => "#{@father_person.birthdate.to_date.strftime('%d/%b/%Y') rescue nil}",
+                  "Date of birth" => father_birth_date,
                   "Nationality" => "#{@father_person.citizenship rescue nil}",
                   "ID Number" => "#{@father_person.id_number rescue nil}"
               },
