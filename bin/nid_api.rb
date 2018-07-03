@@ -152,7 +152,7 @@ def mass_data
     }]
 =end
 
-  district = Location.find(SETTINGS['location_id'])
+  district = Location.where(name: "Rumphi").last
   district_name = district.name
   district_code = district.code
   puts "DISTRICT: #{district_name}, CODE: #{district_code}"
@@ -190,7 +190,7 @@ EOF
   data = ActiveRecord::Base.connection.execute <<EOF
      SELECT * FROM mass_data
   WHERE category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
-  AND DistrictOfRegistration IN ('Lilongwe', 'Lilongwe City');
+  AND DistrictOfRegistration IN ('Rumphi');
 EOF
 
 =begin
@@ -345,7 +345,7 @@ EOF
             potential_duplicate = PotentialDuplicate.create(person_id: person_id, created_at: (Time.now))
             if potential_duplicate.present?
               results.each do |result|
-                potential_duplicate.create_duplicate(result["_id"])
+                potential_duplicate.create_duplicate(result["_id"]) rescue nil
               end
             end
 
@@ -361,7 +361,7 @@ EOF
         ben = assign_next_ben(person_id, district_code)
 
         #Assign Birth Registration Number - BRN
-        brn = assign_next_brn(person_id)
+        brn = assign_next_brn(person_id) unless status == "HQ-POTENTIAL DUPLICATE-TBA"
         puts "#{person_id} # #{ben } # #{brn}"
 
         #Initialize record status

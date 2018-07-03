@@ -1443,7 +1443,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
 
       res = JSON.parse(response) rescue response.to_s
 
-      return "Failed" if !res.match("#")
+      return "FAILED" if !res.match("#")
       puts res
       array = res.split("#")
       nid = array[0]

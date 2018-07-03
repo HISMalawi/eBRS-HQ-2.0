@@ -4,7 +4,6 @@ m_type = PersonRelationType.find_by_name("Mother")
 f_type = PersonRelationType.find_by_name("Father")
 
 (details || []).each_with_index do |d, i|
-   next if i < 40000
   @name = PersonName.where(person_id: d.person_id).last
   @person = Person.find(d.person_id)
 

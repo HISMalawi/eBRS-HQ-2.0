@@ -969,7 +969,7 @@
         )
     }
 
-    <% if params[:side_by_side] && params[:side_by_side].to_s == "true"%>
+    <% if (params[:side_by_side] && params[:side_by_side].to_s == "true") || @show_popup == true %>
         jQuery("#nidcomparison-content").css({
             position: "absolute",
             top: "-20px",

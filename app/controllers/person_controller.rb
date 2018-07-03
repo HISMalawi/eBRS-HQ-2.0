@@ -285,6 +285,7 @@ class PersonController < ApplicationController
 EOF
 
     @nid_data = JSON.parse(nid_data["data"]) if !nid_data.blank?
+    @show_popup = (nid_data["passed"].to_i == 0) rescue false
 
     if @person.present? && SETTINGS['potential_search']
       person = {}
