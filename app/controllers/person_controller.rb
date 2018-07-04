@@ -1423,7 +1423,6 @@ EOF
     nid_type = PersonIdentifierType.where(name: "Barcode Number").last
     person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil
 
-    person_id = nil
     if person_id.blank?
       nid_type = PersonIdentifierType.where(name: "National ID Number").last
       person_id = PersonIdentifier.where(value: barcode, person_identifier_type_id: nid_type, voided: 0).last.person_id rescue nil
