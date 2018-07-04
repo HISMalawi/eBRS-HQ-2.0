@@ -205,6 +205,7 @@ Rails.application.routes.draw do
   get "/sync_status" => "person#sync_status"
 
   get "/person/check_details"
+  get "/person/query_person_details"
 
   get "/person/certificate_verification"
   post "/person/certificate_verification"

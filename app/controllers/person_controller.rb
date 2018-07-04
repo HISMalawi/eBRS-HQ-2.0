@@ -1443,22 +1443,55 @@ EOF
       end
     end
 
-    return person_id
+    status = PersonRecordStatus.where(person_id: person_id, voided: 0).last.status.name  rescue nil
+    if status.to_s.upcase == "HQ-PRINTED"
+      render text: person_id.to_json
+    else
+      render text: nil.to_json
+    end
+  end
+
+
+  def query_person_details
+    data = {}
+    person = Person.find(params[:person_id])
+    name   = PersonName.where(person_id: params[:person_id]).last
+    mother = PersonService.mother(params[:person_id])
+    father = PersonService.father(params[:person_id])
+    details = PersonBirthDetail.where(person_id: params[:person_id]).last
+    place = Location.find(details.birth_location_id)
+    district = Location.find(details.district_of_birth)
+    if place.name == "other"
+      place = "#{details.other_birth_location}, #{district.name}"
+    else
+      place = "#{place.name}, #{district.name}"
+    end
+
+    data['name'] = "#{name.first_name} #{name.middle_name} #{name.last_name}".squish
+    data["sex"]  = {"F" => "Female", "M" => "Male"}[person.gender]
+    data["dob"]  = person.birthdate.to_date.strftime("%d/%b/%Y")
+    data["mother_name"] = "#{mother.first_name} #{mother.middle_name} #{mother.last_name}".squish rescue "N/A"
+    data["father_name"] = "#{father.first_name} #{father.middle_name} #{father.last_name}".squish rescue "N/A"
+    data["place"] = place
+    data["brn"] = details.brn
+    data['ben'] = details.district_id_number
+    data["nid"] = person.id_number
+
+    render text: data.to_json
   end
 
   def certificate_verification
     @section = "Verify Certificates"
 
     if request.post?
-      person_id = check_details
+      person_id = params[:person_id]
       if person_id.blank?
-        flash[:error] = "Record Not Found!"
       elsif params[:verdict] == "No"
         PersonRecordStatus.new_record_state(person_id, "HQ-RE-PRINT", params['reason'])
       end
     end
 
-    #render layout: "touch"
+    render text: "OK"
   end
 
   def sync_status

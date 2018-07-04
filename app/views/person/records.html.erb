@@ -60,6 +60,20 @@
     #roll-options td{
         padding-right: 20px;
     }
+
+    #verificationTable tr td{
+        text-align: left;
+        align: left;
+        border: 1px dotted #d3d3d3;
+        padding: 8px;
+        padding-left: 25px;
+    }
+
+    #verificationTable tr .labeel{
+        font-weight: bold;
+        width: 45%;
+    }
+
 </style>
 
 <% @type_stats = {} if @type_stats.blank?%>
@@ -159,6 +173,28 @@
 </div>
 
 
+<div class="modal fade" id="verify_by_scanning" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-body">
+
+        <h3 style="padding-left:100px;">Scan Barcode to Verify Certificates</h3>
+
+        <br />
+        <input id="barcode" name="barcode" class="barcode" type="text"
+               style="margin-left: 100px; height: 50px;width: 350px;font-size: 20px; font-weight: bold; margin-bottom: 25px;" />
+        <div class="modal-footer">
+          <button id="scan_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#verify_by_scanning').modal('hide');" > Close </button>
+          <button id="scan_search" type="button" class="btn btn-sm btn-primary pull-right" onclick="manualSearch()" > Search </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
 <div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -232,6 +268,107 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" onclick="dispatchAll();">Dispatch</button>
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="verification" tabindex="-1" role="dialog" aria-labelledby="verificationModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content" id="verification-content">
+      <div class="modal-header" style="background: #006f95 none repeat scroll 0 0;padding: 12px;" >
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="verificationModalLabel" style="text-align: left;">
+          Certificate Verification
+        </h4>
+        <div id="success" class="alert alert-success pull-right">
+          <strong>Success! Record Sent to Re-Print Queue!!</strong>
+        </div>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table style="width: 100%;">
+            <tr>
+                  <td style="width: 50%;">
+              <table style="width: 100%;" align="center" id="verificationTable">
+                    <tr>
+                      <td class="labeel">National ID</td>
+                      <td id="nid">&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                      <td class="labeel">Registration Number</td>
+                      <td id="brn">&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                      <td class="labeel">Birth Entry Number</td>
+                      <td id="ben">&nbsp;</td>
+                    </tr>
+
+                    <tr>
+                        <td class="labeel">Name</td>
+                        <td id="name">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="labeel">Sex</td>
+                      <td id="sex">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="labeel">Date Of Birth</td>
+                      <td id="dob">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="labeel">Place of Birth</td>
+                      <td id="place">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="labeel">Name of Mother</td>
+                      <td id="mother_name">&nbsp;</td>
+                    </tr>
+                    <tr>
+                      <td class="labeel">Name of Father</td>
+                      <td id="father_name">&nbsp;</td>
+                    </tr>
+              </table>
+              </td>
+
+              <td style="width: 50%;">
+                <div class="field">
+                  <label for="verdict"><h4><b>Does certificate meet quality metrics?</b></h4></label><br>
+                  <select
+                  style="width: 320px;font-size: 20px;padding: 7px;font-weight: bold; font-color: darkslategray;margin-bottom: 25px;background: ghostwhite;"
+                  id="verdict" name="verdict" class="input_cell" onchange="enableReason()">
+                    <option></option>
+                    <option value="Yes" >Yes</option>
+                    <option value="No" >No</option>
+                  </select>
+                </div>
+
+                <div class="field">
+                  <label for="reason"><h4><b>Explanation for rejected certificate</b></h4></label><br>
+                  <select disabled="disabled"
+                    style="width: 320px; font-size: 20px;padding: 7px;font-color: darkslategray; background: ghostwhite;font-weight: bold;"
+                    id="reason" name="reason" class="input_cell" condition="__$('textForverdict').value.trim() == 'No' " >
+                    <option></option>
+                    <option value="blurred print out" >Blurred print out</option>
+                    <option value="distorted characters" >Distorted characters</option>
+                    <option value="wrinkles or creases" >Wrinkles or creases</option>
+                    <option value="skewed page" >Skewed page</option>
+                    <option value="unwanted ink dots" >Unwanted ink dots</option>
+                    <option value="other" >Other</option>
+                  </select>
+                </div>
+
+              </td>
+              </tr>
+              </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" id="ajax-verification-save" class="btn btn-primary" onclick="ajaxSaveVerification()">Save</button>
+          <button type="button" class="btn btn-default pull-left" onclick="window.location = window.location ">close</button>
         </div>
       </div>
     </div>
@@ -443,10 +580,154 @@
         }
     }
 
+    function barcodeFocus(){
+        if (scanning == true) {
+            jQuery("#barcode").focus();
+        }
+
+        var barcode = __$("barcode").value;
+        if (barcode.match(/\$$/)){
+            var barcodeString = barcode.replace(/\$$/, "");
+            __$("barcode").value = "";
+            jQuery.ajax({
+                url: "/person/check_details?certificate_serial_number=" + barcodeString,
+                success: function(result){
+                    var person_id = JSON.parse(result);
+                    if (person_id == null){
+                        alert("Record Not Found Or Record Status Not 'HQ-PRINTED'!!")
+                    }else{
+                        popReasons(person_id);
+                    }
+                },
+                error: function(error){
+                    alert("Not Found")
+                }
+            })
+        }
+
+        setTimeout(function(){
+            barcodeFocus();
+        }, 250);
+    }
+
+    function manualSearch(){
+        jQuery("#barcode").focus();
+        var barcode = __$("barcode").value;
+        var barcodeString = barcode.replace(/\$$/g, "");
+        __$("barcode").value = "";
+        jQuery.ajax({
+            url: "/person/check_details?certificate_serial_number=" + barcodeString,
+            success: function(result){
+                var person_id = JSON.parse(result);
+                if (person_id == null){
+                    alert("Record Not Found Or Record Status Not 'HQ-PRINTED' !! ")
+                }else{
+                    popReasons(person_id);
+                }
+            },
+            error: function(error){
+                alert("Not Found")
+            }
+        })
+
+        setTimeout(function(){
+            barcodeFocus();
+        }, 250);
+    }
+
+    function enableReason(){
+        __$("reason").value  = "";
+
+        if (__$("verdict").value.trim() == "Yes") {
+            __$("reason").setAttribute("disabled", "disabled")
+        }else{
+            __$("reason").removeAttribute("disabled")
+        }
+    }
+
+    var scanning = true;
+    var globalPersonId = null;
+    function popReasons(person_id){
+        jQuery('#success').hide();
+
+        scanning = false;
+        __$("verdict").value = "";
+        __$("reason").value  = "";
+
+        jQuery.ajax({
+            url: "/person/query_person_details?person_id=" + person_id,
+            success: function(data){
+                data = JSON.parse(data);
+                console.log(data);
+                for(var k in data){
+                    __$(k).innerHTML = data[k];
+                }
+
+                globalPersonId = person_id;
+                jQuery("#verification").modal("show");
+            },
+            error: function(error){
+                alert("Could Not Get Details of Person!!");
+            }
+        })
+    }
+
+    function ajaxSaveVerification(){
+
+            if (__$("verdict").value.trim() == ""){
+                alert("Select if Certificate Meet Quality Metrics!!");
+                return;
+            }
+
+            if (__$("verdict").value.trim() == "No" && __$("reason").value.trim() == ""){
+                alert("Select Reason For Rejected Certificate!!");
+                return;
+            }
+
+        jQuery.ajax({
+            url: "/person/certificate_verification",
+            method: "POST",
+            data: {
+                person_id: globalPersonId,
+                verdict: __$("verdict").value,
+                reason: __$("reason").value
+            },
+            success: function(result){
+                if (result == "OK" && __$("verdict").value.trim() == "No") {
+                    jQuery('#success').show();
+                    setTimeout(function(){
+                        jQuery("#verification").modal("hide");
+                    }, 1500);
+
+                }else{
+                    jQuery('#success').hide();
+                    jQuery("#verification").modal("hide");
+                }
+
+                console.log(result);
+            },
+            error: function(error){
+                console.log(error);
+            }
+        })
+    }
+
     checkSelections();
 
     jQuery("#example_filter").find("input")
-</script>
+
+    <% if User.current.user_role.role.role == "Quality Supervisor" %>
+        jQuery("#verification-content").css({
+            position: "absolute",
+            top: "-20px",
+            left: "-250px",
+            width: (screen.width*0.70 + "px")
+        });
+
+        jQuery("#verify_by_scanning").modal("show");
+        barcodeFocus();
+    <% end %>
+  </script>
 
 <style>
   .action-btn, .act-btn{
