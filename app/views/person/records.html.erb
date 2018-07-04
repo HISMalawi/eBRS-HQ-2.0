@@ -619,6 +619,7 @@
             url: "/person/check_details?certificate_serial_number=" + barcodeString,
             success: function(result){
                 var person_id = JSON.parse(result);
+                console.log(person_id)
                 if (person_id == null){
                     alert("Record Not Found Or Record Status Not 'HQ-PRINTED' !! ")
                 }else{

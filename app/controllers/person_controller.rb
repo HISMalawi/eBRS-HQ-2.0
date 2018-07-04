@@ -1438,12 +1438,13 @@ EOF
         person_id = PersonBirthDetail.where(district_id_number: ben).last.person_id rescue nil
 
         if person_id.blank?
-         person_id = PersonIdentifier.where(person_identifier_type_id: PersonIdentifierType.where(name: "Old Birth Entry Number", value: ben).last.id).last.person_id rescue nil
+         person_id = PersonIdentifier.where(person_identifier_type_id:
+                                                PersonIdentifierType.where(name: "Old Birth Entry Number").last.id, value: ben).last.person_id rescue nil
         end
       end
     end
 
-    status = PersonRecordStatus.where(person_id: person_id, voided: 0).last.status.name  rescue nil
+    status = PersonRecordStatus.where(person_id: person_id, voided: 0).last.status.name rescue nil
     if status.to_s.upcase == "HQ-PRINTED"
       render text: person_id.to_json
     else
