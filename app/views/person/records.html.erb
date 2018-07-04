@@ -184,7 +184,7 @@
         <input id="barcode" name="barcode" class="barcode" type="text"
                style="margin-left: 100px; height: 50px;width: 350px;font-size: 20px; font-weight: bold; margin-bottom: 25px;" />
         <div class="modal-footer">
-          <button id="scan_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#verify_by_scanning').modal('hide');" > Close </button>
+          <button id="scan_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#verify_by_scanning').modal('hide'); initTable();" > Close </button>
           <button id="scan_search" type="button" class="btn btn-sm btn-primary pull-right" onclick="manualSearch()" > Search </button>
 
         </div>
@@ -446,7 +446,10 @@
             type = "All Special Cases"
         <% end %>
 
-        initTable();
+        <% if User.current.user_role.role.role != "Quality Supervisor" %>
+            initTable();
+        <% end %>
+
         var holder = __$('example_filter').parentNode;
         holder.appendChild(__$('birth_type'));
         holder.appendChild(__$('roll-options'));
