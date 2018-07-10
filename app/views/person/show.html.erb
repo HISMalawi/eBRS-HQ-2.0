@@ -55,6 +55,20 @@
 }
 #completeness_details .labell{
 }
+#duplicates{
+   width: 98%;
+
+}
+
+#duplicates th , #duplicates td {
+   padding: 0.3em;
+   border: 1px solid gray;
+   text-align: center;
+   
+}
+#duplicates th{
+    background: #d9d8d7;
+}
 </style>
 <script>
   return_path = '<%= session[:list_url]%>'
@@ -319,7 +333,7 @@
 
 <% if @results.present? %>
 <div style="margin-top:8%" class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="duplicateModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog" style="width:70%;margin:auto">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button"  style="display:none" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -329,15 +343,61 @@
       </div>
       <div class="modal-body">
         <span style="text-align:center;">
-          <table align="center" id="printers">
+          <table align="center" id="duplicates">
+            <tr>
+               <th colspan="11" style="background:#ecccb4">Duplicate record</th>
+            </tr>
+            <tr>
+              <th colspan="5"> Child's details</th>
+              <th colspan="2">Mother's details</th>
+              <th colspan="2">Father's details</th>
+              <th></th>
+            </tr>
+            <tr>
+               <td><%= @birth_details.district_id_number %></td>
+               <td><%= @name.first_name %></td>
+               <td><%= @name.last_name %></td>
+               <td><%= @person.gender %> </td>
+               <td><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
+               <td><%=@mother_name.first_name %></td>
+               <td><%= @mother_name.last_name %></td>
+               <td><%=@father_name.first_name %></td>
+               <td><%=@father_name.last_name %></td>
+               <td></td>
+            </tr>
+            <tr>
+               <th colspan="11" style="background: #c8e3ee">Existing record(s)</th>
+            </tr>
+            <tr>
+              <th colspan="5"> Child's details</th>
+              <th colspan="2">Mother's details</th>
+              <th colspan="2">Father's details</th>
+              <th></th>
+            </tr>
             <tr>
                 <th>BEN</th>
-                <th style="text-align: left; padding-left:50px;">Details</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Gender</th>
+                <th>Date of Birth</th>
+                <th>First Name</th>
+                <th>Surname</th>
+                <th>First Name</th>
+                <th>Surname</th>
+                <th>Similarity(%)</th>
             </tr>
             <% @results.each do |result| %>
               <tr>
                 <td><%= PersonBirthDetail.find_by_person_id(result["_id"].to_i).district_id_number rescue ''%></td>
-                <td style="text-align: left; padding-left:50px;"><%=result["_source"]["content"] %></td>
+                <td><%= result["_source"]["first_name"]%> </td>
+                <td><%= result["_source"]["last_name"]%> </td>
+                <td><%= result["_source"]["gender"].first.upcase %> </td>
+                <td><%= result["_source"]["birthdate"].to_date.strftime("%d/%b/%Y")%> </td>
+                <td><%= result["_source"]["mother_first_name"]%> </td>
+                <td><%= result["_source"]["mother_last_name"]%> </td>
+                <td><%= result["_source"]["father_first_name"] rescue 'N/A'%> </td>
+                <td><%= result["_source"]["father_last_name"] rescue 'N/A'%> </td>
+                <td><%=result["similarity_score"] %></td>
               </tr>
             <% end %>
           </table>

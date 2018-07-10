@@ -332,6 +332,7 @@ EOF
 
       if @status == "HQ-ACTIVE"
         @results = []
+
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
         duplicates.each do |dup|
             next if DuplicateRecord.where(person_id: person['id']).present?
@@ -1078,6 +1079,7 @@ EOF
     @status = PersonRecordStatus.status(params[:person_id])
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
     @potential_records.duplicate_records.each do |record|
+      #raise record.person_id.inspect
       @similar_records << person_details(record.person_id)
     end
   end
@@ -1189,8 +1191,8 @@ EOF
       location_of_birth = Location.find(birth_details.birth_location_id).name
     when "home"
       village_of_birth = Location.find(birth_details.birth_location_id)
-      ta_of_birth  = Location.find(village_of_birth.parent_location)
-      district_of_birth = Location.find(ta_of_birth.parent_location)
+      ta_of_birth  = Location.find(village_of_birth.parent_location) rescue nil
+      district_of_birth = Location.find(ta_of_birth.parent_location) rescue nil
       location_of_birth = (village_of_birth.name rescue '') +" "+ (ta_of_birth.name rescue '') +" "+
                           (district_of_birth.name rescue '')
 
