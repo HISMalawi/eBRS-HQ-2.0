@@ -186,9 +186,9 @@ class SimpleElasticSearch
       elsif newrecord['last_name'].squish == existingrecord['last_name'].squish
          score = score + 1 + WhiteSimilarity.similarity(newrecord['first_name'].squish, existingrecord['first_name'])
       elsif newrecord['first_name'].squish == existingrecord['last_name'].squish
-        score = score + 1 + WhiteSimilarity.similarity(newrecord['last_name'].squish, existingrecord['first_name'])
+        score = score + 0.9 + WhiteSimilarity.similarity(newrecord['last_name'].squish, existingrecord['first_name'])
       elsif newrecord['last_name'].squish == existingrecord['first_name'].squish  
-        score = score + 1 + WhiteSimilarity.similarity(newrecord['first_name'].squish, existingrecord['last_name'])
+        score = score + 0.9 + WhiteSimilarity.similarity(newrecord['first_name'].squish, existingrecord['last_name'])
       else
          score = score + WhiteSimilarity.similarity(newrecord_name, existingrecord_name) * 2   
       end
@@ -227,9 +227,9 @@ class SimpleElasticSearch
       elsif newrecord['mother_last_name'].squish == existingrecord['mother_last_name'].squish
          score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_first_name'].squish, existingrecord['mother_first_name'])
       elsif newrecord['mother_first_name'].squish == existingrecord['mother_last_name'].squish
-        score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_last_name'].squish, existingrecord['mother_first_name'])
+        score = score + 0.9 + WhiteSimilarity.similarity(newrecord['mother_last_name'].squish, existingrecord['mother_first_name'])
       elsif newrecord['mother_last_name'].squish == existingrecord['mother_first_name'].squish  
-        score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_first_name'].squish, existingrecord['mother_last_name'])
+        score = score + 0.9 + WhiteSimilarity.similarity(newrecord['mother_first_name'].squish, existingrecord['mother_last_name'])
       else
          score = score + WhiteSimilarity.similarity(newrecord_mother_name, existingrecord_mother_name) * 2   
       end
