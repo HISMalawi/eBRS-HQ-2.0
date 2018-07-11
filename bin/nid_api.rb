@@ -191,7 +191,8 @@ EOF
 
       #Filter for names with special characters
       if load_status == "Success"
-        [hash["Surname"], hash["OtherNames"], hash["FirstName"], hash["MotherSurname"], hash["MotherFirstName"]].each do |name|
+        [hash["Surname"], hash["OtherNames"], hash["FirstName"], hash["MotherFirstName"], hash["MotherSurname"], hash["MotherOtherNames"],
+         hash["FatherSurname"], hash["FatherFirstName"], hash["FatherOtherNames"]].each do |name|
 
           if name.to_s.match(/[-!$%^&*()_+|~=`{}\[\]:";@\#<>?,.\/]|\d+/)
             load_status = "Name With Special Character"
