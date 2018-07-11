@@ -5,11 +5,8 @@ class SimpleElasticSearch
   def self.format_content(person)
      
      search_content = ""
-      if person["middle_name"].present?
-         search_content = self.escape_single_quotes(person["middle_name"]) + ", "
-      end 
 
-      birthdate_formatted = person["birthdate"].to_date.strftime("%Y-%m-%d")
+      birthdate_formatted = person["birthdate"].to_date.strftime("%Y %m %d")
       search_content = search_content + birthdate_formatted + " "
       search_content = search_content + person["gender"].upcase + " "
 
@@ -19,27 +16,11 @@ class SimpleElasticSearch
 
       if person["mother_first_name"].present?
         search_content = search_content + person["mother_first_name"] + " " 
-      end
-
-      if person["mother_middle_name"].present?
-         search_content = search_content + person["mother_middle_name"] + " "
-      end   
+      end  
 
       if person["mother_last_name"].present?
         search_content = search_content + person["mother_last_name"] + " "
       end
-
-      if person["father_first_name"].present?
-         search_content = search_content + person["father_first_name"] + " "
-      end 
-
-      if person["father_middle_name"].present?
-         search_content = search_content + person["father_middle_name"] + " "
-      end 
-
-      if person["father_last_name"].present?
-         search_content = search_content + person["father_last_name"]
-      end 
 
       return search_content.squish
 
@@ -48,11 +29,8 @@ class SimpleElasticSearch
   def self.format_coded_content(person)
      
      search_content = ""
-      if person["middle_name"].present?
-         search_content = self.escape_single_quotes(person["middle_name"]).soundex + ", "
-      end 
 
-      birthdate_formatted = person["birthdate"].to_date.strftime("%Y-%m-%d")
+      birthdate_formatted = person["birthdate"].to_date.strftime("%Y %m %d")
       search_content = search_content + birthdate_formatted + " "
       search_content = search_content + person["gender"].upcase + " "
 
@@ -62,27 +40,11 @@ class SimpleElasticSearch
 
       if person["mother_first_name"].present?
         search_content = search_content + (person["mother_first_name"].soundex rescue '') + " " 
-      end
-
-      if person["mother_middle_name"].present?
-         search_content = search_content + (person["mother_middle_name"].soundex rescue '') + " "
-      end   
+      end  
 
       if person["mother_last_name"].present?
         search_content = search_content + (person["mother_last_name"].soundex rescue '') + " "
       end
-
-      if person["father_first_name"].present?
-         search_content = search_content + (person["father_first_name"].soundex rescue '') + " "
-      end 
-
-      if person["father_middle_name"].present?
-         search_content = search_content + (person["father_middle_name"].soundex rescue '') + " "
-      end 
-
-      if person["father_last_name"].present?
-         search_content = search_content + (person["father_last_name"].soundex rescue '')
-      end 
 
       return search_content.squish
 
@@ -174,7 +136,7 @@ class SimpleElasticSearch
       query_string = "#{person["first_name"].soundex} #{person["last_name"].soundex} #{content}"
 
       potential_duplicates = []
-      hits = self.query("coded_content",query_string,precision,10,0)["data"]
+      hits = self.query("coded_content",query_string,80,10,0)["data"]
       
       #hits.each do |hit|
         #potential_duplicates << hit if hit["_id"].squish !=(person["person_id"].squish rescue nil)
