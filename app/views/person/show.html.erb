@@ -361,8 +361,8 @@
                <td><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
                <td><%=@mother_name.first_name %></td>
                <td><%= @mother_name.last_name %></td>
-               <td><%=@father_name.first_name %></td>
-               <td><%=@father_name.last_name %></td>
+               <td><%=@father_name.first_name rescue 'N/A' %></td>
+               <td><%=@father_name.last_name rescue 'N/A'%></td>
                <td></td>
             </tr>
             <tr>
@@ -397,7 +397,7 @@
                 <td><%= result["_source"]["mother_last_name"]%> </td>
                 <td><%= result["_source"]["father_first_name"] rescue 'N/A'%> </td>
                 <td><%= result["_source"]["father_last_name"] rescue 'N/A'%> </td>
-                <td><%=result["similarity_score"] %></td>
+                <td><%=result["similarity_score"].to_f.round(2) %></td>
               </tr>
             <% end %>
           </table>

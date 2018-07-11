@@ -136,16 +136,16 @@ class SimpleElasticSearch
       query_string = "#{person["first_name"].soundex} #{person["last_name"].soundex} #{content}"
 
       potential_duplicates = []
-      hits = self.query("coded_content",query_string,70,10,0)["data"]
+      hits = self.query("coded_content",query_string,60,15,0)["data"]
       
       #hits.each do |hit|
         #potential_duplicates << hit if hit["_id"].squish !=(person["person_id"].squish rescue nil)
       #end
       potential_duplicates = SimpleElasticSearch.white_similarity(person,hits,precision)
-
       return potential_duplicates
   end
   def self.white_similarity(person, hits,precision)
+
     potential_duplicates = []
     content =  "#{person["first_name"]} #{person["last_name"]} #{self.format_content(person)}"
     hits.each do |hit|
@@ -158,6 +158,7 @@ class SimpleElasticSearch
       end
       #WhiteSimilarity.similarity(content, hit_content) >= (precision/100)
     end
+
     return potential_duplicates
   end
 
@@ -171,25 +172,38 @@ class SimpleElasticSearch
       }
 
       score = 0
-      #Records
+      #0. Records
       newrecord = self.person_details(newrecord_id)
       existingrecord = self.person_details(existingrecord_id)
 
-      #Comparing person name
+      # 1. Comparing person name
       newrecord_name = "#{newrecord['first_name']} #{newrecord['last_name']}"
       existingrecord_name = "#{existingrecord['first_name']} #{existingrecord['last_name']}"
-      score = score + WhiteSimilarity.similarity(newrecord_name, existingrecord_name) * 2
-
-      #Comparing date of birth
+      if newrecord_name.squish == existingrecord_name.squish
+         score = score + 2 
+      elsif newrecord['first_name'].squish == existingrecord['first_name'].squish
+         score = score + 1 + WhiteSimilarity.similarity(newrecord['last_name'].squish, existingrecord['last_name'])
+      elsif newrecord['last_name'].squish == existingrecord['last_name'].squish
+         score = score + 1 + WhiteSimilarity.similarity(newrecord['first_name'].squish, existingrecord['first_name'])
+      elsif newrecord['first_name'].squish == existingrecord['last_name'].squish
+        score = score + 1 + WhiteSimilarity.similarity(newrecord['last_name'].squish, existingrecord['first_name'])
+      elsif newrecord['last_name'].squish == existingrecord['first_name'].squish  
+        score = score + 1 + WhiteSimilarity.similarity(newrecord['first_name'].squish, existingrecord['last_name'])
+      else
+         score = score + WhiteSimilarity.similarity(newrecord_name, existingrecord_name) * 2   
+      end
+     
+      # 2. Comparing date of birth
       newrecord_birthdate = newrecord["birthdate"].to_date.strftime("%Y-%m-%d").split("-")
       existingrecord_birthdate = existingrecord["birthdate"].to_date.strftime("%Y-%m-%d").split("-")
+
       i = 0
       while i < newrecord_birthdate.length
           score = score + WhiteSimilarity.similarity(newrecord_birthdate[i], existingrecord_birthdate[i])
           i = i + 1
       end
       
-      #Comparing gender
+      # 3. Comparing gender
       newrecord_gender = newrecord["gender"].first.upcase
       existingrecord_gender = existingrecord["gender"].first.upcase
       if newrecord_gender == existingrecord_gender
@@ -198,16 +212,28 @@ class SimpleElasticSearch
           score = score + 0
       end
 
-      #comparing districts of birth
-      newrecord_district = newrecord["place_of_birth"]
-      existingrecord_district = existingrecord["place_of_birth"]
+      # 4. comparing districts of birth
+      newrecord_district = newrecord["district"]
+      existingrecord_district = existingrecord["district"]
       score = score + WhiteSimilarity.similarity(newrecord_district, existingrecord_district)
 
-      #Comparing person mother's name
-      newrecord_name = "#{newrecord['mother_first_name']} #{newrecord['mother_last_name']}"
-      existingrecord_name = "#{existingrecord['mother_first_name']} #{existingrecord['mother_last_name']}"
-      score = score + WhiteSimilarity.similarity(newrecord_name, existingrecord_name) * 2
-
+      # 5. Comparing person mother's name
+      newrecord_mother_name = "#{newrecord['mother_first_name']} #{newrecord['mother_last_name']}"
+      existingrecord_mother_name = "#{existingrecord['mother_first_name']} #{existingrecord['mother_last_name']}"
+      if newrecord_mother_name.squish == existingrecord_mother_name.squish
+         score = score + 2 
+      elsif newrecord['mother_first_name'].squish == existingrecord['mother_first_name'].squish
+         score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_last_name'].squish, existingrecord['mother_last_name'])
+      elsif newrecord['mother_last_name'].squish == existingrecord['mother_last_name'].squish
+         score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_first_name'].squish, existingrecord['mother_first_name'])
+      elsif newrecord['mother_first_name'].squish == existingrecord['mother_last_name'].squish
+        score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_last_name'].squish, existingrecord['mother_first_name'])
+      elsif newrecord['mother_last_name'].squish == existingrecord['mother_first_name'].squish  
+        score = score + 1 + WhiteSimilarity.similarity(newrecord['mother_first_name'].squish, existingrecord['mother_last_name'])
+      else
+         score = score + WhiteSimilarity.similarity(newrecord_mother_name, existingrecord_mother_name) * 2   
+      end
+      
       return (score / 9) * 100
   end
 
@@ -243,8 +269,8 @@ class SimpleElasticSearch
       @place_of_birth = @birth_details.other_birth_location if @place_of_birth.blank?
 
       person["place_of_birth"] = @place_of_birth
-      if  birth_loc.district.present?
-        person["district"] = birth_loc.district
+      if  @birth_details.district_of_birth.present?
+        person["district"] = Location.find(@birth_details.district_of_birth).name
       else
         person["district"] = "Lilongwe"
       end

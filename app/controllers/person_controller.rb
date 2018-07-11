@@ -297,9 +297,11 @@ EOF
       person["birthdate"]= @person.birthdate.to_date
       person["birthdate_estimated"] = @person.birthdate_estimated
       person["nationality"]=  @mother_person.citizenship rescue ''
+    
       person["place_of_birth"] = @place_of_birth
-      if  birth_loc.district.present?
-        person["district"] = birth_loc.district
+
+      if  @birth_details.district_of_birth.present?
+        person["district"] = Location.find(@birth_details.district_of_birth).name
       else
         person["district"] = "Lilongwe"
       end
@@ -334,9 +336,15 @@ EOF
         @results = []
 
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
-        duplicates.each do |dup|
-            next if DuplicateRecord.where(person_id: person['id']).present?
-            @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
+
+
+        if false
+          duplicates.each do |dup|
+              next if DuplicateRecord.where(person_id: person['id']).present?
+              @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
+          end
+        else
+          @results = duplicates
         end
 
         if @results.present? && !@birth_details.birth_type.name.to_s.downcase.include?("twin")
