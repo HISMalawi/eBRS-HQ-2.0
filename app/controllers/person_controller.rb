@@ -338,13 +338,11 @@ EOF
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
 
 
-        if false
-          duplicates.each do |dup|
-              next if DuplicateRecord.where(person_id: person['id']).present?
-              @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
-          end
-        else
-          @results = duplicates
+       
+        duplicates.each do |dup|
+              #next if DuplicateRecord.where(person_id: person['id']).present?
+              next if PersonRecordStatus.status(dup['_id']).include?("DC")
+              @results << dup #if PotentialDuplicate.where(person_id: dup['_id']).blank?
         end
 
         if @results.present? && !@birth_details.birth_type.name.to_s.downcase.include?("twin")
