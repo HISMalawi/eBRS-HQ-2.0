@@ -297,9 +297,11 @@ EOF
       person["birthdate"]= @person.birthdate.to_date
       person["birthdate_estimated"] = @person.birthdate_estimated
       person["nationality"]=  @mother_person.citizenship rescue ''
+    
       person["place_of_birth"] = @place_of_birth
-      if  birth_loc.district.present?
-        person["district"] = birth_loc.district
+
+      if  @birth_details.district_of_birth.present?
+        person["district"] = Location.find(@birth_details.district_of_birth).name
       else
         person["district"] = "Lilongwe"
       end
@@ -332,10 +334,17 @@ EOF
 
       if @status == "HQ-ACTIVE"
         @results = []
+
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
-        duplicates.each do |dup|
-            next if DuplicateRecord.where(person_id: person['id']).present?
-            @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
+
+
+        if false
+          duplicates.each do |dup|
+              next if DuplicateRecord.where(person_id: person['id']).present?
+              @results << dup if PotentialDuplicate.where(person_id: dup['_id']).blank?
+          end
+        else
+          @results = duplicates
         end
 
         if @results.present? && !@birth_details.birth_type.name.to_s.downcase.include?("twin")
@@ -1078,6 +1087,7 @@ EOF
     @status = PersonRecordStatus.status(params[:person_id])
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
     @potential_records.duplicate_records.each do |record|
+      #raise record.person_id.inspect
       @similar_records << person_details(record.person_id)
     end
   end
@@ -1189,8 +1199,8 @@ EOF
       location_of_birth = Location.find(birth_details.birth_location_id).name
     when "home"
       village_of_birth = Location.find(birth_details.birth_location_id)
-      ta_of_birth  = Location.find(village_of_birth.parent_location)
-      district_of_birth = Location.find(ta_of_birth.parent_location)
+      ta_of_birth  = Location.find(village_of_birth.parent_location) rescue nil
+      district_of_birth = Location.find(ta_of_birth.parent_location) rescue nil
       location_of_birth = (village_of_birth.name rescue '') +" "+ (ta_of_birth.name rescue '') +" "+
                           (district_of_birth.name rescue '')
 
