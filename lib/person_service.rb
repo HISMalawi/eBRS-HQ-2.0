@@ -1156,6 +1156,10 @@ end
     if !exi_mother.blank?
       core_person = CorePerson.where(person_id: exi_mother.person_id).first
       mother_person = Person.where(person_id: exi_mother.person_id).first
+
+      File.open("#{Rails.root}/existing_ids", "a"){|f|
+        f.write(nris_person[:MotherPin])
+      }
     else
 
       core_person = CorePerson.create(
@@ -1220,6 +1224,9 @@ end
 
       if !exi_father.blank?
         core_person = CorePerson.where(person_id: exi_father.person_id).first
+        File.open("#{Rails.root}/existing_ids", "a"){|f|
+          f.write(nris_person[:FatherPin])
+        }
         #father_person = Person.where(person_id: exi_father.person_id).first
       else
 

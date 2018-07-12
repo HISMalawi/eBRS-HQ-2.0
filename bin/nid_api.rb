@@ -1,4 +1,4 @@
-
+$district_name = ARGV[0]
 $counter = 0
 $codes = JSON.parse(File.read("#{Rails.root}/db/code2country.json"))
 $user_id = User.where(username: 'admin279').first.id
@@ -31,6 +31,15 @@ $potential_duplicates   = []
 $success                = []
 $incomplete_records     = []
 $other_country          = []
+$records_with_special_character_names = []
+$missing_tas_records       = []
+$missing_districts_records = []
+$missing_villages_records  = []
+
+$registered_after_mass_reg        = []
+$registered_before_mass_reg       = []
+$registered_after_16_years        = []
+$have_now_reached_16_years        = []
 
 def format_person(hash, person_id=nil)
 
@@ -100,59 +109,12 @@ EOF
 end
 
 def mass_data
-=begin
-    data = [{
-        "Surname"=> "Ferrirad",
-        "OtherNames"=> "Moses",
-        "FirstName"=> "Masula",
-        "DateOfBirthString"=>"02/12/2017",
-        "Sex"=> 1,
-        "Nationality"=> "MWI",
-        "Nationality2"=> "",
-        "Status"=>"Normal",
-        "TypeOfBirth" => "Single",
-        "ModeOfDelivery" => "Breech",
-        "LevelOfEducation" => "none",
-        "MotherPin"=> '4BSBY839',
-        "MotherSurname"=> "Banda",
-        "MotherMaidenName"=> "Mwandala",
-        "MotherFirstName"=> "Zeliya",
-        "MotherOtherNames"=>"Julia",
-        "MotherNationality"=>"MWI",
-        "FatherPin"=> "4BSBY810",
-        "FatherSurname"=> "Kapundi",
-        "FatherFirstName"=> "Kangaonde",
-        "FatherOtherNames"=> "Masula",
-        "FatherVillageId"=>-1,
-        "FatherNationality"=>"MWI",
-        "EbrsPk"=> nil,
-        "NrisPk"=>nil,
-        "PlaceOfBirthDistrictId"=>-1,
-        "PlaceOfBirthDistrictName" => "Lilongwe",
-        "PlaceOfBirthTAName" => "Chadza",
-        "PlaceOfBirthVillageName" => "Maluwa",
-        "PlaceOfBirthVillageId"=>-1,
-        "MotherDistrictId"=>-1,
-        "MotherDistrictName"=> "Lilongwe",
-        "MotherTAName"=> "Chadza",
-        "MotherVillageName"=> "Kaphantengo",
-        "MotherVillageId"=>-1,
-        "FatherDistrictId"=> -1,
-        "FatherDistrictName"=> "Lilongwe",
-        "FatherTAName" => "Chadza",
-        "FatherVillageName" => "Masula",
-        "EditUser"=> "Dataman1",
-        "EditMachine"=>"192.168.43.5",
-        "BirthCertificateNumber"=> "00000200001",
-        "DistrictOfRegistration" => "Lilongwe",
-        "MotherAge" => "30",
-        "FatherAge" => "30",
-        "DateRegistered" => "02/11/2017"
-        "Category" => ""
-    }]
-=end
 
-  district = Location.where(name: "Rumphi").last
+  district = Location.find_by_sql(
+      ["SELECT * FROM location l INNER JOIN location_tag_map m ON l.location_id = m.location_id
+          AND m.location_tag_id = #{$district_tag_id}
+        WHERE l.name = '#{$district_name}' "]).first
+
   district_name = district.name
   district_code = district.code
   puts "DISTRICT: #{district_name}, CODE: #{district_code}"
@@ -166,7 +128,7 @@ def mass_data
 EOF
   last_2017_ben =  last_2017_ben.first[0]
   $counter = last_2017_ben.split("/")[1].to_i
-#  $counter = "9884"
+  puts $counter
   puts "Last BEN: #{$counter}"
 
   columns = ActiveRecord::Base.connection.execute <<EOF
@@ -178,19 +140,26 @@ EOF
   $potential_duplicates << columns.join(",")
   $success << columns.join(",")
 
-=begin
-  data = ActiveRecord::Base.connection.execute <<EOF
-    SELECT * FROM mass_data WHERE
-      DistrictOfRegistration = 'Lilongwe' AND category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
-EOF
+  $missing_districts      << ["District"].join(",")
+  $missing_tas            << ["District", "TA"].join(",")
+  $missing_villages       << ["District", "TA", "Village"].join(",")
 
-=end
+  $missing_tas_records            << columns.join(",")
+  $missing_districts_records      << columns.join(",")
+  $missing_villages_records       << columns.join(",")
 
+  $registered_after_mass_reg      << columns.join(",")
+  $incomplete_records      << columns.join(",")
+  $other_country           << columns.join(",")
+  $records_with_special_character_names  << columns.join(",")
+  $registered_before_mass_reg << columns.join(",")
+  $registered_after_16_years  << columns.join(",")
+  $have_now_reached_16_years << columns.join(",")
 
   data = ActiveRecord::Base.connection.execute <<EOF
      SELECT * FROM mass_data
   WHERE category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
-  AND DistrictOfRegistration IN ('Rumphi');
+  AND DistrictOfRegistration IN ('#{district_name}');
 EOF
 
 =begin
@@ -209,7 +178,7 @@ EOF
       hash[columns[i]] = value
     end
 
-    next if (PersonBirthDetail.where(source_id: nid_child[0]).count > 0)
+    already_loaded =  (PersonBirthDetail.where(source_id: nid_child[0]).count > 0)
 
     ActiveRecord::Base.transaction do
       hash = hash.with_indifferent_access
@@ -220,8 +189,19 @@ EOF
 
       load_status = "Success"
 
-      #Filter for Complete Cases
+      #Filter for names with special characters
+      if load_status == "Success"
+        [hash["Surname"], hash["OtherNames"], hash["FirstName"], hash["MotherSurname"], hash["MotherFirstName"]].each do |name|
 
+          if name.to_s.match(/[-!$%^&*()_+|~=`{}\[\]:";@\#<>?,.\/]|\d+/)
+            load_status = "Name With Special Character"
+            $records_with_special_character_names << nid_child.join(",")
+          end
+        end
+
+      end
+
+      #Filter for Complete Cases
       if load_status == "Success"
         if ([hash["Surname"], hash["FirstName"], hash["DateOfBirthString"], hash["Nationality"],
              hash["MotherSurname"], hash["MotherFirstName"], hash["MotherPin"], hash["MotherNationality"],
@@ -232,8 +212,17 @@ EOF
         end
       end
 
-      #Filter For Other Country
+      #Validation for Father Details
+      if load_status == "Success" && hash["Category"].to_s.strip == "Bothparents-biological-spousematched"
 
+        if ([hash["FatherFirstName"], hash["FatherSurname"], hash["FatherPin"], hash["FatherNationality"]] & ["", nil]).length > 0
+
+          load_status = "Record Incomplete"
+          $incomplete_records << nid_child.join(",")
+        end
+      end
+
+      #Filter For Other Country
       if load_status == "Success"
         if [hash["PlaceOfBirthDistrictName"], hash["PlaceOfBirthTaName"], hash["PlaceOfBirthVillageName"],
             hash[" MotherDistrictName"], hash[" MotherTAName"], hash[" MotherVillageName"],
@@ -243,6 +232,7 @@ EOF
         end
       end
 
+      ds_loaded = false
       #Filter For Missing District
       if load_status == "Success"
         [hash["PlaceOfBirthDistrictName"], hash[" MotherDistrictName"], hash[" FatherDistrictName"]].each do |district|
@@ -255,11 +245,14 @@ EOF
           if found == false
             load_status = "Missing District"
             $missing_districts << district
+            $missing_districts_records << nid_child.join(",") if ds_loaded == false
+            ds_loaded = true
           end
         end
       end
 
       #Filter For Missing TA
+      ta_loaded = false
       if load_status == "Success"
         [[hash["PlaceOfBirthTAName"], hash["PlaceOfBirthDistrictName"]],
          [hash[" MotherTAName"], hash["MotherDistrictName"]],
@@ -278,11 +271,14 @@ EOF
           if found == false
             load_status = "Missing TA"
             $missing_tas << "#{district}, #{ta}"
+            $missing_tas_records << nid_child.join(",") if ta_loaded == false
+            ta_loaded = true
           end
         end
       end
 
       #Filter For Missing Village
+      vg_loaded = false
       if load_status == "Success"
         [[hash["PlaceOfBirthVillageName"], hash["PlaceOfBirthTAName"], hash["PlaceOfBirthDistrictName"]],
          [hash[" MotherVillageName"], hash[" MotherTAName"], hash["MotherDistrictName"]],
@@ -307,8 +303,31 @@ EOF
           if found == false
             load_status = "Missing Village"
             $missing_villages << "#{district}, #{ta}, #{village}"
+            $missing_villages_records << nid_child.join(",") if vg_loaded == false
+            vg_loaded = true
           end
         end
+      end
+
+      #Registered After Mass Data
+      if hash["DateRegistered"].to_date >= "01/11/2017".to_date
+        load_status = "Registered After Mass Registration"
+        $registered_after_mass_reg << nid_child.join(",")
+      end
+
+      if hash["DateRegistered"].to_date < "01/07/2017".to_date
+        load_status = "Registered Before Mass Registration"
+        $registered_before_mass_reg << nid_child.join(",")
+      end
+
+      if (Date.today - hash["DateOfBirthString"].to_date).to_i/365.0 >= 16.0
+        load_status = "Have Now Reached 16 Years"
+        $have_now_reached_16_years << nid_child.join(",")
+      end
+
+      if (hash["DateRegistered"].to_date - hash["DateOfBirthString"].to_date).to_i/365.0 >= 16
+        load_status = "Registered After 16 Years"
+        $registered_after_16_years << nid_child.join(",")
       end
 
 
@@ -319,12 +338,14 @@ EOF
       person = format_person(hash, 0)
       exact_duplicates = SimpleElasticSearch.query_duplicate_coded(person, 100)
 
+      next if already_loaded
+
       if exact_duplicates.present?
         load_status = "Exact Duplicate(s) Found"
         status = "HQ-EXACT-DUPLICATE"
         puts load_status
         $exact_duplicates << nid_child.join(",")
-      else
+      elsif load_status == "Success"
 
         person_id  = PersonService.create_nris_person(hash)
         hash['id'] = person_id
@@ -361,7 +382,8 @@ EOF
         ben = assign_next_ben(person_id, district_code)
 
         #Assign Birth Registration Number - BRN
-        brn = assign_next_brn(person_id) unless status == "HQ-POTENTIAL DUPLICATE-TBA"
+        brn = nil
+        brn = assign_next_brn(person_id) if status != "HQ-POTENTIAL DUPLICATE-TBA"
         puts "#{person_id} # #{ben } # #{brn}"
 
         #Initialize record status
@@ -386,22 +408,19 @@ EOF
   puts "#{data.count} Records Checked"
 end
 
-puts "Mass Data Import Starting"
+puts "Mass Data Import Started"
 mass_data
 
-puts "#{$missing_districts.uniq.count} Missing Districts # #{$missing_districts.count} Records"
-puts "#{$missing_tas.uniq.count} Missing TAs  # #{$missing_tas.count} Records"
-puts "#{$missing_villages.uniq.count} Missing Villages # #{$missing_villages.count} Records"
-puts "#{$incomplete_records.count} Incomplete Records"
-puts "#{$other_country.count} With Other Country"
-puts "#{$success.uniq.count} Records Loaded"
-
-
-File.open("missing_district.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
-File.open("missing_tas.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
-File.open("missing_villages.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
-File.open("potential_duplicates.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
-File.open("exact_duplicates.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
-File.open("incomplete_records.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
-File.open("other_country.csv", "w"){|f| f.write($other_country.join("\n"))}
-File.open("successfull.csv", "w"){|f| f.write($success.join("\n"))}
+File.open("#{$district_name.upcase}-missing_district_#{$missing_districts_records.count - 1}.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
+File.open("#{$district_name.upcase}-missing_tas_#{$missing_tas_records.count - 1}.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
+File.open("#{$district_name.upcase}-missing_villages_#{$missing_villages_records.count - 1}.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
+File.open("#{$district_name.upcase}-potential_duplicates_#{$potential_duplicates.count - 1}.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
+File.open("#{$district_name.upcase}-exact_duplicates_#{$exact_duplicates.count - 1}.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
+File.open("#{$district_name.upcase}-incomplete_records_#{$incomplete_records.count - 1}.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
+File.open("#{$district_name.upcase}-other_country_#{$other_country.count - 1}.csv", "w"){|f| f.write($other_country.join("\n"))}
+File.open("#{$district_name.upcase}-successfull_#{$success.count - 1}.csv", "w"){|f| f.write($success.join("\n"))}
+File.open("#{$district_name.upcase}-registered_after_mass_#{$registered_after_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_after_mass_reg.join("\n"))}
+File.open("#{$district_name.upcase}-records_with_special_characters_names_#{$records_with_special_character_names.count - 1}.csv", "w"){|f| f.write($records_with_special_character_names.join("\n"))}
+File.open("#{$district_name.upcase}-registered_before_mass_reg_#{$registered_before_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_before_mass_reg.join("\n"))}
+File.open("#{$district_name.upcase}-registered_after_16_years_#{$registered_after_16_years.count - 1}.csv", "w"){|f| f.write($registered_after_16_years.join("\n"))}
+File.open("#{$district_name.upcase}-have_now_reached_16_years_#{$have_now_reached_16_years.count - 1}.csv", "w"){|f| f.write($have_now_reached_16_years.join("\n"))}
