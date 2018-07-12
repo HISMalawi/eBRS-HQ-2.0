@@ -152,7 +152,7 @@ class SimpleElasticSearch
       next if hit["_id"].squish ==(person["id"].squish rescue nil)
       hit_content = hit["_source"]["content"]
       potential_hit = hit
-      potential_hit["similarity_score"] = self.check_similarity_by_position(person["id"],hit["_id"]).to_f
+      potential_hit["similarity_score"] = self.check_similarity_by_position(person,hit["_id"]).to_f
       if potential_hit["similarity_score"] >= precision.to_i
         potential_duplicates <<  hit
       end
@@ -162,7 +162,7 @@ class SimpleElasticSearch
     return potential_duplicates
   end
 
-  def self.check_similarity_by_position(newrecord_id,existingrecord_id)
+  def self.check_similarity_by_position(newrecord,existingrecord_id)
       scores = {
                 "name" => 2,
                 "dob" => 3,
@@ -173,7 +173,7 @@ class SimpleElasticSearch
 
       score = 0
       #0. Records
-      newrecord = self.person_details(newrecord_id)
+      #newrecord = self.person_details(newrecord_id)
       existingrecord = self.person_details(existingrecord_id)
 
       # 1. Comparing person name

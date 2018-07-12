@@ -69,6 +69,10 @@
 #duplicates th{
     background: #d9d8d7;
 }
+.red{
+    color:#c81414;
+    font-weight: bold;
+}
 </style>
 <script>
   return_path = '<%= session[:list_url]%>'
@@ -345,7 +349,7 @@
         <span style="text-align:center;">
           <table align="center" id="duplicates">
             <tr>
-               <th colspan="11" style="background:#ecccb4">Duplicate record</th>
+               <th colspan="11" style="background:#ecccb4">Duplicate record (<i>New</i>)</th>
             </tr>
             <tr>
               <th colspan="5"> Child's details</th>
@@ -355,7 +359,7 @@
             </tr>
             <tr>
                <td><%= @birth_details.district_id_number %></td>
-               <td><%= @name.first_name %></td>
+               <td ><%= @name.first_name %></td>
                <td><%= @name.last_name %></td>
                <td><%= @person.gender %> </td>
                <td><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
@@ -366,7 +370,7 @@
                <td></td>
             </tr>
             <tr>
-               <th colspan="11" style="background: #c8e3ee">Existing record(s)</th>
+               <th colspan="11" style="background: #c8e3ee">Existing record(s) (<i>Currently in HQ database</i>)</th>
             </tr>
             <tr>
               <th colspan="5"> Child's details</th>
@@ -389,14 +393,32 @@
             <% @results.each do |result| %>
               <tr>
                 <td><%= PersonBirthDetail.find_by_person_id(result["_id"].to_i).district_id_number rescue ''%></td>
-                <td><%= result["_source"]["first_name"]%> </td>
-                <td><%= result["_source"]["last_name"]%> </td>
-                <td><%= result["_source"]["gender"].first.upcase %> </td>
-                <td><%= result["_source"]["birthdate"].to_date.strftime("%d/%b/%Y")%> </td>
-                <td><%= result["_source"]["mother_first_name"]%> </td>
-                <td><%= result["_source"]["mother_last_name"]%> </td>
-                <td><%= result["_source"]["father_first_name"] rescue 'N/A'%> </td>
-                <td><%= result["_source"]["father_last_name"] rescue 'N/A'%> </td>
+
+                <td class="<%= @name.first_name.squish != result['_source']['first_name'].squish ? 'red' : ''  %>">
+                    <%= result["_source"]["first_name"]%> 
+                </td>
+                <td class="<%= @name.last_name.squish != result['_source']['last_name'].squish ? 'red' : ''  %>">
+                    <%= result["_source"]["last_name"]%> 
+                </td>
+                <td class="<%= @person.gender.squish != result['_source']['gender'].first.upcase ? 'red' : ''  %>">
+                  <%= result["_source"]["gender"].first.upcase %>
+                  
+                </td>
+                <td class="<%= @person.birthdate.to_date.strftime('%d/%b/%Y').squish != result['_source']['birthdate'].to_date.strftime('%d/%b/%Y') ? 'red' : ''  %>">
+                  <%= result["_source"]["birthdate"].to_date.strftime("%d/%b/%Y")%> 
+                </td>
+                <td class="<%= @mother_name.first_name.squish != result['_source']['mother_first_name'].squish ? 'red' : ''  %>">
+                    <%= result["_source"]["mother_first_name"]%> 
+                </td>
+                <td class="<%= @mother_name.last_name.squish != result['_source']['mother_last_name'].squish ? 'red' : ''  %>">
+                  <%= result["_source"]["mother_last_name"]%> 
+                </td>
+                <td  class="<%= @father_name.first_name.to_s.squish != result['_source']['father_first_name'].to_s.squish ? 'red' : ''  %>">
+                  <%= result["_source"]["father_first_name"] rescue 'N/A'%> 
+                </td>
+                <td class="<%= @father_name.last_name.to_s.squish != result['_source']['father_last_name'].to_s.squish ? 'red' : ''  %>">
+                  <%= result["_source"]["father_last_name"] rescue 'N/A'%> 
+                </td>
                 <td><%=result["similarity_score"].to_f.round(2) %></td>
               </tr>
             <% end %>
