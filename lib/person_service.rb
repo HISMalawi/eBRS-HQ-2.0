@@ -1451,13 +1451,14 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       res = JSON.parse(response) rescue response.to_s
 
       return "FAILED" if !res.match("#")
-      puts res
       array = res.split("#")
       nid = array[0]
       nid = nid.gsub("\"", '')
       puts "NID: #{nid}, LENGTH #{nid.length}"
       puts "NRIS KEY: #{array[1]}"
+      return "FAILED" if nid.strip.length != 8
 
+      puts res
       if nid.present? && nid.to_s.length == 8
         success = true
         old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last

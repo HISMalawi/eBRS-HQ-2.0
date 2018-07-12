@@ -114,6 +114,7 @@ module EbrsAttribute
   end
 
   def next_primary_key
+    
     location_pad = SETTINGS['location_id'].to_s.rjust(5, '0').rjust(6, '1')
     max = (ActiveRecord::Base.connection.select_all("SELECT MAX(#{self.class.primary_key})
       FROM #{self.class.table_name} WHERE #{self.class.primary_key} LIKE '#{location_pad}%' ").last.values.last.to_i rescue 0)
