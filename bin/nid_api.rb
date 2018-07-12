@@ -338,6 +338,7 @@ EOF
       status = "HQ-CAN-PRINT"
       person = format_person(hash, 0)
       exact_duplicates = SimpleElasticSearch.query_duplicate_coded(person, 100)
+      exact_duplicates.delete_if{|e| e['id'].to_s.match(/^135764/)}
 
       next if already_loaded
 
@@ -351,6 +352,7 @@ EOF
         person_id  = PersonService.create_nris_person(hash)
         hash['id'] = person_id
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
+        duplicates.delete_if{|e| e['id'].to_s.match(/^135764/)}
 
         if duplicates.present?
           load_status = "Potential Duplicate(s) Found"
