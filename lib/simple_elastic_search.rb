@@ -163,6 +163,7 @@ class SimpleElasticSearch
   end
 
   def self.check_similarity_by_position(newrecord,existingrecord_id)
+    return 0 if existingrecord_id.to_s == "0"
       scores = {
                 "name" => 2,
                 "dob" => 3,
@@ -174,7 +175,10 @@ class SimpleElasticSearch
       score = 0
       #0. Records
       #newrecord = self.person_details(newrecord_id)
-      existingrecord = self.person_details(existingrecord_id)
+      person = self.person_details(existingrecord_id) rescue nil
+      return 0 if person.blank?
+
+      existingrecord = person
 
       # 1. Comparing person name
       newrecord_name = "#{newrecord['first_name']} #{newrecord['last_name']}"
