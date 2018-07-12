@@ -1196,7 +1196,7 @@ end
       )
 
       pam.home_district_other = nris_person["MotherDistrictName"] if m_district_id.blank?
-      pam.home_ta_other = nris_person["MotherTaName"] if m_ta_id.blank?
+      pam.home_ta_other = nris_person["MotherTAName"] if m_ta_id.blank?
       pam.home_village_other = nris_person["MotherVillageName"] if m_village_id.blank?
       pam.save
 
