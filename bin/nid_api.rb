@@ -109,6 +109,8 @@ EOF
 end
 
 def mass_data(district_n = $district_name)
+  $district_name = district_n
+  
   district = Location.find_by_sql(
       ["SELECT * FROM location l INNER JOIN location_tag_map m ON l.location_id = m.location_id
           AND m.location_tag_id = #{$district_tag_id}
@@ -131,8 +133,8 @@ EOF
     SELECT MAX(value) ben FROM person_identifiers WHERE value LIKE '#{district_code}/%2017';
 EOF
 
-  puts "New: " + last_2017_ben2.first[0]
-  puts "Old: " + last_2017_ben.first[0]
+  puts "#{district_n} New BEN: " + last_2017_ben2.first[0]
+  puts "#{district_n} Old BEN: " + last_2017_ben.first[0]
 
   if last_2017_ben.first[0].blank?
     return nil
@@ -246,7 +248,107 @@ EOF
         end
       end
 
+      ds_loaded = false
+      #Filter For Missing District
+      if load_status == "Success"
+        [hash["PlaceOfBirthDistrictName"], hash[" MotherDistrictName"], hash[" FatherDistrictName"]].each do |district|
+          next if district.blank?
+          found = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = \"#{district}\" AND tm.location_tag_id = #{$district_tag_id}
+                                       ").length > 0
 
+          if found == false
+            load_status = "Missing District"
+            $missing_districts << district
+            $missing_districts_records << nid_child.join(",") if ds_loaded == false
+            ds_loaded = true
+          end
+        end
+      end
+
+      #Filter For Missing TA
+      ta_loaded = false
+      if load_status == "Success"
+        [[hash["PlaceOfBirthTAName"], hash["PlaceOfBirthDistrictName"]],
+         [hash[" MotherTAName"], hash["MotherDistrictName"]],
+         [hash[" FatherTAName"], hash["FatherDistrictName"]]].each do |ta, district|
+          next if ta.blank? || district.blank?
+          tas = [ta, ("SC " + ta), ("S/C " + ta), ("TA " + ta), ("STA " + ta)]
+          district_id = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = \"#{district}\" AND tm.location_tag_id = #{$district_tag_id}
+                                             ").first.location_id rescue nil
+          found = (Location.find_by_sql(["
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name IN (?) AND tm.location_tag_id = #{$ta_tag_id} AND l.parent_location = #{district_id}
+                                         ", tas]).length > 0)
+
+          if found == false
+            load_status = "Missing TA"
+            $missing_tas << "#{district}, #{ta}"
+            $missing_tas_records << nid_child.join(",") if ta_loaded == false
+            ta_loaded = true
+          end
+        end
+      end
+
+      #Filter For Missing Village
+      vg_loaded = false
+      if load_status == "Success"
+        [[hash["PlaceOfBirthVillageName"], hash["PlaceOfBirthTAName"], hash["PlaceOfBirthDistrictName"]],
+         [hash[" MotherVillageName"], hash[" MotherTAName"], hash["MotherDistrictName"]],
+         [hash[" FatherVillageName"], hash[" FatherTAName"], hash["FatherDistrictName"]]].each do |village, ta, district|
+          next if village.blank? || ta.blank? || district.blank?
+
+          tas = [ta, ("SC " + ta), ("S/C " + ta), ("TA " + ta), ("STA " + ta)]
+          district_id = Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = \"#{district}\" AND tm.location_tag_id = #{$district_tag_id}
+                                             ").first.location_id rescue nil
+          ta_id = Location.find_by_sql(["
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name IN (?) AND tm.location_tag_id = #{$ta_tag_id} AND l.parent_location = #{district_id}
+                                        ", tas]).first.location_id
+
+          found = (Location.find_by_sql("
+                    SELECT * FROM location l INNER JOIN location_tag_map tm ON l.location_id = tm.location_id
+                      WHERE  l.name = \"#{village}\" AND tm.location_tag_id = #{$village_tag_id} AND l.parent_location = #{ta_id}
+                                        ").length > 0)
+
+          if found == false
+            load_status = "Missing Village"
+            $missing_villages << "#{district}, #{ta}, #{village}"
+            $missing_villages_records << nid_child.join(",") if vg_loaded == false
+            vg_loaded = true
+          end
+        end
+      end
+
+      #Registered After Mass Data
+      if hash["DateRegistered"].to_date >= "01/11/2017".to_date
+        load_status = "Registered After Mass Registration"
+        $registered_after_mass_reg << nid_child.join(",")
+      end
+
+      if hash["DateRegistered"].to_date < "01/07/2017".to_date
+        load_status = "Registered Before Mass Registration"
+        $registered_before_mass_reg << nid_child.join(",")
+      end
+
+      if (Date.today - hash["DateOfBirthString"].to_date).to_i/365.0 >= 16.0
+        load_status = "Have Now Reached 16 Years"
+        $have_now_reached_16_years << nid_child.join(",")
+      end
+
+      if (hash["DateRegistered"].to_date - hash["DateOfBirthString"].to_date).to_i/365.0 >= 16
+        load_status = "Registered After 16 Years"
+        $registered_after_16_years << nid_child.join(",")
+      end
+
+
+      #Filter for Existing mother
+      #Filter for Existing father
 
       status = "HQ-CAN-PRINT"
       person = format_person(hash, 0)
@@ -330,21 +432,42 @@ districts_registered = ActiveRecord::Base.connection.execute <<EOF
     SELECT DISTINCT(DistrictOfRegistration) FROM mass_data;
 EOF
 
-districts_registered = districts_registered.as_json.flatten.sort
+districts_registered = ["Dowa", "Kasungu"] + districts_registered.as_json.flatten.sort
 districts_registered.each do |d|
+
+  $missing_districts      = []
+  $missing_tas            = []
+  $missing_villages       = []
+  $exact_duplicates       = []
+  $potential_duplicates   = []
+  $success                = []
+  $incomplete_records     = []
+  $other_country          = []
+  $records_with_special_character_names = []
+  $missing_tas_records       = []
+  $missing_districts_records = []
+  $missing_villages_records  = []
+
+  $registered_after_mass_reg        = []
+  $registered_before_mass_reg       = []
+  $registered_after_16_years        = []
+  $have_now_reached_16_years        = []
+
   mass_data(d)
+
+  File.open("#{$district_name.upcase}-missing_district_#{$missing_districts_records.count - 1}.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
+  File.open("#{$district_name.upcase}-missing_tas_#{$missing_tas_records.count - 1}.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
+  File.open("#{$district_name.upcase}-missing_villages_#{$missing_villages_records.count - 1}.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
+  File.open("#{$district_name.upcase}-potential_duplicates_#{$potential_duplicates.count - 1}.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
+  File.open("#{$district_name.upcase}-exact_duplicates_#{$exact_duplicates.count - 1}.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
+  File.open("#{$district_name.upcase}-incomplete_records_#{$incomplete_records.count - 1}.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
+  File.open("#{$district_name.upcase}-other_country_#{$other_country.count - 1}.csv", "w"){|f| f.write($other_country.join("\n"))}
+  File.open("#{$district_name.upcase}-successfull_#{$success.count - 1}.csv", "w"){|f| f.write($success.join("\n"))}
+  File.open("#{$district_name.upcase}-registered_after_mass_#{$registered_after_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_after_mass_reg.join("\n"))}
+  File.open("#{$district_name.upcase}-records_with_special_characters_names_#{$records_with_special_character_names.count - 1}.csv", "w"){|f| f.write($records_with_special_character_names.join("\n"))}
+  File.open("#{$district_name.upcase}-registered_before_mass_reg_#{$registered_before_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_before_mass_reg.join("\n"))}
+  File.open("#{$district_name.upcase}-registered_after_16_years_#{$registered_after_16_years.count - 1}.csv", "w"){|f| f.write($registered_after_16_years.join("\n"))}
+  File.open("#{$district_name.upcase}-have_now_reached_16_years_#{$have_now_reached_16_years.count - 1}.csv", "w"){|f| f.write($have_now_reached_16_years.join("\n"))}
 end
 
-File.open("#{$district_name.upcase}-missing_district_#{$missing_districts_records.count - 1}.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
-File.open("#{$district_name.upcase}-missing_tas_#{$missing_tas_records.count - 1}.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
-File.open("#{$district_name.upcase}-missing_villages_#{$missing_villages_records.count - 1}.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
-File.open("#{$district_name.upcase}-potential_duplicates_#{$potential_duplicates.count - 1}.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
-File.open("#{$district_name.upcase}-exact_duplicates_#{$exact_duplicates.count - 1}.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
-File.open("#{$district_name.upcase}-incomplete_records_#{$incomplete_records.count - 1}.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
-File.open("#{$district_name.upcase}-other_country_#{$other_country.count - 1}.csv", "w"){|f| f.write($other_country.join("\n"))}
-File.open("#{$district_name.upcase}-successfull_#{$success.count - 1}.csv", "w"){|f| f.write($success.join("\n"))}
-File.open("#{$district_name.upcase}-registered_after_mass_#{$registered_after_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_after_mass_reg.join("\n"))}
-File.open("#{$district_name.upcase}-records_with_special_characters_names_#{$records_with_special_character_names.count - 1}.csv", "w"){|f| f.write($records_with_special_character_names.join("\n"))}
-File.open("#{$district_name.upcase}-registered_before_mass_reg_#{$registered_before_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_before_mass_reg.join("\n"))}
-File.open("#{$district_name.upcase}-registered_after_16_years_#{$registered_after_16_years.count - 1}.csv", "w"){|f| f.write($registered_after_16_years.join("\n"))}
-File.open("#{$district_name.upcase}-have_now_reached_16_years_#{$have_now_reached_16_years.count - 1}.csv", "w"){|f| f.write($have_now_reached_16_years.join("\n"))}
+

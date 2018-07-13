@@ -1127,7 +1127,7 @@ end
     details = PersonBirthDetail.create(
         person_id: core_person.id,
         birth_registration_type_id: reg_type,
-        place_of_birth:  Location.locate_id_by_tag("Other", "Place Of Birth"),
+        place_of_birth:  Location.locate_id_by_tag("Home", "Place Of Birth"),
         birth_location_id: village_id,
         district_of_birth:  district_id,
         other_birth_location: other_place,
@@ -1288,6 +1288,7 @@ end
       )
     end
 
+=begin
     PersonRelationship.create(
         person_a: ebrs_person.id,
         person_b: mother_person.id,
@@ -1295,6 +1296,7 @@ end
     )
 
     details.update_attribute("informant_relationship_to_person", "Mother")
+=end
 
     return ebrs_person.id
   end
