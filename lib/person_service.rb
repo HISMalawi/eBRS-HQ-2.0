@@ -1265,7 +1265,7 @@ end
         )
 
         paf.home_district_other = nris_person["FatherDistrictName"] if f_district_id.blank?
-        paf.home_ta_other = nris_person["FatherTaName"]   if f_ta_id.blank?
+        paf.home_ta_other = nris_person["FatherTAName"]   if f_ta_id.blank?
         paf.home_village_other = nris_person["FatherVillageName"] if f_village_id.blank?
         paf.save
 

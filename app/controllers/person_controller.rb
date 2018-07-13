@@ -205,8 +205,8 @@ class PersonController < ApplicationController
               },
               {
                   "Home Address, District" => "#{loc(@mother_address.home_district, 'District') rescue nil}",
-                  "T/A" => "#{loc(@mother_address.home_ta, 'Traditional Authority') rescue nil}",
-                  "Village/Town" => "#{loc(@mother_address.home_village, 'Village') rescue nil}"
+                  "T/A" => "#{(loc(@mother_address.home_ta, 'Traditional Authority') rescue @mother_address.home_ta_other) rescue nil}",
+                  "Village/Town" => "#{(loc(@mother_address.home_village, 'Village') rescue @mother_address.home_village_other) rescue nil}"
               },
               {
                   "Gestation age at birth in weeks" => "#{@birth_details.gestation_at_birth rescue nil}",
@@ -240,8 +240,8 @@ class PersonController < ApplicationController
               },
               {
                   "Home Address, District" => "#{loc(@father_address.home_district, 'District') rescue nil}",
-                  "T/A" => "#{loc(@father_address.home_ta, 'Traditional Authority') rescue nil}",
-                  "Village/Town" => "#{loc(@father_address.home_village, 'Village') rescue nil}"
+                  "T/A" => "#{(loc(@father_address.home_ta, 'Traditional Authority') || @father_address.home_ta_other) rescue nil}",
+                  "Village/Town" => "#{(loc(@father_address.home_village, 'Village') || @father_address.home_village_other) rescue nil}"
               }
           ],
           "Details of Child's Informant" => [
