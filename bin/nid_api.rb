@@ -434,6 +434,7 @@ EOF
 
 districts_registered = (["Dowa", "Kasungu"] + districts_registered.as_json.flatten.sort)
 districts_registered.each do |d|
+  next if d.upcase.strip == "LIKOMA"
 
   $missing_districts      = []
   $missing_tas            = []
