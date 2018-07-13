@@ -432,7 +432,7 @@ districts_registered = ActiveRecord::Base.connection.execute <<EOF
     SELECT DISTINCT(DistrictOfRegistration) FROM mass_data;
 EOF
 
-districts_registered = districts_registered.as_json.flatten.sort
+districts_registered = (["Dowa", "Kasungu"] + districts_registered.as_json.flatten.sort)
 districts_registered.each do |d|
 
   $missing_districts      = []
@@ -455,19 +455,19 @@ districts_registered.each do |d|
 
   mass_data(d)
 
-  File.open("#{$district_name.upcase}-missing_district_#{$missing_districts_records.count - 1}.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
-  File.open("#{$district_name.upcase}-missing_tas_#{$missing_tas_records.count - 1}.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
-  File.open("#{$district_name.upcase}-missing_villages_#{$missing_villages_records.count - 1}.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
-  File.open("#{$district_name.upcase}-potential_duplicates_#{$potential_duplicates.count - 1}.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
-  File.open("#{$district_name.upcase}-exact_duplicates_#{$exact_duplicates.count - 1}.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
-  File.open("#{$district_name.upcase}-incomplete_records_#{$incomplete_records.count - 1}.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
-  File.open("#{$district_name.upcase}-other_country_#{$other_country.count - 1}.csv", "w"){|f| f.write($other_country.join("\n"))}
-  File.open("#{$district_name.upcase}-successfull_#{$success.count - 1}.csv", "w"){|f| f.write($success.join("\n"))}
-  File.open("#{$district_name.upcase}-registered_after_mass_#{$registered_after_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_after_mass_reg.join("\n"))}
-  File.open("#{$district_name.upcase}-records_with_special_characters_names_#{$records_with_special_character_names.count - 1}.csv", "w"){|f| f.write($records_with_special_character_names.join("\n"))}
-  File.open("#{$district_name.upcase}-registered_before_mass_reg_#{$registered_before_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_before_mass_reg.join("\n"))}
-  File.open("#{$district_name.upcase}-registered_after_16_years_#{$registered_after_16_years.count - 1}.csv", "w"){|f| f.write($registered_after_16_years.join("\n"))}
-  File.open("#{$district_name.upcase}-have_now_reached_16_years_#{$have_now_reached_16_years.count - 1}.csv", "w"){|f| f.write($have_now_reached_16_years.join("\n"))}
+  File.open("data/#{$district_name.upcase}-missing_district_#{$missing_districts_records.count - 1}.csv", "w"){|f| f.write($missing_districts.uniq.join("\n"))}
+  File.open("data/#{$district_name.upcase}-missing_tas_#{$missing_tas_records.count - 1}.csv", "w"){|f| f.write($missing_tas.uniq.join("\n"))}
+  File.open("data/#{$district_name.upcase}-missing_villages_#{$missing_villages_records.count - 1}.csv", "w"){|f| f.write($missing_villages.uniq.join("\n"))}
+  File.open("data/#{$district_name.upcase}-potential_duplicates_#{$potential_duplicates.count - 1}.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
+  File.open("data/#{$district_name.upcase}-exact_duplicates_#{$exact_duplicates.count - 1}.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
+  File.open("data/#{$district_name.upcase}-incomplete_records_#{$incomplete_records.count - 1}.csv", "w"){|f| f.write($incomplete_records.join("\n"))}
+  File.open("data/#{$district_name.upcase}-other_country_#{$other_country.count - 1}.csv", "w"){|f| f.write($other_country.join("\n"))}
+  File.open("data/#{$district_name.upcase}-successfull_#{$success.count - 1}.csv", "w"){|f| f.write($success.join("\n"))}
+  File.open("data/#{$district_name.upcase}-registered_after_mass_#{$registered_after_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_after_mass_reg.join("\n"))}
+  File.open("data/#{$district_name.upcase}-records_with_special_characters_names_#{$records_with_special_character_names.count - 1}.csv", "w"){|f| f.write($records_with_special_character_names.join("\n"))}
+  File.open("data/#{$district_name.upcase}-registered_before_mass_reg_#{$registered_before_mass_reg.count - 1}.csv", "w"){|f| f.write($registered_before_mass_reg.join("\n"))}
+  File.open("data/#{$district_name.upcase}-registered_after_16_years_#{$registered_after_16_years.count - 1}.csv", "w"){|f| f.write($registered_after_16_years.join("\n"))}
+  File.open("data/#{$district_name.upcase}-have_now_reached_16_years_#{$have_now_reached_16_years.count - 1}.csv", "w"){|f| f.write($have_now_reached_16_years.join("\n"))}
 end
 
 
