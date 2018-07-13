@@ -126,7 +126,13 @@ def mass_data
   last_2017_ben = ActiveRecord::Base.connection.execute <<EOF
     SELECT MAX(district_id_number) ben FROM person_birth_details WHERE district_id_number LIKE '#{district_code}/%2017';
 EOF
-  last_2017_ben =  last_2017_ben.first[0]
+
+  last_2017_ben2 = ActiveRecord::Base.connection.execute <<EOF
+    SELECT MAX(value) ben FROM person_birth_details WHERE value LIKE '#{district_code}/%2017';
+EOF
+
+  last_2017_ben =  [last_2017_ben.first[0], last_2017_ben2.first[0]].max
+
   $counter = last_2017_ben.split("/")[1].to_i
   puts $counter
   puts "Last BEN: #{$counter}"
@@ -191,7 +197,8 @@ EOF
 
       #Filter for names with special characters
       if load_status == "Success"
-        [hash["Surname"], hash["OtherNames"], hash["FirstName"], hash["MotherSurname"], hash["MotherFirstName"]].each do |name|
+        [hash["Surname"], hash["OtherNames"], hash["FirstName"], hash["MotherFirstName"], hash["MotherSurname"], hash["MotherOtherNames"],
+         hash["FatherSurname"], hash["FatherFirstName"], hash["FatherOtherNames"]].each do |name|
 
           if name.to_s.match(/[-!$%^&*()_+|~=`{}\[\]:";@\#<>?,.\/]|\d+/)
             load_status = "Name With Special Character"
@@ -337,6 +344,7 @@ EOF
       status = "HQ-CAN-PRINT"
       person = format_person(hash, 0)
       exact_duplicates = SimpleElasticSearch.query_duplicate_coded(person, 100)
+      exact_duplicates.delete_if{|e| e['id'].to_s.match(/^135764/)}
 
       next if already_loaded
 
@@ -350,6 +358,7 @@ EOF
         person_id  = PersonService.create_nris_person(hash)
         hash['id'] = person_id
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
+        duplicates.delete_if{|e| e['id'].to_s.match(/^135764/)}
 
         if duplicates.present?
           load_status = "Potential Duplicate(s) Found"
