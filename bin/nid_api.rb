@@ -126,7 +126,13 @@ def mass_data
   last_2017_ben = ActiveRecord::Base.connection.execute <<EOF
     SELECT MAX(district_id_number) ben FROM person_birth_details WHERE district_id_number LIKE '#{district_code}/%2017';
 EOF
-  last_2017_ben =  last_2017_ben.first[0]
+
+  last_2017_ben2 = ActiveRecord::Base.connection.execute <<EOF
+    SELECT MAX(value) ben FROM person_birth_details WHERE value LIKE '#{district_code}/%2017';
+EOF
+
+  last_2017_ben =  [last_2017_ben.first[0], last_2017_ben2.first[0]].max
+
   $counter = last_2017_ben.split("/")[1].to_i
   puts $counter
   puts "Last BEN: #{$counter}"
