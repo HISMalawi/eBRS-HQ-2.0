@@ -110,7 +110,7 @@ end
 
 def mass_data(district_n = $district_name)
   $district_name = district_n
-  
+
   district = Location.find_by_sql(
       ["SELECT * FROM location l INNER JOIN location_tag_map m ON l.location_id = m.location_id
           AND m.location_tag_id = #{$district_tag_id}
@@ -432,7 +432,7 @@ districts_registered = ActiveRecord::Base.connection.execute <<EOF
     SELECT DISTINCT(DistrictOfRegistration) FROM mass_data;
 EOF
 
-districts_registered = ["Dowa", "Kasungu"] + districts_registered.as_json.flatten.sort
+districts_registered = districts_registered.as_json.flatten.sort
 districts_registered.each do |d|
 
   $missing_districts      = []
