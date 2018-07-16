@@ -478,6 +478,16 @@
       margin-right: 2%;
     }
 </style>
+
+<script>
+    return_path = '<%= session[:list_url]%>'
+</script>
+
+<button class="btn btn-danger pull-left"
+        onclick="window.parent.location = return_path ">
+  Cancel
+</button>
+
 <button id="btnNext"
         class="btn btn-success pull-right"
         onclick="nextSimilar()">Next Similar Record</button>
