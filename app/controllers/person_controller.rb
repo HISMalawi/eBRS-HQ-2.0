@@ -1212,7 +1212,7 @@ EOF
               last_name: person_name.last_name,
               middle_name: person_name.middle_name,
               birth_entry_number: (birth_details.district_id_number rescue "XXXXXXXXXX"),
-              birth_registration_number:( birth_details.national_serial_number rescue "XXXXXXXXXX"),
+              birth_registration_number:( birth_details.brn rescue "XXXXXXXXXX"),
               birthdate: person.birthdate,
               gender: person.gender,
               status: person_status,
@@ -1226,15 +1226,15 @@ EOF
               mother_first_name: (mother_name.first_name rescue nil),
               mother_last_name:(mother_name.last_name rescue nil),
               mother_middle_name: (mother_name.middle_name rescue nil),
-              mother_district: (Location.find(mother_address.current_district).name rescue nil),
-              mother_village:(Location.find(mother_address.current_village).name rescue nil),
-              mother_ta: (Location.find(mother_address.current_ta).name rescue nil),
+              mother_district: (Location.find(mother_address.home_district).name rescue nil),
+              mother_village:((Location.find(mother_address.home_village).name rescue mother_address.home_village_other) rescue nil),
+              mother_ta: ((Location.find(mother_address.home_ta).name rescue mother_address.home_ta_other) rescue nil),
               father_first_name: (father_name.first_name rescue nil),
               father_last_name: (father_name.last_name rescue nil),
               father_middle_name: (father_name.middle_name rescue nil),
-              father_district: (Location.find(father_address.current_district).name rescue nil),
-              father_ta: (Location.find(father_address.current_ta).name rescue nil),
-              father_village: (Location.find(father_address.current_village).name rescue nil)
+              father_district: (Location.find(father_address.home_district).name rescue nil),
+              father_ta: ((Location.find(father_address.home_ta).name rescue father_address.home_ta_other) rescue nil),
+              father_village: ((Location.find(father_address.home_village).name rescue father_address.home_village_other) rescue nil)
     }
     return person
 
