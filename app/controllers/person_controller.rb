@@ -463,7 +463,7 @@ EOF
       .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0
               AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
-              person.birthdate, person.gender) REGEXP '#{search_val}'  #{search_category} ")
+              person.birthdate, person.gender) REGEXP \"#{search_val}\"  #{search_category} ")
 
       total = d.select(" count(*) c ")[0]['c'] rescue 0
       page = (params[:start].to_i / params[:length].to_i) + 1
