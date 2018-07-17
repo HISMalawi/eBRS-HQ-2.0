@@ -363,8 +363,8 @@
                <td><%= @name.last_name %></td>
                <td><%= @person.gender %> </td>
                <td><%= @person.birthdate.to_date.strftime("%d/%b/%Y") %></td>
-               <td><%=@mother_name.first_name %></td>
-               <td><%= @mother_name.last_name %></td>
+               <td><%=@mother_name.first_name rescue 'N/A' %></td>
+               <td><%= @mother_name.last_name rescue 'N/A' %></td>
                <td><%=@father_name.first_name rescue 'N/A' %></td>
                <td><%=@father_name.last_name rescue 'N/A'%></td>
                <td></td>
@@ -413,10 +413,10 @@
                 <td class="<%= @mother_name.last_name.squish != result['_source']['mother_last_name'].squish ? 'red' : ''  %>">
                   <%= result["_source"]["mother_last_name"]%> 
                 </td>
-                <td  class="<%= @father_name.first_name.to_s.squish != result['_source']['father_first_name'].to_s.squish ? 'red' : ''  %>">
+                <td  class="<%= (@father_name.first_name.to_s.squish rescue 'N/A') != result['_source']['father_first_name'].to_s.squish ? 'red' : ''  %>">
                   <%= result["_source"]["father_first_name"] rescue 'N/A'%> 
                 </td>
-                <td class="<%= @father_name.last_name.to_s.squish != result['_source']['father_last_name'].to_s.squish ? 'red' : ''  %>">
+                <td class="<%= (@father_name.last_name.to_s.squish rescue 'N/A') != result['_source']['father_last_name'].to_s.squish ? 'red' : ''  %>">
                   <%= result["_source"]["father_last_name"] rescue 'N/A'%> 
                 </td>
                 <td><%=result["similarity_score"].to_f.round(2) %></td>
