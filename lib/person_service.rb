@@ -1486,4 +1486,190 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     return success
   end
 
+  def self.process_arrays(person_ids, errors={}, client_address, cur_user)
+    return [] if person_ids.blank?
+
+    array = []
+    codes = JSON.parse(File.read("#{Rails.root}/db/country2code.json"))
+    person_ids.each do |person_id|
+      errors[person_id] = [] if errors[person_id].blank?
+      person = Person.find(person_id) rescue nil
+      if person.blank?
+        errors[person_id] << "MISSING RECORD"
+        next
+      end
+
+      if person.birthdate.to_date <= 16.years.ago.to_date
+        errors[person_id] << "AGE LIMIT EXCEEDED"
+        next
+      end
+
+      details = PersonBirthDetail.where(person_id: person_id).last
+      b_name = PersonName.where(person_id: person_id).last
+
+      m_type = PersonRelationType.find_by_name("Mother")
+      m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last
+
+      m_name = PersonName.where(person_id: m_rel.person_b).last
+      m_address = PersonAddress.where(person_id: m_rel.person_b).last
+      m_home_district = Location.find(m_address.home_district) rescue nil
+      m_home_ta = Location.find(m_address.home_ta) rescue nil
+      m_home_village = Location.find(m_address.home_village) rescue nil
+      m_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: m_rel.person_b).last.value rescue ""
+
+      f_type = PersonRelationType.find_by_name("Father")
+      f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
+
+      f_name = PersonName.where(person_id: f_rel.person_b).last rescue nil
+      f_address = PersonAddress.where(person_id: f_rel.person_b).last rescue nil
+      f_home_district = Location.find(f_address.home_district) rescue nil
+      f_home_ta = Location.find(f_address.home_ta) rescue nil
+      f_home_village = Location.find(f_address.home_village) rescue nil
+      f_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: f_rel.person_b).last.value rescue ""
+
+
+      inf_type = PersonRelationType.find_by_name("Informant")
+      inf_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => inf_type.id).last
+
+      inf_person = Person.where(person_id: inf_rel.person_b).last
+      inf_name = PersonName.where(person_id: inf_rel.person_b).last
+      inf_address = PersonAddress.where(person_id: inf_rel.person_b).last
+      inf_home_district = Location.find(inf_address.home_district) rescue nil
+      inf_home_ta = Location.find(inf_address.home_ta) rescue nil
+      inf_home_village = Location.find(inf_address.home_village) rescue nil
+      inf_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: inf_rel.person_b).last.value rescue ""
+
+      if (codes[Location.find(m_address.citizenship).name] rescue nil) != "MWI" && (codes[Location.find(f_address.citizenship).name] rescue nil) != "MWI"
+        errors[person_id] << "NOT A MALAWIAN CITIZEN"
+        next
+      end
+
+      nris_pkey = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).first rescue nil
+
+      reg_type_id = {
+          "Normal" => 0,
+          "Abandoned" => 1,
+          "Orphaned"  => 2,
+          "Adopted"   => 3
+      }[BirthRegistrationType.where(:birth_registration_type_id => details.birth_registration_type_id).first.name]
+
+      data = {
+          "Surname"=> b_name.last_name,
+          "OtherNames"=>b_name.middle_name,
+          "FirstName"=>b_name.first_name,
+          "DateOfBirthString"=>person.birthdate.to_date.strftime("%d/%m/%Y"),
+          "Sex"=> person.gender == 'M' ? 1 : 2,
+          "Nationality"=> (codes[Location.find(m_address.citizenship).name] rescue nil),
+          "Nationality2"=> (codes[Location.find(f_address.citizenship).name] rescue nil),
+          "Status"=>reg_type_id,
+          "MotherPin"=>m_pin,
+          "MotherSurname"=> m_name.last_name,
+          "MotherMaidenName"=> m_name.last_name,
+          "MotherFirstName"=>m_name.first_name,
+          "MotherOtherNames"=>m_name.middle_name,
+          "MotherVillageId"=>-1,
+          "MotherNationality"=>(codes[Location.find(m_address.citizenship).name] rescue nil),
+          "FatherPin"=>f_pin,
+          "FatherSurname"=> (f_name.last_name rescue nil),
+          "FatherFirstName"=> (f_name.first_name rescue nil),
+          "FatherOtherNames"=> (f_name.middle_name rescue nil),
+          "FatherVillageId"=>-1,
+          "FatherNationality"=>(codes[Location.find(f_address.citizenship).name] rescue nil),
+          "EbrsPk"=> person_id,
+          "NrisPk"=> nris_pkey,
+          "PlaceOfBirthDistrictId"=>-1,
+          "PlaceOfBirthDistrictName"=> (Location.find(details.district_of_birth).district rescue nil),
+          "PlaceOfBirthTAName" => (Location.find(details.birth_location_id).ta rescue nil),
+          "PlaceOfBirthVillageName"=> (Location.find(details.birth_location_id).village rescue nil),
+          "PlaceOfBirthVillageId"=>-1,
+          "MotherDistrictId"=> (m_home_district.id rescue nil),
+          "MotherDistrictName" => ((m_home_district.name rescue m_address.home_district_other) rescue nil),
+          "MotherTAName" => ((m_home_ta.name rescue m_address.home_ta_other) rescue nil),
+          "MotherVillageName" => ((m_home_village.name rescue m_address.home_village_other) rescue nil),
+          "FatherDistrictId"=> (f_home_district.id rescue nil),
+          "FatherDistrictName" => ((f_home_district.name rescue f_address.home_district_other) rescue nil),
+          "FatherTAName" => ((f_home_ta.name rescue f_address.home_ta_other) rescue nil),
+          "FatherVillageName" => ((f_home_village.name rescue f_address.home_village_other) rescue nil),
+          "InformantPin"=> inf_pin,
+          "InformantSurname"=> inf_name.last_name,
+          "InformantFirstName"=> inf_name.first_name,
+          "InformantOtherNames"=> inf_name.middle_name,
+          "InformantNationality"=> (codes[Location.find(inf_address.citizenship).name] rescue nil),
+          "InformantDistrictId"=> (inf_home_district.id rescue nil),
+          "InformantDistrictName" => ((inf_home_district.name rescue inf_address.home_district_other) rescue nil),
+          "InformantTAName" => ((inf_home_ta.name rescue inf_address.home_ta_other) rescue nil),
+          "InformantVillageName" => ((inf_home_village.name rescue inf_address.home_village_other) rescue false),
+          "InformantPhoneNumber" => (inf_person.get_attribute('Cell Phone Number') rescue nil),
+          "InformantAddress" => ((inf_address.addressline1 + " " + inf_address.addressline2).strip rescue nil),
+          "EditUser"=>("#{cur_user.username} (#{cur_user.first_name} #{cur_user.last_name})" rescue nil),
+          "EditMachine"=> client_address,
+          "BirthCertificateNumber"=> "#{details.brn}"
+      }
+
+      data.each do |k, v|
+        data[k] = "" if v.blank?
+      end
+
+      array << data
+    end
+
+    [array, errors]
+  end
+
+  def self.request_nris_ids_by_batch(person_ids, client_address="N/A", cur_user)
+
+    if SETTINGS["activate_nid_integration"].to_s != "true"
+      return "NID INTEGRATION NOT ACTIVATED"
+    end
+
+    nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
+    nris_type = PersonIdentifierType.where(name: "NRIS ID").first.id
+
+    errors = {}
+    batch, errors = self.process_arrays(person_ids, errors, client_address, cur_user)
+    return false if batch.length == 0
+
+    success = false
+    post_url = SETTINGS['batch_request_for_nid_address']
+
+    response = RestClient.post(post_url, batch.to_json, :content_type => "application/json", :accept => 'json')
+
+    #process batch response
+    res = JSON.parse(response) rescue response.to_s
+
+    return "FAILED" if !res.match("#")
+    array = res.split("#")
+    nid = array[0]
+    nid = nid.gsub("\"", '')
+    puts "NID: #{nid}, LENGTH #{nid.length}"
+    puts "NRIS KEY: #{array[1]}"
+    return "FAILED" if nid.strip.length != 8
+
+    puts res
+    if nid.present? && nid.to_s.length == 8
+      success = true
+      old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
+      old_id = PersonIdentifier.new if old_id.blank?
+
+      old_id.person_id = person_id
+      old_id.person_identifier_type_id = nid_type
+      old_id.value = nid
+      old_id.save
+    end
+
+    if array[1].present?
+      old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
+      old_key = PersonIdentifier.new if old_key.blank?
+
+      old_key.person_id = person_id
+      old_key.person_identifier_type_id = nris_type
+      old_key.value = array[1]
+      old_key.save
+    end
+
+
+    return success
+  end
+
+
 end
