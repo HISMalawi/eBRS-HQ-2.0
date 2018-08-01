@@ -1641,38 +1641,38 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     response = RestClient.post(post_url, batch.to_json, :content_type => "application/json", :accept => 'json')
 
     #process batch response
-    res = JSON.parse(response) rescue response.to_s
+    response = JSON.parse(response) rescue nil
+    (response || []).each do |res|
 
-    return "FAILED" if !res.match("#")
-    array = res.split("#")
-    nid = array[0]
-    nid = nid.gsub("\"", '')
-    puts "NID: #{nid}, LENGTH #{nid.length}"
-    puts "NRIS KEY: #{array[1]}"
-    return "FAILED" if nid.strip.length != 8
+      return "FAILED" if !res.match("#")
+      array = res.split("#")
+      nid = array[0]
+      nid = nid.gsub("\"", '')
+      puts "NID: #{nid}, LENGTH #{nid.length}"
+      puts "NRIS KEY: #{array[1]}"
+      return "FAILED" if nid.strip.length != 8
 
-    puts res
-    if nid.present? && nid.to_s.length == 8
-      success = true
-      old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
-      old_id = PersonIdentifier.new if old_id.blank?
+      if nid.present? && nid.to_s.length == 8
+        success = true
+        old_id = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nid_type).last
+        old_id = PersonIdentifier.new if old_id.blank?
 
-      old_id.person_id = person_id
-      old_id.person_identifier_type_id = nid_type
-      old_id.value = nid
-      old_id.save
+        old_id.person_id = person_id
+        old_id.person_identifier_type_id = nid_type
+        old_id.value = nid
+        old_id.save
+      end
+
+      if array[1].present?
+        old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
+        old_key = PersonIdentifier.new if old_key.blank?
+
+        old_key.person_id = person_id
+        old_key.person_identifier_type_id = nris_type
+        old_key.value = array[1]
+        old_key.save
+      end
     end
-
-    if array[1].present?
-      old_key = PersonIdentifier.where(person_id: person_id, person_identifier_type_id: nris_type).last
-      old_key = PersonIdentifier.new if old_key.blank?
-
-      old_key.person_id = person_id
-      old_key.person_identifier_type_id = nris_type
-      old_key.value = array[1]
-      old_key.save
-    end
-
 
     return success
   end
