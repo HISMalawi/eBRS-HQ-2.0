@@ -1014,8 +1014,8 @@ end
     results = []
 
     data.each do |p|
-      mother = PersonService.mother(p.person_id)
-      father = PersonService.father(p.person_id)
+      mother = Person.find(p.person_id).mother.person_names.last rescue nil
+      father = Person.find(p.person_id).father.person_names.last rescue nil
       details = PersonBirthDetail.find_by_person_id(p.person_id)
 
       name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
