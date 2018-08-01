@@ -116,7 +116,7 @@ def mass_data(district_n = $district_name)
           AND m.location_tag_id = #{$district_tag_id}
         WHERE l.name = '#{district_n}' "]).first
 
-  district_name = district.name
+  district_name = district.name rescue (raise district_n.inspect)
   district_code = district.code
   puts "DISTRICT: #{district_name}, CODE: #{district_code}"
 
@@ -170,11 +170,12 @@ EOF
   $registered_before_mass_reg << columns.join(",")
   $registered_after_16_years  << columns.join(",")
   $have_now_reached_16_years << columns.join(",")
+  district_name = "NKHOTA-KOTA" if district_name.upcase == "NKHOTAKOTA"
 
   data = ActiveRecord::Base.connection.execute <<EOF
      SELECT * FROM mass_data
   WHERE category NOT IN ('BiologicalMother-Separated', 'BiologicalMother-Abandoned')
-  AND DistrictOfRegistration IN ('#{district_name}');
+  AND DistrictOfRegistration IN ('#{district_name}') AND load_status IS NULL;
 EOF
 
 =begin
@@ -184,9 +185,9 @@ EOF
 EOF
 =end
 
-  bar = ProgressBar.new(data.count)
+  #bar = ProgressBar.new(data.count)
   data.each_with_index do |nid_child, index|
-    bar.increment!
+    #bar.increment!
     hash = {}
     nid_child.each_with_index do |value, i|
       value = (value.to_s.split.map(&:capitalize).join(' ') rescue value) unless ["FathePin", "MotherPin", "DateOfBirthString"].include?(columns[i])
@@ -435,6 +436,7 @@ EOF
 districts_registered = (["Dowa", "Kasungu"] + districts_registered.as_json.flatten.sort)
 districts_registered.each do |d|
   next if d.upcase.strip == "LIKOMA"
+  d = "NKHOTAKOTA" if d.upcase == "NKHOTA-KOTA"
 
   $missing_districts      = []
   $missing_tas            = []
