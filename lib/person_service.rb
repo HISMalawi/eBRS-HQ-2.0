@@ -1643,13 +1643,12 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     #process batch response
     response = JSON.parse(response) rescue nil
     (response || []).each do |res|
-
+      puts res 
       return "FAILED" if !res.match("#")
       array = res.split("#")
       nid = array[0]
       nid = nid.gsub("\"", '')
-      puts "NID: #{nid}, LENGTH #{nid.length}"
-      puts "NRIS KEY: #{array[1]}"
+      person_id = array[2]
       return "FAILED" if nid.strip.length != 8
 
       if nid.present? && nid.to_s.length == 8
