@@ -1323,6 +1323,9 @@ end
 
     m_type = PersonRelationType.find_by_name("Mother")
     m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last
+    
+    m_type = PersonRelationType.find_by_name("Adoptive-Mother") if m_rel.blank?
+    m_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => m_type.id).last if m_rel.blank?
 
     m_name = PersonName.where(person_id: m_rel.person_b).last
     m_address = PersonAddress.where(person_id: m_rel.person_b).last
@@ -1333,6 +1336,9 @@ end
 
     f_type = PersonRelationType.find_by_name("Father")
     f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last
+    
+    f_type = PersonRelationType.find_by_name("Adoptive-Father") if f_rel.blank? 
+    f_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => f_type.id).last if f_rel.blank? 
 
     f_name = PersonName.where(person_id: f_rel.person_b).last rescue nil
     f_address = PersonAddress.where(person_id: f_rel.person_b).last rescue nil
