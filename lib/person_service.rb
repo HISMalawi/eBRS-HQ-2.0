@@ -1537,12 +1537,12 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       inf_type = PersonRelationType.find_by_name("Informant")
       inf_rel = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => inf_type.id).last
 
-      inf_person = Person.where(person_id: inf_rel.person_b).last
-      inf_name = PersonName.where(person_id: inf_rel.person_b).last
-      inf_address = PersonAddress.where(person_id: inf_rel.person_b).last
-      inf_home_district = Location.find(inf_address.home_district) rescue nil
-      inf_home_ta = Location.find(inf_address.home_ta) rescue nil
-      inf_home_village = Location.find(inf_address.home_village) rescue nil
+      inf_person = Person.where(person_id: inf_rel.person_b).last rescue ""
+      inf_name = PersonName.where(person_id: inf_rel.person_b).last rescue ""
+      inf_address = PersonAddress.where(person_id: inf_rel.person_b).last rescue ""
+      inf_home_district = Location.find(inf_address.home_district) rescue ""
+      inf_home_ta = Location.find(inf_address.home_ta) rescue ""
+      inf_home_village = Location.find(inf_address.home_village) rescue ""
       inf_pin = PersonIdentifier.where(person_identifier_type_id: nid_type, person_id: inf_rel.person_b).last.value rescue ""
 
       if (codes[Location.find(m_address.citizenship).name] rescue nil) != "MWI" && (codes[Location.find(f_address.citizenship).name] rescue nil) != "MWI"
