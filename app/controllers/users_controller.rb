@@ -116,7 +116,7 @@ class UsersController < ApplicationController
   def update
     role = Role.find(params[:post][:user_role]['role'])
     user = User.find(params[:user_id])
-    person = Person.find(user.person_id)
+    person = Person.find(user.person_id) rescue nil
     person_name = PersonName.where(person_id: user.person_id).last
     name_code = PersonNameCode.where(person_name_id: person_name.id).last
     user_role = user.user_role
@@ -126,7 +126,7 @@ class UsersController < ApplicationController
 
     first_name  = params[:post][:person_name][:first_name]
     last_name   = params[:post][:person_name][:last_name]
-    gender      = params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]
+    gender      = (params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]) rescue nil
     ActiveRecord::Base.transaction do
 
       if password.length > 4
@@ -139,16 +139,11 @@ class UsersController < ApplicationController
 
       person.update_attributes(
           gender: gender,
-      )
+      ) unless person.blank?
 
       person_name.update_attributes(
           first_name: first_name,
           last_name: last_name
-      )
-
-      name_code.update_attributes(
-          first_name_code: first_name.soundex,
-          last_name_code: last_name.soundex
       )
 
       user_role.update_attributes(

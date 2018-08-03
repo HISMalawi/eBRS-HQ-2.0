@@ -222,13 +222,13 @@ end%>
               return;
           }
       }
-
-      if (__$('post_username').value.length < 6){
-          jQuery('.label-danger').attr('class', 'label label-danger hidden')
-          __$("shortusername").className = "label label-danger";
-          return;
-      }
-
+    <% if !request.path.match("edit")%>
+          if (__$('post_username').value.length < 6){
+              jQuery('.label-danger').attr('class', 'label label-danger hidden')
+              __$("shortusername").className = "label label-danger";
+              return;
+          }
+    <% end %>
       if (__$('post_password').value.length < 6){
           jQuery('.label-danger').attr('class', 'label label-danger hidden')
           __$("shortpassword").className = "label label-danger";
