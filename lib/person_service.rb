@@ -1673,7 +1673,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       end
     end
 
-    return success
+    return [success, errors]
   end
 
 
