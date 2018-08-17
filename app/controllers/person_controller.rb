@@ -1022,7 +1022,7 @@ EOF
       if barcode.nil?
 
     	  barcode_value = PersonIdentifier.where(person_id: person_id,
-						person_identifier_type_id: nid_type.id
+						person_identifier_type_id: nid_type.id, voided: 0
 					).last.value rescue nil
 
         if barcode_value.blank?
