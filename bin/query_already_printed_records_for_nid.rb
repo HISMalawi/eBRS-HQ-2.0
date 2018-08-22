@@ -3,7 +3,7 @@ errors         = []
 failed_batches = []
 
 status_ids = Status.where('
-  name IN ("HQ-PRINTED", "HQ-DISPATCHED", "HQ-AMMEND", "DC-AMMEND", "DC-AMEND",
+  name IN ("HQ-PRINTED", "HQ-DISPATCHED", "HQ-AMEND", "DC-AMEND",
   "DC-AMEND-REJECTED", "HQ-AMEND", "HQ-AMEND-GRANTED", "HQ-AMEND-REJECTED",
   "HQ-AMEND-REJECTED-TBA", "HQ-CAN-REPRINT-AMEND") ').map(&:status_id)
 
