@@ -18,6 +18,7 @@ chunks.each_with_index do |chunk, i|
   success, er = PersonService.request_nris_ids_by_batch(chunk, "eBRS-Server", User.where(username: "admin279").first)
   puts "Batch: #{(i + 1)}000 / #{total} :: #{success.to_s.upcase}"
 
+
   if !er.blank?
     errors << er.values
     errors = errors.flatten

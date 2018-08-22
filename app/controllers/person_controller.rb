@@ -746,14 +746,29 @@ EOF
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
-              ["View Printed Records", "Printed records", ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+              ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
+
     @stats = PersonRecordStatus.stats
     @section = "Manage Cases"
 
+    render :template => "/person/tasks"
+  end
+
+  def printed_cases
+    @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
+    @tasks = [
+        ["All Printed Cases" ,"Cases Printed at Both HQ and DRO", ["HQ-PRINTED", "DC-PRINTED"],"/person/view","/assets/folder3.png"],
+        ["Printed at HQ", "Cases Printed at HQ by DM" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
+        ["Printed at DRO","Cases Printed at DRO by ADR" , ["DC-PRINTED"],"/person/view","/assets/folder3.png"]
+    ]
+
+    @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
+    @stats = PersonRecordStatus.stats
+    @section = "Printed Cases"
     render :template => "/person/tasks"
   end
 

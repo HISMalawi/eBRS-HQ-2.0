@@ -158,6 +158,7 @@ Rails.application.routes.draw do
   get "/person/view"
   get "/person/print_cases"
   get "/report/dispatch_list"
+  get 'person/printed_cases'
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'
