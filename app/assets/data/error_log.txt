@@ -1,0 +1,129 @@
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:29:54', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:29:54' WHERE `person_record_statuses`.`person_record_status_id` = 1002522803 >>>>>> 1002527356
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:30:01', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:30:01' WHERE `person_record_statuses`.`person_record_status_id` = 1002522803 >>>>>> 1002527356
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:30:31', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:30:31' WHERE `person_record_statuses`.`person_record_status_id` = 1002522803 >>>>>> 1002527356
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:30:32', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:30:32' WHERE `person_record_statuses`.`person_record_status_id` = 1002522803 >>>>>> 1002527356
+Request Timeout >>>>>> 1002527356
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:34:35', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:34:35' WHERE `person_record_statuses`.`person_record_status_id` = 1002522288 >>>>>> 1002526006
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:34:36', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:34:36' WHERE `person_record_statuses`.`person_record_status_id` = 1002522288 >>>>>> 1002526006
+Request Timeout >>>>>> 1002526006
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:35:07', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:35:07' WHERE `person_record_statuses`.`person_record_status_id` = 1002522288 >>>>>> 1002526006
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:35:54', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:35:54' WHERE `person_record_statuses`.`person_record_status_id` = 1002522288 >>>>>> 1002526006
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526006
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+Mysql2::Error: Lock wait timeout exceeded; try restarting transaction: UPDATE `person_record_statuses` SET `voided` = 1, `date_voided` = '2018-06-04 11:45:55', `voided_by` = 10035631, `updated_at` = '2018-06-04 11:45:55' WHERE `person_record_statuses`.`person_record_status_id` = 1002522478 >>>>>> 1002526531
+Request Timeout >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526003
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526026
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526009
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526531
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526009
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025025122
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+Network is unreachable - connect(2) for "192.168.43.43" port 80 >>>>>> 10025029462
+undefined method `value' for nil:NilClass >>>>>> 10025126581
+undefined method `value' for nil:NilClass >>>>>> 10025126581
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002534427
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025161287
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025161287
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025179734
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025179734
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 10025179734
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526003
+No route to host - connect(2) for "192.168.43.43" port 80 >>>>>> 1002526012
+undefined method `id' for nil:NilClass >>>>>> 10027979
+undefined method `id' for nil:NilClass >>>>>> 10027981
+undefined method `id' for nil:NilClass >>>>>> 10027983
+undefined method `id' for nil:NilClass >>>>>> 10027985
+undefined method `id' for nil:NilClass >>>>>> 10027987
+undefined method `id' for nil:NilClass >>>>>> 10027989
+undefined method `id' for nil:NilClass >>>>>> 10027991
+undefined method `id' for nil:NilClass >>>>>> 10027993
+undefined method `id' for nil:NilClass >>>>>> 10027995
+undefined method `id' for nil:NilClass >>>>>> 10027997
+undefined method `id' for nil:NilClass >>>>>> 10027991
+undefined method `id' for nil:NilClass >>>>>> 1357641
+undefined method `id' for nil:NilClass >>>>>> 1357644
+undefined method `id' for nil:NilClass >>>>>> 1357647
+undefined method `id' for nil:NilClass >>>>>> 13576410
+undefined method `id' for nil:NilClass >>>>>> 13576413
+undefined method `id' for nil:NilClass >>>>>> 13576416
+undefined method `id' for nil:NilClass >>>>>> 13576419
+undefined method `id' for nil:NilClass >>>>>> 13576422
+undefined method `id' for nil:NilClass >>>>>> 13576425
+undefined method `id' for nil:NilClass >>>>>> 13576428
+undefined method `id' for nil:NilClass >>>>>> 13576431
+undefined method `id' for nil:NilClass >>>>>> 13576434
+undefined method `id' for nil:NilClass >>>>>> 13576437
+undefined method `id' for nil:NilClass >>>>>> 13576440
+undefined method `id' for nil:NilClass >>>>>> 13576443
+undefined method `id' for nil:NilClass >>>>>> 13576446
+undefined method `id' for nil:NilClass >>>>>> 13576449
+undefined method `id' for nil:NilClass >>>>>> 13576452
+undefined method `id' for nil:NilClass >>>>>> 13576455
+undefined method `id' for nil:NilClass >>>>>> 13576458
+undefined method `id' for nil:NilClass >>>>>> 13576461
+undefined method `id' for nil:NilClass >>>>>> 13576464
+undefined method `id' for nil:NilClass >>>>>> 13576467
+undefined method `id' for nil:NilClass >>>>>> 13576470
+undefined method `id' for nil:NilClass >>>>>> 13576473
+undefined method `id' for nil:NilClass >>>>>> 13576476
+undefined method `id' for nil:NilClass >>>>>> 13576479
+undefined method `id' for nil:NilClass >>>>>> 13576482
+undefined method `id' for nil:NilClass >>>>>> 13576485
+undefined method `id' for nil:NilClass >>>>>> 13576488
+undefined method `id' for nil:NilClass >>>>>> 13576491
+undefined method `id' for nil:NilClass >>>>>> 13576494
+undefined method `id' for nil:NilClass >>>>>> 13576497
+undefined method `id' for nil:NilClass >>>>>> 135764100
+undefined method `id' for nil:NilClass >>>>>> 135764103
+undefined method `id' for nil:NilClass >>>>>> 135764106
+undefined method `id' for nil:NilClass >>>>>> 135764109
+undefined method `id' for nil:NilClass >>>>>> 135764112
+undefined method `id' for nil:NilClass >>>>>> 1357641
+undefined method `id' for nil:NilClass >>>>>> 1357644
+undefined method `id' for nil:NilClass >>>>>> 1357647
+undefined method `id' for nil:NilClass >>>>>> 13576410
+undefined method `id' for nil:NilClass >>>>>> 13576413
+undefined method `id' for nil:NilClass >>>>>> 13576416
+undefined method `id' for nil:NilClass >>>>>> 13576419
+undefined method `id' for nil:NilClass >>>>>> 13576422
+undefined method `id' for nil:NilClass >>>>>> 13576425
+undefined method `id' for nil:NilClass >>>>>> 13576428
+undefined method `id' for nil:NilClass >>>>>> 13576431
+undefined method `id' for nil:NilClass >>>>>> 13576434
+undefined method `id' for nil:NilClass >>>>>> 13576437
+undefined method `id' for nil:NilClass >>>>>> 13576440
+undefined method `id' for nil:NilClass >>>>>> 13576443
+undefined method `id' for nil:NilClass >>>>>> 13576446
+undefined method `id' for nil:NilClass >>>>>> 13576446
+undefined method `id' for nil:NilClass >>>>>> 13576446
+undefined method `id' for nil:NilClass >>>>>> 13576446
+undefined method `id' for nil:NilClass >>>>>> 13576446
