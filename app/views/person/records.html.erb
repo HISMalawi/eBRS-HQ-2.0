@@ -5,6 +5,10 @@
 
 <%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
 
+<%=javascript_include_tag "moment.min" %>
+<%=javascript_include_tag "daterangepicker.min" %>
+
+<%= stylesheet_link_tag "daterangepicker" %>
 
 <style>
 
@@ -54,11 +58,11 @@
     }
 
     #roll-options{
-        width: 100%;
+        width: 98%;
+        margin: auto;
     }
 
     #roll-options td{
-        padding-right: 20px;
     }
 
     #verificationTable tr td{
@@ -377,13 +381,20 @@
 
 <table id="roll-options">
   <tr>
-    <td id="p_h_1" style="width: 40%">
 
+    <td id="p_h_1" style="width: 30%">
+
+    </td>
+
+    <td style="width: 20%;">
+      <input style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;"
+             onchange="reloadDataTable(this)" value="<% session[:date_range]%>"
+             id="reportranger" type="text" name="daterange" placeholder="Select Date Range"/>
     </td>
 
     <td>
       <select id="category" label="Category" onchange="reloadDataTable(this)"
-              style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+              style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
         <option id="continuous" value = "continuous" >Continuous Registration</option>
         <option id="mass_data" value = "mass_data" >Mass Data</option>
         <option value="All">All Categories</option>
@@ -391,10 +402,10 @@
     </td>
 
     <td>
-        <select id="districts" label="District" onchange="reloadDataTable(this)"
-                style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;">
+    <select id="districts" label="District" onchange="reloadDataTable(this)"
+                style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
 
-        <option value="All">Select Registration District</option>
+        <option value="All">Registration District</option>
           <% districts.each do |d|%>
               <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
           <% end %>
@@ -467,6 +478,7 @@
                     "processing": true,
                     "serverSide": true,
                     "ordering": false,
+                    "lengthMenu": [[10, 25, 50, 250, 500, 1000, 2500, 5000, 10000], [10, 25, 50, 250, 500, 1000, 2500, 5000, 10000]],
                     "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                         jQuery('td .action-btn', nRow).parent().parent().css('background', 'white');
                         jQuery('td .redd', nRow).parent().parent().css('background', '#FFBAD2');
@@ -474,9 +486,10 @@
                     "ajax": {
                         "url": url,
                         "data": function(d){
-                            d.type = type;
-                            d.district = __$('districts').value;
-                            d.category = __$('category').value;
+                            d.type       = type;
+                            d.district   = __$('districts').value;
+                            d.category   = __$('category').value;
+                            d.date_range = __$("reportranger").value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
@@ -731,6 +744,48 @@
         jQuery("#verify_by_scanning").modal("show");
         barcodeFocus();
     <% end %>
+
+
+
+   function dateRangeInit(){
+
+        var start = moment().subtract(10, 'years');
+        var end = moment();
+
+       function cb(start, end) {
+           jQuery('#reportranger span').html(start.format('DD/MM/YYYY') + ' - ' + end.format('DD/MM/YYYY'));
+       }
+
+        jQuery('#reportranger').daterangepicker({
+            startDate: start,
+            endDate: end,
+            locale: {
+                format: 'DD/MM/YYYY'
+            },
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
+        }, cb);
+
+        cb(start, end);
+    }
+
+    jQuery('#reportranger').on("hide.daterangepicker", function(ev, picker){
+
+        setTimeout(function(){
+            jQuery('#reportranger').show();
+        }, 20);
+    })
+
+
+
+    dateRangeInit();
+
   </script>
 
 <style>

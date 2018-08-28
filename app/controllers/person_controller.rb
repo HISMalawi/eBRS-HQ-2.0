@@ -408,12 +408,23 @@ EOF
     end
 
     if !params[:start].blank?
-
       loc_query = " "
       locations = []
 
       if params[:district] == "All"
         session[:district] = ""
+      end
+
+      range_query = " "
+      if params[:date_range].blank?
+        session[:date_range] = ""
+      else
+        s_date = params[:date_range].split("-")[0].strip.to_date.to_s(:db)
+        e_date = params[:date_range].split("-")[1].strip.to_date.to_s(:db)
+
+        range_query = " AND prs.created_at >= '#{s_date} 00:00:00' AND prs.created_at <= '#{e_date} 59:59:59' "
+
+        session[:date_range] = params[:date_range]
       end
 
       if params[:district].present? && params[:district] != "All"
@@ -461,7 +472,7 @@ EOF
               #{had_query}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
       .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0
-              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query}
+              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query} #{range_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
               person.birthdate, person.gender) REGEXP \"#{search_val}\"  #{search_category} ")
 

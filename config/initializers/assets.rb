@@ -10,6 +10,10 @@ Rails.application.config.assets.precompile += %w( styles.css )
 Rails.application.config.assets.precompile += %w( Highcharts/* )
 Rails.application.config.assets.precompile += %w( datepicker/* )
 Rails.application.config.assets.precompile += %w( alert.css )
+Rails.application.config.assets.precompile += %w( moment.min.js )
+Rails.application.config.assets.precompile += %w( daterangepicker.min.js )
+Rails.application.config.assets.precompile += %w( daterangepicker.css )
+
 
 # Add additional assets to the asset load path
 # Rails.application.config.assets.paths << Emoji.images_path
