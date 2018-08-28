@@ -491,6 +491,9 @@ EOF
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
+        if PersonRecordStatus.where(voided: 0, person_id: p.person_id).length > 1
+
+        end
 
         p['first_name'] = '' if p['first_name'].match('@')
         p['last_name'] = '' if p['last_name'].match('@')

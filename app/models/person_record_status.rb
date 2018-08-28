@@ -193,5 +193,22 @@ class PersonRecordStatus < ActiveRecord::Base
     end
 
     result
-  end
+   end
+
+   def self.common_comments(roles="All", limit=20)
+
+     if roles == "All"
+       roles = Role.all.map(&:role_id)
+     else
+       roles = roles.collect{|r| Role.where(role: r).first.id }
+     end
+
+     PersonRecordStatus.find_by_sql("
+      SELECT comments, count(*) total FROM person_record_statuses prs
+        INNER JOIN users u ON u.user_id = prs.creator
+        INNER JOIN user_role ur ON ur.user_id = u.user_id AND ur.role_id IN (#{roles.join(', ')})
+        WHERE COALESCE(comments, '') != ''
+        GROUP BY comments  ORDER BY COUNT(*) DESC LIMIT #{limit};
+    ").collect{|s| [s.comments, s.total]}
+   end
 end
