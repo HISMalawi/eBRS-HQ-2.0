@@ -944,13 +944,7 @@ EOF
       user = User.find(audit.creator) rescue User.first
       name = PersonName.where(person_id: user.person_id).last
       user_name = (name.first_name + " " + name.last_name)
-      ago = ""
-      if (audit.created_at.to_date == Date.today)
-        ago = "today"
-      else
-        ago = (Date.today - audit.created_at.to_date).to_i
-        ago = ago.to_s + (ago.to_i == 1 ? " day ago" : " days ago")
-      end
+      ago = audit.created_at.to_time.to_pretty
       @comments << {
           "created_at" => audit.created_at.to_time,
           'user' => user_name,
