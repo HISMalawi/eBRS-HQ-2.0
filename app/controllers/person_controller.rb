@@ -139,6 +139,8 @@ class PersonController < ApplicationController
       court_order_attached = (@birth_details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil
     end
 
+    @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
+
     @record = {
           "Details of Child" => [
               {

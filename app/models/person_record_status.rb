@@ -174,7 +174,7 @@ class PersonRecordStatus < ActiveRecord::Base
     return [] if person_id.blank?
     result = []
     PersonRecordStatus.where(person_id: person_id).order("created_at DESC").each do |status|
-      user = User.find(status.creator)
+      user = User.find(status.creator) rescue nil
 			action = "Status changed to:  '#{status.status.name.titleize.gsub(/^Hq/, "HQ").gsub(/^Dc/, 'DC').gsub(/^Fc/, 'FC')}'"
 			if status.status.name.upcase == "DC-ACTIVE"
 				action  = "New Record Created"
@@ -185,9 +185,9 @@ class PersonRecordStatus < ActiveRecord::Base
       result << {
           "date" => status.created_at.strftime("%d-%b-%Y"),
           "time" => status.created_at.strftime("%I:%M %p"),
-          "site" => user.user_role.role.level,
+          "site" => (user.user_role.role.level rescue nil),
           "action" => action,
-          "user"   => "#{user.first_name} #{user.last_name} <br /> <span style='font-size: 0.8em;'><i>(#{user.user_role.role.role})</i></span>",
+          "user"   => ("#{user.first_name} #{user.last_name} <br /> <span style='font-size: 0.8em;'><i>(#{user.user_role.role.role})</i></span>" rescue ""),
           "comment" => status.comments
       }
     end
@@ -195,7 +195,7 @@ class PersonRecordStatus < ActiveRecord::Base
     result
    end
 
-   def self.common_comments(roles="All", limit=20)
+   def self.common_comments(roles="All", statuses = "All", user_id="All", limit=20)
 
      if roles == "All"
        roles = Role.all.map(&:role_id)
@@ -203,11 +203,22 @@ class PersonRecordStatus < ActiveRecord::Base
        roles = roles.collect{|r| Role.where(role: r).first.id }
      end
 
+     if statuses == "All"
+        status_ids = Status.all.map(&:status_id)
+     else
+        status_ids = statuses.collect{|r| Status.where(name: r).first.status_id }
+     end
+
+      user_query = ""
+     if user_id != "All"
+       user_query = " AND prs.creator = #{user_id}"
+     end
+
      PersonRecordStatus.find_by_sql("
       SELECT comments, count(*) total FROM person_record_statuses prs
         INNER JOIN users u ON u.user_id = prs.creator
         INNER JOIN user_role ur ON ur.user_id = u.user_id AND ur.role_id IN (#{roles.join(', ')})
-        WHERE COALESCE(comments, '') != ''
+        WHERE COALESCE(comments, '') != '' AND prs.status_id IN (#{status_ids.join(', ')}) #{user_query}
         GROUP BY comments  ORDER BY COUNT(*) DESC LIMIT #{limit};
     ").collect{|s| [s.comments, s.total]}
    end
