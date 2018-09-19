@@ -395,6 +395,9 @@ EOF
     search_val = '_' if search_val.blank?
     search_category = ''
 
+    faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
+                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
+                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
 
     if !params[:category].blank?
 
@@ -473,7 +476,7 @@ EOF
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
               #{had_query}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
-      .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0
+      .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0 AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
               AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query} #{range_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
               person.birthdate, person.gender) REGEXP \"#{search_val}\"  #{search_category} ")
@@ -481,7 +484,7 @@ EOF
       total = d.select(" count(*) c ")[0]['c'] rescue 0
       page = (params[:start].to_i / params[:length].to_i) + 1
 
-      data = d.group(" prs.person_id ")
+      data = d.group(" prs.person_id")
 
       data = data.select(" n.*, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn")
       data = data.page(page)
