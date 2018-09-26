@@ -1440,7 +1440,7 @@ EOF
         ['Newly Received (HQ)', stats['HQ-ACTIVE']],
         ['Print Queue (HQ)', stats['HQ-CAN-PRINT']],
         ['Rejected to DC', stats['HQ-REJECTED']],
-        ['Re-print Que (HQ)', (stats['HQ-RE-PRINT'] + stats['HQ-CAN-RE-PRINT'])],
+        ['To be Approved by DM (HQ)', (stats['HQ-COMPLETE'] + stats['HQ-CONFLICT'])],
         ['Suspected Duplicate (HQ)', stats['HQ-POTENTIAL DUPLICATE']],
         ['Incomplete Record (HQ)', stats['HQ-INCOMPLETE']],
         ['Printed (HQ)', stats['HQ-PRINTED']],
