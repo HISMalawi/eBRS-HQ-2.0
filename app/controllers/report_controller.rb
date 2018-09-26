@@ -446,6 +446,10 @@ class ReportController < ApplicationController
     render :layout => false
   end
 
+  def general_report
+    @districts = districts
+  end
+
   private
 
   def districts

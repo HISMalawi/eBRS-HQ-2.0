@@ -9,7 +9,8 @@ Rails.application.routes.draw do
 
   get '/reported_births' => 'report#reported_births'
   get 'get_reported_births/:location_id/:start_date/:end_date' => 'report#get_reported_births'
-  
+  get 'get_categories/:location_id/:start_date/:end_date' => 'report#get_reported_births'
+
   get '/approved_at_hq' => 'report#approved_at_hq'
   get 'get_approved_at_hq/:location_id/:start_date/:end_date' => 'report#get_approved_at_hq'
 
@@ -204,6 +205,7 @@ Rails.application.routes.draw do
   get "/record_state_and_date" => "report#record_state_and_date"
   get "/ajax_record_state_and_date" => "report#ajax_record_state_and_date"
   get "/sync_status" => "person#sync_status"
+  get "/general_report" => "report#general_report"
 
   get "/person/check_details"
   get "/person/query_person_details"

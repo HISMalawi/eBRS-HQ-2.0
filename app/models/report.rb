@@ -288,4 +288,25 @@ class Report < ActiveRecord::Base
 
     ids
   end
+
+  def general_report(start_date, end_date, district_id, location_id)
+    data = {
+        "total_births" => self.reported(start_date, end_date, district_id, location_id),
+        "reported_births" => self.reported(start_date, end_date, district_id, location_id),
+        "late_registrations" => self.reported(start_date, end_date, district_id, location_id),
+        "ammendments" => self.reported(start_date, end_date, district_id, location_id),
+        "duplicates" => self.reported(start_date, end_date, district_id, location_id),
+        "incomplete" => self.reported(start_date, end_date, district_id, location_id),
+        "approved_by_dv" => self.reported(start_date, end_date, district_id, location_id),
+        "approved_by_dm" => self.reported(start_date, end_date, district_id, location_id),
+        "printed" => self.reported(start_date, end_date, district_id, location_id),
+        "dispatched" => self.reported(start_date, end_date, district_id, location_id),
+        "adopted_cases_reported" => self.reported(start_date, end_date, district_id, location_id),
+        "adopted_cases_printed" => self.reported(start_date, end_date, district_id, location_id),
+        "non_malawian_cases_reported" => self.reported(start_date, end_date, district_id, location_id),
+        "non_malawian_cases_printed" => self.reported(start_date, end_date, district_id, location_id),
+        "failed_validations" => self.reported(start_date, end_date, district_id, location_id)
+
+    }
+  end
 end
