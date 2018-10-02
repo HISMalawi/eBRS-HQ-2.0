@@ -724,6 +724,13 @@ EOF
               ["Amendment Cases" , "Amendment Cases" , [],"/person/amendments","/assets/folder3.png"],
               ["Print Out" , "Print outs" , [],"/person/print_out","/assets/folder3.png"]
             ]
+    if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
+      @tasks << ["Re-Print Requests", "Re-Print Requests", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
+    elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
+      @tasks <<  ["Re-Print Requests", "Re-Print Requests", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
+    else
+      @tasks <<  ["Re-Print Requests", "Re-Print Requests", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"],"/person/view","/assets/folder3.png"]
+    end
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0]) }
 
@@ -736,16 +743,13 @@ EOF
     @tasks = []
 
     if SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Supervisor"
-         @tasks << ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED"],"/person/view","/assets/folder3.png"]
          @tasks << ["Amendments", "Amendments", ["HQ-AMEND"], "/person/view","/assets/folder3.png"]
          @tasks << ["Rejected Amended by DM", "Rejected Amended by DM", ["HQ-AMEND-REJECTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"], "/person/view","/assets/folder3.png"]
     elsif SETTINGS['enable_role_privileges'] && User.current.user_role.role.role == "Data Manager"
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND-GRANTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Rejected Amended by DS", "Rejected Amended by DS", ["HQ-AMEND-REJECTED-TBA","HQ-DAMAGED-REJECTED-TBA","HQ-LOST-REJECTED-TBA"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]
     else
-          @tasks <<  ["Lost/Damaged", "Lost/Damaged", ["HQ-LOST", "HQ-DAMAGED","HQ-LOST-GRANTED", "HQ-DAMAGED-GRANTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"],"/person/view","/assets/folder3.png"]
           @tasks << ["Amendments", "Amendments", ["HQ-AMEND","HQ-AMEND-GRANTED","HQ-AMEND-REJECTED"], "/person/view","/assets/folder3.png"]
           @tasks << ["Closed Amended Records", "Closed Amended Records" , ['HQ-PRINTED', 'HQ-DISPATCHED'],"/person/view?had=HQ-DAMAGED|HQ-LOST|HQ-AMEND","/assets/folder3.png"]
           @tasks << ["Rejected Amended by DM", "Rejected Amended by DM", ["HQ-AMEND-REJECTED","HQ-DAMAGED-REJECTED","HQ-LOST-REJECTED"], "/person/view","/assets/folder3.png"]
