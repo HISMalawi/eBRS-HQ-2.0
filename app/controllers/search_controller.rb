@@ -7,7 +7,24 @@ class SearchController < ApplicationController
   end
 
   def search_cases
-    data = PersonService.search_results(params)
+
+    filters = params[:filter].delete_if{|k, v| v.blank?}
+    filters.delete(:names) if (filters[:names][:last_name].blank? && filters[:names][:middle_name].blank? && filters[:names][:first_name].blank?)
+
+    if filters.keys.length > 1
+      data = PersonService.search_results(params)
+    else
+      case filters.keys.first
+        when 'ben'
+          data = PersonService.by_ben(params, filters['ben'])
+        when 'brn'
+          data = PersonService.by_brn(params, filters['brn'])
+        when 'names'
+          data = PersonService.by_names(params, filters['names'])
+        else
+          data = PersonService.search_results(params)
+      end
+    end
 
     render :text => data.to_json and return
   end

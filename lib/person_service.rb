@@ -874,6 +874,166 @@ end
 
   end
 
+  def self.by_ben(params, ben)
+
+    person_ids = PersonBirthDetail.find_by_sql(" SELECT person_id FROM person_birth_details WHERE district_id_number = '#{ben}' ").map(&:person_id).uniq
+    if person_ids.blank?
+      old_ben_type_id = PersonIdentifierType.where(name: "Old Birth Entry Number").first.id
+      person_ids = PersonIdentifier.find_by_sql("SELECT person_id FROM person_identifiers WHERE person_identifier_type_id = #{old_ben_type_id}
+                    AND voided = 0 AND value = '#{ben}' ").map(&:person_id).uniq
+    end
+
+    if person_ids.blank?
+      return {
+          "draw" => 0,
+          "recordsTotal" => 0,
+          "recordsFiltered" => 0,
+          "data" => []}
+    else
+      results = []
+      person_ids.each do |id|
+        p = Person.find(id)
+        n = PersonName.where(person_id: id).last
+        mother = Person.find(id).mother.person_names.last rescue nil
+        father = Person.find(id).father.person_names.last rescue nil
+        details = PersonBirthDetail.find_by_person_id(id)
+        name          = ("#{n['first_name']} #{n['middle_name']} #{n['last_name']}")
+        mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+        father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+        row = [
+            details.brn,
+            details.district_id_number,
+            "#{name} (#{p.gender})",
+            p.birthdate.strftime('%d/%b/%Y'),
+            mother_name,
+            father_name,
+            details.date_reported.strftime('%d/%b/%Y'),
+            PersonRecordStatus.status(id),
+            id
+        ]
+        results << row
+      end
+
+      return {
+          "draw" => params[:draw].to_i,
+          "recordsTotal" => results.length,
+          "recordsFiltered" => results.length,
+          "data" => results}
+    end
+  end
+
+  def self.by_brn(params, brn)
+
+    brn_num = 0
+    if brn.to_s.length == 11
+      brn_num = (brn.split("")[0 .. 5] + brn.split("")[7 .. 100]).join("").to_i
+    end
+
+    person_ids = PersonBirthDetail.find_by_sql(" SELECT person_id FROM person_birth_details WHERE national_serial_number = '#{brn_num}' ").map(&:person_id).uniq
+    if person_ids.blank?
+      old_ben_type_id = PersonIdentifierType.where(name: "Old Birth Registration Number").first.id
+      person_ids = PersonIdentifier.find_by_sql("SELECT person_id FROM person_identifiers WHERE person_identifier_type_id = #{old_ben_type_id}
+                    AND voided = 0 AND value = '#{brn}' ").map(&:person_id).uniq
+    end
+
+    if person_ids.blank?
+      return {
+          "draw" => 0,
+          "recordsTotal" => 0,
+          "recordsFiltered" => 0,
+          "data" => []}
+    else
+      results = []
+      person_ids.each do |id|
+        p = Person.find(id)
+        n = PersonName.where(person_id: id).last
+        mother = Person.find(id).mother.person_names.last rescue nil
+        father = Person.find(id).father.person_names.last rescue nil
+        details = PersonBirthDetail.find_by_person_id(id)
+        name          = ("#{n['first_name']} #{n['middle_name']} #{n['last_name']}")
+        mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+        father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+        row = [
+            details.brn,
+            details.district_id_number,
+            "#{name} (#{p.gender})",
+            p.birthdate.strftime('%d/%b/%Y'),
+            mother_name,
+            father_name,
+            details.date_reported.strftime('%d/%b/%Y'),
+            PersonRecordStatus.status(id),
+            id
+        ]
+        results << row
+      end
+
+      return {
+          "draw" => params[:draw].to_i,
+          "recordsTotal" => results.length,
+          "recordsFiltered" => results.length,
+          "data" => results}
+    end
+  end
+
+  def self.by_names(params, names)
+
+    query = "voided = 0"
+    names.each{|k, v|
+      next if v.blank?
+      query += " AND #{k} = \"#{v}\" "
+    }
+
+    person_ids = []
+    if query == "voided = 0"
+      return {
+          "draw" => 0,
+          "recordsTotal" => 0,
+          "recordsFiltered" => 0,
+          "data" => []}
+    else
+      person_ids = PersonName.where(" voided = 0 AND #{query} ").map(&:person_id).uniq
+    end
+
+    if person_ids.blank?
+      return {
+          "draw" => 0,
+          "recordsTotal" => 0,
+          "recordsFiltered" => 0,
+          "data" => []}
+    else
+      results = []
+      person_ids.each do |id|
+        details = PersonBirthDetail.find_by_person_id(id)
+        next if details.blank?
+
+        p = Person.find(id)
+        n = PersonName.where(person_id: id).last
+        mother = Person.find(id).mother.person_names.last rescue nil
+        father = Person.find(id).father.person_names.last rescue nil
+        name          = ("#{n['first_name']} #{n['middle_name']} #{n['last_name']}")
+        mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
+        father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+        row = [
+            details.brn,
+            details.district_id_number,
+            "#{name} (#{p.gender})",
+            p.birthdate.strftime('%d/%b/%Y'),
+            mother_name,
+            father_name,
+            details.date_reported.strftime('%d/%b/%Y'),
+            PersonRecordStatus.status(id),
+            id
+        ]
+        results << row
+      end
+
+      return {
+          "draw" => params[:draw].to_i,
+          "recordsTotal" => results.length,
+          "recordsFiltered" => results.length,
+          "data" => results}
+    end
+  end
 
   def self.search_results(params={})
 
