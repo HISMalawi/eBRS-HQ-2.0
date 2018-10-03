@@ -776,10 +776,15 @@ end
     main = Person.order("pbd.created_at")
     search_val = params[:search][:value].blank? ? '_' : params[:search][:value]
 
+    faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
+                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
+                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
+
     main = main.joins("
             INNER JOIN core_person cp ON person.person_id = cp.person_id
             INNER JOIN person_name n ON person.person_id = n.person_id
-            INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
+            INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id
+                 AND COALESCE(prs.voided, 0) = 0 AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
             INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
 
     results = []
@@ -793,6 +798,7 @@ end
     page = (params[:start].to_i / params[:length].to_i) + 1
 
     main = main.select(" n.*, prs.status_id, pbd.district_id_number, person.gender, person.birthdate, pbd.national_serial_number AS brn ")
+
     data = main.page(page)
     .per_page(params[:length].to_i)
 
