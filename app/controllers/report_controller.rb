@@ -450,6 +450,25 @@ class ReportController < ApplicationController
     @districts = districts
   end
 
+  def general_report_query
+
+    location_ids = []
+    if !params[:district_id].blank?
+      location_ids = [params[:district_id]]
+
+      facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
+      (Location.find_by_sql("SELECT l.location_id FROM location l
+                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
+                          WHERE l.parent_location = #{params[:district_id]}") || []).each {|l|
+        location_ids << l.location_id
+      }
+    end
+
+    data = Report.general_report(params[:start_date], params[:end_date], location_ids)
+    puts data
+    render :text => data.to_json
+  end
+
   private
 
   def districts

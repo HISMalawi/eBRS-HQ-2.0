@@ -289,23 +289,29 @@ class Report < ActiveRecord::Base
     ids
   end
 
-  def self.general_report(start_date, end_date, district_id, location_ids)
-    data = {
-        "total_births" => self.total(start_date, end_date, location_ids),
-        "reported_births" => self.reported(start_date, end_date, location_ids),
-        "late_registrations" => self.late_registrations(start_date, end_date, location_ids),
-        "ammendments" => self.ammendments(start_date, end_date, location_ids),
-        "duplicates" => self.duplicates(start_date, end_date, location_ids),
-        "incomplete" => self.incomplete(start_date, end_date, location_ids),
-        "approved_by_dv" => self.approved_by_dv(start_date, end_date, location_ids),
-        "approved_by_dm" => self.approved_by_dm(start_date, end_date, location_ids),
-        "printed" => self.printed(start_date, end_date, location_ids),
-        "dispatched" => self.dispatched(start_date, end_date, location_ids),
-        "adopted_cases_reported" => self.adopted_reported(start_date, end_date, location_ids),
-        "adopted_cases_printed" => self.adopted_printed(start_date, end_date, location_ids),
-        "non_malawian_cases_reported" => self.non_malawian_reported(start_date, end_date, location_ids),
-        "non_malawian_cases_printed" => self.non_malawian_printed(start_date, end_date, location_ids),
-        "failed_validations" => self.failed_validations(start_date, end_date, location_ids)
+  def self.general_report(start_date, end_date, location_ids)
+    {
+        [1, "Total Births"] => self.total(start_date, end_date, location_ids),
+        [2, "Reported Births"] => self.reported(start_date, end_date, location_ids),
+        [3, "Late Registrations"] => self.late_registrations(start_date, end_date, location_ids),
+        [4, "Ammendments"] => self.ammendments(start_date, end_date, location_ids),
+        [5, "Duplicates"] => self.duplicates(start_date, end_date, location_ids),
+        [6, "Incomplete"] => self.incomplete(start_date, end_date, location_ids),
+        [7, "Approved By DV"] => self.approved_by_dv(start_date, end_date, location_ids),
+        [8, "Approved By DM"] => self.approved_by_dm(start_date, end_date, location_ids),
+        [9, "Printed"] => self.printed(start_date, end_date, location_ids),
+        [10, "Dispatched"] => self.dispatched(start_date, end_date, location_ids),
+        [11, "Special Cases Reported"] => self.special_cases_reported([], start_date, end_date, location_ids),
+        [12, "Special Cases Printed"] => self.special_cases_printed([], start_date, end_date, location_ids),
+        [13, "Adopted Cases Reported"] => self.special_cases_reported(["Adopted"], start_date, end_date, location_ids),
+        [14, "Adopted Cases Printed"] => self.special_cases_printed(["Adopted"], start_date, end_date, location_ids),
+        [15, "Orphaned Cases Reported"] => self.special_cases_reported(["Orphaned"], start_date, end_date, location_ids),
+        [16, "Orphaned Cases Printed"] => self.special_cases_printed(["Orphaned"], start_date, end_date, location_ids),
+        [17, "Abandoned Cases Reported"] => self.special_cases_reported(["Abandoned"], start_date, end_date, location_ids),
+        [18, "Abandoned Cases Printed"] => self.special_cases_printed(["Abandoned"], start_date, end_date, location_ids),
+        [19, "Non Malawian Cases Reported"] => self.non_malawian_reported(start_date, end_date, location_ids),
+        [20, "Non Malawian Cases Printed"] => self.non_malawian_printed(start_date, end_date, location_ids),
+        [21, "Failed National ID Validations <small>(for >= 16 years)</small>"] => self.failed_validations(start_date, end_date, location_ids)
 
     }
   end
@@ -317,8 +323,8 @@ class Report < ActiveRecord::Base
         loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
     end
 
-    PersonBirthDetail.where(" DATE(created_at) BETWEEN '#{start_date.to_date.to_s}'
-      AND '#{end_date.to_date.to_s}' AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
+    PersonBirthDetail.where(" DATE(created_at) BETWEEN '#{start_date.to_date.to_s}'  AND '#{end_date.to_date.to_s}'
+    AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
   end
 
   def self.reported(start_date, end_date, location_ids=[])
@@ -424,5 +430,134 @@ class Report < ActiveRecord::Base
         AND (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
         AND prs.status_id IN (#{status_ids.join(', ')})
         #{loc_query}  GROUP BY d.person_id").count
+  end
+
+  def self.printed(start_date, end_date, location_ids=[])
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    status_ids = Status.where(" name IN ('HQ-PRINTED', 'HQ-DISPATCHED') ").map(&:status_id)
+
+    PersonBirthDetail.find_by_sql(" SELECT * FROM person_birth_details d
+      INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
+      WHERE DATE(prs.created_at) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
+        AND prs.status_id IN (#{status_ids.join(', ')})
+        #{loc_query}  GROUP BY d.person_id").count
+  end
+
+  def self.dispatched(start_date, end_date, location_ids=[])
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    status_ids = Status.where(" name IN ('HQ-DISPATCHED') ").map(&:status_id)
+
+    PersonBirthDetail.find_by_sql(" SELECT * FROM person_birth_details d
+      INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
+      WHERE DATE(prs.created_at) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
+        AND prs.status_id IN (#{status_ids.join(', ')})
+        #{loc_query}  GROUP BY d.person_id").count
+  end
+
+  def self.special_cases_reported(type, start_date, end_date, location_ids=[])
+
+    type_ids = BirthRegistrationType.all.collect{|b| b.id} if type.blank?
+    type_ids = BirthRegistrationType.where(" name IN ('#{type.join("','")}') ").collect{|b| b.id} if !type.blank?
+    type_ids = type_ids - [BirthRegistrationType.where(name: "Normal").first.id]
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    PersonBirthDetail.where(" DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+      AND birth_registration_type_id IN (#{type_ids.join(', ')})
+      AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
+  end
+
+  def self.special_cases_printed(type, start_date, end_date, location_ids=[])
+
+    type_ids = BirthRegistrationType.all.collect{|b| b.id} if type.blank?
+    type_ids = BirthRegistrationType.where(" name IN ('#{type.join("','")}') ").collect{|b| b.id} if !type.blank?
+    type_ids = type_ids - [BirthRegistrationType.where(name: "Normal").first.id]
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    status_ids = Status.where(" name IN ('HQ-PRINTED', 'HQ-DISPATCHED') ").map(&:status_id)
+    PersonBirthDetail.find_by_sql("SELECT d.person_id FROM person_birth_details d
+      INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
+      WHERE DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND birth_registration_type_id IN (#{type_ids.join(', ')})
+        AND prs.status_id IN (#{status_ids.join(', ')})
+        AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
+  end
+
+  def self.non_malawian_reported(start_date, end_date, location_ids=[])
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    mother_type_id = PersonRelationType.where(name: "Mother").first.id
+    father_type_id = PersonRelationType.where(name: "Father").first.id
+    malawi_id = Location.where(name: "Malawi").first.id
+
+    PersonBirthDetail.find_by_sql("SELECT d.person_id FROM person_birth_details d
+      LEFT JOIN person_relationship mr ON d.person_id = mr.person_a AND mr.person_relationship_type_id = #{mother_type_id}
+      LEFT JOIN person_relationship fr ON d.person_id = fr.person_a AND fr.person_relationship_type_id = #{father_type_id}
+      LEFT JOIN person_addresses m_adr ON mr.person_b = m_adr.person_id
+      LEFT JOIN person_addresses f_adr ON fr.person_b = f_adr.person_id
+      WHERE DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND m_adr.citizenship != #{malawi_id} AND COALESCE(f_adr.citizenship, -1) != #{malawi_id}
+        AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query}
+      GROUP BY d.person_id ").count
+  end
+
+  def self.non_malawian_printed(start_date, end_date, location_ids=[])
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    mother_type_id = PersonRelationType.where(name: "Mother").first.id
+    father_type_id = PersonRelationType.where(name: "Father").first.id
+    malawi_id = Location.where(name: "Malawi").first.id
+    status_ids = Status.where(" name IN ('HQ-PRINTED', 'HQ-DISPATCHED') ").map(&:status_id)
+
+    PersonBirthDetail.find_by_sql("SELECT d.person_id FROM person_birth_details d
+      LEFT JOIN person_relationship mr ON d.person_id = mr.person_a AND mr.person_relationship_type_id = #{mother_type_id}
+      LEFT JOIN person_relationship fr ON d.person_id = fr.person_a AND fr.person_relationship_type_id = #{father_type_id}
+      LEFT JOIN person_addresses m_adr ON mr.person_b = m_adr.person_id
+      LEFT JOIN person_addresses f_adr ON fr.person_b = f_adr.person_id
+      INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id AND prs.status_id IN (#{status_ids.join(', ')})
+      WHERE DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND m_adr.citizenship != #{malawi_id} AND COALESCE(f_adr.citizenship, -1) != #{malawi_id}
+        AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query}
+      GROUP BY d.person_id ").count
+  end
+
+  def self.failed_validations(start_date, end_date, location_ids=[])
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+     PersonBirthDetail.find_by_sql("SELECT d.person_id FROM person_birth_details d
+      INNER JOIN nid_verification_data v ON v.person_id = d.person_id
+      WHERE DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+        AND v.passed = 0
+        AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query}
+      GROUP BY d.person_id ").count
   end
 end

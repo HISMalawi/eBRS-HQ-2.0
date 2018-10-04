@@ -470,14 +470,14 @@ EOF
              AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
-      d = Person.order(" pbd.district_id_number, pbd.national_serial_number, n.first_name, n.last_name, cp.created_at ")
-      .joins(" INNER JOIN core_person cp ON person.person_id = cp.person_id
-              INNER JOIN person_name n ON person.person_id = n.person_id
+      d = Person.order(" pbd.district_id_number, pbd.national_serial_number, pbd.created_at ")
+      .joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
-              #{had_query}
-              INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
-      .where(" prs.status_id IN (#{state_ids.join(', ')}) AND n.voided = 0 AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
-              AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) #{loc_query} #{range_query}
+              #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
+                  AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
+              INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
+                  AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
+      .where(" n.voided = 0 #{loc_query} #{range_query}
               AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
               person.birthdate, person.gender) REGEXP \"#{search_val}\"  #{search_category} ")
 
