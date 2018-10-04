@@ -472,7 +472,7 @@ EOF
 
       d = Person.order(" pbd.district_id_number, pbd.national_serial_number, pbd.created_at ")
       .joins("INNER JOIN person_name n ON person.person_id = n.person_id
-              INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND COALESCE(prs.voided, 0) = 0
+              INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
                   AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
