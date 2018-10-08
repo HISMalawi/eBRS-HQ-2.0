@@ -297,21 +297,22 @@ class Report < ActiveRecord::Base
         [4, "Ammendments"] => self.ammendments(start_date, end_date, location_ids),
         [5, "Duplicates"] => self.duplicates(start_date, end_date, location_ids),
         [6, "Incomplete"] => self.incomplete(start_date, end_date, location_ids),
-        [7, "Approved By DV"] => self.approved_by_dv(start_date, end_date, location_ids),
-        [8, "Approved By DM"] => self.approved_by_dm(start_date, end_date, location_ids),
-        [9, "Printed"] => self.printed(start_date, end_date, location_ids),
-        [10, "Dispatched"] => self.dispatched(start_date, end_date, location_ids),
-        [11, "Special Cases Reported"] => self.special_cases_reported([], start_date, end_date, location_ids),
-        [12, "Special Cases Printed"] => self.special_cases_printed([], start_date, end_date, location_ids),
-        [13, "Adopted Cases Reported"] => self.special_cases_reported(["Adopted"], start_date, end_date, location_ids),
-        [14, "Adopted Cases Printed"] => self.special_cases_printed(["Adopted"], start_date, end_date, location_ids),
-        [15, "Orphaned Cases Reported"] => self.special_cases_reported(["Orphaned"], start_date, end_date, location_ids),
-        [16, "Orphaned Cases Printed"] => self.special_cases_printed(["Orphaned"], start_date, end_date, location_ids),
-        [17, "Abandoned Cases Reported"] => self.special_cases_reported(["Abandoned"], start_date, end_date, location_ids),
-        [18, "Abandoned Cases Printed"] => self.special_cases_printed(["Abandoned"], start_date, end_date, location_ids),
-        [19, "Non Malawian Cases Reported"] => self.non_malawian_reported(start_date, end_date, location_ids),
-        [20, "Non Malawian Cases Printed"] => self.non_malawian_printed(start_date, end_date, location_ids),
-        [21, "Failed National ID Validations <small>(for >= 16 years)</small>"] => self.failed_validations(start_date, end_date, location_ids)
+        [7, "Received By DV"] => self.received_by_dv(start_date, end_date, location_ids),
+        [8, "Approved By DV"] => self.approved_by_dv(start_date, end_date, location_ids),
+        [9, "Approved By DM"] => self.approved_by_dm(start_date, end_date, location_ids),
+        [10, "Printed"] => self.printed(start_date, end_date, location_ids),
+        [11, "Dispatched"] => self.dispatched(start_date, end_date, location_ids),
+        [12, "Special Cases Reported"] => self.special_cases_reported([], start_date, end_date, location_ids),
+        [13, "Special Cases Printed"] => self.special_cases_printed([], start_date, end_date, location_ids),
+        [14, "Adopted Cases Reported"] => self.special_cases_reported(["Adopted"], start_date, end_date, location_ids),
+        [15, "Adopted Cases Printed"] => self.special_cases_printed(["Adopted"], start_date, end_date, location_ids),
+        [16, "Orphaned Cases Reported"] => self.special_cases_reported(["Orphaned"], start_date, end_date, location_ids),
+        [17, "Orphaned Cases Printed"] => self.special_cases_printed(["Orphaned"], start_date, end_date, location_ids),
+        [18, "Abandoned Cases Reported"] => self.special_cases_reported(["Abandoned"], start_date, end_date, location_ids),
+        [19, "Abandoned Cases Printed"] => self.special_cases_printed(["Abandoned"], start_date, end_date, location_ids),
+        [20, "Non Malawian Cases Reported"] => self.non_malawian_reported(start_date, end_date, location_ids),
+        [21, "Non Malawian Cases Printed"] => self.non_malawian_printed(start_date, end_date, location_ids),
+        [22, "Failed National ID Validations <small>(for >= 16 years)</small>"] => self.failed_validations(start_date, end_date, location_ids)
 
     }
   end
@@ -545,6 +546,23 @@ class Report < ActiveRecord::Base
         AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query}
       GROUP BY d.person_id ").count
   end
+
+  def self.received_by_dv(start_date, end_date, location_ids=[])
+        loc_query = ""
+        if !location_ids.blank?
+              loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+        end
+
+        status_ids = Status.where(" name = 'HQ-ACTIVE' ").map(&:status_id)
+
+        PersonBirthDetail.find_by_sql(" SELECT * FROM person_birth_details d
+     INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
+     WHERE DATE(prs.created_at) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+       AND (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
+       AND prs.status_id IN (#{status_ids.join(', ')})
+        #{loc_query}  GROUP BY d.person_id").count
+  end
+
 
   def self.failed_validations(start_date, end_date, location_ids=[])
 
