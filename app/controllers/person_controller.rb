@@ -470,23 +470,22 @@ EOF
              AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
-      d = Person.order(" pbd.district_id_number, pbd.national_serial_number, pbd.created_at ")
-      .joins("INNER JOIN person_name n ON person.person_id = n.person_id
+      d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
                   AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
       .where(" n.voided = 0 #{loc_query} #{range_query}
-              AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
-              person.birthdate, person.gender) REGEXP \"#{search_val}\"  #{search_category} ")
+              AND concat_ws(pbd.district_id_number, n.first_name, n.last_name, n.middle_name, '_') REGEXP \"#{search_val}\"  #{search_category} ")
 
       total = d.select(" count(*) c ")[0]['c'] rescue 0
       page = (params[:start].to_i / params[:length].to_i) + 1
 
       data = d.group(" prs.person_id")
 
-      data = data.select(" n.*, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn")
+      data = data.select(" n.voided, n.first_name, n.middle_name, n.last_name,
+				 person.person_id, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn")
       data = data.page(page)
       .per_page(params[:length].to_i)
 
