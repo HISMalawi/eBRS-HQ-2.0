@@ -47,10 +47,16 @@ EOF
 columns = columns.collect{|c| c[0]}
 $exact_duplicates       = []
 $exact_duplicates << columns.join(",")
+$potential_duplicates       = []
+$potential_duplicates << columns.join(",")
 
 exact_duplicates = ActiveRecord::Base.connection.execute <<EOF
     SELECT * FROM mass_data WHERE load_status = 'Exact Duplicate(s) Found'
 EOF
+potential_duplicates = ActiveRecord::Base.connection.execute <<EOF
+    SELECT * FROM mass_data WHERE load_status = 'Potential Duplicate(s) Found'
+EOF
+
 
 exact_duplicates.each do |record|
   hash = {}
@@ -65,14 +71,9 @@ exact_duplicates.each do |record|
   line = record.join(",") + ","
   query_results.each do |result|
     person_id = result['_id']
-    #person = Person.find(person_id)
-    #name   =   PersonName.where(person_id: person_id).first
-    detail = PersonBirthDetail.where(person_id: person_id).first
     name   = PersonName.where(person_id: person_id).first
     $exact_duplicates << detail.district_id_number
     line += "#{detail.district_id_number}|#{name.last_name}|#{name.first_name}|#{name.middle_name}"
-    #mother = PersonService.mother(person_id)
-    #father = PersonService.father(person_id)
 
   end
   $exact_duplicates << line
@@ -80,6 +81,30 @@ exact_duplicates.each do |record|
 end
 
 File.open("Exact_duplicates.csv", "w"){|f| f.write($exact_duplicates.join("\n"))}
+
+
+potential_duplicates.each do |record|
+
+  line = record.join(",") + ","
+  detail = PersonBirthDetail.where(source_id: record[0]).first
+  potential_duplicate = PotentialDuplicate.where(person_id: detail.person_id).first
+  query_results = DuplicateRecord.where(potential_duplicate_id: potential_duplicate.id) rescue []
+  puts "#{query_results.count} Found!"
+  query_results.each do |result|
+    person_id = result.person_id
+    detail2 = PersonBirthDetail.where(person_id: person_id).first
+    name   = PersonName.where(person_id: person_id).first
+    $potential_duplicates << detail2.district_id_number
+    line += "#{detail2.district_id_number}|#{name.last_name}|#{name.first_name}|#{name.middle_name}"
+  end
+  $potential_duplicates << line
+
+end
+
+File.open("Potential_duplicates.csv", "w"){|f| f.write($potential_duplicates.join("\n"))}
+
+
+
 
 
 
