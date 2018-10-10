@@ -71,6 +71,7 @@ exact_duplicates.each do |record|
   line = record.join(",") + ","
   query_results.each do |result|
     person_id = result['_id']
+    detail = PersonBirthDetail.where(source_id: person_id).first
     name   = PersonName.where(person_id: person_id).first
     $exact_duplicates << detail.district_id_number
     line += "#{detail.district_id_number}|#{name.last_name}|#{name.first_name}|#{name.middle_name}"
