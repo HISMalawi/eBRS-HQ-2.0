@@ -62,19 +62,20 @@ exact_duplicates.each do |record|
   person = format_person(hash, 0)
   query_results = SimpleElasticSearch.query_duplicate_coded(person, 100)
 
-  $exact_duplicates << record.join(",")
+  line = record.join(",") + ","
   query_results.each do |result|
     person_id = result['_id']
     #person = Person.find(person_id)
     #name   =   PersonName.where(person_id: person_id).first
     detail = PersonBirthDetail.where(person_id: person_id).first
+    name   = PersonName.where(person_id: person_id).first
     $exact_duplicates << detail.district_id_number
+    line += "#{detail.district_id_number}|#{name.last_name}|#{name.first_name}|#{name.middle_name}"
     #mother = PersonService.mother(person_id)
     #father = PersonService.father(person_id)
 
   end
-  $exact_duplicates << ""
-  $exact_duplicates << ""
+  $exact_duplicates << line
 
 end
 
