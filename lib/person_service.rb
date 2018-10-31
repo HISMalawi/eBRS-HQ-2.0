@@ -686,6 +686,38 @@ end
     result
   end
 
+  def self.mother_address(person_id)
+    result = nil
+    #raise person_id.inspect
+    relationship_type = PersonRelationType.find_by_name("Mother")
+
+    # raise relationship_type.id.inspect
+
+    relationship = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => relationship_type.id).last
+    #raise relationship.person_b.inspect
+    unless relationship.blank?
+      result = PersonAddress.where(:person_id => relationship.person_b).last
+    end
+
+    result
+  end
+
+  def self.father_address(person_id)
+    result = nil
+    #raise person_id.inspect
+    relationship_type = PersonRelationType.find_by_name("Father")
+
+    # raise relationship_type.id.inspect
+
+    relationship = PersonRelationship.where(:person_a => person_id, :person_relationship_type_id => relationship_type.id).last
+    #raise relationship.person_b.inspect
+    unless relationship.blank?
+      result = PersonAddress.where(:person_id => relationship.person_b).last
+    end
+
+    result
+  end
+
   def self.informant(person_id)
     result = nil
     #raise person_id.inspect
@@ -1842,5 +1874,32 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     return [success, errors]
   end
 
+  def self.qr_code_data(person_id)
+    person = Person.find(person_id)
+    details = PersonBirthDetail.where(person_id: person_id).first
+
+    birth_district = Location.find(details.district_of_birth).name rescue nil
+    place_of_birth = Location.find(details.birth_location_id).name rescue details.other_place_of_birth
+
+    if place_of_birth.downcase == 'other'
+      place_of_birth = details.other_birth_location
+    end
+    if !place_of_birth.blank?
+      place_of_birth += ", " + birth_district
+    else
+      place_of_birth = birth_district
+    end
+
+    str = "04~#{person.id_number}-#{details.district_id_number}-#{details.brn}"
+    str += "~#{person.printable_name}~#{person.birthdate.to_date.strftime("%d-%b-%Y")}~#{person.gender}"
+    str += "~#{place_of_birth}"
+    str += ("~#{person.mother.printable_name}" rescue '~')
+    str += ("~#{person.mother.citizenship}" rescue '~')
+    str += ("~#{person.father.printable_name}" rescue '~')
+    str += ("~#{person.father.citizenship}" rescue '~')
+    str += ("~#{details.date_registered.to_date.strftime("%d-%b-%Y")}" rescue nil)
+
+    str
+  end
 
 end

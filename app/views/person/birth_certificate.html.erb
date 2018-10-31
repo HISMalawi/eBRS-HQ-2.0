@@ -24,7 +24,8 @@
         margin-right: 0px;
         padding-right: 0px;
         padding-top: 0px;
-        margin-top: 30px;
+        margin-top: -15px;
+        padding: 0px;
         float: right !important;
         
       }
@@ -36,7 +37,7 @@
        padding-top: 6cm;
        margin-left: auto;
        margin-right: auto;
-       height: 19cm;
+       height: 18.5cm;
        }}
    
   </style>
@@ -46,7 +47,6 @@
  birth = data['birth']
 
 %>
-<body style="color: #000;">
 <body style="color: #000;">
     <% @long_cert = false %>
     <% raw = File.read("#{SETTINGS['barcodes_path']}#{person.id}.png")
@@ -63,7 +63,10 @@
 <div id="mainc">             
   <div id="barcode">
     <p style="text-align: center !important;font-size: 12px;"> <img src ="data:image/png;base64,<%= @data%>" />
-    <br/><%= person.npid %></p>
+      <% if false %>
+        <br/><%= person.npid %>
+      <% end %>
+    </p>
   </div>
 
   <div id="childdata">

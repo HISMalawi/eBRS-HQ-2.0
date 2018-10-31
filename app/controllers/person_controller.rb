@@ -1072,7 +1072,9 @@ EOF
           barcode_value = bcd.value
         end
 
-        `bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+        #`bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+        `bundle exec rails r bin/generate_qr_code #{ person_id } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+
       end
 
       data['barcode'] = File.read("#{SETTINGS['barcodes_path']}#{person_id}.png")

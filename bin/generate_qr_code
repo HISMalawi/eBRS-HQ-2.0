@@ -17,7 +17,8 @@ if ARGV.length > 2
   require 'barby/barcode/qr_code'
   require 'barby/outputter/png_outputter'
 
-   barcode = Barby::QrCode.new(ARGV[0], level: :q, size: 10) # Barby::Code128B.new(ARGV[0])
+   data = PersonService.qr_code_data(ARGV[0])
+   barcode = Barby::QrCode.new(data, level: :q, size: 15) # Barby::Code128B.new(ARGV[0])
 
   file = File.open("#{ARGV[2]}/#{ARGV[1]}.png", "wb")
 	
