@@ -780,7 +780,7 @@ EOF
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Entered At DRO by DS (Above 16)","Entered At DRO by DS (Above 16)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Entered At DRO by DS (Above 16)","Entered At DRO by DS (Above 16)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],              
               ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
@@ -819,6 +819,7 @@ EOF
     @tasks = [
         ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
         ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+				["Print Records Entered by DS (Above 16)","Print Records Entered by DS (Above 16)" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png", "Data Manager"],
         ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Approve Re-print from QS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
@@ -826,7 +827,12 @@ EOF
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
     @stats = PersonRecordStatus.stats
+		@entered_at_dro_stats = PersonRecordStatus.find_by_sql("
+        SELECT COUNT(*) c FROM person_record_statuses prs
+        INNER JOIN person_identifiers pid ON pid.person_id = prs.person_id
+        WHERE pid.voided = 0 AND prs.voided = 0 AND pid.person_identifier_type_id = 10 AND prs.status_id = 42
 
+      ").as_json[0]['c'] rescue 0
     @stats1 = PersonRecordStatus.had_stats('HQ-RE-PRINT')
     @stats['HQ-DISPATCHED'] = @stats1['HQ-DISPATCHED']
 
