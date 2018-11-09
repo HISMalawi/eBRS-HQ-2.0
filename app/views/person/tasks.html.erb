@@ -62,6 +62,7 @@
   <div class="panel-body" style="">
            <%(@tasks || []).each do |title, desc, stauses, link, icon, role|
             count = stauses.collect{|s| (@stats[s] || 0)}.sum()
+            count =  @entered_at_dro_stats if title.match("Above 16")
 
                   if role.present? && role != User.current.user_role.role.role && SETTINGS['enable_role_privileges'].to_s == 'true'
                     next

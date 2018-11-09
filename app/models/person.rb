@@ -118,5 +118,13 @@ class Person < ActiveRecord::Base
         person_id: self.id,
         person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id
     ).last.value.strip rescue nil
- end
+  end
+
+  def verification_number
+    PersonIdentifier.where(
+        person_id: self.id,
+        voided: 0,
+        person_identifier_type_id: PersonIdentifierType.where(name: "Verification Number").last.id
+    ).last.value.strip rescue nil
+  end
 end

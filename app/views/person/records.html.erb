@@ -490,6 +490,9 @@
                             d.district   = __$('districts').value;
                             d.category   = __$('category').value;
                             d.date_range = __$("reportranger").value;
+                            <% if params[:destination].to_s.match("Above 16")%>
+                                d.by_ds_at_dro = true;
+                            <% end %>
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );

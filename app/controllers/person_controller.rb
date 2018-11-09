@@ -141,8 +141,14 @@ class PersonController < ApplicationController
 
     @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
+    verification_number = @person.verification_number
+    flag = ""
+    if !verification_number.blank?
+      flag = " <span style='color: green; font-weight: bold;'>  &nbsp;&nbsp;( Verification Number: #{verification_number}) </span>"
+    end
+
     @record = {
-          "Details of Child" => [
+        "Details of Child #{flag}".html_safe => [
               {
                   "Birth Entry Number" => "#{@birth_details.ben rescue nil}",
                   "Birth Registration Number" => "#{@birth_details.brn  rescue nil}",
@@ -470,10 +476,16 @@ EOF
              AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
+      by_ds_at_filter = ""
+      if params[:by_ds_at_dro].to_s == "true"
+        by_ds_at_filter = " INNER JOIN person_identifiers pidr ON pidr.person_id = prs.person_id AND pidr.person_identifier_type_id = 10 AND pidr.voided = 0 " #10 = Verification Number
+      end
+
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
                   AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
+              #{by_ds_at_filter}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
       .where(" n.voided = 0 #{loc_query} #{range_query}
@@ -768,6 +780,7 @@ EOF
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Entered At DRO by DS (Above 16)","Entered At DRO by DS (Above 16)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
@@ -775,6 +788,13 @@ EOF
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
 
     @stats = PersonRecordStatus.stats
+    @entered_at_dro_stats = PersonRecordStatus.find_by_sql("
+        SELECT COUNT(*) c FROM person_record_statuses prs
+        INNER JOIN person_identifiers pid ON pid.person_id = prs.person_id
+        WHERE pid.voided = 0 AND prs.voided = 0 AND pid.person_identifier_type_id = 10 AND prs.status_id = 42
+
+      ").as_json[0]['c'] rescue 0
+
     @section = "Manage Cases"
 
     render :template => "/person/tasks"
