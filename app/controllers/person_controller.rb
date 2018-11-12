@@ -833,6 +833,7 @@ EOF
         WHERE pid.voided = 0 AND prs.voided = 0 AND pid.person_identifier_type_id = 10 AND prs.status_id = 42
 
       ").as_json[0]['c'] rescue 0
+
     @stats1 = PersonRecordStatus.had_stats('HQ-RE-PRINT')
     @stats['HQ-DISPATCHED'] = @stats1['HQ-DISPATCHED']
 

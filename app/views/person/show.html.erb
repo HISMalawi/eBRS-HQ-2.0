@@ -807,7 +807,12 @@
                 console.log(result);
                 if(result == "OK"){
 
-                    queryNID();
+                    <% if @person.verification_number.blank? %>
+                        queryNID();
+                    <% else %>
+                        window.parent.location = return_path;
+                    <% end %>
+
                 }else{
                     setTimeout(function(){assignmentOrder()}, 250);
                 }
