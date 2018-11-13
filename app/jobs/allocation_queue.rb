@@ -103,7 +103,7 @@ class AllocationQueue
       #Assign National ID for All Pending Records
 
       nid_queue = IdentifierAllocationQueue.where(assigned: 0,
-                        PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+                        person_identifier_type_id: PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
         )
 
       person_ids = nid_queue.map(&:person_id)
