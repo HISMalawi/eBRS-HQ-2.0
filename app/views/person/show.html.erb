@@ -814,12 +814,12 @@
                     <% end %>
 
                 }else{
-                    setTimeout(function(){assignmentOrder()}, 250);
+                    setTimeout(function(){assignmentOrder()}, 50);
                 }
             },
             error: function(error){
                 if (brn_tries < 3) {
-                    setTimeout(function(){assignmentOrder()}, 250);
+                    setTimeout(function(){assignmentOrder()}, 200);
                     brn_tries += 1;
                 }else{
                     alert("Something Went Wrong!");
