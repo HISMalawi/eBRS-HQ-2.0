@@ -22,6 +22,7 @@ class AllocationQueue
         brn = person_birth_detail.brn
         ben = person_birth_detail.district_id_number
         fsn = person_birth_detail.facility_serial_number
+        nid = Person.find(record.person_id).id_number
 
         if record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Birth Entry Number").last.person_identifier_type_id
@@ -97,6 +98,18 @@ class AllocationQueue
             PersonIdentifier.new_identifier(record.person_id, 'Facility Number', person_birth_detail.facility_serial_number)
           end
         end
+      end
+
+      #Assign National ID for All Pending Records
+
+      nid_queue = IdentifierAllocationQueue.where(assigned: 0,
+                        PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+        )
+
+      person_ids = nid_queue.map(&:person_id)
+      result = PersonService.request_nris_ids_by_batch(person_ids, "N/A", User.current)
+      nid_queue.each do |record|
+        record.update_attributes(assigned: 1)
       end
 
       load "#{Rails.root}/bin/jobs.rb"

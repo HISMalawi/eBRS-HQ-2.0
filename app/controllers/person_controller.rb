@@ -1568,6 +1568,8 @@ EOF
 
   def ajax_request_national_id
     person_id = params[:person_id]
+
+=begin
     result = PersonService.request_nris_id(person_id, request.remote_ip, User.current)
 
     if result == true || result == "NOT A MALAWIAN CITIZEN" || result == "AGE LIMIT EXCEEDED" || "NID INTEGRATION NOT ACTIVATED"
@@ -1575,6 +1577,9 @@ EOF
     else
       render plain: "PENDING"
     end
+=end
+
+    render plain: "OK"
   end
 
   def ajax_check_brn

@@ -47,6 +47,13 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.created_at = Time.now
             allocation.save
 
+            allocation = IdentifierAllocationQueue.new
+            allocation.person_id = person_id
+            allocation.assigned = 0
+            allocation.creator = User.current.id
+            allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+            allocation.created_at = Time.now
+            allocation.save
         end
     end
     rescue StandardError => e
