@@ -66,6 +66,19 @@ class AllocationQueue
           PersonIdentifier.new_identifier(record.person_id,
                                           'Birth Registration Number', person_birth_detail.national_serial_number)
 
+          barcode = BarcodeIdentifier.where(:assigned => 0).last
+          idf = PersonIdentifier.where(person_id: record.person_id,
+                                       person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
+                                       voided: 0
+          ).first
+
+          if !barcode.blank? && idf.blank?
+            PersonIdentifier.new_identifier(record.person_id,
+                                            'Barcode Number', barcode.value)
+
+            barcode.update_attributes(assigned: 1,
+                                      person_id: record.person_id)
+          end
 
         elsif record.person_identifier_type_id == PersonIdentifierType.where(
             :name => "Facility number").last.person_identifier_type_id
