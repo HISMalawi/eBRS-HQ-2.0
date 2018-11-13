@@ -807,7 +807,7 @@
                 console.log(result);
                 if(result == "OK"){
 
-                    <% if @person.verification_number.blank? %>
+                    <% if @person.verification_number.blank? && false %>
                         queryNID();
                     <% else %>
                         window.parent.location = return_path;
