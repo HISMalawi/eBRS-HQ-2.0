@@ -876,12 +876,12 @@
             url: url,
             success: function(feedback){
                 if(status == "HQ-CAN-PRINT" || status == "HQ-CAN-RE-PRINT"){
-
-                    <% if @person.id_number.blank? %>
-                        assignmentOrder();
-                    <% else %>
+                    removeShield();
+                    <% #if @person.id_number.blank? %>
+                       // assignmentOrder();
+                    <% #else %>
                         window.parent.location = return_path;
-                    <% end %>
+                    <% # end %>
                 }else{
                     removeShield();
                     window.parent.location = return_path;
