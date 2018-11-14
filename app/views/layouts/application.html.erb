@@ -242,7 +242,7 @@
             <div class="top-menu" style="padding-top: 7px;font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif';">
               <ul class="nav navbar-top-links navbar-right">
                 <table cellspacing="0" cellpadding="0" style="background: none;margin: 10px !important; padding: 0px;"><tr>
-                  <%    if User.current.user_role.role.role == "Data Manager" %>
+                  <%    if User.current && User.current.user_role.role.role == "Data Manager" %>
                   <td>
                     <li class="chat-panel dropdown">
                       <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
@@ -252,10 +252,10 @@
                       </a>
 
                       <% if @pending_nid_assignment > 0 %>
-                          <ul class="dropdown-menu dropdown-alerts" style="width: 360px; !important;margin-top: 4px;">
+                          <ul class="dropdown-menu dropdown-alerts" onclick="queryNIDByBatch()" style="width: 360px; !important;margin-top: 4px;">
 
                                 <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;cursor: pointer;"
-                                    onmousedown="queryNIDByBatch()" >
+                                     >
                                   <a href="#">
                                     <div>
                                       <i class="fa fa-comment"
@@ -461,8 +461,8 @@
 
         function queryNIDByBatch(){
             <% if !@nris_up %>
-            alert("Error! NID Server Unreachable");
-            return;
+                alert("Error! NID Server Unreachable");
+                return;
             <% end %>
 
             jQuery.ajax({
