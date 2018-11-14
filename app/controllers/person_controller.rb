@@ -557,6 +557,7 @@ EOF
     end
 
    # @records = PersonService.query_for_display(@states)
+    @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
     render :template => "/person/records"
   end
@@ -1000,6 +1001,54 @@ EOF
     render :text => 'ok'
   end
 
+  def get_completeness_data
+    person  = Person.find(params[:person_id])
+    details = PersonBirthDetail.where(person_id: params[:person_id]).first
+    mother  = PersonService.mother(person.id)
+    father  = PersonService.father(person.id)
+
+    mother_address = PersonService.mother_address(person.id)
+    father_address = PersonService.father_address(person.id)
+
+    birth_loc = Location.find(details.birth_location_id)
+    district = Location.find(details.district_of_birth).name
+
+    birth_location = birth_loc.name rescue nil
+
+    if birth_location == 'Other' && details.other_birth_location.present?
+      birth_location = details.other_birth_location
+    end
+
+    data = {}
+    data["child_name"] = person.name
+    data["birth_entry_number"] = details.district_id_number
+    data["child_gender"] = {"M" => "Male", "F" => "Female"}[person.gender]
+    data["date_of_birth"] = person.birthdate.to_date.strftime("%d/%b/%Y")
+    data["place_of_birth"] = "#{birth_location}, #{district}"
+
+    if !mother.blank?
+      data["motherr_name"] = "#{mother.first_name} #{mother.middle_name} #{mother.last_name}"
+      data["mother_citizenship"] = Location.find(mother_address.citizenship).country rescue nil
+    end
+
+    if !father.blank?
+      data["fatherr_name"] = "#{father.first_name} #{father.middle_name} #{father.last_name}"
+      data["father_citizenship"] = Location.find(father_address.citizenship).country rescue nil
+    end
+
+    parents_married = (details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil
+    parents_signed = (details.parents_signed == "1" ? 'Yes' : 'No') rescue nil
+    court_order_attached = (details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil
+    days_gone = ((details.date_registered.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
+    delayed =  days_gone > 42 ? "Yes" : "No"
+
+    data["parents_married"] = parents_married
+    data["parents_signed"]  = parents_signed
+    data["delayed_reg"]     =  delayed
+    data['court_order_attached'] = court_order_attached
+
+    render :text => data.to_json
+  end
 
   def multiple_status_change
     params[:person_ids].split(',').each do |person_id|
@@ -1566,10 +1615,28 @@ EOF
     render :text => PersonBirthDetail.record_available?(params[:person_id])
   end
 
+  def nid_queue_count
+    nid_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+    nid_queue = IdentifierAllocationQueue.where(assigned: 0, person_identifier_type_id: nid_type_id).count
+
+    render plain: nid_queue
+  end
+
   def ajax_request_national_id
+
+    nid_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+    nid_queue = IdentifierAllocationQueue.where(assigned: 0, person_identifier_type_id: nid_type_id)
+    person_ids = nid_queue.map(&:person_id)
+
+    result = PersonService.request_nris_ids_by_batch(person_ids, "N/A", User.current)
+    nid_queue.each do |record|
+      record.update_attributes(assigned: 1)
+    end
+
+    render plain: "OK"
+=begin
     person_id = params[:person_id]
 
-=begin
     result = PersonService.request_nris_id(person_id, request.remote_ip, User.current)
 
     if result == true || result == "NOT A MALAWIAN CITIZEN" || result == "AGE LIMIT EXCEEDED" || "NID INTEGRATION NOT ACTIVATED"
@@ -1587,9 +1654,6 @@ EOF
     birth = PersonBirthDetail.where(person_id: person_id).first
 
     if !birth.blank? && !birth.national_serial_number.blank?
-
-      
-
       render plain: "OK"
     else
       workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil

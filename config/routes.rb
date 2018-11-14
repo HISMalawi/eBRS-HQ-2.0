@@ -32,7 +32,7 @@ Rails.application.routes.draw do
 
   get '/dispatch_note_reprint' => 'report#view_dispatches'
   get '/revalidate' => 'person#revalidate'
-
+  get '/get_completeness_data' => 'person#get_completeness_data'
 
 
   ####################### reports end ################################
@@ -165,6 +165,8 @@ Rails.application.routes.draw do
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'
+  get '/nid_queue_count' => 'person#nid_queue_count'
+
 
 
   ########################### (create record form) routes

@@ -100,18 +100,6 @@ class AllocationQueue
         end
       end
 
-      #Assign National ID for All Pending Records
-
-      nid_queue = IdentifierAllocationQueue.where(assigned: 0,
-                        person_identifier_type_id: PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
-        )
-
-      person_ids = nid_queue.map(&:person_id)
-      result = PersonService.request_nris_ids_by_batch(person_ids, "N/A", User.current)
-      nid_queue.each do |record|
-        record.update_attributes(assigned: 1)
-      end
-
       load "#{Rails.root}/bin/jobs.rb"
 
       ActiveRecord::Base.logger.level = 1

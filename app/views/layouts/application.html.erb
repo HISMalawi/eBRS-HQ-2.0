@@ -242,6 +242,34 @@
             <div class="top-menu" style="padding-top: 7px;font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif';">
               <ul class="nav navbar-top-links navbar-right">
                 <table cellspacing="0" cellpadding="0" style="background: none;margin: 10px !important; padding: 0px;"><tr>
+                  <%    if User.current.user_role.role.role == "Data Manager" %>
+                  <td>
+                    <li class="chat-panel dropdown">
+                      <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
+                        <span class="label count-label " style="font-size: 14px; color: darkslategray; margin-bottom: 2px;" id="nid_queue"
+                        >NID Queue (<%= @pending_nid_assignment%>)</span>
+                        <i class="fa fa-chevron-down nid_queue"></i>
+                      </a>
+
+                      <% if @pending_nid_assignment > 0 %>
+                          <ul class="dropdown-menu dropdown-alerts" style="width: 360px; !important;margin-top: 4px;">
+
+                                <li style="border-bottom: 1px solid #d3d3d3; padding: 10px; overflow: auto;cursor: pointer;"
+                                    onmousedown="queryNIDByBatch()" >
+                                  <a href="#">
+                                    <div>
+                                      <i class="fa fa-comment"
+                                         style="color: mediumvioletred;"></i> Click to query for NID a batch of <%= @pending_nid_assignment%>
+                                      <span class="pull-right text-muted small" style="color: darkslategray"> </span>
+                                    </div>
+                                  </a>
+                                </li>
+                          </ul>
+                          <% end %>
+                    </li>
+                  </td>
+                      <% end %>
+
                   <td>
                     <li class="chat-panel dropdown">
                       <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
@@ -252,7 +280,7 @@
                     </li>
                   </td>
 
-                  <td>
+                  <td style="display: none;">
                   <li class="chat-panel dropdown">
                     <a href="#" style="padding: 5px;text-decoration: none;" onclick="jQuery('.dropdown-alerts').toggle()">
                       <span class="label count-label" style="font-size: 14px;margin-bottom: 2px;color: red;"><%= ((@notifications || []).group_by{|a| a['name']} || []).length%></span>
@@ -430,6 +458,42 @@
           //});
         }catch(z){
         }
+
+        function queryNIDByBatch(){
+            <% if !@nris_up %>
+            alert("Error! NID Server Unreachable");
+            return;
+            <% end %>
+
+            jQuery.ajax({
+                url: "/ajax_request_national_id",
+                success: function(result){
+                    if (result == "OK"){
+                        alert("Request Successfull");
+                    }else{
+                        alert("Something went wrong!");
+                    }
+                },
+                error: function(e){
+                    alert("Something went wrong!");
+                }
+            })
+        }
+
+        <%    if User.current.user_role.role.role == "Data Manager" %>
+
+
+            setInterval(function(){
+                jQuery.ajax(
+                        {
+                            url: "/nid_queue_count",
+                            success: function(data){
+                                __$("nid_queue").innerHTML = "NID Queue (" + data + ")"
+                            }
+                        }
+                )
+        }, 10000)
+        <%    end  %>
 
     </script>
       <section id="main-content" >

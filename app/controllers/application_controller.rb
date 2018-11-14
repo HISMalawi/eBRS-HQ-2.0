@@ -88,6 +88,13 @@ class ApplicationController < ActionController::Base
   def check_notifications
     @nris_up = File.read("#{Rails.root}/public/nris_status").to_s == "true"
     #@notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
+    @pending_nid_assignment = 0
+    if User.current.user_role.role.role == "Data Manager"
+      @pending_nid_assignment = IdentifierAllocationQueue.where(
+          assigned: 0,
+        person_identifier_type_id: PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+      ).count
+    end
   end
 
   private

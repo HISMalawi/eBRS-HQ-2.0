@@ -11,7 +11,8 @@ class PersonRecordStatus < ActiveRecord::Base
 			status = nil
      begin
        ActiveRecord::Base.transaction do
-        user_id = User.current.id if user_id.blank?
+        user_id = User.current.id rescue nil if user_id.blank?
+        user_id = User.find_by_username("admin279").id if user_id.blank?
         state_id = Status.where(:name => state).first.id
         trail = self.where(:person_id => person_id, :voided => 0)
         trail.each do |state|
