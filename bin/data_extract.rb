@@ -45,11 +45,11 @@ csv                += "Informant ID Number|Informant First Name|Informant Middle
 csv                += "Informant Current District|Informant Current TA|Informant Current Village|"
 csv                += "Informant Phone Number|Informant Address|Informant Relationship|Date Reported|Date Registered\n"
 
-PersonBirthDetail.order(" created_at").limit(20000).each{|details|
+PersonBirthDetail.find_each{|details|
   puts details.person_id
 
   nid               = PersonIdentifier.where(person_id: details.person_id, person_identifier_type_id: nid_type_id).first.value rescue ""
-  status_id         = PersonRecordStatus.where(person_id: details.person_id, voided: 0).order("created_at").last.status_id
+  status_id         = PersonRecordStatus.where(person_id: details.person_id, voided: 0).order("created_at").last.status_id rescue ""
   csv               += "#{details.district_id_number}|#{nid}|#{status_map[status_id]}|#{location_map[details.location_created_at]}|"
 
   name              = PersonName.where(person_id: details.person_id).last
@@ -103,7 +103,7 @@ PersonBirthDetail.order(" created_at").limit(20000).each{|details|
   csv              += "#{place}|#{district_of_birth}|#{location}|"
 
   if mother_person_id.blank?
-    csv                += "|||||||||||"
+    csv                += "||||||||||||"
   else
     m_citizenship       = location_map[mother_address.citizenship]
     m_home_district     = location_map[mother_address.home_district]
@@ -127,7 +127,7 @@ PersonBirthDetail.order(" created_at").limit(20000).each{|details|
   csv                += "#{education_levels[details.level_of_education_id]}|#{binary_options[details.parents_signed]}|#{binary_options[details.form_signed]}|"
 
   if father_person_id.blank?
-    csv                += "|||||||||||"
+    csv                += "||||||||||||"
   else
     f_citizenship       = location_map[father_address.citizenship]
     f_home_district     = location_map[father_address.home_district]
