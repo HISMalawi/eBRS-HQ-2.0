@@ -141,8 +141,14 @@ class PersonController < ApplicationController
 
     @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
+    verification_number = @person.verification_number
+    flag = ""
+    if !verification_number.blank?
+      flag = " <span style='color: green; font-weight: bold;'>  &nbsp;&nbsp;( Verification Number: #{verification_number}) </span>"
+    end
+
     @record = {
-          "Details of Child" => [
+        "Details of Child #{flag}".html_safe => [
               {
                   "Birth Entry Number" => "#{@birth_details.ben rescue nil}",
                   "Birth Registration Number" => "#{@birth_details.brn  rescue nil}",
@@ -470,10 +476,16 @@ EOF
              AND prev_s.status_id IN (#{prev_state_ids.join(', ')})"
       end
 
+      by_ds_at_filter = ""
+      if params[:by_ds_at_dro].to_s == "true"
+        by_ds_at_filter = " INNER JOIN person_identifiers pidr ON pidr.person_id = prs.person_id AND pidr.person_identifier_type_id = 10 AND pidr.voided = 0 " #10 = Verification Number
+      end
+
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
                   AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
+              #{by_ds_at_filter}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
       .where(" n.voided = 0 #{loc_query} #{range_query}
@@ -545,6 +557,7 @@ EOF
     end
 
    # @records = PersonService.query_for_display(@states)
+    @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
     render :template => "/person/records"
   end
@@ -768,6 +781,7 @@ EOF
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Entered At DRO by DS (Above 16)","Entered At DRO by DS (Above 16)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],              
               ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
@@ -775,6 +789,13 @@ EOF
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
 
     @stats = PersonRecordStatus.stats
+    @entered_at_dro_stats = PersonRecordStatus.find_by_sql("
+        SELECT COUNT(*) c FROM person_record_statuses prs
+        INNER JOIN person_identifiers pid ON pid.person_id = prs.person_id
+        WHERE pid.voided = 0 AND prs.voided = 0 AND pid.person_identifier_type_id = 10 AND prs.status_id = 42
+
+      ").as_json[0]['c'] rescue 0
+
     @section = "Manage Cases"
 
     render :template => "/person/tasks"
@@ -799,6 +820,7 @@ EOF
     @tasks = [
         ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
         ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
+				["Print Records Entered by DS (Above 16)","Print Records Entered by DS (Above 16)" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png", "Data Manager"],
         ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Approve Re-print from QS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
@@ -806,6 +828,12 @@ EOF
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
     @stats = PersonRecordStatus.stats
+		@entered_at_dro_stats = PersonRecordStatus.find_by_sql("
+        SELECT COUNT(*) c FROM person_record_statuses prs
+        INNER JOIN person_identifiers pid ON pid.person_id = prs.person_id
+        WHERE pid.voided = 0 AND prs.voided = 0 AND pid.person_identifier_type_id = 10 AND prs.status_id = 42
+
+      ").as_json[0]['c'] rescue 0
 
     @stats1 = PersonRecordStatus.had_stats('HQ-RE-PRINT')
     @stats['HQ-DISPATCHED'] = @stats1['HQ-DISPATCHED']
@@ -973,6 +1001,54 @@ EOF
     render :text => 'ok'
   end
 
+  def get_completeness_data
+    person  = Person.find(params[:person_id])
+    details = PersonBirthDetail.where(person_id: params[:person_id]).first
+    mother  = PersonService.mother(person.id)
+    father  = PersonService.father(person.id)
+
+    mother_address = PersonService.mother_address(person.id)
+    father_address = PersonService.father_address(person.id)
+
+    birth_loc = Location.find(details.birth_location_id)
+    district = Location.find(details.district_of_birth).name
+
+    birth_location = birth_loc.name rescue nil
+
+    if birth_location == 'Other' && details.other_birth_location.present?
+      birth_location = details.other_birth_location
+    end
+
+    data = {}
+    data["child_name"] = person.name
+    data["birth_entry_number"] = details.district_id_number
+    data["child_gender"] = {"M" => "Male", "F" => "Female"}[person.gender]
+    data["date_of_birth"] = person.birthdate.to_date.strftime("%d/%b/%Y")
+    data["place_of_birth"] = "#{birth_location}, #{district}"
+
+    if !mother.blank?
+      data["motherr_name"] = "#{mother.first_name} #{mother.middle_name} #{mother.last_name}"
+      data["mother_citizenship"] = Location.find(mother_address.citizenship).country rescue nil
+    end
+
+    if !father.blank?
+      data["fatherr_name"] = "#{father.first_name} #{father.middle_name} #{father.last_name}"
+      data["father_citizenship"] = Location.find(father_address.citizenship).country rescue nil
+    end
+
+    parents_married = (details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil
+    parents_signed = (details.parents_signed == "1" ? 'Yes' : 'No') rescue nil
+    court_order_attached = (details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil
+    days_gone = ((details.date_registered.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
+    delayed =  days_gone > 42 ? "Yes" : "No"
+
+    data["parents_married"] = parents_married
+    data["parents_signed"]  = parents_signed
+    data["delayed_reg"]     =  delayed
+    data['court_order_attached'] = court_order_attached
+
+    render :text => data.to_json
+  end
 
   def multiple_status_change
     params[:person_ids].split(',').each do |person_id|
@@ -1539,8 +1615,28 @@ EOF
     render :text => PersonBirthDetail.record_available?(params[:person_id])
   end
 
+  def nid_queue_count
+    nid_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+    nid_queue = IdentifierAllocationQueue.where(assigned: 0, person_identifier_type_id: nid_type_id).count
+
+    render plain: nid_queue
+  end
+
   def ajax_request_national_id
+
+    nid_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+    nid_queue = IdentifierAllocationQueue.where(assigned: 0, person_identifier_type_id: nid_type_id)
+    person_ids = nid_queue.map(&:person_id)
+
+    result = PersonService.request_nris_ids_by_batch(person_ids, "N/A", User.current)
+    nid_queue.each do |record|
+      record.update_attributes(assigned: 1)
+    end
+
+    render plain: "OK"
+=begin
     person_id = params[:person_id]
+
     result = PersonService.request_nris_id(person_id, request.remote_ip, User.current)
 
     if result == true || result == "NOT A MALAWIAN CITIZEN" || result == "AGE LIMIT EXCEEDED" || "NID INTEGRATION NOT ACTIVATED"
@@ -1548,6 +1644,9 @@ EOF
     else
       render plain: "PENDING"
     end
+=end
+
+    render plain: "OK"
   end
 
   def ajax_check_brn
@@ -1555,25 +1654,6 @@ EOF
     birth = PersonBirthDetail.where(person_id: person_id).first
 
     if !birth.blank? && !birth.national_serial_number.blank?
-            barcode = BarcodeIdentifier.where(:assigned => 0).last
-						idf = PersonIdentifier.where(person_id: person_id, 
-								person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
-								voided: 0
-						).first 
-
-            if !barcode.blank? && idf.blank?
-
-              p = PersonIdentifier.new
-              p.person_id = person_id
-              p.value = barcode.value
-              p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
-              p.save
-
-              barcode.update_attributes(assigned: 1,
-                                        person_id: person_id)
-            end
-      
-
       render plain: "OK"
     else
       workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil

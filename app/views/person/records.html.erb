@@ -31,6 +31,24 @@
         margin-left: 5px;
 
     }
+    #completeness_details tr{
+        border-top: 1px dotted lightgray
+    }
+    #completeness_details td{
+        padding: 8px;
+        border: 1px dotted ghostwhite;
+    }
+
+    .modal-header{
+        background: #006f95 none repeat scroll 0 0;
+        padding: 12px;
+    }
+
+    .labell{
+        text-align: left;
+        font-weight: bold !important;
+        padding: 0px;
+    }
 
     th{
         background: lightsteelblue;
@@ -428,6 +446,137 @@
 </select>
 
 
+<div class="modal fade" id="completenessModal" tabindex="-1" role="dialog" aria-labelledby="completenessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Check Completeness
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="completeness_details">
+            <tr>
+              <td class="labell" >Birth Entry Number</td>
+              <td id="birth_entry_number" class="value"  style="text-align: left; padding-left:50px;">&nbsp;</td> </tr>
+            <tr>
+              <td class="labell">Name</td>
+              <td id="child_name" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Child Gender</td>
+              <td id="child_gender" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Date of Birth</td>
+              <td id="date_of_birth" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Place of Birth</td>
+              <td id="place_of_birth" class="value"  style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Mother</td>
+              <td id="motherr_name" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Mother</td>
+              <td id="mother_citizenship" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Father</td>
+              <td id="fatherr_name" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Nationality of Father</td>
+              <td id="father_citizenship" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Parents Married to each Other?</td>
+              <td id="parents_married" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Court order attached</td>
+              <td id="court_order_attached" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Parents signed?</td>
+              <td id="parents_signed" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td class="labell">Delayed Registration</td>
+              <td id="delayed_reg" class="value" style="text-align: left; padding-left:50px;">&nbsp;</td>
+            </tr>
+          </table>
+        </span>
+
+        <% if User.current.user_role.role.role == "Data Manager" %>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT')">Approve</button>
+              <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REJECT')" >Reject</button>
+            </div>
+        <% elsif User.current.user_role.role.role == "Data Checking Clerk"%>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" onclick="ajaxify('HQ-CAN-PRINT')">Complete</button>
+              <button type="button" class="btn btn-danger" onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REJECT')" >Incomplete</button>
+            </div>
+        <% else %>
+
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="comments1" tabindex="-1" role="dialog" aria-hidden="true" style="z-index: 3000">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header btn-primary">
+        <h4 class="modal-title" id="comment-header">Record Comments</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <div class=" form-group">
+              <div class="container">
+                <div class="row" style="width: 550px;">
+
+                  <div id="comments-list">
+
+                  </div>
+
+                  <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
+                    <form id="comment-form" action="/ajax_save_comment">
+                      <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <select style="width: 80%; " onchange="__$('textarea').value = this.value ">
+                        <option value="">Select comment from list</option>
+                        <%(@options || []).each do |opt|%>
+                            <option><%=opt[0].upcase%></option>
+                        <% end %>
+                      </select>
+                      <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
+                      <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments1').modal('hide')" > Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
     selected = [];
     var table;
@@ -490,6 +639,9 @@
                             d.district   = __$('districts').value;
                             d.category   = __$('category').value;
                             d.date_range = __$("reportranger").value;
+                            <% if params[:destination].to_s.match("Above 16")%>
+                                d.by_ds_at_dro = true;
+                            <% end %>
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
@@ -512,6 +664,14 @@
 
                                         '    class="action-btn btn btn-success btn-xs ' + clas + '"><i class="fa fa-eye"></i></button></td>';
 
+                                <%if (['HQ-COMPLETE', 'HQ-CONFLICT'] & params['statuses']).length > 0 %>
+
+                                    json['data'][i][last_index] +=   '<td> ' +
+                                        '<button id =\'check-btn-' + person_id + '\' onclick=" checkCompleteness(' + person_id + ')"     ' +
+
+                                        '    class="action-btn btn btn-primary btn-xs ' + clas + '"><i class="fa fa-check"></i></button></td>';
+                                <% end %>
+
                                 <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
@@ -523,6 +683,160 @@
                     }}
         );
     }
+
+    function checkCompleteness(person_id){
+
+        jQuery("#completenessModal .values").html("");
+
+        jQuery.ajax({
+            url: "/get_completeness_data?person_id=" + person_id,
+            success: function(json){
+                var data = JSON.parse(json);
+                console.log(data);
+                for(var key in data){
+                    __$(key).innerHTML = data[key];
+                }
+
+                jQuery("#completenessModal").attr("person_id", person_id);
+                jQuery("#completenessModal").modal("show");
+
+                jQuery("#check-btn-" + jQuery("#completenessModal").attr("person_id")).parent().parent().css("background", "lightblue");
+            }
+        })
+    }
+
+
+    function ajaxPullComments(mode, status){
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if(role == "Data Checking Clerk" && status == "HQ-COMPLETE"){
+            ajaxify(status);
+            return;
+        }
+        if(role == "Data Supervisor" && status == "HQ-COMPLETE"){
+            status = "HQ-CONFLICT"
+        }
+
+        jQuery("#comment-list").html("");
+
+        if (mode && mode == 'view'){
+            __$('textarea').value = ''
+            __$('textarea').style.display = 'none';
+            __$('submit_btn').style.display = 'none';
+            __$("comment-header").innerHTML = "Record comments"
+        }else{
+            __$('textarea').style.display = 'inline';
+            __$('submit_btn').style.display = 'inline';
+            __$("comment-header").innerHTML = "Add comment to proceed";
+        }
+
+        if(status && status.toLowerCase().match('complete')){
+            jQuery("#comments1").attr('next_status', status)
+        }else{
+            jQuery("#comments1").attr('next_status', '')
+        }
+
+        jQuery.ajax(
+                {
+                    url: "/get_comments?person_id=" + jQuery("#completenessModal").attr("person_id"),
+                    success: function(results){
+                        results = JSON.parse(results);
+                        var parent = document.getElementById("comments-list");
+                        parent.innerHTML = "";
+                        __$('textarea').value = ''
+                        var clone = document.getElementById("clone_me");
+                        for(var i = 0; i < results.length; i++){
+                            var dup = clone.cloneNode(true);
+                            dup.id = i;
+                            dup.style.display = "block";
+                            //set values
+                            dup.getElementsByClassName("name")[0].innerHTML = results[i]['user']
+                                    + " <small class='user_role'>" + results[i]['user_role'] + " - " + results[i]['date_added'] + " </small>";
+                            dup.getElementsByClassName("state")[0].innerHTML = results[i]['status'];
+                            dup.getElementsByClassName("comment")[0].innerHTML = results[i]['comment'];
+
+                            parent.appendChild(dup);
+                        }
+
+                        jQuery("#comments1").modal('show');
+                        console.log(status)
+
+                        parent.scrollTop = parent.scrollHeight;
+
+                    },
+                    error: function(e){
+                        alert("Something went wrong!");
+                    }
+                }
+        )
+    }
+
+    function generalComment(header, status){
+
+        ajaxPullComments();
+
+        __$('submit_btn').style.display = 'inline';
+        __$("comment-header").innerHTML = header;
+
+        if(status){
+            __$('submit_btn').onclick = function(){
+                saveComment(status);
+            };
+        }
+    }
+
+    function reject(){
+
+    }
+
+    function saveComment(status){
+        if (__$("textarea").value.trim().length == 0){
+            jQuery('#error').show();
+            return
+        }
+
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if (!status) {
+            status = jQuery("#comments").attr('next_status');
+        }
+
+        if (!status) {
+            status = ({
+                'Data Checking Clerk': 'HQ-INCOMPLETE',
+                'Administrator': 'HQ-INCOMPLETE-TBA',
+                'Data Supervisor': 'HQ-INCOMPLETE-TBA',
+                'Data Manager': 'HQ-CAN-REJECT'
+            })[role];
+        }
+
+        var url = "/ajax_status_change?person_id=" + jQuery("#completenessModal").attr("person_id") + "&status="+status+"&comment="
+        jQuery.ajax(
+                {
+                    url: url,
+                    data: {
+                        'comment' : __$("textarea").value,
+                        "authenticity_token": "<%= form_authenticity_token %>"
+                    },
+                    success: function(result){
+                        if(result == 'ok'){
+                            jQuery("#completenessModal").modal("hide");
+                            jQuery("#comments1").modal("hide");
+
+                            jQuery("#check-btn-" + jQuery("#completenessModal").attr("person_id")).parent().parent().fadeOut(1000);
+                        }else if(result == "duplicate"){
+
+                        }else{
+                            alert("Something went wrong!")
+                        }
+                    },
+                    error: function(){
+                        alert("Something went wrong!")
+                    }
+                }
+        )
+    }
+
 
     function reloadDataTable(node){
         type = __$('birth_type').value;
@@ -782,6 +1096,22 @@
         }, 20);
     })
 
+    function ajaxify(status){
+
+        var url = "/ajax_status_change?person_id=" + jQuery("#completenessModal").attr("person_id") +  "&status="+status+"&comment=";
+        console.log(url);
+
+        jQuery.ajax({
+            url: url,
+            success: function(feedback){
+                jQuery("#completenessModal").modal("hide");
+                jQuery("#check-btn-" + jQuery("#completenessModal").attr("person_id")).parent().parent().fadeOut(1000);
+            },
+            error: function(error){
+                console.log("Something went wrong! server may be down")
+            }
+        })
+    }
 
 
     dateRangeInit();

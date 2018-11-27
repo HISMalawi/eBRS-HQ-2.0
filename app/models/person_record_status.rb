@@ -11,7 +11,8 @@ class PersonRecordStatus < ActiveRecord::Base
 			status = nil
      begin
        ActiveRecord::Base.transaction do
-        user_id = User.current.id if user_id.blank?
+        user_id = User.current.id rescue nil if user_id.blank?
+        user_id = User.find_by_username("admin279").id if user_id.blank?
         state_id = Status.where(:name => state).first.id
         trail = self.where(:person_id => person_id, :voided => 0)
         trail.each do |state|
@@ -47,6 +48,13 @@ class PersonRecordStatus < ActiveRecord::Base
             allocation.created_at = Time.now
             allocation.save
 
+            allocation = IdentifierAllocationQueue.new
+            allocation.person_id = person_id
+            allocation.assigned = 0
+            allocation.creator = User.current.id
+            allocation.person_identifier_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
+            allocation.created_at = Time.now
+            allocation.save
         end
     end
     rescue StandardError => e
