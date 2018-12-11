@@ -4,7 +4,7 @@ class PersonController < ApplicationController
       #redirect_to "/person/certificate_verification"
     #end
 
-    json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json"))
+	  json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json")) rescue {}
     @last_twelve_months_reported_births = json["last_twelve_months_reported_births"]
     @stats_months = json["stats_months"]
 
@@ -806,7 +806,8 @@ EOF
     @tasks = [
         ["All Printed Cases" ,"Cases Printed at Both HQ and DRO", ["HQ-PRINTED", "DC-PRINTED"],"/person/view","/assets/folder3.png"],
         ["Printed at HQ", "Cases Printed at HQ by DM" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
-        ["Printed at DRO","Cases Printed at DRO by ADR" , ["DC-PRINTED"],"/person/view","/assets/folder3.png"]
+        ["Printed at DRO","Cases Printed at DRO by ADR" , ["DC-PRINTED"],"/person/view","/assets/folder3.png"],
+        ["Printed Records Entered by DS (Above 16)","Printed Records Entered by DS (Above 16)" , ["HQ-PRINTED", "HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
     ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
