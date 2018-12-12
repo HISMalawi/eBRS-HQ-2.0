@@ -664,7 +664,7 @@
 
                                         '    class="action-btn btn btn-success btn-xs ' + clas + '"><i class="fa fa-eye"></i></button></td>';
 
-                                <%if (['HQ-COMPLETE', 'HQ-CONFLICT'] & params['statuses']).length > 0 %>
+                                <%if (['HQ-ACTIVE', 'HQ-COMPLETE', 'HQ-CONFLICT'] & params['statuses']).length > 0 %>
 
                                     json['data'][i][last_index] +=   '<td> ' +
                                         '<button id =\'check-btn-' + person_id + '\' onclick=" checkCompleteness(' + person_id + ')"     ' +
