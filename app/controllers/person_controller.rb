@@ -1,9 +1,7 @@
 class PersonController < ApplicationController
   def index
-    #if User.current.user_role.role.role == "Quality Supervisor"
-      #redirect_to "/person/certificate_verification"
-    #end
 
+=begin
 	  json = JSON.parse(File.read("#{Rails.root}/dashboard_data.json")) rescue {}
     @last_twelve_months_reported_births = json["last_twelve_months_reported_births"]
     @stats_months = json["stats_months"]
@@ -41,6 +39,7 @@ class PersonController < ApplicationController
       end
 
     end
+=end
 
     @stats = PersonRecordStatus.stats
     @section = "National Statistics Summary"
@@ -385,7 +384,6 @@ EOF
 
   def view
 
-    @type_stats = PersonRecordStatus.type_stats(params[:statuses], params[:had], params[:had_by])
     params[:statuses] = [] if params[:statuses].blank?
     session[:list_url] = request.referrer
     @states = params[:statuses]
@@ -401,9 +399,11 @@ EOF
     search_val = '_' if search_val.blank?
     search_category = ''
 
+=begin
     faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
                                                 LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
                                                 WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
+=end
 
     if !params[:category].blank?
 
@@ -484,7 +484,6 @@ EOF
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
-                  AND prs.person_record_status_id NOT IN (#{faulty_ids.join(', ')})
               #{by_ds_at_filter}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
@@ -557,6 +556,7 @@ EOF
     end
 
    # @records = PersonService.query_for_display(@states)
+    @type_stats = PersonRecordStatus.type_stats(params[:statuses], params[:had], params[:had_by])
     @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
     render :template => "/person/records"

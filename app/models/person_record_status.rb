@@ -97,59 +97,65 @@ class PersonRecordStatus < ActiveRecord::Base
   end
 
   def self.stats(types=['Normal', 'Adopted', 'Orphaned', 'Abandoned'], approved=true, locations = [])
+    if locations.length > 0 || types.length != 4
 
-    result = {}
-    birth_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
-    loc_str = ""
-    if !locations.blank?
-      loc_str = " AND p.location_created_at IN (#{locations.join(', ')})"
-    end
+      status_map          = Status.all.inject({}) { |r, d| r[d.id] = d.name; r }
+      result = Status.all.inject({}) { |r, d| r[d.name] = 0; r }
 
-    faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
-                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
-                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
+      birth_type_ids = BirthRegistrationType.where(" name IN ('#{types.join("', '")}')").map(&:birth_registration_type_id) + [-1]
+      loc_str = ""
+      if !locations.blank?
+        loc_str = " AND p.location_created_at IN (#{locations.join(', ')})"
+      end
 
-    Status.all.each do |status|
-      result[status.name] = self.find_by_sql("
-    SELECT COUNT(*) c FROM person_record_statuses s
-      INNER JOIN person_birth_details p ON p.person_id = s.person_id AND p.birth_registration_type_id IN (#{birth_type_ids.join(', ')})
-      WHERE voided = 0 AND s.person_record_status_id NOT IN (#{faulty_ids.join(', ')}) AND status_id = #{status.id} #{loc_str}")[0]['c']
-    end
+      PersonRecordStatus.find_by_sql("
+        SELECT s.status_id, COUNT(*) c FROM person_record_statuses s
+          INNER JOIN person_birth_details p ON p.person_id = s.person_id AND p.birth_registration_type_id IN (#{birth_type_ids.join(', ')})
+          WHERE s.voided = 0 #{loc_str}
+          GROUP BY s.status_id
+      ").each do |row|
+        result[status_map[row['status_id']]] = row['c']
+      end
 
-    unless approved == false
-      excluded_states = ['HQ-REJECTED', 'HQ-VOIDED', 'HQ-PRINTED', 'HQ-DISPATCHED'].collect{|s| Status.find_by_name(s).id}
-      included_states = Status.where("name like 'HQ-%' ").map(&:status_id)
+      unless approved == false
+        excluded_states = ['HQ-REJECTED', 'HQ-VOIDED', 'HQ-PRINTED', 'HQ-DISPATCHED'].collect{|s| Status.find_by_name(s).id}
+        included_states = Status.where("name like 'HQ-%' ").map(&:status_id)
 
-      result['APPROVED BY ADR'] =  self.find_by_sql("
+        result['APPROVED BY ADR'] =  self.find_by_sql("
       SELECT COUNT(*) c FROM person_record_statuses
       WHERE voided = 0 AND status_id NOT IN (#{excluded_states.join(', ')}) AND status_id IN (#{included_states.join(', ')})")[0]['c']
+      end
+
+      return result
+    else
+      return JSON.parse(File.read("#{Rails.root}/stats.json"))
     end
-    result
   end
 
     def self.had_stats(state, role=nil)
-      result = {}
+      result = Status.all.inject({}){|r, c| r[c.name] = 0; r}
+      status_map          = Status.all.inject({}) { |r, d| r[d.id] = d.name; r }
+
       if role.blank?
         user_ids = User.pluck("user_id")
       else
         user_ids = UserRole.where(role_id: Role.where(role: role).last.id).map(&:user_id)
       end
 
-      faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
-                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
-                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
-
       user_ids = [-1] if user_ids.blank?
 
       prev_status_ids = Status.where(" name IN ('#{state.split("|").join("', '")}')").map(&:status_id) + [-1]
 
-      Status.all.each do |status|
-        result[status.name] = self.find_by_sql("
-        SELECT COUNT(*) c FROM person_record_statuses s
+      PersonRecordStatus.find_by_sql("
+        SELECT s.status_id, COUNT(*) c FROM person_record_statuses s
           INNER JOIN person_record_statuses prev_s ON prev_s.person_id = s.person_id AND prev_s.status_id IN (#{prev_status_ids.join(', ')})
             AND prev_s.creator IN (#{user_ids.join(', ')})
-          WHERE s.voided = 0 AND s.person_record_status_id NOT IN (#{faulty_ids.join(', ')}) AND s.status_id = #{status.id}")[0]['c']
+          WHERE s.voided = 0
+          GROUP BY s.status_id
+      ").each do |row|
+        result[status_map[row['name']]] = row['c']
       end
+
       result
     end
 
@@ -171,10 +177,6 @@ class PersonRecordStatus < ActiveRecord::Base
         end
       end
 
-      faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
-                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
-                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
-
       status_ids = states.collect{|s| Status.where(name: s).last.id} rescue Status.all.map(&:status_id)
 
       data = self.find_by_sql("
@@ -182,8 +184,7 @@ class PersonRecordStatus < ActiveRecord::Base
         INNER JOIN person_record_statuses s ON d.person_id = s.person_id
         INNER JOIN birth_registration_type t ON t.birth_registration_type_id = d.birth_registration_type_id
           #{had_query}
-        WHERE s.voided = 0 AND s.person_record_status_id NOT IN (#{faulty_ids.join(', ')}) AND s.status_id IN (#{status_ids.join(', ')}) GROUP BY d.birth_registration_type_id")
-
+        WHERE s.voided = 0 AND s.status_id IN (#{status_ids.join(', ')}) GROUP BY d.birth_registration_type_id")
 
       (data || []).each do |r|
         result[r['name']] = r['c']
