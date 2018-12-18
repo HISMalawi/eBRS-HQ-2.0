@@ -781,7 +781,7 @@ EOF
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
-              ["Entered At DRO by DS (Above 16)","Entered At DRO by DS (Above 16)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],              
+              ["Above 16 (Abroad)","Above 16 (Abroad)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
           ]
@@ -807,7 +807,7 @@ EOF
         ["All Printed Cases" ,"Cases Printed at Both HQ and DRO", ["HQ-PRINTED", "DC-PRINTED"],"/person/view","/assets/folder3.png"],
         ["Printed at HQ", "Cases Printed at HQ by DM" , ["HQ-PRINTED"],"/person/view","/assets/folder3.png"],
         ["Printed at DRO","Cases Printed at DRO by ADR" , ["DC-PRINTED"],"/person/view","/assets/folder3.png"],
-        ["Printed Records Entered by DS (Above 16)","Printed Records Entered by DS (Above 16)" , ["HQ-PRINTED", "HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
+        ["Printed Records Above 16 (Abroad)", "Printed Records Above 16 (Abroad)" , ["HQ-PRINTED", "HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
     ]
 
     @tasks = @tasks.reject{|task| !@folders.include?(task[0].strip) }
@@ -821,7 +821,7 @@ EOF
     @tasks = [
         ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
         ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-				["Print Records Entered by DS (Above 16)","Print Records Entered by DS (Above 16)" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png", "Data Manager"],
+				["Print Certificate Above 16 (Abroad)","Print Certificate Above 16 (Abroad)" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png", "Data Manager"],
         ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Approve Re-print from QS", "Approve Re-print from QS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
