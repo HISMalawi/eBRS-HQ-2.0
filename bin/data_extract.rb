@@ -99,7 +99,7 @@ PersonBirthDetail.find_each{|details|
     info_address = PersonAddress.where(person_id: info_person_id).last
   end
 
-  csv              += "#{name.first_name}|#{name.middle_name}|#{name.last_name}|#{person.gender}|#{person.birthdate}|"
+  csv              += "#{name.first_name rescue "N/A"}|#{name.middle_name rescue "N/A"}|#{name.last_name rescue "N/A"}|#{person.gender}|#{person.birthdate}|"
   csv              += "#{place}|#{district_of_birth}|#{location}|"
 
   if mother_person_id.blank?
@@ -117,7 +117,7 @@ PersonBirthDetail.find_each{|details|
     m_nid               = PersonIdentifier.where(person_id: mother_person_id,
                                                  person_identifier_type_id: nid_type_id).first.value rescue ""
 
-    csv                += "#{m_nid}|#{mother_name.first_name}|#{mother_name.middle_name}|#{mother_name.last_name}|#{mother.birthdate}|#{m_citizenship}|"
+    csv                += "#{m_nid}|#{mother_name.first_name rescue "N/A"}|#{mother_name.middle_name rescue "N/A"}|#{mother_name.last_name rescue "N/A"}|#{mother.birthdate}|#{m_citizenship}|"
     csv                += "#{m_home_district}|#{m_home_ta}|#{m_home_village}|"
     csv                += "#{m_cur_district}|#{m_cur_ta}|#{m_cur_village}|"
   end
@@ -141,7 +141,7 @@ PersonBirthDetail.find_each{|details|
     f_nid               = PersonIdentifier.where(person_id: father_person_id,
                                                  person_identifier_type_id: nid_type_id).first.value rescue ""
 
-    csv                += "#{f_nid}|#{father_name.first_name}|#{father_name.middle_name}|#{father_name.last_name}|#{father.birthdate}|#{f_citizenship}|"
+    csv                += "#{f_nid}|#{father_name.first_name rescue "N/A"}|#{father_name.middle_name rescue "N/A"}|#{father_name.last_name rescue "N/A"}|#{father.birthdate}|#{f_citizenship}|"
     csv                += "#{f_home_district}|#{f_home_ta}|#{f_home_village}|"
     csv                += "#{f_cur_district}|#{f_cur_ta}|#{f_cur_village}|"
   end
