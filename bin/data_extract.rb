@@ -11,7 +11,6 @@ file_name           = ARGV[0]
 raise "Missing File Name \n Usage: bundle exec rails runner bin/data_extract.rb destination_csv_file_name".to_s if file_name.blank?
 
 delivery_modes      = ModeOfDelivery.all.inject({}) { |r, d| r[d.id] = d.name; r }
-statuses            = Status.all.inject({}) { |r, d| r[d.id] = d.name; r }
 education_levels    = LevelOfEducation.all.inject({}) { |r, d| r[d.id] = d.name; r }
 type_of_birth       = PersonTypeOfBirth.all.inject({}) { |r, d| r[d.id] = d.name; r }
 location_map        = Location.all.inject({}) { |r, d| r[d.id] = d.name; r }
@@ -27,7 +26,7 @@ informant_type_id   = PersonRelationType.where(name: "Informant").first.id
 phone_type_id       = PersonAttributeType.where(name: "Cell Phone Number").first.id
 
 #Build Headers
-csv                 = "BEN|National ID|Record Status|Place Of Registration|"
+csv                 = "BEN|BRN|National ID|Record Status|Place Of Registration|"
 csv                += "First Name|Middle Name|Last Name|Sex|Birthdate|Place Of Birth|District of Birth|Birth Location|"
 csv                += "Mother ID Number|Mother First Name|Mother Middle Name|Mother Last Name|Mother Birthdate|Mother Citizenship|"
 csv                += "Mother Home District|Mother Home TA|Mother Home Village|"
@@ -45,12 +44,15 @@ csv                += "Informant ID Number|Informant First Name|Informant Middle
 csv                += "Informant Current District|Informant Current TA|Informant Current Village|"
 csv                += "Informant Phone Number|Informant Address|Informant Relationship|Date Reported|Date Registered\n"
 
+count = 1
 PersonBirthDetail.find_each{|details|
-  puts details.person_id
+  puts "#{count}##{details.person_id}"
+  count +=1
 
+  brn               = details.brn
   nid               = PersonIdentifier.where(person_id: details.person_id, person_identifier_type_id: nid_type_id).first.value rescue ""
   status_id         = PersonRecordStatus.where(person_id: details.person_id, voided: 0).order("created_at").last.status_id rescue ""
-  csv               += "#{details.district_id_number}|#{nid}|#{status_map[status_id]}|#{location_map[details.location_created_at]}|"
+  csv               += "#{details.district_id_number}|#{brn}|#{nid}|#{status_map[status_id]}|#{location_map[details.location_created_at]}|"
 
   name              = PersonName.where(person_id: details.person_id).last
   person            = Person.find(details.person_id)
@@ -86,8 +88,8 @@ PersonBirthDetail.find_each{|details|
   
   if !father_person_id.blank?
     father            = Person.find(father_person_id)
-    father_name = PersonName.where(person_id: father_person_id).last
-    father_address = PersonAddress.where(person_id: father_person_id).last
+    father_name       = PersonName.where(person_id: father_person_id).last
+    father_address    = PersonAddress.where(person_id: father_person_id).last
   end
 
   info_person  = PersonRelationship.where(person_a: details.person_id, person_relationship_type_id: informant_type_id).first
@@ -95,8 +97,8 @@ PersonBirthDetail.find_each{|details|
 
   if !info_person_id.blank?
     info            = Person.find(info_person_id)
-    info_name = PersonName.where(person_id: info_person_id).last
-    info_address = PersonAddress.where(person_id: info_person_id).last
+    info_name       = PersonName.where(person_id: info_person_id).last
+    info_address    = PersonAddress.where(person_id: info_person_id).last
   end
 
   csv              += "#{name.first_name rescue "N/A"}|#{name.middle_name rescue "N/A"}|#{name.last_name rescue "N/A"}|#{person.gender}|#{person.birthdate}|"
