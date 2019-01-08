@@ -502,6 +502,8 @@ EOF
 
       @records = []
       nid_data = []
+      incomplete_records = []
+
       data.each do |p|
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
@@ -517,6 +519,10 @@ EOF
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
         father_name   = ("#{father.first_name rescue 'N/A'} #{father.middle_name rescue ''} #{father.last_name rescue ''}")
+
+        if mother_name.match("N/A")
+          incomplete_records << p.person_id
+        end
 
         arr = [
             p.ben,
@@ -548,11 +554,12 @@ EOF
       end
 
       render :text => {
-          "draw" => params[:draw].to_i,
-          "recordsTotal" => total,
-          "recordsFiltered" => total,
-          "failed_nids" => nid_data,
-          "data" => @records}.to_json and return
+          "draw"                => params[:draw].to_i,
+          "recordsTotal"        => total,
+          "recordsFiltered"     => total,
+          "failed_nids"         => nid_data,
+          "incomplete_records"  => incomplete_records,
+          "data"                => @records}.to_json and return
     end
 
    # @records = PersonService.query_for_display(@states)
@@ -1671,6 +1678,31 @@ EOF
     puts NIDValidator.validate(person, person.id_number)
 
     render :text => "OK"
+  end
+
+  def force_fix_from_couch
+    person_id = params[:person_id]
+
+    db = CONFIG['prefix'] + "_" + CONFIG['suffix']
+    uri = "#{CONFIG['protocol']}://#{CONFIG['username']}:#{CONFIG['password']}@#{CONFIG['host']}:#{CONFIG['port']}/#{db}/#{person_id}"
+    data = JSON.parse(RestClient.get(uri)) rescue {}
+
+    (data['person_relationship'] || []).each do |pkey, doc|
+      rel = PersonRelationship.find(pkey)
+      if (!rel.blank?)
+        doc.each {|k, v|
+          rel["#{k}"] = v
+        }
+      else
+        PersonRelationship.new(doc)
+      end
+
+      if rel.save
+        render :text => "OK"
+      end
+    end
+
+    render :text => "FAIL"
   end
 
 end

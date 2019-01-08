@@ -646,11 +646,11 @@
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
                             var failed_nids = json['failed_nids'];
-
+                            var incomplete_records = json['incomplete_records'];
                             for(var i = 0; i < json['data'].length; i ++){
 
                                 var last_index = json['data'][i].length - 1;
-                                var person_id = json['data'][i][last_index]
+                                var person_id = json['data'][i][last_index];
 
                                 var clas = "nonid";
                                 var popup = "";
@@ -659,10 +659,16 @@
                                     popup = "?side_by_side=true"
                                 }
 
-                                json['data'][i][last_index] =   '<td> ' +
-                                        '<button onclick="javascript:location=\'/show_person/' + person_id + popup + ' \'"     ' +
+                                var incomplete_clas = "";
+                                if (incomplete_records.indexOf(person_id) >= 0){
+                                   incomplete_clas = 'icon_class';
+                                }
 
-                                        '    class="action-btn btn btn-success btn-xs ' + clas + '"><i class="fa fa-eye"></i></button></td>';
+
+                                json['data'][i][last_index] =   '<td> ' +
+                                        '<button person_id=' + person_id + ' onclick="javascript:location=\'/show_person/' + person_id + popup + ' \'"     ' +
+
+                                        '    class="action-btn btn btn-success btn-xs ' + clas + ' ' + incomplete_clas + '"><i class="fa fa-eye"></i></button></td>';
 
                                 <%if (['HQ-ACTIVE', 'HQ-COMPLETE', 'HQ-CONFLICT'] & params['statuses']).length > 0 %>
 
@@ -682,6 +688,10 @@
                         }
                     }}
         );
+
+        table.on("draw", function(){
+            checkMissingDetails();
+        })
     }
 
     function checkCompleteness(person_id){
@@ -1113,6 +1123,35 @@
         })
     }
 
+    function checkMissingDetails(){
+        var incomplete_nodes = document.getElementsByClassName("icon_class");
+        for(var i = 0; i < incomplete_nodes.length; i++){
+            var row = incomplete_nodes[i].parentNode.parentNode;
+            row.setAttribute('person_id', incomplete_nodes[i].getAttribute("person_id"));
+            row.style.background = '#bda800';
+            jQuery(row).find("button").attr("disabled", "disabled")
+
+            row.onmousedown = function(){
+                var person_id = this.getAttribute("person_id");
+                var rw = this;
+
+                jQuery.ajax({
+                    url:        ("/force_fix_from_couch?person_id=" + person_id),
+                    success:    function(res){
+                        if (res == "OK"){
+                            reloadDataTable();
+                        }else{
+                            alert("Failed to fix partially synced record");
+                        }
+                    },
+                    error:  function(e){
+                        alert("Failed to fix partially synced record");
+                    }
+                });
+
+            }
+        }
+    }
 
     dateRangeInit();
 
