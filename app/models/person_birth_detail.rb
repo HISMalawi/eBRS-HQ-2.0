@@ -113,10 +113,6 @@ class PersonBirthDetail < ActiveRecord::Base
         return complete
       end
 
-      if (mother_person.birthdate.blank? rescue true)
-        return complete
-      end
-
       if self.parents_married_to_each_other.to_s == '1'
 
         if (father_person.person_names.last.first_name.blank? rescue true)

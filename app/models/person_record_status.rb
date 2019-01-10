@@ -10,8 +10,10 @@ class PersonRecordStatus < ActiveRecord::Base
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
       status = nil
 
-      @semaphore ||= Mutex.new
-      @semaphore.synchronize do
+      #redis = Redis.new
+      #$lock = RemoteLock.new(RemoteLock::Adapters::Redis.new(redis))
+      #$lock.synchronize("assignment-key") do
+
         begin
          ActiveRecord::Base.transaction do
           user_id = User.current.id rescue nil if user_id.blank?
@@ -26,13 +28,15 @@ class PersonRecordStatus < ActiveRecord::Base
             )
           end
 
-          status = self.create(
+          status = PersonRecordStatus.new(
               person_id: person_id,
               status_id: state_id,
               voided: 0,
               creator: user_id,
               comments: change_reason
           )
+
+          status.save
 
           birth_details = PersonBirthDetail.where(person_id: person_id).last
           person = Person.find(person_id)
@@ -59,11 +63,11 @@ class PersonRecordStatus < ActiveRecord::Base
               allocation.created_at = Time.now
               allocation.save
           end
-      end
+        end
       rescue StandardError => e
            self.log_error(e.message,person_id)
-       end
-    end
+      end
+    #end
 
 		return status
   end

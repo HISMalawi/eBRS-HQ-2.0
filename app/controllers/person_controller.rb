@@ -1156,8 +1156,11 @@ EOF
           barcode_value = bcd.value
         end
 
-        #`bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
-        `bundle exec rails r bin/generate_qr_code #{ person_id } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+        if SETTINGS['enable_qr_code'] == true
+         `bundle exec rails r bin/generate_qr_code #{ person_id } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+        else
+         `bundle exec rails r bin/generate_barcode #{ barcode_value } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
+        end
 
       end
 
@@ -1192,6 +1195,7 @@ EOF
 
     render :template => "/person/tasks"
   end
+
   def duplicate
     @section = "Manage Duplicates"
     @operation = "Resolve"
@@ -1201,9 +1205,14 @@ EOF
     @comments = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ")
     @status = PersonRecordStatus.status(params[:person_id])
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
-    @potential_records.duplicate_records.each do |record|
-      #raise record.person_id.inspect
-      @similar_records << person_details(record.person_id)
+
+    unless @potential_records.blank?
+      @potential_records.duplicate_records.each do |record|
+        #raise record.person_id.inspect
+        @similar_records << person_details(record.person_id)
+      end
+    else
+      @similar_records << person_details(params[:person_id])
     end
   end
 
@@ -1683,18 +1692,18 @@ EOF
   def force_fix_from_couch
     person_id = params[:person_id]
 
-    db = CONFIG['prefix'] + "_" + CONFIG['suffix']
+    db = (CONFIG['prefix'].to_s + "_" + CONFIG['suffix'].to_s).gsub(/\_$|^\_/, "")
     uri = "#{CONFIG['protocol']}://#{CONFIG['username']}:#{CONFIG['password']}@#{CONFIG['host']}:#{CONFIG['port']}/#{db}/#{person_id}"
     data = JSON.parse(RestClient.get(uri)) rescue {}
 
     (data['person_relationship'] || []).each do |pkey, doc|
-      rel = PersonRelationship.find(pkey)
+      rel = PersonRelationship.find(pkey) rescue nil
       if (!rel.blank?)
         doc.each {|k, v|
           rel["#{k}"] = v
         }
       else
-        PersonRelationship.new(doc)
+        rel = PersonRelationship.new(doc)
       end
 
       if rel.save
