@@ -44,6 +44,11 @@ group :development, :test do
  # gem 'byebug'
 end
 
+#gem 'remote_lock'
+#gem 'hiredis', '0.4.5'
+#gem 'mlanett-redis-lock', '0.2.7'
+#gem 'redis-lock', '0.2.0'
+
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
   gem 'web-console', '~> 2.0'
