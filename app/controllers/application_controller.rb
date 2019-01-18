@@ -86,7 +86,9 @@ class ApplicationController < ActionController::Base
   end
 
   def check_notifications
-    @nris_up = File.read("#{Rails.root}/public/nris_status").to_s == "true"
+
+    @stats_time     = File.mtime("stats.json")
+    @nris_up        = File.read("#{Rails.root}/public/nris_status").to_s == "true"
     #@notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
     @pending_nid_assignment = 0
     if User.current && User.current.user_role.role.role == "Data Manager"
