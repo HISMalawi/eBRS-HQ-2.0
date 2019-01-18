@@ -35,7 +35,11 @@
     <table style="width: 100%;">
       <tr>
         <td>
-          <h3 style="padding-bottom: 12.5px;color:darkslategray; height: 30px;margin-top: 0px;"><%= @section%></h3>
+          <h3 style="padding-bottom: 12.5px;color:darkslategray; height: 30px;margin-top: 0px;"><%= @section%>
+            <span style="padding-left: 50px;">
+              <small>statistics updated: <span style="color: darkseagreen"><%= @stats_time%></span></small>
+            </span>
+          </h3>
         </td>
       </tr>
     </table>
