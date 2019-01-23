@@ -38,6 +38,7 @@ Rails.application.routes.draw do
 
   ####################### reports end ################################
 
+  get "location/ajax_locations"
   get 'global_property/paper'
 
   get 'global_property/signature'
@@ -52,7 +53,17 @@ Rails.application.routes.draw do
 
   get 'task/:task_id'  => 'person#task'
 
-  get '/sites' => 'location#sites'
+  get '/locations' => 'location#index'
+  get 'location/index'
+  get "location/ajax_locations"
+  get "location/new"
+  post "location/new"
+  get "location/view"
+  get "location/delete"
+
+  get  "location/edit"
+  post "location/edit"
+
 
   get 'location/:location_tag' => 'location#tag'
 

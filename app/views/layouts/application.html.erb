@@ -370,11 +370,8 @@
                           <span>Settings</span>
                       </a>
                       <ul class="sub">
-                         <% if @folders.include?('Manage Sites')%>
-                          <li><a  href="/sites">Manage sites</a></li>
-                         <% end %>
-
                           <%if @folders.include?('Manage Users') %>
+                            <li><a  href="/locations">Manage Locations</a></li>
                             <li><a  href="/users">Manage users</a></li>
                             <li><a  href="/paper">Set Paper Size</a></li>
                             <li><a  href="/signature">Set Signatory</a></li>
