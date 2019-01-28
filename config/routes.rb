@@ -60,6 +60,7 @@ Rails.application.routes.draw do
   post "location/new"
   get "location/view"
   get "location/delete"
+  get "location/tas"
 
   get  "location/edit"
   post "location/edit"

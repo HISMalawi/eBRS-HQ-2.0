@@ -34,6 +34,14 @@
       margin-left: 5px;
       min-width: 65px;
   }
+  #example th{
+      background: rgb(176, 196, 222);
+      color: darkslategray;
+      margin-top: 10px;
+  }
+  .panel{
+      margin-top: 20px !important;
+  }
 
 </style>
 
@@ -43,7 +51,7 @@
     <li><a class='active' href="/location/index">Locations</a></li>
   </ol>
 </div>
-<div class="panel panel-primary">
+<div class="panel panel-default">
     <div class="panel-heading ">
       <span class=""></span>
       <b>List Locations</b>
@@ -198,7 +206,8 @@
 
    function deletes(link){
        __$('modal').setAttribute('link', link)
-       $('#modal').modal('show');
+
+       $i('#modal').modal('show');
    }
 
    function doDelete(){

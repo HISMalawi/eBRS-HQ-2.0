@@ -36,10 +36,13 @@ class LocationController < ApplicationController
 
     @action = "/location/new"
     if request.post?
+      parent_location = params[:parent_location_ta]
+      parent_location = params[:parent_location] if parent_location.blank?
+
       l = Location.create(
           name: params[:name],
           code: params[:code],
-          parent_location: params[:parent_location],
+          parent_location: parent_location,
           description: params[:description]
       )
 
@@ -53,13 +56,39 @@ class LocationController < ApplicationController
   def edit
     @action = "/location/edit"
     @location = Location.find(params[:location_id])
-    @tags = LocationTag.all.each_slice(4).to_a
-    @seleted_tags = LocationTagMap.where(location_id: @location.id).map(&:location_tag_id)
+    #@tags = LocationTag.all.each_slice(4).to_a
+    @tag = LocationTagMap.where(location_id: @location.id).last
+    @parent_loc   = Location.where(location_id: @location.parent_location).first
+    @parent_tag   = LocationTag.find(@tag.location_tag_id)
+
+    @parent_district = nil
+    @parent_locations = []
+    @tag_type_id = @tag.location_tag_id
+
+    if !@parent_tag.blank? && ['Village', 'Traditional Authority', 'Health Facility'].include?(@parent_tag.name)
+      tag_type_id = LocationTag.where(name: "District").first.id
+      @parent_locations = Location.find_by_sql("SELECT name, l.location_id FROM location l
+                        INNER JOIN location_tag_map tm ON tm.location_id = l.location_id
+                        WHERE tm.location_tag_id = #{tag_type_id} ").collect{|x| [x.location_id, x.name]}
+    end
+
+    if !@parent_tag.blank? && 'Village' == @parent_tag.name
+      tag_type_id = LocationTag.where(name: "Traditional Authority").first.id
+      @tas = Location.find_by_sql("SELECT name, l.location_id FROM location l
+                        INNER JOIN location_tag_map tm ON tm.location_id = l.location_id
+                        WHERE tm.location_tag_id = #{tag_type_id}
+                          AND parent_location = #{@parent_loc.parent_location}").collect{|x| [x.location_id, x.name]}
+      @parent_district    = Location.find(@parent_loc.parent_location)
+    end
 
     if request.post?
+      parent_location = params[:parent_location_ta]
+      parent_location = params[:parent_location] if parent_location.blank?
+
       @location.name = params[:name]
       @location.code = params[:code]
       @location.description = params[:description]
+      @location.parent_location = parent_location
       @location.save
 
       LocationTagMap.where(location_id: @location.id).delete_all
@@ -111,6 +140,18 @@ class LocationController < ApplicationController
         "data" => @records}.to_json and return
   end
 
+  def delete
+    LocationTagMap.where(location_id: params[:location_id]).delete_all
+
+    loc = Location.find(params[:location_id])
+    if (loc.destroy rescue false)
+      flash[:error] = "Successfully deleted location type"
+    else
+      flash[:error] = "Location already in use by some items"
+    end
+
+    redirect_to '/location/index'
+  end
 
   def get_location
     location = []
@@ -184,6 +225,25 @@ class LocationController < ApplicationController
         INNER JOIN location_tag t 
         ON t.location_tag_id = m.location_tag_id").order("location.name ASC")
     end
+  end
+
+  def tas
+    district = params[:parent]
+    district_tag_id = LocationTag.where(name: "District").first.id
+    tag_id = LocationTag.where(name: "Traditional Authority").first.id
+
+    district_id = Location.find_by_sql(
+        "SELECT l.location_id FROM location l
+          INNER JOIN location_tag_map m ON l.location_id = m.location_id
+          WHERE m.location_tag_id = #{district_tag_id} AND l.location_id = '#{district}' "
+    ).last.location_id
+
+    locations = Location.find_by_sql(
+        "SELECT l.location_id, l.name FROM location l
+          INNER JOIN location_tag_map m ON l.location_id = m.location_id
+          WHERE m.location_tag_id = #{tag_id} AND l.parent_location = #{district_id}").collect{|s| [s.location_id, s.name.force_encoding('utf-8').encode]}
+
+    render text: (locations).to_json
   end
 
   def get_traditional_authorities
