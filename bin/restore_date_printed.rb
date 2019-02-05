@@ -28,7 +28,8 @@ births.each_with_index do |birth, i|
   end
 
   if !date.blank?
-    certificate                 = Certificate.new
+    certificate                 = Certificate.where(person_id: birth.person_id).first
+    certificate                 = Certificate.new if certificate.blank?
     certificate.person_id       = birth.person_id
     certificate.date_printed    = date
     certificate.date_dispatched = date_issued
