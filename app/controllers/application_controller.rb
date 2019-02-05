@@ -88,6 +88,14 @@ class ApplicationController < ActionController::Base
   def check_notifications
 
     @stats_time     = File.mtime("stats.json").to_pretty rescue ""
+    if ((Time.now - File.mtime("stats.json")) / 60 > 3)
+      #Rerun Query
+      stats       = PersonRecordStatus.stats
+      File.open("stats.json", 'w'){|f|
+        f.write(stats.to_json)
+      }
+    end
+
     @nris_up        = File.read("#{Rails.root}/public/nris_status").to_s == "true"
     #@notifications = Notification.by_role(User.current.user_role.role_id) rescue nil
     @pending_nid_assignment = 0

@@ -31,3 +31,15 @@ ActiveRecord::Base.connection.execute <<EOF
       PRIMARY KEY (`id`),
       UNIQUE INDEX `id_UNIQUE` (`id` ASC));
 EOF
+
+ActiveRecord::Base.connection.execute <<EOF
+    CREATE TABLE IF NOT EXISTS `certificate` (
+      `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
+      `person_id` BIGINT(20) NOT NULL,
+      `date_printed` DATE,
+      `date_dispatched` DATE,
+      `print_count` INT,
+      `created_at`  TIMESTAMP NOT NULL,
+      PRIMARY KEY (`id`),
+      UNIQUE INDEX `id_UNIQUE` (`id` ASC));
+EOF

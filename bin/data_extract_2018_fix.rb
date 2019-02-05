@@ -16,11 +16,16 @@ csv                += "Father Current District|Father Current TA|Father Current 
 
 csv                += "Informant ID Number|Informant First Name|Informant Middle Name|Informant Last Name|"
 csv                += "Informant Current District|Informant Current TA|Informant Current Village|"
-csv                += "Informant Phone Number|Informant Address|Informant Relationship|Date Reported|Date Registered\n"
+csv                += "Informant Phone Number|Informant Address|Informant Relationship|Date Reported|Date Registered|"
+csv                += "Delayed Registration\n"
 
-File.open("#{"data_2018.csv"}", "a"){|f|
+File.open("#{"data_2018_with_delayed_reg.csv"}", "a"){|f|
   f.write(csv)
 }
+
+#Adding mother_nationality
+#Adding father nationality
+#Adding date printed
 
 CSV.foreach("#{ARGV[0]}") do |row|
 
@@ -29,10 +34,15 @@ CSV.foreach("#{ARGV[0]}") do |row|
   next if !data[0].match("/2018")
   next if ben.blank?
 
-  pbd  = PersonBirthDetail.where(" district_id_number = '#{ben}' AND ( source_id IS NULL OR LENGTH(source_id) > 30 ) ").select(" source_id ").first
-  puts "#{pbd.source_id}##{ben}"
+  pbd     = PersonBirthDetail.where(" district_id_number = '#{ben}' AND ( source_id IS NULL OR LENGTH(source_id) > 30 ) ").first
+  puts pbd.person_id
+  person  = Person.find(pbd.person_id)
+  days_gone = ((pbd.date_registered.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
+  delayed =  days_gone > 42 ? "Yes" : "No"
+  puts "#{pbd.source_id}##{ben}##{days_gone}##{delayed}"
+  data << delayed
 
-  File.open("#{"data_2018.csv"}", "a"){|f|
+  File.open("#{"data_2018_with_delayed_reg.csv"}", "a"){|f|
     line = data.join("|") + "\n"
     f.write(line)
   }
