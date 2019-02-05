@@ -12,6 +12,7 @@ class Certificate < ActiveRecord::Base
         dispatches  = PersonRecordStatus.where(" person_id = #{self.person_id} AND status_id IN (#{dispatch_ids.join(',')}) ")
 
         print_count     = prints.count
+        print_count     = 1 if print_count == 0
         date_printed    = prints.collect{|s| s.created_at}.max
         date_dispatched = dispatches.collect{|s| s.created_at}.max
 

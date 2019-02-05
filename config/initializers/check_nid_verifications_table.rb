@@ -36,8 +36,8 @@ ActiveRecord::Base.connection.execute <<EOF
     CREATE TABLE IF NOT EXISTS `certificate` (
       `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
       `person_id` BIGINT(20) NOT NULL,
-      `date_printed` DATE,
-      `date_dispatched` DATE,
+      `date_printed` DATETIME,
+      `date_dispatched` DATETIME,
       `print_count` INT,
       `created_at`  TIMESTAMP NOT NULL,
       PRIMARY KEY (`id`),
