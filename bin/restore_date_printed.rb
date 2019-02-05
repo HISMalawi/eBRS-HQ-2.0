@@ -3,7 +3,7 @@
 #Written by: Kenneth Kapundi
 #Date: 05 February, 2019
 
-print_statuses = Status.where(" name IN ('HQ-PRINTED', 'HQ-RE-PRINTED') ").map(&:status_id)
+print_statuses = Status.where(" name IN ('DC-PRINTED', HQ-PRINTED', 'HQ-RE-PRINTED') ").map(&:status_id)
 dispatch_statuses = Status.where(" name IN ('HQ-DISPATCHED') ").map(&:status_id)
 
 births = PersonBirthDetail.where(" district_id_number IS NOT NULL ")
