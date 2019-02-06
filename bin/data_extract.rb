@@ -98,6 +98,7 @@ PersonBirthDetail.where(" person_id IN (#{person_ids.join(',')}) ").find_each{|d
     if father_person.blank?
       father_person  = PersonRelationship.where(person_a: details.person_id, person_relationship_type_id: ad_father_type_id).first
     end
+
     father_person_id = father_person.person_b if !father_person.blank?
 
     if !father_person_id.blank?
