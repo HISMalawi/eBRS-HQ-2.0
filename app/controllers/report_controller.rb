@@ -450,6 +450,17 @@ class ReportController < ApplicationController
     @districts = districts
   end
 
+  def activity_audit
+    @users = UserRole.find_by_sql("
+                SELECT u.user_id, u.username, pn.first_name, pn.middle_name, pn.last_name FROM user_role ur
+                  INNER JOIN role r ON r.role_id = ur.role_id
+                  INNER JOIN users u ON u.user_id = ur.user_id
+                  INNER JOIN person_name pn ON pn.person_id = u.person_id
+                WHERE r.level = 'HQ' AND r.role != 'Administrator'
+                ORDER BY pn.first_name, pn.middle_name, pn.last_name
+              ").as_json
+  end
+
   def general_report_query
 
     location_ids = []
@@ -465,7 +476,13 @@ class ReportController < ApplicationController
     end
 
     data = Report.general_report(params[:start_date], params[:end_date], location_ids)
-    puts data
+
+    render :text => data.to_json
+  end
+
+  def activity_audit_query
+
+    data = Report.activity_audit_report(params[:start_date], params[:end_date], params[:user_id])
     render :text => data.to_json
   end
 

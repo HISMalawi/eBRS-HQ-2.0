@@ -317,6 +317,44 @@ class Report < ActiveRecord::Base
     }
   end
 
+  def self.activity_audit_report(start_date, end_date, user_ids)
+
+    results = []
+    user_id_filter = ""
+    if user_ids.blank?
+      users = UserRole.find_by_sql("
+                SELECT ur.user_id FROM user_role ur
+                  INNER JOIN role r ON r.role_id = ur.role_id
+                WHERE r.level = 'HQ' AND r.role != 'Administrator'
+              ").map(&:user_id)
+    else
+        user_ids = [user_ids.to_i]
+    end
+
+    user_id_filter = " AND prs.creator IN (#{user_ids.join(',')}) "
+
+    data = PersonRecordStatus.find_by_sql(
+        "SELECT prs.status_id, prs.created_at, prs.creator, prs.comments, birth.district_id_number,
+        pn.first_name, pn.middle_name, pn.last_name FROM person_record_statuses prs
+          INNER JOIN person_name pn ON pn.person_id = prs.person_id
+
+          INNER JOIN person_birth_details birth ON birth.person_id = prs.person_id
+        WHERE (DATE(prs.created_at) BETWEEN '#{start_date.to_date.to_s}'  AND '#{end_date.to_date.to_s}') #{user_id_filter}
+        ORDER BY prs.created_at DESC
+        ")
+
+    status_map          = Status.all.inject({}) { |r, d| r[d.id] = d.name; r }
+
+    (data || []).each{|d|
+      u = User.find(d.creator)
+
+      results << [  u.username, u.name, d.district_id_number, "#{d.first_name} #{d.middle_name} #{d.last_name}",
+                    d.created_at.to_datetime.strftime("%d/%b/%Y"), status_map[d.status_id], d.comments]
+    }
+
+    results
+  end
+
   def self.total(start_date, end_date, location_ids=[])
 
     loc_query = ""

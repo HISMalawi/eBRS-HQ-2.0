@@ -399,8 +399,11 @@
                               <li><a  href="/record_state_and_date">By Period of Record State</a></li>
                         <% end %>
                           <li><a  href="/general_report">General Report</a></li>
+                        <% if admin? %>
                           <li><a  href="/user_audit_trail">User Audits</a></li>
-                          <li><a  href="/reg_vs_birth_district">Birth Vs Reg. District </a></li>
+                          <li><a  href="/activity_audit">User Activity Audits (HQ)</a></li>
+                        <% end %>
+                        <li><a  href="/reg_vs_birth_district">Birth Vs Reg. District </a></li>
                           <li><a  href="/dispatches">Dispatch Batches </a></li>
                       </ul>
                   </li>

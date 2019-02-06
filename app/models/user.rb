@@ -56,6 +56,11 @@ class User < ActiveRecord::Base
     self.core_person.person_name.last_name rescue nil
   end
 
+  def name
+    n = self.core_person.person_name
+    "#{n.first_name} #{n.middle_name} #{n.last_name}"
+  end
+
   def create_audit
     #Audit.create(record_id: self.id, audit_type: "Audit", level: "User", reason: "Created user record")
   end
