@@ -174,7 +174,7 @@ Rails.application.routes.draw do
   get "/report/dispatch_list"
   get 'person/printed_cases'
   get "/report/general_report_query"
-
+  get "/report/activity_audit_query"
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'
@@ -223,6 +223,7 @@ Rails.application.routes.draw do
   get "/ajax_record_state_and_date" => "report#ajax_record_state_and_date"
   get "/sync_status" => "person#sync_status"
   get "/general_report" => "report#general_report"
+  get "/activity_audit" => "report#activity_audit"
 
   get "/person/check_details"
   get "/person/query_person_details"
