@@ -1706,12 +1706,10 @@ EOF
         rel = PersonRelationship.new(doc)
       end
 
-      if rel.save
-        render :text => "OK"
-      end
+      rel.save
     end
 
-    render :text => "FAIL"
+    render :text => "OK"
   end
 
 end
