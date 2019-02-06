@@ -322,7 +322,7 @@ class Report < ActiveRecord::Base
     results = []
     user_id_filter = ""
     if user_ids.blank?
-      users = UserRole.find_by_sql("
+      user_ids = UserRole.find_by_sql("
                 SELECT ur.user_id FROM user_role ur
                   INNER JOIN role r ON r.role_id = ur.role_id
                 WHERE r.level = 'HQ' AND r.role != 'Administrator'
