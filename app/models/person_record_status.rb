@@ -20,6 +20,15 @@ class PersonRecordStatus < ActiveRecord::Base
           user_id = User.find_by_username("admin279").id if user_id.blank?
           state_id = Status.where(:name => state).first.id
           trail = self.where(:person_id => person_id, :voided => 0)
+          person_record_status_ids      = trail.collect{|t| t.id} + [-1] #[-1] to avoid empty array that may crash app
+
+=begin
+          ActiveRecord::Base.connection.execute(
+              "UPDATE person_record_statuses SET voided = 1, voided_by = #{user_id}, date_voided = NOW()
+                WHERE person_record_status_id IN (#{person_record_status_ids.join(',')}) "
+          )
+=end
+
           trail.each do |state|
             state.update_attributes(
                 voided: 1,
@@ -27,6 +36,7 @@ class PersonRecordStatus < ActiveRecord::Base
                 voided_by: user_id
             )
           end
+
 
           status = PersonRecordStatus.new(
               person_id: person_id,
