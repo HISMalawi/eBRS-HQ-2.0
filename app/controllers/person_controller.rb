@@ -1712,4 +1712,31 @@ EOF
     render :text => "OK"
   end
 
+  def check_print_rules
+    results = []
+    barcode_number_id = PersonIdentifierType.where(name: "Barcode Number").first.id
+
+    person_ids = params[:person_ids].split(",")
+    person_ids.each do |pid|
+      barcode = PersonIdentifier.where(person_identifier_type_id: barcode_number_id, voided: 0, person_id: pid)
+      if barcode.blank?
+        bcd = BarcodeIdentifier.where(assigned: 0).first
+        bcd.person_id = person_id
+        bcd.assigned  = 1
+        bcd.save
+
+        p = PersonIdentifier.new
+        p.person_id = pid
+        p.value = bcd.value
+        p.person_identifier_type_id = barcode_number_id
+        p.save
+      end
+
+      results << PersonIdentifier.where(person_identifier_type_id: barcode_number_id, voided: 0, person_id: pid).first
+    end
+
+    render :text => results.to_json
+
+  end
+
 end

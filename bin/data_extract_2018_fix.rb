@@ -17,44 +17,37 @@ csv                += "Father Current District|Father Current TA|Father Current 
 csv                += "Informant ID Number|Informant First Name|Informant Middle Name|Informant Last Name|"
 csv                += "Informant Current District|Informant Current TA|Informant Current Village|"
 csv                += "Informant Phone Number|Informant Address|Informant Relationship|Date Reported|Date Registered|"
-csv                += "Delayed Registration|Date Printed|Date Dispatched\n"
+csv                += "Delayed Registration|Date Entered in eBRS|Date Printed|Date Dispatched\n"
+pos = csv.split("|").index("Date Entered in eBRS")
+pos_2 = csv.split("|").index("Date Registered")
 
-File.open("#{"data_2018_with_extra_fields.csv"}", "a"){|f|
+File.open("#{"data_2018_with_extra_fields2.csv"}", "w"){|f|
   f.write(csv)
 }
 
+i = -1
 CSV.foreach("#{ARGV[0]}") do |row|
+  i += 1
 
   data = row[0].split("|")
   ben  = data[0]
-  next if !data[0].match("/2018")
-  next if ben.blank?
+  next if i == 0 #Header Row
 
-  pbd         = PersonBirthDetail.where(" district_id_number = '#{ben}' AND ( source_id IS NULL OR LENGTH(source_id) > 30 ) ").first
-  puts pbd.person_id
-  person      = Person.find(pbd.person_id)
-  days_gone   = ((pbd.date_registered.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
-  delayed     =  days_gone > 42 ? "Yes" : "No"
-  data        << delayed
+  pbd           = PersonBirthDetail.where(" district_id_number = '#{ben}' ").first
+  date_created  =  pbd.created_at.to_date.to_s
+  puts "#{pbd.person_id} -- #{date_created}"
 
-  certificate       = Certificate.where(person_id: pbd.person_id).first
-  date_printed      = ''
-  date_dispatched   = ''
-
-  unless certificate.blank?
-    date_printed    = certificate.date_printed
-    date_dispatched = certificate.date_dispatched
+  if data[pos_2] == "Yes"
+    #Column shift
+    data.insert(pos_2, "")
   end
+  data.insert(pos, date_created)
 
-  data << date_printed
-  data << date_dispatched
-
-  puts "#{pbd.person_id}##{delayed}##{date_printed}##{date_dispatched}"
-
-  File.open("#{"data_2018_with_extra_fields.csv"}", "a"){|f|
+  File.open("#{"data_2018_with_extra_fields2.csv"}", "a"){|f|
     line = data.join("|") + "\n"
     f.write(line)
   }
+
 
 end
 

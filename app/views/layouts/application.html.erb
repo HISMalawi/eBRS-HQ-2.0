@@ -372,7 +372,7 @@
                       <ul class="sub">
                           <%if @folders.include?('Manage Users') %>
                             <li><a  href="/locations">Manage Locations</a></li>
-                            <li><a  href="/users">Manage users</a></li>
+                            <li><a  href="/users">Manage Users</a></li>
                             <li><a  href="/paper">Set Paper Size</a></li>
                             <li><a  href="/signature">Set Signatory</a></li>
                           <%end%>
@@ -384,6 +384,21 @@
                       </ul>
                     </li>
                   <% end %>
+
+                <% if admin? %>
+                    <li class="sub-menu">
+                      <a href="javascript:;" style="color: white;font-size: 14px !important;">
+                        <i class="fa fa-book"></i>
+                        <span>Data Cleaning</span>
+                      </a>
+                      <ul class="sub">
+                        <!--li class="active"><a  href="blank.html">Blank Page</a></li-->
+                        <li><a  href="/data_cleaning_tools/missing_national_ids">Missing National ID</a></li>
+                        <li><a  href="/data_cleaning_tools/missing_barcode_numbers">Missing Barcode Numbers</a></li>
+                      </ul>
+                    </li>
+                <% end %>
+
 
                 <% if (['Reports'] & @folders).length > 0%>
                   <li class="sub-menu">

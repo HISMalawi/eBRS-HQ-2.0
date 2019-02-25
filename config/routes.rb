@@ -175,6 +175,10 @@ Rails.application.routes.draw do
   get 'person/printed_cases'
   get "/report/general_report_query"
   get "/report/activity_audit_query"
+  get "/data_cleaning_tools/missing_national_ids"
+  get "/data_cleaning_tools/missing_barcode_numbers"
+  get "/data_cleaning_tools/queue_for_nid_assignment"
+  get "/data_cleaning_tools/assign_missing_barcode_numbers"
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'
@@ -230,6 +234,8 @@ Rails.application.routes.draw do
 
   get "/person/certificate_verification"
   post "/person/certificate_verification"
+
+  get 'check_print_rules' => 'person#check_print_rules'
 
   resources :person
 

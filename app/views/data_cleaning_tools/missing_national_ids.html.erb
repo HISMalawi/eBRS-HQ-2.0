@@ -1,0 +1,18 @@
+<div style="height: 70vh;text-align: center;font-size: 1.8em;padding-top: 20vh">
+    <span style="color: red; font-weight: bold;"><%=@person_ids.length%></span> Record(s) With Missing NID Found (In Print Queue) <br /><br />
+
+    <% if @person_ids.length > 0%>
+        <div class="btn btn-lg btn-success" onclick="queryNIDByBatch()"><b>Queue for NID Assignment</b></div>
+    <% else %>
+        <div class="btn btn-lg btn-success" disabled="disabled"><b>Queue for NID Assignment</b></div>
+    <% end %>
+</div>
+
+<script>
+
+    function showShield(){}
+
+    function queryNIDByBatch(){
+        window.location.href = "/data_cleaning_tools/queue_for_nid_assignment"
+    }
+</script>

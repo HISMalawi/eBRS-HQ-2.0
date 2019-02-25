@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   #protect_from_forgery with: :exception
   #protect_from_forgery	#with: :null_session
 
-  before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list', 'sync_status']
+  before_filter :check_if_logged_in, :except => ['login', 'birth_certificate', 'dispatch_list', 'sync_status', 'check_print_rules']
   before_filter :check_pings, :except => ["sync_status"]
   before_filter :check_couch_loading, :except => ["sync_status"]
   before_filter :check_notifications
