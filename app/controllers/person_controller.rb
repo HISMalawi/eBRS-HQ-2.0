@@ -123,6 +123,7 @@ class PersonController < ApplicationController
 
 
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+    @queued_for_id_assignment = IdentifierAllocationQueue.where(person_id: @person.id, assigned: 0).length > 0
 
     if !@birth_details.source_id.blank? && @birth_details.source_id.to_s.length < 25
       parents_married    = "Unknown"
@@ -399,12 +400,6 @@ EOF
     search_val = '_' if search_val.blank?
     search_category = ''
 
-=begin
-    faulty_ids = [-1] + PersonRecordStatus.find_by_sql("SELECT prs.person_record_status_id FROM person_record_statuses prs
-                                                LEFT JOIN person_record_statuses prs2 ON prs.person_id = prs2.person_id AND prs.voided = 0 AND prs2.voided = 0
-                                                WHERE prs.created_at < prs2.created_at;").map(&:person_record_status_id)
-=end
-
     if !params[:category].blank?
 
       if params[:category] == 'continuous'
@@ -481,13 +476,18 @@ EOF
         by_ds_at_filter = " INNER JOIN person_identifiers pidr ON pidr.person_id = prs.person_id AND pidr.person_identifier_type_id = 10 AND pidr.voided = 0 " #10 = Verification Number
       end
 
+      id_type_id = PersonIdentifierType.where(name: "National ID Number").first.id
+      queue_ids  = IdentifierAllocationQueue.where("assigned = 0 AND person_identifier_type_id = #{id_type_id}").pluck :person_id
+
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
               #{by_ds_at_filter}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
-                  AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')}) ")
-      .where(" n.voided = 0 #{loc_query} #{range_query}
+                  AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
+              ")
+      .where(" person.person_id NOT IN (#{queue_ids.join(',')}) AND n.voided = 0 #{loc_query} #{range_query}
+              AND prs.created_at = (SELECT MAX(created_at) FROM person_record_statuses prs2 WHERE prs2.person_id = person.person_id)
               AND concat_ws(pbd.district_id_number, n.first_name, n.last_name, n.middle_name, '_') REGEXP \"#{search_val}\"  #{search_category} ")
 
       total = d.select(" count(*) c ")[0]['c'] rescue 0
@@ -508,9 +508,6 @@ EOF
         mother = PersonService.mother(p.person_id)
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
-        if PersonRecordStatus.where(voided: 0, person_id: p.person_id).length > 1
-
-        end
 
         p['first_name'] = '' if p['first_name'].match('@')
         p['last_name'] = '' if p['last_name'].match('@')
@@ -529,7 +526,7 @@ EOF
             details.brn]
 
         national_id = p.id_number rescue ""
-        arr  << (national_id) if ["Print Certificate", "Re-print Certificates"].include?(@section)
+        arr  << (national_id) #if ["Print Certificate", "Re-print Certificates"].include?(@section)
 
         unless national_id.blank?
           nid = ActiveRecord::Base.connection.select_one <<EOF

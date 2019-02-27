@@ -123,11 +123,13 @@
       <table style="width: 100%;">
         <tr>
           <td>
-            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Record Details</h3>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Record Details </h3>
           </td>
           <td colspan="8" style="width: 70%;">
             <div class="pull-left" style="height: 40px; margin-top: 0px;">
-
+              <% if @queued_for_id_assignment%>
+                <span style="color: red;font-weight: bold;" class="pull-right;">This record has been locked for ID assignment</span>
+              <% end %>
             </div>
           </td>
         </tr>
@@ -262,11 +264,15 @@
           <span class="fa fa-truck"></span>
           Dispatch
         </button>
+
+      <% if !@queued_for_id_assignment%>
         <button id="Print" class="btn btn-success pull-right" style="display:<%= display%>;"
                 onclick="window.location = '/print_preview?person_ids=<%= params[:person_id]%>&no_print=true' ">
           <span class="fa fa-print"></span>
           Print
         </button>
+      <% end %>
+
         <button id="Reject" class="btn btn-danger pull-right" style="display:<%= display%>;"
                 onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-REJECT')">
           <span class="fa"></span>

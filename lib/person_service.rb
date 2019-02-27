@@ -1195,6 +1195,7 @@ end
             INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id ")
 
     main = main.where(" COALESCE(prs.voided, 0) = 0
+            AND prs.created_at = (SELECT MAX(created_at) FROM person_record_statuses prs2 WHERE prs2.person_id = person.person_id)
             AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
             #{entry_num_query} #{fac_serial_query} #{serial_num_query}  #{name_query} #{gender_query} #{place_of_birth_query} #{status_query}
            AND concat_ws('_', pbd.national_serial_number, pbd.district_id_number, n.first_name, n.last_name, n.middle_name,
