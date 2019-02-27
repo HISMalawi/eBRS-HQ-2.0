@@ -1144,11 +1144,11 @@ end
           if place_id.present?
             place_of_birth_query = " AND  place_of_birth = #{place_id} "
           end
-          district_id = Location.locate_id_by_tag(filters['district_of_birth'], 'District')
+          district_id = Location.locate_id_by_tag(filters['district_of_birth'], 'District') rescue nil
           if district_id.present?
             place_of_birth_query += " AND  district_of_birth = #{district_id} "
           end
-          ta_id = Location.locate_id(filters['ta_of_birth'], 'Traditional Authority', district_id)
+          ta_id = Location.locate_id(filters['ta_of_birth'], 'Traditional Authority', district_id) rescue nil
           if ta_id.present?
             village_id = Location.locate_id(filters['village_of_birth'], 'Village', ta_id)
             place_of_birth_query += " AND  birth_location_id = #{village_id} "
