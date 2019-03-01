@@ -486,6 +486,27 @@ class ReportController < ApplicationController
     render :text => data.to_json
   end
 
+
+  def certificates
+
+    if !params[:position].blank?
+      certificates = []
+      `ls -t #{SETTINGS['certificates_path']}`.split("\n").each{|c|
+        certificates << [c, File.mtime("#{SETTINGS['certificates_path']}#{c}")]
+      }
+
+      certificates = certificates.each_slice(3).to_a[params[:position].to_i]
+
+      render :text => certificates.to_json and return
+    end
+
+  end
+
+  def certificate_pdf
+    file = File.open("#{SETTINGS['certificates_path']}/#{params[:reference]}")
+    send_file(file, :filename => params[:reference] , :disposition => 'inline', :type => "application/pdf")
+  end
+
   private
 
   def districts

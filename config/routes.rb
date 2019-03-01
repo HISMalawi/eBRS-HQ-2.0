@@ -237,6 +237,10 @@ Rails.application.routes.draw do
 
   get 'check_print_rules' => 'person#check_print_rules'
 
+  get "/report/certificates"
+  get "/report/dispatches"
+  get "/certificate_pdf" => 'report#certificate_pdf'
+
   resources :person
 
   resources :users
