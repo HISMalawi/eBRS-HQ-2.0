@@ -1121,6 +1121,7 @@ EOF
     signatory = User.find_by_username(GlobalProperty.find_by_property("signatory").value) rescue nil
     signatory_attribute_type = PersonAttributeType.find_by_name("Signature") if signatory.present?
     @signature = PersonAttribute.find_by_person_id_and_person_attribute_type_id(signatory.id,signatory_attribute_type.id).value rescue nil
+    @signature = "signature.png" if @signature.blank?
 
     person_ids = params[:person_ids].split(',')
     nid_type = PersonIdentifierType.where(name: "Barcode Number").last
@@ -1459,6 +1460,30 @@ EOF
     end
 
     render text: data.to_json
+  end
+
+  def preview_certificate
+    person_id = params[:person_id]
+
+    cert_path = SETTINGS["certificates_path"]
+    file_name = "#{cert_path}/#{person_id}.pdf".gsub(/\/+/, "/")
+
+    paper_size = GlobalProperty.find_by_property("paper_size").value rescue 'A4'
+    if paper_size == "A4"
+      zoom = 0.83
+    elsif paper_size == "A5"
+      zoom = 0.89
+    end
+
+    if !File.exists?(file_name)
+      `wkhtmltopdf --zoom #{zoom} --page-size #{paper_size} #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/birth_certificate?person_ids=#{person_id.strip} #{SETTINGS['certificates_path']}#{person_id.strip}.pdf\n`
+    end
+
+
+    if !params[:send_to_screen].blank?
+      file   = File.open(file_name)
+      send_file(file, :filename => params[:person_id] , :disposition => 'inline', :type => "application/pdf")
+    end
   end
 
   def map_main

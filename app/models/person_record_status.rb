@@ -10,24 +10,12 @@ class PersonRecordStatus < ActiveRecord::Base
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
       status = nil
 
-      #redis = Redis.new
-      #$lock = RemoteLock.new(RemoteLock::Adapters::Redis.new(redis))
-      #$lock.synchronize("assignment-key") do
-
         begin
          ActiveRecord::Base.transaction do
           user_id = User.current.id rescue nil if user_id.blank?
           user_id = User.find_by_username("admin279").id if user_id.blank?
           state_id = Status.where(:name => state).first.id
           trail = self.where(:person_id => person_id, :voided => 0)
-          person_record_status_ids      = trail.collect{|t| t.id} + [-1] #[-1] to avoid empty array that may crash app
-
-=begin
-          ActiveRecord::Base.connection.execute(
-              "UPDATE person_record_statuses SET voided = 1, voided_by = #{user_id}, date_voided = NOW()
-                WHERE person_record_status_id IN (#{person_record_status_ids.join(',')}) "
-          )
-=end
 
           trail.each do |state|
             state.update_attributes(
@@ -77,7 +65,6 @@ class PersonRecordStatus < ActiveRecord::Base
       rescue StandardError => e
            self.log_error(e.message,person_id)
       end
-    #end
 
 		return status
   end

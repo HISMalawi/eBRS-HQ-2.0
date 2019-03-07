@@ -1,0 +1,65 @@
+<style>
+    body{
+        background: darkslategray !important;
+    }
+    iframe{
+        width: 17cm;
+        margin-top: 0px;
+        overflow: auto;
+        height: 20cm;
+        background: white;
+        border: none;
+        margin-left: 22.5%;
+        -moz-transform: scale(1);
+        border: 1px solid #d3d3d3;
+    }
+
+</style>
+<%= stylesheet_link_tag "bootstrap/bootstrap" %>
+<%= stylesheet_link_tag "extras/font-awesome.min" %>
+
+<%= stylesheet_link_tag "extras/style" %>
+<%= stylesheet_link_tag "extras/style-responsive" %>
+<%=javascript_include_tag "datatables/jquery"%>
+
+<%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
+<%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>
+<%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>
+<%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
+<%=javascript_include_tag "js/jquery.scrollTo.min"%>
+<%=javascript_include_tag "js/jquery.nicescroll"%>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<iframe src="/preview_certificate?person_id=<%= params[:person_id]%>&send_to_screen=true" >
+</iframe>
+
+
+<div style="width: 21.5cm; margin: auto;margin-top: 10px;padding-bottom: 15px; height: 70px;">
+
+  <button class="btn btn-success pull-right" style="margin-right: 10px;"
+          onclick="window.parent.location = '<%= session[:list_url]%>' ">
+    <span class="fa fa-print"></span>
+    Finish
+  </button>
+
+  <button class="btn btn-danger pull-left" style="margin-right: 10px;"
+          onclick="window.parent.location = '<%= session[:list_url]%>' ">
+    Cancel
+  </button>
+</div>
+
+
+<script>
+
+    printer_name = ""
+
+    function updateValue(obj){
+        printer_name = obj.getAttribute('value');
+    }
+
+    function submitForm(){
+        window.location = "/print?person_ids=<%= params[:person_ids]%>&printer_name=" + printer_name;
+    }
+</script>
+
+
