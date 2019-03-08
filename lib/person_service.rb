@@ -1903,4 +1903,66 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
     str
   end
 
+  def self.format_for_elastic_search(person_id)
+
+    person = Person.find(person_id)
+    name    = PersonName.where(person_id: person.person_id).last
+    details = PersonBirthDetail.where(person_id: person.person_id).last
+    mother  = PersonService.mother(person.person_id)
+    father  = PersonService.father(person.person_id)
+    mother_address = PersonAddress.where(person_id: mother.person_id).first rescue nil
+    father_address = PersonAddress.where(person_id: father.person_id).first rescue nil
+
+    nationality = ""
+    if !mother_address.blank?
+      nationality = Location.find(mother_address.citizenship).country
+    end
+
+    if nationality.blank? && !father_address.blank?
+      nationality = Location.find(father_address.citizenship).country
+    end
+
+    loc       = Location.find(details.location_created_at)
+    district  = loc.district rescue nil
+    if district.blank? #For hospitals this is possible
+      district = Location.find(loc.parent_location).name
+    end
+
+    person_hash       = {}
+    person_hash["id"] = person_id
+    person_hash["first_name"]= name.first_name rescue ''
+    person_hash["last_name"] =  name.last_name rescue ''
+    person_hash["middle_name"] = name.middle_name rescue ''
+    person_hash["gender"] = {'F' => 'Female', 'M' => 'Male'}[person.gender]
+    person_hash["birthdate"]= person.birthdate.to_date.to_s
+    person_hash["birthdate_estimated"] = person.birthdate_estimated
+    person_hash["nationality"]=  nationality
+    person_hash["place_of_birth"] = Location.find(details.place_of_birth).name
+    person_hash["district"] = district
+
+    person_hash["mother_first_name"]= mother.first_name rescue nil
+    person_hash["mother_last_name"] =  mother.last_name rescue nil
+    person_hash["mother_middle_name"] = mother.middle_name rescue nil
+
+    person_hash["mother_home_district"] = nil
+    person_hash["mother_home_ta"] = nil
+    person_hash["mother_home_village"] = nil
+
+    person_hash["mother_current_district"] = nil
+    person_hash["mother_current_ta"] = nil
+    person_hash["mother_current_village"] = nil
+
+    person_hash["father_first_name"]= father.first_name rescue nil
+    person_hash["father_last_name"] =  father.last_name rescue nil
+    person_hash["father_middle_name"] = father.middle_name rescue nil
+
+    person_hash["father_home_district"] = nil
+    person_hash["father_home_ta"] = nil
+    person_hash["father_home_village"] = nil
+
+    person_hash["father_current_district"] = nil
+    person_hash["father_current_ta"] = nil
+    person_hash["father_current_village"] = nil
+    person_hash
+  end
 end

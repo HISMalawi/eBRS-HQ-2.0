@@ -367,9 +367,10 @@ class ReportController < ApplicationController
           INNER JOIN person_name n ON u.person_id = n.person_id
           WHERE  DATE(s.created_at) BETWEEN '#{start_date.to_s}' AND '#{end_date.to_s}'
           GROUP BY s.created_at, s.creator
-          ORDER BY s.status_id DESC LIMIT 1000
-      ").each do |s|
+          ORDER BY s.created_at DESC LIMIT 1000
+      ").each_with_index do |s, i|
       @data << {
+          'index'    => (i + 1),
           'count'    => s.c,
           'datetime' => s.created_at.strftime("%d/%b/%Y  %H:%M:%S"),
           'creator'  => s.creator,

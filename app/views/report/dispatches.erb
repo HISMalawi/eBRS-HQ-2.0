@@ -123,9 +123,9 @@ function fetchData() {
   </tr>
   </thead>
   <tbody>
-  <% @data.each_with_index do |d, i|%>
+  <% @data.each do |d|%>
         <tr>
-            <td><%= @data.count - i%></td>
+            <td><%= d['index']%></td>
             <td><%= d['datetime']%></td>
             <td><%= d['district']%></td>
             <td><%= d['user_names']%></td>
