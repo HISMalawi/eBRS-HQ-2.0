@@ -344,13 +344,11 @@ EOF
         @results = []
 
         duplicates = SimpleElasticSearch.query_duplicate_coded(person,SETTINGS['duplicate_precision'])
-
-
-       
         duplicates.each do |dup|
-              #next if DuplicateRecord.where(person_id: person['id']).present?
-              next if PersonRecordStatus.status(dup['_id']).include?("DC")
-              @results << dup #if PotentialDuplicate.where(person_id: dup['_id']).blank?
+
+              #Only catch for against records with BEN or Record is still at DRO although available in HQ application
+              next if PersonBirthDetail.where(" person_id = #{dup['_id']} AND district_id_number IS NULL ").present?
+              @results << dup
         end
 
         if @results.present? && !@birth_details.birth_type.name.to_s.downcase.include?("twin")
@@ -1210,7 +1208,9 @@ EOF
         #raise record.person_id.inspect
         @similar_records << person_details(record.person_id)
       end
-    else
+    end
+
+    if @similar_records.blank?
       redirect_to "/person/missing_duplicate_records?person_id=#{params[:person_id]}" and return
     end
   end

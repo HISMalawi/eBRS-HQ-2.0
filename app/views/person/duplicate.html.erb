@@ -449,7 +449,7 @@
                   <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
                     <form id="comment-form" action="/ajax_save_comment">
                       <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
-                      <select style="width: 80%; " onchange="__$('textarea').value = this.value ">
+                      <select id="comment-options" style="width: 80%; " onchange="__$('textarea').value = this.value ">
                         <option value="">Select comment from list</option>
                         <%(@options || []).each do |opt|%>
                             <option><%=opt[0].upcase%></option>
@@ -640,12 +640,16 @@
         if (mode && mode == 'view'){
             __$('textarea').value = ''
             __$('textarea').style.display = 'none';
+            __$('comment-options').style.display = 'none';
             __$('submit_btn').style.display = 'none';
             __$("comment-header").innerHTML = "Record comments"
+            jQuery("#action, #noaction").hide();
         }else{
             __$('textarea').style.display = 'inline';
+            __$('comment-options').style.display = 'inline';
             __$('submit_btn').style.display = 'inline';
             __$("comment-header").innerHTML = "Add comment to proceed";
+            jQuery("#action, #noaction").show();
         }
 
         jQuery.ajax(
