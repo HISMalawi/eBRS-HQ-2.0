@@ -1096,6 +1096,18 @@
            // __$(lockableFields[i]).setAttribute("disabled", "disabled");
         }
     <% end %>
+
+    jQuery(document).ready(function(){
+        var yes_node = document.getElementById("c_yes")
+        if (yes_node) {
+            yes_node.parentNode.style.background = "green";
+        }
+
+        var no_node = document.getElementById("c_no")
+        if (no_node) {
+            no_node.parentNode.style.background = "red";
+        }
+    });
 </script>
 
 <style>

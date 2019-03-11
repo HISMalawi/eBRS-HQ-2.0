@@ -54,11 +54,17 @@ class PersonBirthDetail < ActiveRecord::Base
   def birthplace
     place_of_birth = Location.find(self.place_of_birth).name
     r = nil
+
     if place_of_birth == "Hospital"
         r = Location.find(self.birth_location_id).name
+        if r == "Other"
+          d = Location.find(self.district_of_birth).name rescue nil
+          d = "" if d == "Other"
+          r = "#{self.other_birth_location}, #{d}"
+        end
     elsif place_of_birth == "Home"
       l =  Location.find(self.birth_location_id) rescue ""
-      r = "#{r.village}, #{l.ta}, #{r.district}" rescue ""
+      r = "#{l.village}, #{l.ta}, #{l.district}" rescue ""
     else
        d = Location.find(self.district_of_birth).name rescue nil
        d = "" if d == "Other"
@@ -77,14 +83,15 @@ class PersonBirthDetail < ActiveRecord::Base
     Location.find(self.place_of_birth)
   end
 
-    def record_complete?()
+  def record_complete?()
 
       complete = false
       name = PersonName.where(person_id: self.person_id).last
       person = Person.where(person_id: self.person_id).last
       mother_person = person.mother
       father_person = person.father
-
+      #BEN|First Name|Last Name|Birthdate|Gender|Mother First Name|Mother Last Name|Father First Name when Parants Married|
+      #Father last name if parents married|Place of birth not nil, "" or "Other"
       if self.district_id_number.blank?
         return complete
       end
@@ -124,7 +131,11 @@ class PersonBirthDetail < ActiveRecord::Base
         end
       end
 
-        return true
+      if [nil, "", "Other"].include?(self.birthplace)
+        return complete
+      end
+
+      return true
     end
 
     def self.record_available?(person_id)
