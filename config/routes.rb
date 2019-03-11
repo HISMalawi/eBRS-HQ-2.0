@@ -34,6 +34,7 @@ Rails.application.routes.draw do
   get '/dispatch_note_reprint' => 'report#view_dispatches'
   get '/revalidate' => 'person#revalidate'
   get '/get_completeness_data' => 'person#get_completeness_data'
+  get "person/missing_duplicate_records"
 
 
   ####################### reports end ################################

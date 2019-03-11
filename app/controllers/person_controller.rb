@@ -1210,8 +1210,12 @@ EOF
         @similar_records << person_details(record.person_id)
       end
     else
-      @similar_records << person_details(params[:person_id])
+      redirect_to "/person/missing_duplicate_records?person_id=#{params[:person_id]}" and return
     end
+  end
+
+  def missing_duplicate_records
+
   end
 
   def duplicate_processing

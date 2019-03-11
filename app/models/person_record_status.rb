@@ -205,7 +205,7 @@ class PersonRecordStatus < ActiveRecord::Base
 			action = "Status changed to:  '#{status.status.name.titleize.gsub(/^Hq/, "HQ").gsub(/^Dc/, 'DC').gsub(/^Fc/, 'FC')}'"
 			if status.status.name.upcase == "DC-ACTIVE"
 				action  = "New Record Created"
-			elsif status.status.name.upcase == "HQ-ACTIVE"
+			elsif status.status.name.upcase == "HQ-ACTIVE" && user.user_role.role.role == "ADR"
 				action = "Record Approved By ADR"
 			end
 
