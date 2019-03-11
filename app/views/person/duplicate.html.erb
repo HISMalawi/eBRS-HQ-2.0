@@ -445,9 +445,16 @@
                   <div id="comments-list">
 
                   </div>
+
                   <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
                     <form id="comment-form" action="/ajax_save_comment">
                       <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <select style="width: 80%; " onchange="__$('textarea').value = this.value ">
+                        <option value="">Select comment from list</option>
+                        <%(@options || []).each do |opt|%>
+                            <option><%=opt[0].upcase%></option>
+                        <% end %>
+                      </select>
                       <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
                       <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
                     </form>

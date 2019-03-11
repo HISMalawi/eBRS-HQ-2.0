@@ -1203,6 +1203,7 @@ EOF
     @comments = PersonRecordStatus.where(" person_id = #{params[:person_id]} AND COALESCE(comments, '') != '' ")
     @status = PersonRecordStatus.status(params[:person_id])
     @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+    @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
 
     unless @potential_records.blank?
       @potential_records.duplicate_records.each do |record|
