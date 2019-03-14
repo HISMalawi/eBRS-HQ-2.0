@@ -56,19 +56,22 @@ class PersonBirthDetail < ActiveRecord::Base
     r = nil
 
     if place_of_birth == "Hospital"
-        r = Location.find(self.birth_location_id).name
-        if r == "Other"
-          d = Location.find(self.district_of_birth).name rescue nil
-          d = "" if d == "Other"
-          r = "#{self.other_birth_location}, #{d}"
-        end
+      r = Location.find(self.birth_location_id).name
+      d = Location.find(self.district_of_birth).name rescue nil
+      d = "" if d == "Other"
+
+      if r == "Other"
+        r = "#{self.other_birth_location}, #{d}"
+      else
+        r = "#{r}, #{d}"
+      end
     elsif place_of_birth == "Home"
       l =  Location.find(self.birth_location_id) rescue ""
       r = "#{l.village}, #{l.ta}, #{l.district}" rescue ""
     else
-       d = Location.find(self.district_of_birth).name rescue nil
-       d = "" if d == "Other"
-       r = "#{d}, #{self.other_birth_location}"
+      d = Location.find(self.district_of_birth).name rescue nil
+      d = "" if d == "Other"
+      r = "#{d}, #{self.other_birth_location}"
     end
 
     r

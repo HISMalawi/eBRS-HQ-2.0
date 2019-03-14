@@ -848,70 +848,39 @@ EOF
 
   def ammend_case
     @person = Person.find(params[:id])
-
     @status = PersonRecordStatus.status(@person.id)
-    if @status != "DC-AMEND"
-       #PersonRecordStatus.new_record_state(params['id'], "DC-AMEND", "Amendment request; #{params['reason']}")
-    end
-    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
-    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+
     @prev_details = {}
     @birth_details = PersonBirthDetail.where(person_id: params[:id]).last
 
+    @comments = PersonRecordStatus.where(" person_id = #{@person.id} AND COALESCE(comments, '') != '' ")
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, [@status])
+
     @name = @person.person_names.last
+
     @person_prev_values = {}
-    name_fields = ['first_name','last_name','middle_name',"gender","birthdate","birth_location_id"]
+    name_fields = ['person_name', "gender","birthdate",
+                   "place_of_birth", "mother_name", "father_name",
+                   "mother_citizenship", "father_citizenship"]
+
     name_fields.each do |field|
-        trail = AuditTrail.where(person_id: params[:id], field: field).order('created_at').last
-        if trail.present?
-            @person_prev_values[field] = trail.previous_value
-        end
+      trail = AuditTrail.where(person_id: params[:id], field: field).order('created_at').last
+      if trail.present?
+        @person_prev_values[field] = trail.previous_value
+      end
     end
 
-    if @person_prev_values['first_name'].present? || @person_prev_values['last_name'].present?
-        name = "#{@person_prev_values['first_name'].present? ? @person_prev_values['first_name'] : @name.first_name} "+
-               "#{@person_prev_values['middle_name'].present? ? @person_prev_values['middle_name'] : (@name.middle_name rescue '')} " +
-               "#{@person_prev_values['last_name'].present? ? @person_prev_values['last_name'] : @name.last_name}"
-        @person_prev_values["person_name"] = name
-    end
     @address = @person.addresses.last
 
     @mother_person = @person.mother
+    @mother_address = @mother_person.addresses.last
     @mother_name = @mother_person.person_names.last rescue nil
-    @mother_prev_values = {}
-    name_fields.each do |field|
-        trail = AuditTrail.where(person_id: @mother_person.id, field: field).order('created_at').last
-        if trail.present?
-            @mother_prev_values[field] = trail.previous_value
-        end
-    end
-
-    if @mother_prev_values['first_name'].present? || @mother_prev_values['last_name'].present?
-        mother_name = "#{@mother_prev_values['first_name'].present? ? @mother_prev_values['first_name'] : @mother_name.first_name} "+
-               "#{@mother_prev_values['middle_name'].present? ? @mother_prev_values['middle_name'] : (@mother_name.middle_name rescue '')} " +
-               "#{@mother_prev_values['last_name'].present? ? @mother_prev_values['last_name'] : @mother_name.last_name}"
-        @person_prev_values["mother_name"] = mother_name
-    end
+    @mother_nationality = Location.find(@mother_address.citizenship).country
 
     @father_person = @person.father
     @father_name = @father_person.person_names.last rescue nil
-
-    @father_prev_values = {}
-    name_fields.each do |field|
-        break if @father_person.blank?
-        trail = AuditTrail.where(person_id: @father_person.id, field: field).order('created_at').last
-
-        if trail.present?
-            @father_prev_values[field] = trail.previous_value
-        end
-    end
-
-    if @father_prev_values['first_name'].present? || @father_prev_values['last_name'].present?
-        father_name = "#{@father_prev_values['first_name'].present? ? @father_prev_values['first_name'] : @father_name.first_name} "+
-               "#{@father_prev_values['middle_name'].present? ? @father_prev_values['middle_name'] : (@father_name.middle_name rescue '')} " +
-               "#{@father_prev_values['last_name'].present? ? @father_prev_values['last_name'] : @father_name.last_name}"
-        @person_prev_values["father_name"] = father_name
-    end
+    @father_address = @father_person.addresses.last
+    @father_nationality = Location.find(@father_address.citizenship).country
     @section = 'Ammend Case'
   end
 

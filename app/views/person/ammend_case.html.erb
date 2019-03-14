@@ -51,120 +51,135 @@
 
     <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
 
-<table id="table">
-      <thead>
-          <tr>
-            <th style="border:none"></th>
-            <th style="color: #093a1a;background: #bdbfc2;">Existing record</th>
-            <th style="color: #98530f;background: #bdbfc2;">Amended record</th>
-          </tr>
-      </thead>
-      <tbody>
-          <tr onmousedown="amendField('Death Entry Number')">
-            <th >Birth Entry Number</th>
-            <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
-            <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
-          </tr>
-          <tr onmousedown="amendField('Registration Number')">
-            <th>Registration Number</th>
-            <td><%= @birth_details.national_serial_number rescue 'XXXXXXXXXX' %></td>
-            <td><%= @birth_details.national_serial_number rescue 'XXXXXXXXXX' %></td>
-          </tr>
-          <tr onmousedown="amendField('Name')">
-            <th>Name</th>
-            <% if @person_prev_values["person_name"].present?%>
-              <td style="text-decoration: line-through">
-                  <%= @person_prev_values["person_name"] %> 
-              </td>
-              <td>
-                <%= @name.first_name %> <%= @name.middle_name rescue ''%> <%= @name.last_name %>
-                
-              </td>
-            <%else%>
-              <td>
-                <%= @name.first_name %> <%= @name.middle_name rescue ''%> <%= @name.last_name %>
-                
-              </td>
-              <td>
-                <%= @name.first_name %> <%= @name.middle_name rescue ''%> <%= @name.last_name %>
-                
-              </td>
-            <%end%>
 
-          </tr>
-          <tr onmousedown="amendField('Date of birth')">
-            <th >Date of birth</th>
-            <% if @person_prev_values['birthdate'].present? %>
-              <td style="text-decoration: line-through"><%= @person_prev_values['birthdate']? @person_prev_values['birthdate'].to_date.strftime('%d/%b/%Y') : "" %></td>
-              <td >
+      <table id="table">
+        <thead>
+        <tr>
+          <th style="border:none"></th>
+          <th style="color: #093a1a;background: #bdbfc2;">Existing record</th>
+          <th style="color: #98530f;background: #bdbfc2;">Amended record</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr onmousedown="amendField('Death Entry Number')">
+          <th >Birth Entry Number</th>
+          <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
+          <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
+        </tr>
+        <tr onmousedown="amendField('Registration Number')">
+          <th>Registration Number</th>
+          <td><%= @birth_details.brn rescue 'XXXXXXXXXX' %></td>
+          <td><%= @birth_details.brn rescue 'XXXXXXXXXX' %></td>
+        </tr>
+        <tr onmousedown="amendField('Name')">
+          <th>Name</th>
+          <% if @person_prev_values["person_name"].present?%>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values["person_name"] %>
+              </td>
+              <td>
+                <%= @person.name %>
+
+              </td>
+          <%else%>
+              <td>
+                <%= @person.name %>
+
+              </td>
+              <td>
+                <%= @person.name %>
+
+              </td>
+          <%end%>
+
+        </tr>
+        <tr onmousedown="amendField('Date of birth')">
+          <th >Date of birth</th>
+          <% if @person_prev_values['birthdate'].present? %>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values['birthdate']? @person_prev_values['birthdate'].to_date.strftime('%d/%b/%Y') : "" %></td>
+              <td>
                 <%= @person.birthdate.to_date.strftime('%d/%b/%Y') %>
-                
+
               </td>
-            <%else%>
+          <%else%>
               <td><%= @person.birthdate.to_date.strftime('%d/%b/%Y') %></td>
               <td><%= @person.birthdate.to_date.strftime('%d/%b/%Y') %></td>
-            <%end%>
-            
-          </tr>
-          <tr onmousedown="amendField('Sex')">
-            <th >Sex</th>
-            <% if @person_prev_values['gender'].present? %>
+          <%end%>
+
+        </tr>
+        <tr onmousedown="amendField('Sex')">
+          <th >Sex</th>
+          <% if @person_prev_values['gender'].present? %>
               <td style="text-decoration: line-through">
-                <%= @person_prev_values['gender'] == 'M' ? 'Male' : @person_prev_values['gender'] == 'F' ? 'Female' : '' %>
-                
+                <%= @person_prev_values['gender'] %>
               </td>
               <td>
-                <%= @person.gender== 'M' ? 'Male' : 'Female' %>
+                <%= @person.full_gender %>
               </td>
-            <%else%>
-              <td><%= @person.gender=='M' ? 'Male' : 'Female' %></td>
-              <td><%= @person.gender=='M' ? 'Male' : 'Female' %></td>
-            <%end%>
+          <%else%>
+              <td><%= @person.full_gender %></td>
+              <td><%= @person.full_gender %></td>
+          <%end%>
 
-          </tr>
-          <tr onmousedown="amendField('Place of birth')">
-            <th >Place of birth</th>
-            <% if @person_prev_values['birth_location_id'].present? %>
-              <td style="text-decoration: line-through" ><%= Location.find(@person_prev_values['birth_location_id']).name rescue @person_prev_values['other_place_of_birth']%></td>
-              <td><%= Location.find(@birth_details.birth_location_id).name rescue @birth_details.other_place_of_birth%></td>
-            <%else%>
-              <td><%= Location.find(@birth_details.birth_location_id).name rescue @birth_details.other_place_of_birth%></td>
-              <td><%= Location.find(@birth_details.birth_location_id).name rescue @birth_details.other_place_of_birth%></td>
-            <%end%>
-            </tr>
-          <tr onmousedown="amendField('Name of mother')">
-            <th >Name of mother</th>
-            <% if @person_prev_values["mother_name"].present?%>
+        </tr>
+        <tr onmousedown="amendField('Place of birth')">
+          <th >Place of birth</th>
+          <% if @person_prev_values['place_of_birth'].present? %>
+              <td style="text-decoration: line-through" ><%= @person_prev_values['place_of_birth']%></td>
+              <td><%= @birth_details.birthplace %></td>
+          <%else%>
+              <td><%= @birth_details.birthplace %></td>
+              <td><%= @birth_details.birthplace %></td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Name of mother')">
+          <th >Name of mother</th>
+          <% if @person_prev_values["mother_name"].present?%>
               <td style="text-decoration: line-through">
-                  <%= @person_prev_values["mother_name"] %> 
+                <%= @person_prev_values["mother_name"] %>
               </td>
-              <td><%= @mother_name.first_name %> <%= @mother_name.middle_name rescue '' %> <%= @mother_name.last_name %></td>
-            <%else%>
-              <td><%= @mother_name.first_name %> <%= @mother_name.middle_name rescue '' %> <%= @mother_name.last_name %></td>
-              <td><%= @mother_name.first_name %> <%= @mother_name.middle_name rescue '' %> <%= @mother_name.last_name %></td>
-            <%end%>
-          </tr>
-          <tr onmousedown="amendField('Name of father')">
-            <th >Name of father</th>
-            <% if @person_prev_values["father_name"].present?%>
+              <td><%= @person.mother.name %></td>
+          <%else%>
+              <td><%= @person.mother.name %></td>
+              <td><%= @person.mother.name %></td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Nationality of Mother')">
+          <th>Nationality of Mother</th>
+          <% if @person_prev_values["mother_citizenship"].present?%>
+              <td style="text-decoration: line-through"><%= @person_prev_values["mother_citizenship"] %></td>
+              <td><%= @mother_nationality %></td>
+          <% else %>
+              <td><%= @mother_nationality %></td>
+              <td><%= @mother_nationality %></td>
+          <% end %>
+        </tr>
+        <tr onmousedown="amendField('Name of father')">
+          <th >Name of father</th>
+          <% if @person_prev_values["father_name"].present?%>
               <td style="text-decoration: line-through">
-                  <%= @person_prev_values["father_name"] %> 
+                <%= @person_prev_values["father_name"] %>
               </td>
-              <td><%= @father_name.first_name rescue 'N/A'%> 
-                <%= @father_name.last_name  rescue ''%></td>
-            <%else%>
-              <td><%= @father_name.first_name rescue 'N/A' %> <%= @father_name.last_name rescue '' %></td>
-              <td></td>
-            <%end%>
-          </tr>
-          <tr onmousedown="amendField('Date of registration')">
-            <th>Date of registration</th>
-            <td></td>
-            <td></td>
-          </tr>
+              <td><%= @person.father.name rescue '' %></td>
+          <%else%>
+              <td><%= @person.father.name rescue 'N/A' %> </td>
+              <td><%= @person.father.name rescue 'N/A' %> </td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Nationality of Father')">
+          <th>Nationality of Father</th>
+          <% if @person_prev_values["father_citizenship"].present?%>
+              <td style="text-decoration: line-through"><%= @person_prev_values["father_citizenship"] %></td>
+              <td><%= @father_nationality %></td>
+          <% else %>
+              <td><%= @father_nationality %></td>
+              <td><%= @father_nationality %></td>
+          <% end %>
+        </tr>
 
-      </tbody>
-</table>
+        </tbody>
+      </table>
 
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
