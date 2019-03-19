@@ -476,6 +476,7 @@ EOF
 
       id_type_id = PersonIdentifierType.where(name: "National ID Number").first.id
       queue_ids  = IdentifierAllocationQueue.where("assigned = 0 AND person_identifier_type_id = #{id_type_id}").pluck :person_id
+      queue_ids  = [-1] if queue_ids.blank?
 
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)

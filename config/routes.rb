@@ -178,8 +178,10 @@ Rails.application.routes.draw do
   get "/report/activity_audit_query"
   get "/data_cleaning_tools/missing_national_ids"
   get "/data_cleaning_tools/missing_barcode_numbers"
+  get "/data_cleaning_tools/errored_syncs"
   get "/data_cleaning_tools/queue_for_nid_assignment"
   get "/data_cleaning_tools/assign_missing_barcode_numbers"
+  get "/data_cleaning_tools/reload_from_couch"
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'

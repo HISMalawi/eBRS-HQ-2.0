@@ -42,6 +42,60 @@ class DataCleaningToolsController < ApplicationController
     @free = BarcodeIdentifier.where(assigned: 0).count
   end
 
+  def errored_syncs
+    @issues = []
+    ErrorRecords.active_issues.each_with_index do |issue, index|
+      person = Person.find(issue.person_id) rescue nil
+      ben = PersonBirthDetail.where(person_id: issue.person_id).first.ben rescue nil
+      @issues << {
+          "index"     => (index + 1),
+          "person_id" => issue.person_id,
+          "name"      => (person.name rescue nil),
+          "ben"       => ben,
+          "data"      => issue.data,
+          "datetime" => issue.created_at.to_date.strftime("%d-%m-%Y")
+      }
+    end
+  end
+
+  def reload_from_couch
+    doc = Pusher.database.get(params[:person_id].to_s)
+    fixed = false
+
+    $models = {}
+    Rails.application.eager_load!
+    ActiveRecord::Base.send(:subclasses).map(&:name).each do |n|
+      $models[eval(n).table_name] = n
+    end
+
+    if !doc.blank?
+      doc = doc.as_json
+      ordered_keys = (['core_person', 'person', 'users', 'user_role'] +
+          doc.keys.reject{|k| ['_id', 'change_agent', '_rev', 'change_location_id', 'ip_addresses', 'location_id', 'type', 'district_id'].include?(k)}).uniq
+
+      begin
+        (ordered_keys || []).each do |table|
+          next if doc[table].blank?
+
+          doc[table].each do |p_value, data|
+            record = eval($models[table]).find(p_value) rescue nil
+            if !record.blank?
+              record.update_columns(data)
+            else
+              record =  eval($models[table]).create(data)
+            end
+
+            fixed = true
+          end
+        end
+      rescue => e
+        fixed = false
+      end
+    end
+
+    render :text => fixed.to_s
+  end
+
   def queue_for_nid_assignment
     person_ids = JSON.parse(File.read("missing_national_ids.json"))
 
