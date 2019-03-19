@@ -1011,7 +1011,7 @@ EOF
     parents_married = (details.parents_married_to_each_other.to_s == '1' ? 'Yes' : 'No') rescue nil
     parents_signed = (details.parents_signed == "1" ? 'Yes' : 'No') rescue nil
     court_order_attached = (details.court_order_attached.to_s == "1" ? 'Yes' : 'No') rescue nil
-    days_gone = ((details.date_registered.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
+    days_gone = ((details.date_reported.to_date rescue Date.today) - person.birthdate.to_date).to_i rescue 0
     delayed =  days_gone > 42 ? "Yes" : "No"
 
     data["parents_married"] = parents_married

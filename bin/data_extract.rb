@@ -65,7 +65,7 @@ PersonBirthDetail.where(" person_id IN (#{person_ids.join(',')}) ").find_each{|d
   begin
     brn               = details.brn
     nid               = PersonIdentifier.where(person_id: details.person_id, person_identifier_type_id: nid_type_id).first.value rescue ""
-    status_id         = PersonRecordStatus.where(person_id: details.person_id, voided: 0).order("created_at").last.status_id rescue ""
+    status_id         = PersonRecordStatus.where(person_id: details.person_id).order("created_at").last.status_id rescue ""
     csv               += "#{details.district_id_number}|#{brn}|#{nid}|#{status_map[status_id]}|#{location_map[details.location_created_at]}|"
 
     name              = PersonName.where(person_id: details.person_id).last

@@ -70,7 +70,7 @@ class PersonRecordStatus < ActiveRecord::Base
   end
 
   def self.status(person_id)
-    self.where(:person_id => person_id, :voided => 0).order("created_at ASC").last.status.name rescue nil
+    self.where(:person_id => person_id).order("created_at ASC").last.status.name rescue nil
   end
 
   def run_notification_hooks
