@@ -113,21 +113,21 @@ function fetchData() {
 
   <thead>
   <tr>
-    <th style="border-right: 2px solid #f8f8ff;background: white;width: 4%;">&nbsp;#</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 17%;">Date Errored</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 17%;">Person ID</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 17%;">BEN</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 17%;">Name</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 16%;">Data</th>
-    <th style="border-right: 1px solid #f8f8ff;width: 17%;">
-      <div type='button' class='btn btn-success btn-sm' onclick="load('all')">Retry All/Fix All</div>
+    <th style="border-right: 2px solid #f8f8ff;background: white;width: 3%;">&nbsp;#</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">Date</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">Person ID</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">BEN</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 20%;">Name</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 35%;">Error Message</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 15%;">
+      &nbsp;
     </th>
 
   </tr>
   </thead>
   <tbody>
   <% @issues.each do |d|%>
-        <tr>
+        <tr id="<%=d['index']%>">
             <td><%= d['index']%></td>
             <td><%= d['datetime']%></td>
             <td><%= d['person_id']%></td>
@@ -135,7 +135,12 @@ function fetchData() {
             <td><%= d['name']%></td>
             <td style="background: lightcoral;font-weight: bold;"><%= d['data']%></td>
             <td>
-              <div type='button' class='btn btn-success btn-sm' onclick="load('<%=d['person_id']%>')">Retry/Fix</div>
+              <% if !d['person'].blank?%>
+                <div type='button' class='btn btn-success btn-sm' onclick="window.location ='/show_person/<%=d['person_id']%>' ">View</div>
+              <% end %>
+
+              <div type='button' class='btn btn-success btn-sm' onclick="load('<%=d['person_id']%>', '<%=d['index']%>')">Re-run Sync</div>
+
             </td>
         </tr>
   <% end %>
@@ -144,12 +149,17 @@ function fetchData() {
 
 <script>
 
-    function load(pid){
+    function load(pid, index){
 
         jQuery.ajax({
             url: ("/data_cleaning_tools/reload_from_couch?person_id="+pid),
             success: function(response){
-
+                console.log(response);
+                if (response == 'true'){
+                    jQuery("#" + index).fadeOut(1500);
+                }else{
+                    alert("Failed to resolve record!")
+                }
             },
             error: function(response){
 

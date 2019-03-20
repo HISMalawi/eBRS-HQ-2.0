@@ -43,6 +43,8 @@ class DataCleaningToolsController < ApplicationController
   end
 
   def errored_syncs
+
+    session[:list_url] = request.path
     @issues = []
     ErrorRecords.active_issues.each_with_index do |issue, index|
       person = Person.find(issue.person_id) rescue nil
@@ -53,7 +55,8 @@ class DataCleaningToolsController < ApplicationController
           "name"      => (person.name rescue nil),
           "ben"       => ben,
           "data"      => issue.data,
-          "datetime" => issue.created_at.to_date.strftime("%d-%m-%Y")
+          "datetime" => issue.created_at.to_date.strftime("%d-%m-%Y"),
+          "person"      => (Person.where(person_id: issue.person_id).first.present? ? "Yes" : ""),
       }
     end
   end
@@ -85,9 +88,15 @@ class DataCleaningToolsController < ApplicationController
               record =  eval($models[table]).create(data)
             end
 
-            fixed = true
           end
         end
+
+        fixed = true
+        ErrorRecords.where(person_id: params[:person_id]).each do |r|
+          r.passed = 1
+          r.save
+        end
+
       rescue => e
         fixed = false
       end

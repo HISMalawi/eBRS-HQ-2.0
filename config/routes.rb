@@ -185,8 +185,10 @@ Rails.application.routes.draw do
 
   get '/ajax_check_brn' => 'person#ajax_check_brn'
   get '/ajax_request_national_id' => 'person#ajax_request_national_id'
-  get '/nid_queue_count' => 'person#nid_queue_count'
+  get '/ajax_assign_single_national_id' => 'person#ajax_assign_single_national_id'
+  get '/ajax_assign_barcode'  => 'person#ajax_assign_barcode'
 
+  get '/nid_queue_count' => 'person#nid_queue_count'
 
 
   ########################### (create record form) routes

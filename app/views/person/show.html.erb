@@ -79,18 +79,14 @@
 </script>
 <%=javascript_include_tag "bootstrap/bootstrap.min" %>
 
-<div id="trace-btn"
-     class="btn btn-primary blue"
-     style="position: absolute; top: 11%; right: 5.2%;cursor: pointer;padding: 5px;"
-     onclick="ajaxTrace()"
-> Trace</div>
-
 <shield id="shieldd"
         onclick="jQuery('#shieldd, #trace-div').hide(); "
-        style="position: absolute; display: none; top: 0px; left: 0px; width: 300vh; height: 300vh; background: black; opacity: 0.3;">
+        style="position: fixed; display: none; top: 0px; left: 0px; width: 100%; height: 100vh; background: black;
+                opacity: 0.3; z-index: 2900">
 </shield>
 
-<div id="trace-div" style="position: absolute; height: 56vh; overflow-y: auto; display: none; top: 18%; left: 18%;width: 65%;background: white;border: 2px solid gray;border-radius: 5px;z-index: 3000">
+<div id="trace-div" style="position: fixed; height: 56vh; overflow-y: auto; display: none; top: 15%; left: 19%;
+        width: 65%;background: ghostwhite;border: 2px solid gray;border-radius: 5px;z-index: 3000">
 
   <table id="trace-tbl" style="width: 100%;color: darkslategray;">
     <caption style="background: ghostwhite;padding: 6px; font-size: 1.2em;">
@@ -118,7 +114,7 @@
   </table>
 </div>
 
-<div class="panel panel-default">
+<div class="panel panel-default" style="padding-left: 0px;">
     <div class="panel-heading" style="height: 50px;">
       <table style="width: 100%;">
         <tr>
@@ -136,9 +132,9 @@
       </table>
     </div>
 
-    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
+    <div id="stats" class="col-md-11 col-lg-11" style="overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
 
-      <table width="85%;" style="margin: auto;border: 1px solid gray;padding: 0px;">
+      <table style="width: 100%; margin: auto;border: 1px solid gray;padding: 0px;">
 
 
         <% @record.each do |group, children| %>
@@ -213,12 +209,13 @@
         </td>
       </tr>
 
-    </table>
+     </table>
+
 
       <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
 
       <% if params[:viewport].blank?%>
-        <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
+        <div style="margin-right: 10px;margin-left:10px;margin-top: 5px;">
         <button class="btn btn-danger pull-left"
                 onclick="window.parent.location = return_path ">
           Cancel
@@ -346,7 +343,48 @@
           </button>
       <% end %>
     </div>
+
 </div>
+
+<div class="col-md-1" id="left-buttons" style="padding: 0px;margin: 0px;">
+  <div id="trace-btn"  class="btn btn-primary blue"  onclick="ajaxTrace()">
+    Trace
+  </div>
+
+  <div id="trace-btn"  class="btn btn-sea blue"  onclick="assignBarcode()">
+    Assign Barcode
+  </div>
+
+  <div id="trace-btn"  class="btn btn-sea blue"  onclick="querySingleNID()">
+    Assign NID
+  </div>
+  <div id="trace-btn"  class="btn btn-sea blue"  onclick="reSync()">
+    Re-run Sync
+  </div>
+
+  <div id="trace-btn"  class="btn btn-danger red" onclick="window.parent.location = return_path">
+    Back
+  </div>
+</div>
+
+<style>
+  #left-buttons .btn{
+      cursor: pointer;
+      padding: 6px;
+      padding-left: 1px;
+      paddint-right: 1px;
+      width: 98%;
+      margin-left: 5%;
+      margin-bottom: 10px;
+      font-size: 1em;
+      color: white;
+  }
+
+  #left-buttons .btn-sea {
+      background: darkseagreen;
+  }
+</style>
+
 
 <% if @results.present? %>
 <div style="margin-top:8%" class="modal fade" id="duplicateModal" tabindex="-1" role="dialog" aria-labelledby="duplicateModalLabel" aria-hidden="true">
@@ -858,6 +896,66 @@
             },
             error: function(error){
                 alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    function querySingleNID(){
+        __$("query-msg").style.display = "inline-block";
+        __$("query-msg").innerHTML = "Querying National ID from NRIS  .... "
+
+        jQuery.ajax({
+            url: "/ajax_assign_single_national_id?person_id=<%= @person.id%>",
+            success: function(result){
+                if(result == "OK"){
+                    window.parent.location = window.parent.location;
+                }else{
+                    __$("query-msg").style.display = "none";
+                    alert("Message: " + result);
+                }
+            },
+            error: function(error){
+                __$("query-msg").style.display = "none";
+                alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    function assignBarcode(){
+        __$("query-msg").style.display = "inline-block";
+        __$("query-msg").innerHTML = "Assigning Missing Barcode  .... "
+
+        jQuery.ajax({
+            url: "/ajax_assign_barcode?person_id=<%= @person.id%>",
+            success: function(result){
+                if(result == "OK"){
+                    window.parent.location = window.parent.location;
+                }else{
+                    __$("query-msg").style.display = "none";
+                    alert("Message: " + result);
+                }
+            },
+            error: function(error){
+                __$("query-msg").style.display = "none";
+                alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    function reSync(){
+
+        jQuery.ajax({
+            url: ("/data_cleaning_tools/reload_from_couch?person_id=<%= @person.id%>"),
+            success: function(response){
+                console.log(response);
+                if (response == 'true'){
+                    window.parent.location = window.parent.location;
+                }else{
+                    alert("Message: FAILED TO RE-RUN SYNC!")
+                }
+            },
+            error: function(response){
+
             }
         })
     }

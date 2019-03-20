@@ -1636,6 +1636,56 @@ EOF
     render plain: nid_queue
   end
 
+  def ajax_assign_barcode
+    person_id = params[:person_id]
+    msg = "FAILED"
+
+    barcode_number_id = PersonIdentifierType.where(name: "Barcode Number").last.id
+    barcode = PersonIdentifier.where(person_identifier_type_id: barcode_number_id, voided: 0, person_id: person_id).first
+
+    if barcode.blank?
+      bcd = BarcodeIdentifier.where(assigned: 0).first
+      if bcd.blank?
+        msg = "RUNNING OUT OF BARCODE NUMBERS"
+        render :text => msg and return
+      end
+      bcd.person_id = person_id
+      bcd.assigned  = 1
+      bcd.save
+
+      p = PersonIdentifier.new
+      p.person_id = person_id
+      p.value = bcd.value
+      p.person_identifier_type_id = barcode_number_id
+      p.save
+      msg = "OK"
+    else
+      barcode.save
+      msg = "BARCODE: '#{barcode.value}' ALREADY EXISTS TO RECORD"
+    end
+
+    render :text => msg
+  end
+
+  def ajax_assign_single_national_id
+    person_id = params[:person_id]
+    r = nil
+
+    person = Person.find(person_id)
+    if person.id_number.present?
+      r = "RECORD ALREADY HAS NID: #{person.id_number}"
+      render :text => r and return
+    else
+      r  = PersonService.request_nris_id(person_id, "N/A", User.current)
+    end
+
+    if ["FAILED", "NOT A MALAWIAN CITIZEN", "AGE LIMIT EXCEEDED", "NID INTEGRATION NOT ACTIVATED"].include?(r)
+      render :text => r and return
+    end
+
+    render :text => "OK"
+  end
+
   def ajax_request_national_id
 
     nid_type_id = PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
