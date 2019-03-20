@@ -95,6 +95,8 @@
           padding: 5px;
           color: #333;
       }
+
+
       <% nris_color = @nris_up ? "green" : "red"%>
       .nris{
           color: <%= nris_color %> !important;
@@ -317,7 +319,7 @@
             </div>
         </header>
       <!--header end-->
-      
+
       <!-- **********************************************************************************************************************************************************
       MAIN SIDEBAR MENU
       *********************************************************************************************************************************************************** -->
@@ -326,12 +328,12 @@
           <div id="sidebar"  class="nav-collapse ">
               <!-- sidebar menu start-->
               <ul class="sidebar-menu" id="nav-accordion" style="">
-              
+
               	  <p class="centered"><a href="/">
                     <%=image_tag 'coa.png', class: '', width: '60' %></a></p>
               	  <h5 style="border-bottom: 0.5px dotted #d3d3d3;padding-bottom: 15px;" class="centered"><%=User.current.username%></h5>
 
-              	  	
+
                   <li class="">
                       <a href="/" style="color: white;font-size: 14px !important;">
                           <i class="fa fa-home"></i>
@@ -441,7 +443,7 @@
           </div>
       </aside>
       <!--sidebar end-->
-      
+
       <!-- **********************************************************************************************************************************************************
       MAIN CONTENT
       *********************************************************************************************************************************************************** -->
@@ -455,7 +457,7 @@
       }
 
       var $j = jQuery.noConflict();
-    </script> 
+    </script>
     <%=javascript_include_tag "js/jquery"%>
     <script>
       var $i = jQuery.noConflict();
@@ -465,18 +467,18 @@
       window.onload = function () { null };
     </script>
     <%=javascript_include_tag "bootstrap/bootstrap-inputmask.min"%>
-    <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>                                         
-    <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>                                         
+    <%=javascript_include_tag "js/jquery-ui-1.9.2.custom.min"%>
+    <%=javascript_include_tag "js/jquery.ui.touch-punch.min"%>
     <%=javascript_include_tag "js/jquery.dcjqaccordion.2.7"%>
     <%=javascript_include_tag "js/jquery.scrollTo.min"%>
-    <%=javascript_include_tag "js/jquery.nicescroll"%>                                         
+    <%=javascript_include_tag "js/jquery.nicescroll"%>
 
 
     <!--common script for all pages-->
     <%=javascript_include_tag "js/common-scripts"%>
 
     <!--script for this page-->
-    
+
     <script>
         //custom select box
         try {
@@ -530,7 +532,7 @@
             <%= yield %>
           </section>
         <!--main content end-->
-      
+
       <!--footer start-->
       <footer class="site-footer">
           <div class="text-center">
