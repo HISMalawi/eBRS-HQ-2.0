@@ -1768,7 +1768,7 @@ EOF
       barcode = PersonIdentifier.where(person_identifier_type_id: barcode_number_id, voided: 0, person_id: pid)
       if barcode.blank?
         bcd = BarcodeIdentifier.where(assigned: 0).first
-        bcd.person_id = person_id
+        bcd.person_id = pid
         bcd.assigned  = 1
         bcd.save
 
