@@ -508,9 +508,9 @@ EOF
         father = PersonService.father(p.person_id)
         details = PersonBirthDetail.find_by_person_id(p.person_id)
 
-        p['first_name'] = '' if p['first_name'].match('@')
-        p['last_name'] = '' if p['last_name'].match('@')
-        p['middle_name'] = '' if p['middle_name'].match('@')
+        p['first_name'] = '' if !p['first_name'].blank? && p['first_name'].match('@')
+        p['last_name'] = '' if !p['last_name'].blank? && p['last_name'].match('@')
+        p['middle_name'] = '' if !p['middle_name'].blank? && p['middle_name'].match('@')
 
         name          = ("#{p['first_name']} #{p['middle_name']} #{p['last_name']}")
         mother_name   = ("#{mother.first_name rescue 'N/A'} #{mother.middle_name rescue ''} #{mother.last_name rescue ''}")
