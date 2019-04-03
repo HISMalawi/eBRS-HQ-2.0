@@ -291,28 +291,29 @@ class Report < ActiveRecord::Base
 
   def self.general_report(start_date, end_date, location_ids)
     {
-        [1, "Total Births"] => self.total(start_date, end_date, location_ids),
+        [1, "Total Births Entered in eBRS"] => self.total(start_date, end_date, location_ids),
         [2, "Reported Births"] => self.reported(start_date, end_date, location_ids),
-        [3, "Late Registrations"] => self.late_registrations(start_date, end_date, location_ids),
-        [4, "Ammendments"] => self.ammendments(start_date, end_date, location_ids),
-        [5, "Duplicates"] => self.duplicates(start_date, end_date, location_ids),
-        [6, "Incomplete"] => self.incomplete(start_date, end_date, location_ids),
-        [7, "Received By DV"] => self.received_by_dv(start_date, end_date, location_ids),
-        [8, "Approved By DV"] => self.approved_by_dv(start_date, end_date, location_ids),
-        [9, "Approved By DM"] => self.approved_by_dm(start_date, end_date, location_ids),
-        [10, "Printed"] => self.printed(start_date, end_date, location_ids),
-        [11, "Dispatched"] => self.dispatched(start_date, end_date, location_ids),
-        [12, "Special Cases Reported"] => self.special_cases_reported([], start_date, end_date, location_ids),
-        [13, "Special Cases Printed"] => self.special_cases_printed([], start_date, end_date, location_ids),
-        [14, "Adopted Cases Reported"] => self.special_cases_reported(["Adopted"], start_date, end_date, location_ids),
-        [15, "Adopted Cases Printed"] => self.special_cases_printed(["Adopted"], start_date, end_date, location_ids),
-        [16, "Orphaned Cases Reported"] => self.special_cases_reported(["Orphaned"], start_date, end_date, location_ids),
-        [17, "Orphaned Cases Printed"] => self.special_cases_printed(["Orphaned"], start_date, end_date, location_ids),
-        [18, "Abandoned Cases Reported"] => self.special_cases_reported(["Abandoned"], start_date, end_date, location_ids),
-        [19, "Abandoned Cases Printed"] => self.special_cases_printed(["Abandoned"], start_date, end_date, location_ids),
-        [20, "Non Malawian Cases Reported"] => self.non_malawian_reported(start_date, end_date, location_ids),
-        [21, "Non Malawian Cases Printed"] => self.non_malawian_printed(start_date, end_date, location_ids),
-        [22, "Failed National ID Validations <small>(for >= 16 years)</small>"] => self.failed_validations(start_date, end_date, location_ids)
+        [3, "Registered Births"] => self.registered(start_date, end_date, location_ids),
+        [4, "Late Registrations"] => self.late_registrations(start_date, end_date, location_ids),
+        [5, "Ammendments"] => self.ammendments(start_date, end_date, location_ids),
+        [6, "Duplicates"] => self.duplicates(start_date, end_date, location_ids),
+        [7, "Incomplete"] => self.incomplete(start_date, end_date, location_ids),
+        [8, "Received By DV"] => self.received_by_dv(start_date, end_date, location_ids),
+        [9, "Approved By DV"] => self.approved_by_dv(start_date, end_date, location_ids),
+        [10, "Approved By DM"] => self.approved_by_dm(start_date, end_date, location_ids),
+        [11, "Printed"] => self.printed(start_date, end_date, location_ids),
+        [12, "Dispatched"] => self.dispatched(start_date, end_date, location_ids),
+        [13, "Special Cases Reported"] => self.special_cases_reported([], start_date, end_date, location_ids),
+        [14, "Special Cases Printed"] => self.special_cases_printed([], start_date, end_date, location_ids),
+        [15, "Adopted Cases Reported"] => self.special_cases_reported(["Adopted"], start_date, end_date, location_ids),
+        [16, "Adopted Cases Printed"] => self.special_cases_printed(["Adopted"], start_date, end_date, location_ids),
+        [17, "Orphaned Cases Reported"] => self.special_cases_reported(["Orphaned"], start_date, end_date, location_ids),
+        [18, "Orphaned Cases Printed"] => self.special_cases_printed(["Orphaned"], start_date, end_date, location_ids),
+        [19, "Abandoned Cases Reported"] => self.special_cases_reported(["Abandoned"], start_date, end_date, location_ids),
+        [20, "Abandoned Cases Printed"] => self.special_cases_printed(["Abandoned"], start_date, end_date, location_ids),
+        [21, "Non Malawian Cases Reported"] => self.non_malawian_reported(start_date, end_date, location_ids),
+        [22, "Non Malawian Cases Printed"] => self.non_malawian_printed(start_date, end_date, location_ids),
+        [23, "Failed National ID Validations <small>(for >= 16 years)</small>"] => self.failed_validations(start_date, end_date, location_ids)
 
     }
   end
@@ -374,6 +375,18 @@ class Report < ActiveRecord::Base
     end
 
     PersonBirthDetail.where(" DATE(date_reported) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+      AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
+  end
+
+
+  def self.registered(start_date, end_date, location_ids=[])
+
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    PersonBirthDetail.where(" DATE(date_registered) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
       AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
   end
 
