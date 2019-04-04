@@ -645,14 +645,15 @@ class Report < ActiveRecord::Base
                   WHERE m.location_tag_id = #{facility_tag_id}").map(&:location_id)
 
       all_district_locs = facilities + [district_id]
-      results[district_id] = {}
-      results[district_id]["facility_registered"]  = self.registered(start_date, end_date, facilities)
-      results[district_id]["dro_registered"] = self.registered(start_date, end_date, [district_id])
-      results[district_id]["printed"]  = self.printed(start_date, end_date, all_district_locs)
+      district = Location.find(district_id).name
+      results[district] = {}
+      results[district]["facility_registered"]  = self.registered(start_date, end_date, facilities)
+      results[district]["dro_registered"] = self.registered(start_date, end_date, [district_id])
+      results[district]["printed"]  = self.printed(start_date, end_date, all_district_locs)
 
-      results[district_id]["cum_facility_registered"]  = self.registered("01-01-2000".to_date, end_date, facilities)
-      results[district_id]["cum_dro_registered"] = self.registered("01-01-2000".to_date, end_date, [district_id])
-      results[district_id]["cum_printed"]  = self.printed("01-01-2000".to_date, end_date, all_district_locs)
+      results[district]["cum_facility_registered"]  = self.registered("01-01-2000".to_date, end_date, facilities)
+      results[district]["cum_dro_registered"] = self.registered("01-01-2000".to_date, end_date, [district_id])
+      results[district]["cum_printed"]  = self.printed("01-01-2000".to_date, end_date, all_district_locs)
     end
 
     results
