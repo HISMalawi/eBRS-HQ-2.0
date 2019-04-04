@@ -490,7 +490,7 @@ class Report < ActiveRecord::Base
       loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
     end
 
-    status_ids = Status.where(" name IN ('HQ-PRINTED', 'HQ-DISPATCHED') ").map(&:status_id)
+    status_ids = Status.where(" name IN ('DC-PRINTED', 'HQ-PRINTED', 'HQ-DISPATCHED') ").map(&:status_id)
 
     PersonBirthDetail.find_by_sql(" SELECT * FROM person_birth_details d
       INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
@@ -628,5 +628,33 @@ class Report < ActiveRecord::Base
         AND v.passed = 0
         AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query}
       GROUP BY d.person_id ").count
+  end
+
+  def self.biweekly_report(start_date, end_date)
+    results = {}
+
+    district_tag_id = LocationTag.where(name: "District").first.id
+    facility_tag_id = LocationTag.where(name: "Health Facility").first.id
+
+    districts = LocationTagMap.find_by_sql(" SELECT m.location_id FROM location_tag_map m
+                  INNER JOIN location l ON l.location_id = m.location_id AND l.parent_location IS NULL
+                  WHERE m.location_tag_id = #{district_tag_id}").map(&:location_id)
+    districts.each do |district_id|
+      facilities = districts = LocationTagMap.find_by_sql(" SELECT m.location_id FROM location_tag_map m
+                  INNER JOIN location l ON l.location_id = m.location_id AND l.parent_location = #{district_id}
+                  WHERE m.location_tag_id = #{facility_tag_id}").map(&:location_id)
+
+      all_district_locs = facilities + [district_id]
+      results[district_id] = {}
+      results[district_id]["facility_registered"]  = self.registered(start_date, end_date, facilities)
+      results[district_id]["dro_registered"] = self.registered(start_date, end_date, [district_id])
+      results[district_id]["printed"]  = self.printed(start_date, end_date, all_district_locs)
+
+      results[district_id]["cum_facility_registered"]  = self.registered("01-01-2000".to_date, end_date, facilities)
+      results[district_id]["cum_dro_registered"] = self.registered("01-01-2000".to_date, end_date, [district_id])
+      results[district_id]["cum_printed"]  = self.printed("01-01-2000".to_date, end_date, all_district_locs)
+    end
+
+    results
   end
 end
