@@ -630,6 +630,21 @@ class Report < ActiveRecord::Base
       GROUP BY d.person_id ").count
   end
 
+
+  def self.by_place_of_birth(start_date, end_date, place_of_birth, location_ids=[])
+    loc_query = ""
+    if !location_ids.blank?
+      loc_query = " AND location_created_at IN (#{location_ids.join(', ')}) "
+    end
+
+    place_of_birth_id = Location.find_by_name(place_of_birth).id
+
+    PersonBirthDetail.where(" place_of_birth = #{place_of_birth_id}
+      AND DATE(date_registered) BETWEEN '#{start_date.to_date.to_s}' AND '#{end_date.to_date.to_s}'
+      AND (source_id IS NULL OR LENGTH(source_id) >  19) #{loc_query} ").count
+
+  end
+
   def self.biweekly_report(start_date, end_date)
     results = {}
 
@@ -654,6 +669,15 @@ class Report < ActiveRecord::Base
       results[district]["cum_facility_registered"]  = self.registered("01-01-2000".to_date, end_date, facilities)
       results[district]["cum_dro_registered"] = self.registered("01-01-2000".to_date, end_date, [district_id])
       results[district]["cum_printed"]  = self.printed("01-01-2000".to_date, end_date, all_district_locs)
+
+      results[district]["registered_but_born_in_hospital"]  = self.by_place_of_birth(start_date, end_date, "Hospital", all_district_locs)
+      results[district]["registered_but_born_in_home"]  = self.by_place_of_birth(start_date, end_date, 'Home', all_district_locs)
+      results[district]["registered_but_born_in_other"]  = self.by_place_of_birth(start_date, end_date, 'Other', all_district_locs)
+
+      results[district]["cum_registered_but_born_in_hospital"]  = self.by_place_of_birth("01-01-2000".to_date, end_date, "Hospital", all_district_locs)
+      results[district]["cum_registered_but_born_in_home"]  = self.by_place_of_birth("01-01-2000".to_date, end_date, 'Home', all_district_locs)
+      results[district]["cum_registered_but_born_in_other"]  = self.by_place_of_birth("01-01-2000".to_date, end_date, 'Other', all_district_locs)
+
     end
 
     results
