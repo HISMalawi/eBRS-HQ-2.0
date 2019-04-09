@@ -189,4 +189,45 @@ class PersonBirthDetail < ActiveRecord::Base
 
       Array(found.min.to_i .. found.max.to_i) - found
     end
+
+		def generate_brn
+			
+			if !(ActiveRecord::Base.connection.table_exists? "brn_counter")
+				` bundle exec rails runner bin/init_brn_counter.rb`
+			end 
+
+			if self.national_serial_number.blank? 
+				counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id}").as_json['counter'] rescue nil
+				if counter.blank? 
+					missing_brn = nil #PersonBirthDetail.next_missing_brn
+
+					if !missing_brn.blank?
+						ActiveRecord::Base.connection.execute("DELETE FROM brn_counter WHERE counter = #{missing_brn.to_i};")
+						ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(counter, person_id) VALUES (#{missing_brn.to_i}, #{self.person_id});")
+					else
+						ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(person_id) VALUES (#{self.person_id});")
+					end 
+
+					counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id};").as_json['counter']
+
+				end
+
+				brn = counter
+				self.update_attributes(national_serial_number: brn)
+
+				#Assign barcode
+				barcode = BarcodeIdentifier.where(:assigned => 0).last
+				idf = PersonIdentifier.where(person_id: self.person_id,
+								                     person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
+								                     voided: 0).first
+
+				if !barcode.blank? && idf.blank?
+					PersonIdentifier.new_identifier(self.person_id,
+								                          'Barcode Number', barcode.value)
+
+					barcode.update_attributes(assigned: 1,
+								                    person_id: self.person_id)
+				end
+			end
+		end 
 end

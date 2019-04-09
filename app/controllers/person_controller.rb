@@ -1720,11 +1720,6 @@ EOF
     if !birth.blank? && !birth.national_serial_number.blank?
       render plain: "OK"
     else
-      workers = SuckerPunch::Queue.stats["AllocationQueue"]["workers"] rescue nil
-      if workers.blank? || workers["total"] == 0 || workers["busy"] > 0
-        AllocationQueue.perform_in(1)
-      end
-
       render plain: "PENDING"
     end
   end
