@@ -41,24 +41,26 @@ module EbrsAttribute
     h = Pusher.database.get(document_id.to_s) if !document_id.blank?
     h = nil if !h.blank? && !h['db_name'].blank? #This document was not found
 
-    if h.present?
+    if h.present? && h['savable_data'].present?
       data = h
       hash.each{|k, v|
-				data[k] = v
-			}			
+				data['savable_data'][k] = v
+			}
     else
-      data = hash
+      data = Hash.new
       data["_id"] = Pusher.database.server.next_uuid
+      hash['document_id'] = data['_id']
+      data['savable_data'] = hash
     end
 
     data['document_id']        = data['_id']  # For association when loading to MYSQL after sync to another location
-		data['location_id']				 = location_id if !location_id.blank? #for sync filtering 
+		data['location_id']				 = location_id if !location_id.blank? #for sync filtering
 		data['class_name']				 = self.class.name
 		data['change_location_id'] = SETTINGS['location_id']
 		data['type'] = 'data_v2'
 
-    rst = Pusher.database.save_doc(data)
-		raw.update_column("document_id", rst['id'])	
+    Pusher.database.save_doc(data)
+		raw.update_column("document_id", data['_id'])
   end
 
   def self.included(base)
