@@ -10,8 +10,8 @@ class PersonRecordStatus < ActiveRecord::Base
     def self.new_record_state(person_id, state, change_reason='', user_id=nil)
       status = nil
 
-        begin
-         ActiveRecord::Base.transaction do
+        #begin
+        # ActiveRecord::Base.transaction do
           user_id = User.current.id rescue nil if user_id.blank?
           user_id = User.find_by_username("admin279").id if user_id.blank?
           state_id = Status.where(:name => state).first.id
@@ -55,10 +55,10 @@ class PersonRecordStatus < ActiveRecord::Base
               allocation.created_at = Time.now
               allocation.save
           end
-        end
-      rescue StandardError => e
-           self.log_error(e.message,person_id)
-      end
+        #end
+      #rescue StandardError => e
+      #     self.log_error(e.message,person_id)
+      #end
 
 		return status
   end
