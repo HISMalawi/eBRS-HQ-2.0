@@ -16,51 +16,50 @@ module EbrsAttribute
 
   def send_data(hash)
 
-    return nil if SETTINGS["mass_data_migration_mode"].to_s == "true"
-		raw = hash
+    return if self.class.table_name == "notification"
+
+    raw_id = hash.id
     hash = hash.as_json
     hash.each {|k, v|
       hash[k] = v.to_s(:db) if (['Time', 'Date', 'Datetime'].include?(v.class.name))
     }
 
-    location_id = nil
     person_id = hash['person_id']
     person_id = hash['person_a'] if person_id.blank?
     person_id = PersonName.where(person_name_id: hash['person_name_id']).first.person_id rescue nil if person_id.blank?
     person_id = User.where(user_id: hash['user_id']).first.person_id rescue nil if person_id.blank?
-		document_id = self.document_id
 
-    if SETTINGS["application_mode"] == "DC"
-			location_id = SETTINGS['location_id']
-		else
-    	created_at = PersonBirthDetail.where(person_id: person_id).last.location_created_at rescue nil 
-			district   = Location.find(created_at).district rescue nil
-			location_id = Location.locate_id_by_tag(district, "District") rescue nil
-		end 
+    location_id = (SETTINGS['location_id'])
+    h = Pusher.database.get(person_id.to_s) rescue nil
 
-    h = Pusher.database.get(document_id.to_s) if !document_id.blank?
-    h = nil if !h.blank? && !h['db_name'].blank? #This document was not found
+    if h.present?
 
-    if h.present? && h['savable_data'].present?
-      data = h
-      hash.each{|k, v|
-				data['savable_data'][k] = v
-			}
+      h['location_id'] = location_id if h['location_id'].blank?
+      data = h[self.class.table_name]
+      if data.blank?
+        data = Hash.new
+      end
+
+      data["#{raw_id}"] = hash
+      h[self.class.table_name] = data
     else
+
       data = Hash.new
-      data["_id"] = Pusher.database.server.next_uuid
-      hash['document_id'] = data['_id']
-      data['savable_data'] = hash
+      data["#{raw_id}"] = hash
+
+      temp_hash = {
+          '_id' => person_id.to_s,
+          'type' => 'data',
+          'location_id' => location_id,
+          self.class.table_name =>  data
+      }
+      h = temp_hash
     end
 
-    data['document_id']        = data['_id']  # For association when loading to MYSQL after sync to another location
-		data['location_id']				 = location_id if !location_id.blank? #for sync filtering
-		data['class_name']				 = self.class.name
-		data['change_location_id'] = SETTINGS['location_id']
-		data['type'] = 'data_v2'
+    h['change_agent'] = self.class.table_name
+    h['change_location_id'] = SETTINGS['location_id']
 
-    Pusher.database.save_doc(data)
-		raw.update_column("document_id", data['_id'])
+    Pusher.database.save_doc(h)
   end
 
   def self.included(base)

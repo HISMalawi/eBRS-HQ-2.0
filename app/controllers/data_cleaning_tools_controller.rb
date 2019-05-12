@@ -74,7 +74,8 @@ class DataCleaningToolsController < ApplicationController
     if !doc.blank?
       doc = doc.as_json
       ordered_keys = (['core_person', 'person', 'users', 'user_role'] +
-          doc.keys.reject{|k| ['_id', 'change_agent', '_rev', 'change_location_id', 'ip_addresses', 'location_id', 'type', 'district_id'].include?(k)}).uniq
+          doc.keys.reject{|k| ['_id', 'change_agent', '_rev', 'change_location_id',
+                               'ip_addresses', 'location_id', 'type', 'district_id'].include?(k)}).uniq
 
       begin
         (ordered_keys || []).each do |table|
