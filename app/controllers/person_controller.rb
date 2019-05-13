@@ -1781,4 +1781,15 @@ EOF
 
   end
 
+  def remote_nid_request
+    person_id = params[:person_id]
+    user = User.where(username: 'admin279').first
+    r = PersonService.request_nris_id(person_id, "N/A", user) rescue "FAILED"
+
+    if ["FAILED", "NOT A MALAWIAN CITIZEN", "AGE LIMIT EXCEEDED", "NID INTEGRATION NOT ACTIVATED"].include?(r)
+      render :text => r and return
+    end
+
+    render :text => "OK"
+  end
 end
