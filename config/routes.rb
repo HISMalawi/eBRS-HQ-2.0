@@ -189,7 +189,7 @@ Rails.application.routes.draw do
   get '/ajax_assign_barcode'  => 'person#ajax_assign_barcode'
 
   get '/nid_queue_count' => 'person#nid_queue_count'
-  get '/remote_nid_request' => 'person#nid_remote_count'
+  get '/person/remote_nid_request'
 
 
   ########################### (create record form) routes
