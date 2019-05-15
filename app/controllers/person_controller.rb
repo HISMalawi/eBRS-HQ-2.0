@@ -1791,8 +1791,8 @@ EOF
     end
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
-    object = PersonIdentifier.where(person_id: person_id, voided: 0, person_identifier_type_id: nid_type).last
+    object = PersonIdentifier.where(person_id: person_id, voided: 0, person_identifier_type_id: nid_type).last.as_json
 
-    render :text => ["OK", object]
+    render :text => ["OK", object].to_json
   end
 end
