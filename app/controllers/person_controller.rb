@@ -1790,7 +1790,7 @@ EOF
       render :text => [r, nil] and return
     end
 
-    nid_type = PersonIdentifierType.where(name: "National ID").first.id
+    nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
     object = PersonIdentifier.where(person_id: person_id, voided: 0, person_identifier_type_id: nid_type).last
 
     render :text => ["OK", object]
