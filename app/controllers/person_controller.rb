@@ -1787,7 +1787,7 @@ EOF
     r = PersonService.request_nris_id(person_id, "N/A", user) rescue "FAILED"
 
     if ["FAILED", "NOT A MALAWIAN CITIZEN", "AGE LIMIT EXCEEDED", "NID INTEGRATION NOT ACTIVATED"].include?(r)
-      render :text => [r, nil] and return
+      render :text => [r, nil].to_json and return
     end
 
     nid_type = PersonIdentifierType.where(name: "National ID Number").first.id
