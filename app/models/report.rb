@@ -665,10 +665,12 @@ class Report < ActiveRecord::Base
       results[district]["facility_registered"]  = self.registered(start_date, end_date, facilities)
       results[district]["dro_registered"] = self.registered(start_date, end_date, [district_id])
       results[district]["printed"]  = self.printed(start_date, end_date, all_district_locs)
+      results[district]["total_registered"]  = self.registered(start_date, end_date, all_district_locs)
 
       results[district]["cum_facility_registered"]  = self.registered("01-01-2000".to_date, end_date, facilities)
       results[district]["cum_dro_registered"] = self.registered("01-01-2000".to_date, end_date, [district_id])
       results[district]["cum_printed"]  = self.printed("01-01-2000".to_date, end_date, all_district_locs)
+      results[district]["cum_total_registered"]  = self.registered("01-01-2000".to_date, end_date, all_district_locs)
 
       results[district]["registered_but_born_in_hospital"]  = self.by_place_of_birth(start_date, end_date, "Hospital", all_district_locs)
       results[district]["registered_but_born_in_home"]  = self.by_place_of_birth(start_date, end_date, 'Home', all_district_locs)
