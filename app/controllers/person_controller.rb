@@ -437,13 +437,7 @@ EOF
         session[:district] = params[:district]
 
         locations = [params[:district]]
-
-        facility_tag_id = LocationTag.where(name: 'Health Facility').first.id rescue [-1]
-        (Location.find_by_sql("SELECT l.location_id FROM location l
-                            INNER JOIN location_tag_map m ON l.location_id = m.location_id AND m.location_tag_id = #{facility_tag_id}
-                          WHERE l.parent_location = #{params[:district]}") || []).each {|l|
-          locations << l.location_id
-        }
+        locations +=  Location.child_locations_for(params[:district], 2) #depth of 2 to get both TAs and Villages
         loc_query = " AND pbd.location_created_at IN (#{locations.join(', ')}) "
       end
 

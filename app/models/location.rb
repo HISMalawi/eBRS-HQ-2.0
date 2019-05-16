@@ -185,4 +185,18 @@ class Location < ActiveRecord::Base
 
     fa.id
   end
+
+  def self.child_locations_for(loc_id, depth=1)
+    results = []
+    parent_locs = Location.where(parent_location: loc_id).pluck :location_id
+    results     = parent_locs
+
+    if depth == 2
+      parent_locs.each do |l_id|
+        results += Location.where(parent_location: l_id).pluck :location_id
+      end
+    end
+
+    results
+  end
 end
