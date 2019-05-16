@@ -351,9 +351,12 @@
     Trace
   </div>
 
-  <div id="trace-btn"  class="btn btn-sea blue"  onclick="querySingleNID()">
-    Assign NID
-  </div>
+  <% if ['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT'].include?(@status)%>
+    <div id="trace-btn"  class="btn btn-sea blue"  onclick="querySingleNID()">
+        Assign NID
+    </div>
+  <% end %>
+
   <div id="trace-btn"  class="btn btn-sea blue"  onclick="reSync()">
     Re-run Sync
   </div>
