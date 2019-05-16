@@ -1098,26 +1098,7 @@ EOF
       barcode = File.read("#{SETTINGS['barcodes_path']}#{person_id}.png") rescue nil
       if barcode.nil?
 
-    	  barcode_value = PersonIdentifier.where(person_id: person_id,
-						person_identifier_type_id: nid_type.id, voided: 0
-					).last.value rescue nil
-
-        if barcode_value.blank?
-
-          bcd = BarcodeIdentifier.where(assigned: 0).first
-          bcd.person_id = person_id
-          bcd.assigned  = 1
-          bcd.save
-
-          p = PersonIdentifier.new
-          p.person_id = person_id
-          p.value = bcd.value
-          p.person_identifier_type_id = PersonIdentifierType.where(name: "Barcode Number").last.id
-          p.save
-
-          barcode_value = bcd.value
-        end
-
+    	  barcode_value = "" #Removed use of barcode
         if SETTINGS['enable_qr_code'] == true
          `bundle exec rails r bin/generate_qr_code #{ person_id } #{ data['person'].id} #{SETTINGS['barcodes_path']} -e #{Rails.env}  `
         else
