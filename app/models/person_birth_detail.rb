@@ -214,20 +214,6 @@ class PersonBirthDetail < ActiveRecord::Base
 
 				brn = counter
 				self.update_attributes(national_serial_number: brn)
-
-				#Assign barcode
-				barcode = BarcodeIdentifier.where(:assigned => 0).last
-				idf = PersonIdentifier.where(person_id: self.person_id,
-								                     person_identifier_type_id: PersonIdentifierType.where(name: "Barcode Number").last.id,
-								                     voided: 0).first
-
-				if !barcode.blank? && idf.blank?
-					PersonIdentifier.new_identifier(self.person_id,
-								                          'Barcode Number', barcode.value)
-
-					barcode.update_attributes(assigned: 1,
-								                    person_id: self.person_id)
-				end
 			end
 		end 
 end
