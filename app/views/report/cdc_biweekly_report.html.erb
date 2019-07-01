@@ -132,7 +132,7 @@ function fetchData() {
     <tr>
       <th style="width: 5%;">District</th>
       <% @columns.each do |column|%>
-        <th style="width: 5.9%"><%= column[0]%></th>
+        <th style=""><%= column[0]%></th>
       <% end %>
     </tr>
 
@@ -145,7 +145,7 @@ function fetchData() {
       <% @columns.each do |column|
 
 %>
-          <td style="text-align: center"><%= (@data[district][column[1]].to_i)%></td>
+          <td style="text-align: center"><%= (@data[district][column[1]].to_i) rescue 0%></td>
       <% end %>
       </tr>
 

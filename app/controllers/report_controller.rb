@@ -537,7 +537,10 @@ class ReportController < ApplicationController
         "Salima",  "Thyolo", "Zomba",  "Machinga", "Mulanje"
     ]
 
-		@data = Report.biweekly_report(start_date, end_date)	
+		@data = {}
+		if params[:start_date] && params[:end_date]
+			@data = Report.biweekly_report(start_date, end_date)	
+		end
 		
   end
 
