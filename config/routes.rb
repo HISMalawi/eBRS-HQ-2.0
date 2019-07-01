@@ -24,6 +24,9 @@ Rails.application.routes.draw do
   get '/user_audit_trail' => 'report#user_audit_trail'
   get 'get_user_audit_trail' => 'report#get_user_audit_trail'
 
+  get '/cdc_biweekly_report' => 'report#cdc_biweekly_report'
+  get 'get_cdc_biweekly_report' => 'report#get_cdc_biweekly_report'
+
   get "/report/birth_reports"
 
   get '/reg_vs_birth_district' => 'report#reg_vs_birth_district'

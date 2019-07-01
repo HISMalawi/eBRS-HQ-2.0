@@ -508,6 +508,39 @@ class ReportController < ApplicationController
     send_file(file, :filename => params[:reference] , :disposition => 'inline', :type => "application/pdf")
   end
 
+	def cdc_biweekly_report
+      #[Column name, hashed_key_field]
+		start_date = params[:start_date].to_date rescue Date.today
+		end_date 	 = params[:end_date].to_date rescue Date.today
+
+    @columns = [
+        ["Number of facility births registered and approved in the system-Facility", "facility_registered"],
+        ["Number of facility births registered and approved in the system-DRO", "dro_registered"],
+        ["Number of facility births registered and approved in the system - but_born_in_hospital", "registered_but_born_in_hospital"],
+        ["Number of facility births registered and approved in the system - but_born_in_home", "registered_but_born_in_home"],
+        ["Number of facility births registered and approved in the system - but_born_in_other", "registered_but_born_in_other"],
+        ["Number of certificates printed", "printed"],
+        ["Cumulative Number of certificates printed", "cum_printed"],
+        ["Cumulative number registered - facility_registered", "cum_facility_registered" ],
+        ["Cumulative number registered - dro_registered", "cum_dro_registered"],
+        ["Cumulative number registered - but_born_in_hospital", "cum_registered_but_born_in_hospital"],
+        ["Cumulative number registered - registered_but_born_in_home", "cum_registered_but_born_in_home"],
+        ["Cumulative number registered - registered_but_born_in_other", "cum_registered_but_born_in_other"],
+        ["Cumulative Total Registered", "cum_total_registered"]
+    ]
+
+    @districts =[
+        "Balaka",    "Blantyre",    "Chikwawa",  "Chiradzulu",    "Chitipa",
+        "Dedza",     "Dowa",    "Karonga",   "Kasungu",  "Likoma",  "Lilongwe",
+        "Mangochi",  "Mchinji", "Mwanza", "Mzimba",  "Neno",  "Nkhata Bay",
+        "Nkhotakota", "Nsanje",  "Ntcheu", "Ntchisi", "Phalombe",   "Rumphi",
+        "Salima",  "Thyolo", "Zomba",  "Machinga", "Mulanje"
+    ]
+
+		@data = Report.biweekly_report(start_date, end_date)	
+		
+  end
+
   private
 
   def districts
