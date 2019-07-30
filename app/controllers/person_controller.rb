@@ -74,7 +74,7 @@ class PersonController < ApplicationController
     session[:list_url] = request.referrer if params[:revalidation].blank?
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
-    @name = @person.person_names.last
+    @name = @person.person_names.first #was .last
     @address = @person.addresses.last
 
     @mother_person = @person.mother
@@ -946,7 +946,7 @@ EOF
     @statuses.each do |audit|
       user = User.find(audit.creator) rescue User.first
       name = PersonName.where(person_id: user.person_id).last
-      user_name = (name.first_name + " " + name.last_name)
+      user_name = (name.first_name + " " + name.last_name) rescue ""
       ago = audit.created_at.to_time.to_pretty
       @comments << {
           "created_at" => audit.created_at.to_time,

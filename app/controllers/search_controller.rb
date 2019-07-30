@@ -17,6 +17,23 @@ class SearchController < ApplicationController
       case filters.keys.first
         when 'ben'
           data = PersonService.by_ben(params, filters['ben'])
+
+	  	if data['data'].blank?
+						#Try Remote Search
+						district_code = filters['ben'].split("/")[0].strip rescue nil
+
+						if !district_code.blank?
+							location_id = Location.where(code: district_code).first.id
+							ip = YAML.load_file("public/sites/#{location_id}.yml")[location_id]['ip_addresses'].first.split(":").first rescue nil
+							if !ip.blank?
+								person_id = RestClient.get("http://#{ip}:4000/get_person_id?ben=#{filters['ben']}").to_s rescue nil
+								if !person_id.blank?
+									PersonService.force_sync(person_id) 
+									data = PersonService.search_results(params)
+								end
+							end
+						end
+					end
         when 'brn'
           data = PersonService.by_brn(params, filters['brn'])
         when 'names'
