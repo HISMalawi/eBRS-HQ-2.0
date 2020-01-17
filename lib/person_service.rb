@@ -1869,7 +1869,12 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
         old_key.person_identifier_type_id = nris_type
         old_key.value = array[1]
         old_key.save
-      end
+      end 
+
+       IdentifierAllocationQueue.where(person_id: person_id, assigned: 0, person_identifier_type_id: nid_type).each{|i| 
+	i.assigned = 1
+	i.save	
+      }
     end
 
     return [success, errors]
@@ -2014,7 +2019,8 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
         end
 
       rescue => e
-        fixed = false
+	puts e  
+      fixed = false
       end
     end
 
