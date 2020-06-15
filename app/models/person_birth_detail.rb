@@ -213,6 +213,7 @@ class PersonBirthDetail < ActiveRecord::Base
 				end
 
 				brn = counter
+				puts brn
 				self.update_attributes(national_serial_number: brn)
 			end
 		end 

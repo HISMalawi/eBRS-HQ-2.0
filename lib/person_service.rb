@@ -752,6 +752,14 @@ end
     result
   end
 
+  def self.remove_lock(person_id)
+    IdentifierAllocationQueue.where(person_id: person_id, assigned: 0, person_identifier_type_id: 4).each{|i|
+        i.assigned = 1
+        i.save
+    }
+      
+  end
+
   def self.query_for_display(states, types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'])
 
     state_ids = states.collect{|s| Status.find_by_name(s).id} + [-1]
@@ -1896,7 +1904,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
       place_of_birth = birth_district
     end
 
-    str = "04~#{person.id_number}-#{details.district_id_number}-#{details.brn}"
+    str = "04~#{details.district_id_number}-#{details.brn}"
     str += "~#{person.printable_name}~#{person.birthdate.to_date.strftime("%d-%b-%Y")}~#{person.gender}"
     str += "~#{place_of_birth}"
     str += ("~#{person.mother.printable_name}" rescue '~')

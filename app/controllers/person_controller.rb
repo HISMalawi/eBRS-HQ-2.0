@@ -74,7 +74,7 @@ class PersonController < ApplicationController
     session[:list_url] = request.referrer if params[:revalidation].blank?
 
     @birth_details = PersonBirthDetail.where(person_id: @core_person.person_id).last
-    @name = @person.person_names.first #was .last
+    @name = @person.person_names.last #was .last #taken it back to .last
     @address = @person.addresses.last
 
     @mother_person = @person.mother
@@ -1651,12 +1651,15 @@ EOF
     person = Person.find(person_id)
     if person.id_number.present?
       r = "RECORD ALREADY HAS NID: #{person.id_number}"
+      PersonService.remove_lock(person_id)
       render :text => r and return
     else
       r  = PersonService.request_nris_id(person_id, "N/A", User.current)
+      PersonService.remove_lock(person_id)
     end
 
     if ["FAILED", "NOT A MALAWIAN CITIZEN", "AGE LIMIT EXCEEDED", "NID INTEGRATION NOT ACTIVATED"].include?(r)
+      PersonService.remove_lock(person_id)
       render :text => r and return
     end
 
