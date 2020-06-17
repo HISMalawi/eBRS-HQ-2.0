@@ -473,13 +473,35 @@ EOF
       id_type_id = PersonIdentifierType.where(name: "National ID Number").first.id
       queue_ids  = IdentifierAllocationQueue.where("assigned = 0 AND person_identifier_type_id = #{id_type_id}").pluck :person_id
       queue_ids  = [-1] if queue_ids.blank?
-
+      #raise params[:district].inspect
+      informant_join_query = "  "
+      if !params[:informant_village].blank? && !params[:informant_ta].blank?
+        district_id          = params[:district]
+        ta_id                = Location.locate_id(params[:informant_ta], "Traditional Authority", params[:district])
+        village_id           = Location.locate_id(params[:informant_village], "Village", ta_id)
+  
+        village_filter_query = " " #" AND pbd.location_created_at  = #{village_id}"
+  
+        info_type_id         = PersonRelationType.where(name: "Informant").first.id
+        informant_join_query = "INNER JOIN person_relationship p_rel ON p_rel.person_a = person.person_id
+                                  AND p_rel.person_relationship_type_id = #{info_type_id}
+                                INNER JOIN person_addresses info_a ON info_a.person_id = p_rel.person_b
+                                  AND ((info_a.current_district = #{district_id}
+                                        AND info_a.current_ta = #{ta_id}
+                                        AND info_a.current_village  = #{village_id})
+                                          OR
+                                        (pbd.location_created_at  = #{village_id}))
+                                "
+  
+      end
+      #raise informant_join_query.to_s
       d = Person.order("district_id_number").joins("INNER JOIN person_name n ON person.person_id = n.person_id
               INNER JOIN person_record_statuses prs ON person.person_id = prs.person_id AND (prs.voided = 0 OR prs.voided = NULL)
               #{had_query} AND prs.status_id IN (#{state_ids.join(', ')})
               #{by_ds_at_filter}
               INNER JOIN person_birth_details pbd ON person.person_id = pbd.person_id
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
+              #{informant_join_query}
               ")
       .where(" person.person_id NOT IN (#{queue_ids.join(',')}) AND n.voided = 0 #{loc_query} #{range_query}
               AND prs.created_at = (SELECT MAX(created_at) FROM person_record_statuses prs2 WHERE prs2.person_id = person.person_id)
@@ -715,6 +737,72 @@ EOF
     end
 
     render text: data.to_json
+  end
+
+
+  #######################################################################
+  def get_ta
+
+    nationality_tag = LocationTag.where(name: 'Traditional Authority').first
+
+    data = []
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ? AND parent_location = ?", 
+      "#{params[:search]}%", nationality_tag.id, params[:district]).joins("INNER JOIN location_tag_map m
+      ON location.location_id = m.location_id").order('name ASC').map do |l|
+      data << l.name
+    end
+    
+    if data.present?
+      render text: data.compact.uniq.join("\n") and return
+    else
+      render text: "" and return
+    end
+  end
+
+  def get_village
+
+    location_id_for_district = params[:district]
+
+    ta_name = params[:ta]
+    location_id_for_ta = Location.where("name = ? AND parent_location = ?", 
+      ta_name, location_id_for_district).first.id
+
+
+    nationality_tag = LocationTag.where(name: 'Village').first
+    data = []
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND m.location_tag_id = ?
+      AND parent_location = ?", "#{params[:search]}%", nationality_tag.id,
+      location_id_for_ta).joins("INNER JOIN location_tag_map m
+      ON location.location_id = m.location_id").order('name ASC').map do |l|
+      data << l.name
+    end
+    
+    if data.present?
+      render text: data.compact.uniq.join("\n") and return
+    else
+      render text: "" and return
+    end
+  end
+
+  def get_hospital
+
+
+    nationality_tag = LocationTag.where("name = 'Hospital' OR name = 'Health Facility'").first
+    data = []
+    parent_location = Location.where(" name = '#{params[:district]}' AND COALESCE(code, '') != '' ").first.id rescue nil
+
+    Location.where("LENGTH(name) > 0 AND name LIKE (?) AND parent_location = #{params[:district]} AND m.location_tag_id = ?",
+      "#{params[:search]}%", nationality_tag.id).joins("INNER JOIN location_tag_map m
+      ON location.location_id = m.location_id").order('name ASC').map do |l|
+      data << l.name
+    end
+    
+    if data.present?
+      data << "Other" if params[:include_other].to_s == "true"
+      render text: data.compact.uniq.join("\n") and return
+    else
+      render text: "" and return
+    end
   end
 
   #########################################################################

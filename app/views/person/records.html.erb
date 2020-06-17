@@ -107,6 +107,10 @@
           <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%>
             <span style="padding-left: 50px;">
               <small>statistics updated: <span style="color: darkseagreen"><%= @stats_time%></span></small>
+              <small>
+                <label  id = "filter_name" class="btn btn-default"  style="border-radius: 5px; border: none;">
+                </label>
+              </small>
             </span>
           </h3>
         </td>
@@ -404,19 +408,18 @@
 <table id="roll-options">
   <tr>
 
-    <td id="p_h_1" style="width: 30%">
+    <td id="p_h_1" style="width: 15%">
 
     </td>
 
-    <td style="width: 20%;">
+    <td>
       <input style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;"
              onchange="reloadDataTable(this)" value="<% session[:date_range]%>"
              id="reportranger" type="text" name="daterange" placeholder="Select Date Range"/>
     </td>
-
     <td>
       <select id="category" label="Category" onchange="reloadDataTable(this)"
-              style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
+              style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 200px;">
         <option id="continuous" value = "continuous" >Continuous Registration</option>
         <option id="community_data" value = "community_data" >Community Data</option>
         <option id="mass_data" value = "mass_data" >Mass Data</option>
@@ -425,7 +428,7 @@
     </td>
 
     <td>
-    <select id="districts" label="District" onchange="reloadDataTable(this)"
+    <select id="districts" label="District" onchange="reloadDataTable(this);filterTA(this.value);filterFacility(this.value)"
                 style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
 
         <option value="All">Registration District</option>
@@ -433,6 +436,16 @@
               <option id="<%= d[0]%>" value = "<%= d[0]%>"><%= d[1]%></option>
           <% end %>
         </select>
+    </td>
+    <td>
+          <select id="facility" label="Health Facility" style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
+                <option value="All"> Health Facility</option>
+          </select> 
+    </td>
+    <td>
+    <button class="btn btn-primary"  style="border-radius: 5px;" onclick="__$('processing_wait').style.display = 'none'; jQuery('#print_filters').modal('show')">
+      Filter By Address of Informant
+    </button>
     </td>
 
     <td id="p_h_2">
@@ -533,6 +546,40 @@
 
         <% end %>
       </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="print_filters" tabindex="-1" role="dialog" aria-hidden="true" style="width:900px; margin: auto;">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header"style="background: #006f95 none repeat scroll 0 0;padding: 12px;" >
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Informant Village Filtering</h4>
+      </div>
+
+      <div class="modal-body" style="font-size: 1em;">
+
+        <label style="width:150px;font-weight: bold;">Informant TA:</label>
+        <select name="informant_ta" style="width: 160px;" onchange="filterVillage()"
+                id="informant_ta">
+          <option value="">Informant TA</option>
+        </select>  <br /><br />
+
+        <label style="width:150px;font-weight: bold;">Informant Village:</label>
+        <select name="informant_village" style="width: 160px;"
+                id="informant_village">
+          <option value="">Informant Village</option>
+        </select>  <br /><br />
+      </div>
+
+        <div class="modal-footer">
+          <button id="scan_close" type="button" class="btn btn-sm btn-default pull-left"
+                  onmousedown="jQuery('#print_filters').modal('hide')" > Close </button>
+          <label id="processing_wait" style="color: red; font-weight: bold; font-size: 1.5em; margin-right: 20%;"> <blink>Processing .. Please wait</blink></label>
+          <button id="scan_search" type="button" class="btn btn-primary pull-right" onclick="applyFilters()"> Apply Filter </button>
+        </div>
+
     </div>
   </div>
 </div>
@@ -647,6 +694,9 @@
                             <% if params[:destination].to_s.match("Above 16")%>
                                 d.by_ds_at_dro = true;
                             <% end %>
+                            d.facility = __$('facility').value;
+                            d.informant_ta = __$('informant_ta').value;
+                            d.informant_village = __$('informant_village').value;
                         },
                         dataFilter: function(data){
                             var json = jQuery.parseJSON( data );
@@ -1156,6 +1206,93 @@
 
             }
         }
+    }
+
+    function filterTA(district){
+
+        jQuery.ajax({
+            url: "/search_by_ta?district=" + district,
+            success: function(data){
+                data = data.split("\n");
+                jQuery("#informant_ta").empty();
+                jQuery("#informant_village").empty();
+
+
+                var option       = document.createElement("option");
+                option.innerHTML = "";
+                document.getElementById("informant_ta").appendChild(option);
+
+                for(var i = 0; i < data.length; i++){
+                    var option       = document.createElement("option");
+                    option.innerHTML = data[i].trim();
+                    document.getElementById("informant_ta").appendChild(option);
+                }
+            }
+        })
+    }
+
+    function filterVillage(){
+        __$("informant_village").value = "";
+
+        jQuery.ajax({
+            url: "/search_by_village?district=" + __$("districts").value + "&ta=" + __$("informant_ta").value,
+            success: function(data){
+                data = data.split("\n");
+                jQuery("#informant_village").empty();
+
+                var option       = document.createElement("option");
+                option.innerHTML = "";
+                document.getElementById("informant_village").appendChild(option);
+
+                for(var i = 0; i < data.length; i++){
+                    var option       = document.createElement("option");
+                    option.innerHTML = data[i].trim();
+                    document.getElementById("informant_village").appendChild(option);
+                }
+            }
+        })
+    }
+
+
+    function filterFacility(district){
+
+        jQuery.ajax({
+            url: "/search_by_hospital?district=" + district,
+            success: function(data){
+                data = data.split("\n");
+                jQuery("#facility").empty();
+
+
+                var option       = document.createElement("option");
+                option.innerHTML = "";
+                document.getElementById("facility").appendChild(option);
+
+                for(var i = 0; i < data.length; i++){
+                    var option       = document.createElement("option");
+                    option.innerHTML = data[i].trim();
+                    document.getElementById("facility").appendChild(option);
+                }
+            }
+        })
+    }
+
+    function applyFilters(){
+
+        var district = __$('districts').value;
+        var ta =     __$('informant_ta').value;
+        var village = __$('informant_village').value;
+
+        if(district == "" || ta == "" || village == ""){
+            alert("Missing filter, please select village of registration");
+            __$("filter_name").innerHTML = "";
+        }else {
+            __$("filter_name").innerHTML = village + ", " + ta;
+        }
+
+        __$("processing_wait").style.display = 'inline-block';
+        table.ajax.reload();
+        jQuery('#print_filters').modal('hide')
+        //reloadDataTable();
     }
 
     dateRangeInit();
