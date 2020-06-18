@@ -441,6 +441,21 @@ EOF
         loc_query = " AND pbd.location_created_at IN (#{locations.join(', ')}) "
       end
 
+
+      facility_filter = ""
+      if !params[:facility].blank? && params[:facility] != "All"
+        
+        facility_tag = LocationTag.where("name = 'Hospital' OR name = 'Health Facility'").first
+    
+        location = Location.where("LENGTH(name) > 0 AND name LIKE (?) AND parent_location = #{params[:district]} AND m.location_tag_id = ?",
+          "#{params[:facility]}", facility_tag.id).joins("INNER JOIN location_tag_map m
+          ON location.location_id = m.location_id").first
+        session[:facility] = params[:facility]
+        facility_filter = " AND pbd.birth_location_id = #{location.location_id} "
+      else
+        session[:facility] = ""
+      end
+
       state_ids = @states.collect{|s| Status.find_by_name(s).id} + [-1]
       types=['Normal', 'Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All'
       types=['Abandoned', 'Adopted', 'Orphaned'] if params[:type] == 'All Special Cases'
@@ -503,7 +518,7 @@ EOF
                   AND pbd.birth_registration_type_id IN (#{person_reg_type_ids.join(', ')})
               #{informant_join_query}
               ")
-      .where(" person.person_id NOT IN (#{queue_ids.join(',')}) AND n.voided = 0 #{loc_query} #{range_query}
+      .where(" person.person_id NOT IN (#{queue_ids.join(',')}) AND n.voided = 0 #{loc_query} #{range_query} #{facility_filter} 
               AND prs.created_at = (SELECT MAX(created_at) FROM person_record_statuses prs2 WHERE prs2.person_id = person.person_id)
               AND concat_ws(pbd.district_id_number, n.first_name, n.last_name, n.middle_name, '_') REGEXP \"#{search_val}\"  #{search_category} ")
 
@@ -1404,6 +1419,87 @@ EOF
 
   end
   def dispatch_certificates
+    query = "SELECT person.person_id,person_birth_details.district_id_number as BEN, 
+                  CONCAT(first_name,' ', last_name) as Name , gender as Sex, 
+                  DATE_FORMAT(birthdate,'%Y-%m-%d') as DoB, place_of_birth.name as PoB, 
+                  CONCAT(district_of_birth.name, ',', birth_location.name) as Location, 
+                  DATE_FORMAT(person_birth_details.date_registered,'%Y-%m-%d') as DateOfReg, 
+                  CONCAT( InformantFirstName, ' ', InformantLastName) as NameOfInformant,
+                  person_addresses_id, 
+                  district as DistrictOfInformant, ta as TraditionalAuthorityOfInformant, 
+                  village as VillageOfInformant FROM 
+                      (SELECT * FROM person 
+                          WHERE person_id IN('#{params[:person_ids].join("','")}')) person 
+                            INNER JOIN person_name INNER JOIN person_birth_details INNER 
+                            JOIN location place_of_birth INNER JOIN location district_of_birth 
+                            INNER JOIN location birth_location 
+                            INNER JOIN (SELECT person_id FROM person_record_statuses 
+                                WHERE status_id IN (SELECT status_id FROM `statuses` 
+                                                        WHERE `name` = 'DC-PRINTED' OR `name` = 'HQ-PRINTED')) status 
+                            INNER JOIN (SELECT * FROM (SElECT person_a, person_b, person_name.first_name as InformantFirstName, person_name.last_name as InformantLastName
+                                        FROM person_relationship INNER JOIN person_name 
+                                              ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '4' AND 
+                                              person_a IN('#{params[:person_ids].join("','")}')) informant
+                    LEFT JOIN
+                    (SELECT d.person_addresses_id, d.person_id, d.name as district, ta, village FROM 
+                    (SELECT person_addresses_id, person_id, district.name 
+                    FROM person_addresses INNER JOIN location district 
+                      ON person_addresses.current_district = district.location_id 
+                    WHERE person_id IN(SELECT person_b FROM person_relationship WHERE person_relationship_type_id = '4' AND 
+                      person_a IN('#{params[:person_ids].join("','")}'))) d
+                    LEFT JOIN
+                          (SELECT t.person_addresses_id, t.person_id, t.name as ta , v.name as village FROM
+                      (SELECT person_addresses_id, person_id, ta.name 
+                      FROM person_addresses INNER JOIN location ta 
+                        ON person_addresses.current_ta = ta.location_id 
+                      WHERE person_id IN(SELECT person_b FROM person_relationship WHERE person_relationship_type_id = '4' AND 
+                        person_a IN('#{params[:person_ids].join("','")}'))) t
+                  
+                      LEFT JOIN
+                      (SELECT person_addresses_id, person_id, village.name 
+                      FROM person_addresses INNER JOIN location village
+                        ON person_addresses.current_village = village.location_id 
+                      WHERE person_id IN(SELECT person_b FROM person_relationship WHERE person_relationship_type_id = '4' AND 
+                        person_a IN('#{params[:person_ids].join("','")}'))) v
+                      ON t.person_addresses_id = v.person_addresses_id) ta_village
+                    ON d.person_addresses_id = ta_village.person_addresses_id) address
+                      ON informant.person_b = address.person_id) informant_address 
+                    ON person.person_id = person_name.person_id AND person.person_id = person_birth_details.person_id 
+                    AND person_birth_details.person_id = status.person_id AND informant_address.person_a = person.person_id 
+                    AND person_birth_details.place_of_birth = place_of_birth.location_id 
+                    AND person_birth_details.district_of_birth = district_of_birth.location_id 
+                    AND person_birth_details.birth_location_id = birth_location.location_id 
+                    ORDER BY district, ta, village, person_name.last_name, person_name.first_name LIMIT 20000"
+    #raise query.to_s
+    @data = ActiveRecord::Base.connection.select_all(query).as_json
+
+    json_file = "#{Rails.root}/tmp/Dispatch.json"
+    File.open(json_file,"w") do |f|
+      f.write(@data.to_json)
+    end
+
+    path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"
+
+    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id}&district=#{params[:district]} #{path}.pdf\n"
+
+    t4 = Thread.new {
+      Kernel.system print_url
+      sleep(3)
+      Kernel.system "lp -d #{params[:printer_name]} #{path}.pdf\n"
+    }
+    sleep(1)
+
+    redirect_to session[:list_url]
+  end
+
+  def dispatch_list
+    @district =  Location.find(params[:district])
+    User.current = User.find(params[:user_id])
+    @data =  JSON.parse(File.read("#{Rails.root}/tmp/Dispatch.json"))
+    render :layout => false
+  end
+
+  def dispatch_certificates_back
 
     @people = Person.find_by_sql("SELECT * FROM person WHERE person_id IN (#{params[:person_ids]}) ")
 		time = Time.now
@@ -1427,7 +1523,8 @@ EOF
     redirect_to session[:list_url]
   end
 
-  def dispatch_list
+
+  def dispatch_list_back
     @people = Person.find_by_sql("SELECT n.*, p.gender, p.birthdate, d.national_serial_number, d.district_id_number, d.date_registered, d.location_created_at FROM person p
                                  INNER JOIN person_birth_details d ON d.person_id = p.person_id
                                  INNER JOIN person_name n ON n.person_id = p.person_id

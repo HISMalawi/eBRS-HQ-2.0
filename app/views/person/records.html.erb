@@ -438,7 +438,7 @@
         </select>
     </td>
     <td>
-          <select id="facility" label="Health Facility" style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
+          <select id="facility" label="Health Facility" onchange="reloadDataTable(this)" style="color: #2f4f4f;border-radius: 3px;padding: 5px;font-weight: bold;margin: 5px;max-width: 220px;">
                 <option value="All"> Health Facility</option>
           </select> 
     </td>
@@ -628,7 +628,8 @@
     </div>
   </div>
 </div>
-
+<form id="selected-submit" method="post">
+</form>
 <script>
     selected = [];
     var table;
@@ -918,12 +919,41 @@
         jQuery("#printerModal").modal("show");
     }
 
-    function dispatchAll(){
+ /*   function dispatchAll(){
         if(printer_name.length == 0){
             alert("Please select printer!");
             return;
         }
-        window.location = "/person/dispatch_certificates?person_ids=" +  selected.join(',') + "&printer_name=" + printer_name;
+        window.location = "/person/dispatch_certificates?person_ids=" +  selected.join(',') + "&printer_name=" + printer_name +"&district="+__$("districts").value;
+    }*/
+
+    function dispatchAll(){
+
+        var form = __$('selected-submit')
+        form.setAttribute("action", "/person/dispatch_certificates");
+
+        for(var i = 0; i <selected.length; i++){
+            var input = document.createElement("input")
+            input.name = "person_ids[]";
+            input.type ="hidden";
+            input.value = selected[i];
+            form.appendChild(input);
+        }
+
+        var input = document.createElement("input")
+        input.name = "printer_name";
+        input.type ="hidden";
+        input.value =  printer_name;
+        form.appendChild(input);
+
+        var input = document.createElement("input")
+        input.name = "district";
+        input.value =  __$("districts").value;
+        input.type ="hidden";
+        form.appendChild(input);
+
+        form.submit();
+        //window.location = "/dispatch_certificates?person_ids=" +  selected.join(',') + "&printer_name=" + printer_name+"&dispatch_action=download";
     }
 
     function checkSelections(){
