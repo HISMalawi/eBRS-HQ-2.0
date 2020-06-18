@@ -94,7 +94,7 @@ table, tr, td, th, tbody, thead, tfoot, td div {
 		</tr>
 		</thead>
 	<tbody>
-		<% @data.each_with_index do |row, i| %>
+		<% @data["data"].each_with_index do |row, i| %>
 			<% PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "DC-DISPATCHED")%>
 			<%  @village = row["VillageOfInformant"]
 				if row["VillageOfInformant"] =="Other"

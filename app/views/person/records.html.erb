@@ -135,7 +135,7 @@
         <button id="print-all" onclick="printAll()"
                 class=" action-btn btn btn-sm btn-success"><i class="fa fa-print"></i>Print Selected</button>
     <% end %>
-    <%if (['HQ-PRINTED'] & params['statuses']).length > 0%>
+    <%if (['HQ-PRINTED','DC-PRINTED'] & params['statuses']).length > 0%>
         <button id="dispatch-all" onclick="__$('dispatch-count').innerHTML = selected.length; jQuery('#printerModal2').modal('show')"
                 class=" action-btn btn btn-sm btn-primary"><i class="fa fa-truck"></i>Dispatch Selected</button>
     <% end %>
@@ -165,7 +165,7 @@
       <th style="text-align: left;">Father's Name</th>
       <th style="text-align: center;">Status</th>
       <th>&nbsp;
-        <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
+        <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED','DC-PRINTED'] & params['statuses']).length > 0 && !admin? %>
             <div class="checkbox pull-right">
               <label><input id='select-all' onchange="selectAll()" type="checkbox" value=""></label>
             </div>
@@ -734,7 +734,7 @@
                                         '    class="action-btn btn btn-primary btn-xs ' + clas + '"><i class="fa fa-check"></i></button></td>';
                                 <% end %>
 
-                                <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED'] & params['statuses']).length > 0 && !admin? %>
+                                <%if params['had'].blank? && (['HQ-CAN-PRINT', 'HQ-CAN-RE-PRINT', 'HQ-PRINTED','DC-PRINTED'] & params['statuses']).length > 0 && !admin? %>
                                 json['data'][i][last_index] += '<td class="act-btn"><div class="checkbox">' +
                                     '<label><input class=\'multi-check\' person_id = "' + person_id +  '" onchange="checkSelections();" type="checkbox" value=""></label> </div></td>';
                                 <% end %>

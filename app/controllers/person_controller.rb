@@ -1422,7 +1422,7 @@ EOF
     query = "SELECT person.person_id,person_birth_details.district_id_number as BEN, 
                   CONCAT(first_name,' ', last_name) as Name , gender as Sex, 
                   DATE_FORMAT(birthdate,'%Y-%m-%d') as DoB, place_of_birth.name as PoB, 
-                  CONCAT(district_of_birth.name, ',', birth_location.name) as Location, 
+                  CONCAT(birth_location.name, ',', district_of_birth.name) as Location, 
                   DATE_FORMAT(person_birth_details.date_registered,'%Y-%m-%d') as DateOfReg, 
                   CONCAT( InformantFirstName, ' ', InformantLastName) as NameOfInformant,
                   person_addresses_id, 
@@ -1474,14 +1474,19 @@ EOF
     @data = ActiveRecord::Base.connection.select_all(query).as_json
 
     json_file = "#{Rails.root}/tmp/Dispatch.json"
+    data = {
+          "district" => params[:district],
+          "data" => @data
+    }
     File.open(json_file,"w") do |f|
-      f.write(@data.to_json)
+      f.write(data.to_json)
     end
 
     path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"
 
-    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id}&district=#{params[:district]} #{path}.pdf\n"
+    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id} #{path}.pdf\n"
 
+    #raise print_url.to_s
     t4 = Thread.new {
       Kernel.system print_url
       sleep(3)
@@ -1493,9 +1498,10 @@ EOF
   end
 
   def dispatch_list
-    @district =  Location.find(params[:district])
+    
     User.current = User.find(params[:user_id])
     @data =  JSON.parse(File.read("#{Rails.root}/tmp/Dispatch.json"))
+    @district =  Location.find(@data["district"])
     render :layout => false
   end
 

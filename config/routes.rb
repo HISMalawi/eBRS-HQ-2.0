@@ -174,6 +174,7 @@ Rails.application.routes.draw do
   get "/person/dispatch_certificates"
   post "/person/dispatch_certificates"
   get "/person/dispatch_list"
+  get "/dispatch_list" =>"person#dispatch_list"
   get "/person/view"
   get "/person/print_cases"
   get "/report/dispatch_list"
