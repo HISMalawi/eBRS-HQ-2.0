@@ -1484,7 +1484,7 @@ EOF
 
     path = "#{SETTINGS['certificates_path']}dispatch_#{Time.now.strftime('%Y-%m-%d-%H-%M-%S')}"
 
-    print_url = "wkhtmltopdf 	--orientation landscape --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id} #{path}.pdf\n"
+    print_url = "wkhtmltopdf 	--orientation landscape --zoom 0.75 --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id} #{path}.pdf\n"
 
     #raise print_url.to_s
     t4 = Thread.new {
