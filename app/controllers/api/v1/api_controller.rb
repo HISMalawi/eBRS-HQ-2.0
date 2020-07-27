@@ -1,8 +1,8 @@
 module Api
   module V1
     class ApiController < ApplicationController
-      before_action :check_basic_auth
-      skip_before_action :verify_authenticity_token
+      #before_action :check_basic_auth
+      #skip_before_action :verify_authenticity_token
 
       private
 
