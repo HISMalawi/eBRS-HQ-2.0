@@ -3,6 +3,7 @@ module Api
     class ApiController < ApplicationController
       #before_action :check_basic_auth
       #skip_before_action :verify_authenticity_token
+      skip_before_filter :check_if_logged_in
 
       private
 
@@ -12,14 +13,15 @@ module Api
           return
         end
 
-        authenticate_with_http_basic do |username, password|
-          user = User.get_active_user(username)
-          if user && user.password_matches?(password)
-            login! user
-            @current_user = user
-          else
-            head :unauthorized
-          end
+        authenticate_or_request_with_http_basic do |username, password|
+          username == 'admin250' && password == 'adminebrs'
+          # user = User.get_active_user(username)
+          # if user && user.password_matches?(password)
+          #   # login! user
+          #   @current_user = user
+          # else
+          #   head :unauthorized
+          # end
         end
       end
 
