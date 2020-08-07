@@ -44,6 +44,9 @@ group :development, :test do
  # gem 'byebug'
 end
 
+#gem 'redis'
+# gem 'jwt_sessions'
+
 #gem 'remote_lock'
 #gem 'hiredis', '0.4.5'
 #gem 'mlanett-redis-lock', '0.2.7'

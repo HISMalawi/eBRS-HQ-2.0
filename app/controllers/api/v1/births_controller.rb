@@ -3,6 +3,7 @@ module Api
     class BirthsController < ApplicationController
       # GET /births
       def index
+
         results = {}
 
         district_tag_id = LocationTag.where(name: "District").first.id
@@ -47,6 +48,11 @@ module Api
             results[district]  = Report.registered("01-01-2000".to_date, '2019-01-29', all_district_locs)
           end
 
+          if params[:state].nil? || params[:report].nil? || params[:cumulative].nil?
+            total_births = PersonBirthDetail.count
+
+            results = {'Total Births' => total_births}
+          end
           results
         end
 
