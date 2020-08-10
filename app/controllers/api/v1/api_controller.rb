@@ -3,6 +3,7 @@ module Api
     class ApiController < ActionController::API
       #before_action :check_basic_auth
       #skip_before_action :verify_authenticity_token
+      # skip_before_filter :api_v1_birth_path, :api_v1_birth_url, :api_v1_births_path, :api_v1_births_url
 
       private
 
