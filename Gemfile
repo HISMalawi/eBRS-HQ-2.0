@@ -105,3 +105,5 @@ gem "will_paginate", "3.1.6"
 gem "activerecord-session_store"
 
 gem "pretty_time"
+
+gem 'rack-cors', require: 'rack/cors'
