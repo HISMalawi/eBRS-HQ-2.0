@@ -529,8 +529,7 @@ EOF
 
       data = data.select(" n.voided, n.first_name, n.middle_name, n.last_name,
 				 person.person_id, prs.status_id, pbd.district_id_number AS ben, person.gender, person.birthdate, pbd.national_serial_number AS brn")
-      data = data.page(page)
-      .per_page(params[:length].to_i)
+      data = data.page(page).per_page(params[:length].to_i)
 
       @records = []
       nid_data = []
@@ -592,10 +591,206 @@ EOF
     end
 
    # @records = PersonService.query_for_display(@states)
-    @type_stats = PersonRecordStatus.type_stats(params[:statuses], params[:had], params[:had_by])
+   
+    #@type_stats = PersonRecordStatus.type_stats(params[:statuses], params[:had], params[:had_by])
+    @type_stats = {}
     @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
-
+    @url = request.url
     render :template => "/person/records"
+  end
+
+  def view_active_cases
+    params[:statuses] = [] if params[:statuses].blank?
+    session[:list_url] = request.referrer
+    @states = params[:statuses]
+    @states = Status.all.map(&:name).reject{|n| n.match(/DC\-|FC\-/)} if @states.blank?
+
+    @section = params[:destination]
+    @actions = ActionMatrix.read_actions(User.current.user_role.role.role, @states) rescue []
+    types = []
+
+    @birth_type = params[:birth_type]
+    @type_stats = {}
+    @options = PersonRecordStatus.common_comments([User.current.user_role.role.role], "All", User.current.id)
+    @url = "/records_by_status?statuses[]=#{params[:statuses].join("&statuses[]=")}"
+    render :template => "/person/records"
+  end
+
+  def records_by_status
+    params[:statuses] = ['HQ-ACTIVE'] if params[:statuses].blank?
+    params[:length] = 10 if params[:length].blank?
+    params[:page] = 1 if params[:page].blank? || params[:page].to_i <= 1
+    params[:draw] = 1 if params[:draw].blank?
+
+    search_val = params[:search][:value] rescue nil
+    search_val = '_' if search_val.blank?
+
+    search_category = ''
+
+    if !params[:category].blank?
+
+      if params[:category] == 'continuous'
+        search_category = " AND (pbd.source_id IS NULL OR LENGTH(pbd.source_id) >  19)  "
+      elsif params[:category] == 'mass_data'
+        search_category = " AND (pbd.source_id IS NOT NULL AND LENGTH(pbd.source_id) <  20 ) "
+      elsif params[:category] == 'community_data'
+        search_category = " AND (pbd.source_id IS NOT NULL AND pbd.source_id LIKE '%#%' ) "
+      else
+        search_category = ""
+      end
+
+      session[:category] = params[:category]
+    end
+    
+
+    range_sub_query = " "
+    if params[:date_range].blank?
+      session[:date_range] = ""
+    else
+      s_date = params[:date_range].split("-")[0].strip.to_date.to_s(:db)
+      e_date = params[:date_range].split("-")[1].strip.to_date.to_s(:db)
+
+      range_sub_query = " AND ps.created_at >= '#{s_date} 00:00:00' AND ps.created_at <= '#{e_date} 59:59:59' "
+
+      session[:date_range] = params[:date_range]
+    end
+
+    loc_sub_query = " "
+    if params[:district].present? && params[:district] != "All"
+      session[:district] = params[:district]
+
+      locations = [params[:district]]
+      locations +=  Location.child_locations_for(params[:district], 2) #depth of 2 to get both TAs and Villages
+      loc_sub_query = " AND pbd.location_created_at IN (#{locations.join(', ')}) "
+    end
+
+    facility_sub_query = ""
+    if !params[:facility].blank? && params[:facility] != "All"
+      facility_tag_sub_query = "SELECT `location_tag_id` FROM `location_tag` WHERE `name` = 'Health Facility' OR name = 'Hospital' LIMIT 1"
+
+      location_sub_query = "SELECT l.location_id FROM location l INNER JOIN location_tag_map m
+                                ON l.location_id = m.location_id 
+                                WHERE LENGTH(name) > 0 AND name LIKE '#{params[:facility]}' 
+                                AND parent_location = #{params[:district]} 
+                                AND m.location_tag_id = (#{facility_tag_sub_query })"
+      session[:facility] = params[:facility]
+      facility_sub_query = " AND pbd.birth_location_id = (#{location_sub_query})"
+      
+    else
+      session[:facility] = ""
+    end
+
+    informant_join_query = "  "
+    if !params[:informant_village].blank? && !params[:informant_ta].blank?
+      district_id          = params[:district]
+      ta_id                = Location.locate_id(params[:informant_ta], "Traditional Authority", params[:district])
+      village_id           = Location.locate_id(params[:informant_village], "Village", ta_id)
+
+      village_filter_query = " " #" AND pbd.location_created_at  = #{village_id}"
+
+      info_type_id         = PersonRelationType.where(name: "Informant").first.id
+      informant_join_query = "INNER JOIN person_relationship p_rel ON p_rel.person_a = pbd.person_id
+                                AND p_rel.person_relationship_type_id = #{info_type_id}
+                              INNER JOIN person_addresses info_a ON info_a.person_id = p_rel.person_b
+                                AND ((info_a.current_district = #{district_id}
+                                      AND info_a.current_ta = #{ta_id}
+                                      AND info_a.current_village  = #{village_id})
+                                        OR
+                                      (pbd.location_created_at  = #{village_id}))
+                              "
+
+      
+    end
+
+    count_query = "SELECT count(pbd.person_id) as total FROM person_birth_details pbd 
+                    INNER JOIN person_record_statuses ps ON pbd.person_id = ps.person_id 
+                    WHERE ps.voided = 0 AND 
+                      ps.status_id IN(SELECT status_id FROM statuses s
+                      #{informant_join_query}
+                      WHERE s.name IN('#{params[:statuses].join("','")}')) 
+                        AND pbd.district_id_number IS NOT NULL 
+                        #{facility_sub_query}
+                        #{loc_sub_query}
+                        #{range_sub_query}
+                        #{search_category}"
+    
+    total = ActiveRecord::Base.connection.select_all(count_query).as_json.first["total"] rescue 0
+
+
+    query = "SELECT * FROM (SELECT p.person_id as pid, gender, birthdate, district_id_number,n.first_name,n.middle_name, n.last_name, s.name as status, ps.comments,pbd.date_reported FROM 
+                      person p INNER JOIN person_birth_details pbd  ON p.person_id = pbd.person_id 
+                        INNER JOIN person_name  n ON p.person_id = n.person_id 
+                        INNER JOIN person_record_statuses ps ON p.person_id = ps.person_id 
+                        INNER JOIN statuses s ON ps.status_id = s.status_id 
+                        #{informant_join_query}
+                        WHERE ps.voided = 0 AND s.name IN('#{params[:statuses].join("','")}') AND pbd.district_id_number IS NOT NULL 
+                        AND concat_ws(pbd.district_id_number, n.first_name, n.last_name, n.middle_name, '_') REGEXP \"#{search_val}\"
+                        #{facility_sub_query}
+                        #{loc_sub_query}
+                        #{range_sub_query}
+                        #{search_category}
+                        ORDER BY date_reported LIMIT #{params[:length]} OFFSET #{params[:start]} ) child
+                      LEFT JOIN 
+                      (SELECT person_id, person_identifier_type_id, value as nid FROM person_identifiers WHERE person_identifier_type_id = 4 ) nd
+                      ON nd.person_id = child.pid
+                      LEFT JOIN 
+                      (SELECT person_id, person_identifier_type_id, value as brn FROM person_identifiers WHERE person_identifier_type_id = 3 ) bn
+                      ON bn.person_id = child.pid
+                      LEFT JOIN 
+                      (SELECT mr.person_a, mn.first_name as mother_first_name, mn.middle_name as mother_middle_name,mn.last_name as mother_last_name FROM person_relationship mr 
+                      INNER JOIN person_name  mn  ON mr.person_b = mn.person_id WHERE person_relationship_type_id = 4) mother 
+                      ON child.pid = mother.person_a
+
+                      LEFT JOIN 
+                      (SELECT fr.person_a, fn.first_name as father_first_name, fn.middle_name father_middle_name,fn.last_name as father_last_name FROM person_relationship fr 
+                      INNER JOIN person_name  fn  ON fr.person_b = fn.person_id WHERE person_relationship_type_id = 1) father 
+                      
+                      ON child.pid = father.person_a"
+    
+    #raise query.to_s
+    data = ActiveRecord::Base.connection.select_all(query).as_json
+    nid_data = []
+    records = []
+    incomplete_records = []
+    data.each do |d|
+      
+      d['first_name'] = '' if !d['first_name'].blank? && d['first_name'].match('@')
+      d['last_name'] = '' if !d['last_name'].blank? && d['last_name'].match('@')
+      d['middle_name'] = '' if !d['middle_name'].blank? && d['middle_name'].match('@')
+
+      name          = ("#{d['first_name']} #{d['middle_name']} #{d['last_name']}")
+      mother_name   = ("#{d['mother_first_name'].present? ? d['mother_first_name'] : 'N/A'} #{d['mother_middle_name'] rescue ''} #{d['mother_last_name'] rescue ''}")
+      father_name   = ("#{d['father_first_name'].present? ? d['father_first_name'] : 'N/A'} #{d['father_middle_name'] rescue ''} #{d['father_last_name'] rescue ''}")
+
+      if mother_name.match("N/A")
+        incomplete_records << d["pid"]
+      end
+
+      records << [d["district_id_number"], 
+                                      d["brn"],
+                                      d["nid"], 
+                                      "#{name}", 
+                                      (d["birthdate"].to_time.strftime('%d/%b/%Y') rescue "N/A"),
+                                      d["gender"],
+                                      "#{mother_name}",
+                                      "#{father_name}",
+                                      d["status"],
+                                      d["pid"]]
+        if d["nid"].blank?
+          nid = ActiveRecord::Base.connection.select_one("SELECT * FROM nid_verification_data WHERE person_id = #{d["pid"]} ORDER BY id DESC;")
+          if nid['passed'].to_i == 0
+            nid_data << nid['person_id'].to_i
+          end unless (nid.blank? || !d["brn"].blank?)
+        end
+    end 
+    render :text => {
+                      "draw"                => params[:draw].to_i,
+                      "recordsTotal"        => total,
+                      "recordsFiltered"     => total,
+                      "failed_nids"         => nid_data,
+                      "incomplete_records"  => incomplete_records,
+                      "data"                => records}.to_json and return
+
   end
 
 
@@ -880,7 +1075,7 @@ EOF
   def manage_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-              ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view","/assets/folder3.png"],
+              ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view_active_cases","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
               ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["Above 16 (Abroad)","Above 16 (Abroad)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
