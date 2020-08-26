@@ -4,8 +4,9 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       resources :births
-      resources :duplicates
+      resources :birth_reports
       resources :certificates
+      resources :duplicates
     end
   end
 

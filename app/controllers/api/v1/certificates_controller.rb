@@ -5,9 +5,9 @@ module Api
       def index
 
         response = {
-            'Total Certificates' => Certificate.count,
-            'Printed Certificates' => Certificate.where('date_printed IS NOT NULL').count,
-            'Dispatched Certificates' => Certificate.where('date_dispatched IS NOT NULL').count
+            'total' => Certificate.count,
+            'printed' => Certificate.where('date_printed IS NOT NULL').count,
+            'dispatched' => Certificate.where('date_dispatched IS NOT NULL').count
         }
 
         render :json => response
