@@ -717,7 +717,7 @@ EOF
     total = ActiveRecord::Base.connection.select_all(count_query).as_json.first["total"] rescue 0
 
 
-    query = "SELECT * FROM (SELECT p.person_id as pid, gender, birthdate, district_id_number,n.first_name,n.middle_name, n.last_name, s.name as status, ps.comments,pbd.date_reported FROM 
+    query = "SELECT * FROM (SELECT p.person_id as pid, gender, birthdate, district_id_number,national_serial_number,n.first_name,n.middle_name, n.last_name, s.name as status, ps.comments,pbd.date_reported FROM 
                       person p INNER JOIN person_birth_details pbd  ON p.person_id = pbd.person_id 
                         INNER JOIN person_name  n ON p.person_id = n.person_id 
                         INNER JOIN person_record_statuses ps ON p.person_id = ps.person_id 
@@ -752,6 +752,7 @@ EOF
     nid_data = []
     records = []
     incomplete_records = []
+    ids = []
     data.each do |d|
       
       d['first_name'] = '' if !d['first_name'].blank? && d['first_name'].match('@')
@@ -765,9 +766,22 @@ EOF
       if mother_name.match("N/A")
         incomplete_records << d["pid"]
       end
+      brn = d["national_serial_number"]
+      if brn.blank?
+        type_id = PersonIdentifierType.where(:name => "Old Birth Registration Number").first.id
+        brn PersonIdentifier.where(person_id: d["pid"], :person_identifier_type_id => type_id, :voided => 0).last.value rescue nil			
+      end 
+      
+      if brn.present?
+        gender = d["gender"] == 'M' ? '2' : '1'
 
+        brn = brn.to_s.rjust(10, '0')
+        brn.insert(brn.length/2, gender)
+      end
+      next if ids.include?( d["pid"]) 
+      ids <<  d["pid"]
       records << [d["district_id_number"], 
-                                      d["brn"],
+                                     brn,
                                       d["nid"], 
                                       "#{name}", 
                                       (d["birthdate"].to_time.strftime('%d/%b/%Y') rescue "N/A"),
@@ -789,7 +803,7 @@ EOF
                       "recordsFiltered"     => total,
                       "failed_nids"         => nid_data,
                       "incomplete_records"  => incomplete_records,
-                      "data"                => records}.to_json and return
+                      "data"                => records.uniq}.to_json and return
 
   end
 
@@ -1116,10 +1130,10 @@ EOF
   def print_cases
     @folders = ActionMatrix.read_folders(User.current.user_role.role.role)
     @tasks = [
-        ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png", 'Data Manager'],
-        ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png"],
-				["Print Certificate Above 16 (Abroad)","Print Certificate Above 16 (Abroad)" , ["HQ-CAN-PRINT"],"/person/view","/assets/folder3.png", "Data Manager"],
-        ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view","/assets/folder3.png"],
+        ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE"],"/person/view_active_cases","/assets/folder3.png", 'Data Manager'],
+        ["Print Certificate","Incomplete records from DV" , ["HQ-CAN-PRINT"],"/person/view_active_cases","/assets/folder3.png"],
+				["Print Certificate Above 16 (Abroad)","Print Certificate Above 16 (Abroad)" , ["HQ-CAN-PRINT"],"/person/view_active_cases","/assets/folder3.png", "Data Manager"],
+        ["Re-print Certificates", "Re-print certificates", ["HQ-CAN-RE-PRINT"],"/person/view_active_cases","/assets/folder3.png"],
         ["Approve Re-print from QS", "Approve Re-print from QS" , ["HQ-RE-PRINT"],"/person/view","/assets/folder3.png"],
         ["Closed Re-printed Certificates", "Closed Re-printed Certificates" , ["HQ-DISPATCHED"],"/person/view?had=HQ-RE-PRINT","/assets/folder3.png"]
     ]
