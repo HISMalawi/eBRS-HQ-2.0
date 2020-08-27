@@ -1,4 +1,4 @@
-class Api::V1::ApiController < ActionController::Base
+class Api::V1::ApiController < ActionController::Metal
   #before_action :check_basic_auth
   #skip_before_action :verify_authenticity_token
   # skip_before_filter :check_if_logged_in
