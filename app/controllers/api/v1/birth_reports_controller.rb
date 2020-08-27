@@ -24,12 +24,12 @@ class Api::V1::BirthReportsController < ApplicationController
       results[district]["facility_registered"]  = registered(start_date, end_date, facilities)
       results[district]["dro_registered"] = registered(start_date, end_date, [district_id])
       # results[district]["printed"]  = Report.printed(start_date, end_date, all_district_locs)
-      # results[district]["total_registered"]  = Report.registered(start_date, end_date, all_district_locs)
+      results[district]["total_registered"]  = registered(start_date, end_date, all_district_locs)
       #
       results[district]["cum_facility_registered"]  = registered("01-01-2000".to_date, end_date, facilities)
-      # results[district]["cum_dro_registered"] = Report.registered("01-01-2000".to_date, end_date, [district_id])
+      results[district]["cum_dro_registered"] = registered("01-01-2000".to_date, end_date, [district_id])
       # results[district]["cum_printed"]  = Report.printed("01-01-2000".to_date, end_date, all_district_locs)
-      # results[district]["cum_total_registered"]  = Report.registered("01-01-2000".to_date, end_date, all_district_locs)
+      results[district]["cum_total_registered"]  = registered("01-01-2000".to_date, end_date, all_district_locs)
       #
       # results[district]["registered_but_born_in_hospital"]  = Report.by_place_of_birth(start_date, end_date, "Hospital", all_district_locs)
       # results[district]["registered_but_born_in_home"]  = Report.by_place_of_birth(start_date, end_date, 'Home', all_district_locs)
