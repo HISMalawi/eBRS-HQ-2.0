@@ -1,7 +1,6 @@
-class Api::V1::ApiController < ActionController::Metal
+class Api::V1::ApiController < ActionController::Base
   #before_action :check_basic_auth
   #skip_before_action :verify_authenticity_token
-  # skip_before_filter :check_if_logged_in
   #protect_from_forgery	#with: :null_session
 
   private

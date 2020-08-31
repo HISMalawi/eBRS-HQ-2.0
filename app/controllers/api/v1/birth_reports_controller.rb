@@ -1,4 +1,5 @@
-class Api::V1::BirthReportsController < ApplicationController
+class Api::V1::BirthReportsController < Api::V1::ApiController
+
   def index
 
     # TODO: Make dynamic once filter feature is added in CRVS Visio

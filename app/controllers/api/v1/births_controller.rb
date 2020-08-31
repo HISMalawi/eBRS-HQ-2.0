@@ -1,4 +1,4 @@
-class Api::V1::BirthsController < ApplicationController
+class Api::V1::BirthsController < Api::V1::ApiController
   # GET /births
   def index
     #   status_ids = Status.where(" name = 'HQ-CAN-PRINT' ").map(&:status_id)
