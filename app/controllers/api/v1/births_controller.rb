@@ -4,13 +4,6 @@ class Api::V1::BirthsController < Api::V1::ApiController
     # TODO: Make dynamic once filter feature is added in CRVS Visio
     start_date = '01-01-2019'
     end_date = '20-01-2019'
-    #   status_ids = Status.where(" name = 'HQ-CAN-PRINT' ").map(&:status_id)
-    #
-    #   PersonBirthDetail.find_by_sql(" SELECT * FROM person_birth_details d
-    # INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
-    #   AND (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
-    #   AND prs.status_id IN (#{status_ids.join(', ')})
-    #   GROUP BY d.person_id").count
 
     response = {
         'reported' => reported,
