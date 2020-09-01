@@ -174,6 +174,9 @@ Rails.application.routes.draw do
 
   get 'records/:status' => 'person#records'
 
+  get "/records_by_status" => "person#records_by_status"
+  post "/records_by_status" => "person#records_by_status"
+
   ############################### Main Tasks routes #####################################
   get "/person/manage_cases"
   get "/person/rejected_cases"
@@ -187,6 +190,7 @@ Rails.application.routes.draw do
   get "/dispatch_list" =>"person#dispatch_list"
   get "/person/view"
   post "/person/view"
+  get "/person/view_active_cases"
   get "/person/print_cases"
   get "/report/dispatch_list"
   get 'person/printed_cases'

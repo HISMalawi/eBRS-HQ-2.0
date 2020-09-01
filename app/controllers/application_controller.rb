@@ -87,11 +87,11 @@ class ApplicationController < ActionController::Base
 
   def check_notifications
 
-    @stats_time     = File.mtime("stats.json").to_pretty rescue ""
-    if ((Time.now - File.mtime("stats.json")) / 60 > 3)
+    @stats_time     = File.mtime("#{Rails.root}/tmp/stats.json").to_pretty rescue ""
+    if ((Time.now - File.mtime("#{Rails.root}/tmp/stats.json")) / 60 > 3)
       #Rerun Query
       stats       = PersonRecordStatus.stats
-      File.open("stats.json", 'w'){|f|
+      File.open("#{Rails.root}/tmp/stats.json", 'w'){|f|
         f.write(stats.to_json)
       }
     end

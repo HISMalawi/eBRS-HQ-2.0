@@ -633,7 +633,7 @@
 <script>
     selected = [];
     var table;
-    var url = "<%= request.url%>";
+    var url = "<%= @url %>";
 
     <% if !@birth_type.blank? %>
         jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);

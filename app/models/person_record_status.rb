@@ -127,7 +127,7 @@ class PersonRecordStatus < ActiveRecord::Base
 
       return result
     else
-      return JSON.parse(File.read("#{Rails.root}/stats.json"))
+      return JSON.parse(File.read("#{Rails.root}/tmp/stats.json"))
     end
   end
 
