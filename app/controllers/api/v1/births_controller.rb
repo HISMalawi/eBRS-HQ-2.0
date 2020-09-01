@@ -13,7 +13,7 @@ class Api::V1::BirthsController < Api::V1::ApiController
     #   GROUP BY d.person_id").count
 
     response = {
-        'reported' => PersonBirthDetail.count,
+        'reported' => reported,
         'registered' => PersonBirthDetail.where.not(date_registered: [nil,'']).count,
         'approved' => approved
     }
@@ -36,17 +36,24 @@ class Api::V1::BirthsController < Api::V1::ApiController
   private
 
   def reported
-    query = ""
-  end
-  def approved
+    query = "select count(*) as total from person_birth_details;"
 
+    ActiveRecord::Base.connection.select_all(query).as_json.last['total'] rescue 0
+  end
+
+  def registered
+    query = "SELECT count(*) as total FROM person_birth_details WHERE date_registered IS NOT NULL"
+
+    ActiveRecord::Base.connection.select_all(query).as_json.last['total'] rescue 0
+  end
+
+  def approved
     query = "SELECT count(*) as total FROM person_birth_details d
     INNER JOIN person_record_statuses prs ON prs.person_id = d.person_id
     WHERE (d.source_id IS NULL OR LENGTH(d.source_id) >  19)
     AND prs.status_id IN (select status_id FROM statuses where name = 'HQ-CAN-PRINT');"
 
     ActiveRecord::Base.connection.select_all(query).as_json.last['total'] rescue 0
-
   end
 
 end
