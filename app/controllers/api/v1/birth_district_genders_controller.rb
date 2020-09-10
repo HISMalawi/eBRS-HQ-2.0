@@ -56,12 +56,6 @@ AND prs.status_id IN (#{status_ids}) #{locations.present? ? ' AND pbd.location_c
 
     status_ids = Status.all.map{|m| m.status_id}.join(",")
 
-    # if params[:district].present?
-    #   locations = Location.find(params[:district]).children << Location.find(params[:district]).id
-    # else
-    #   locations = []
-    # end
-
     locations = location_ids
 
     query = "SELECT COUNT(*) AS total FROM person_birth_details pbd
