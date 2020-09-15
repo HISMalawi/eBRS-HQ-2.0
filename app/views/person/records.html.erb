@@ -670,7 +670,7 @@
     function initTable(){
 
         var menuLength = [[10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000], [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]]
-        <% if params[:statuses].include?("DC-PRINTED")  %>
+        <% if params[:statuses].include?("DC-PRINTED") ||  params[:statuses].include?("HQ-PRINTED") %>
                 menuLength = [[1000, 2500, 5000, 10000], [1000, 2500, 5000, 10000]]
         <%end%>
         table =  $i('#example').DataTable(
