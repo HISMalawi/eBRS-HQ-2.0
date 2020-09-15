@@ -56,7 +56,7 @@ table, tr, td, th, tbody, thead, tfoot, td div {
    </tr>
   
    <tr><th>District:</th>
-       <td colspan="3" style="min-width: 100px;"><%= @district.name rescue "All" %></td>
+       <td colspan="3" style="min-width: 100px;"><%= @district.name %></td>
    </tr>
 
    <tr><th>Printed On:</th>
@@ -94,8 +94,8 @@ table, tr, td, th, tbody, thead, tfoot, td div {
 		</tr>
 		</thead>
 	<tbody>
-		<% @data["data"].each_with_index do |row, i| %>
-			<% #PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "Dispatched at HQ")%>
+		<% @data.each_with_index do |row, i| %>
+			<% #PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "DC-DISPATCHED")%>
 			<%
 				log = "#{Rails.root}/tmp/dispatch-#{Dir["#{Rails.root}/tmp/*"].count + 1}.txt"
 				`echo "#{row["person_id"]}" >> #{log}`

@@ -107,6 +107,12 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def write_csv(file,type, row)
+    CSV.open(file, type=='header'? 'w' : 'a+' ) do |exporter|
+        exporter << row
+    end
+  end
+
   private
 
   def check_if_logged_in
