@@ -1,5 +1,16 @@
 Rails.application.routes.draw do
 
+  ####################### API ####################################
+  namespace :api do
+    namespace :v1 do
+      resources :births
+      resources :birth_reports
+      resources :birth_district_genders
+      resources :certificates
+      resources :duplicates
+    end
+  end
+
   ####################### reports ################################
 
   ### Printed certofocates
