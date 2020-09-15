@@ -279,24 +279,18 @@
       <div class="modal-header" style="background: #006f95 none repeat scroll 0 0;padding: 12px;" >
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
         <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
-          Select Printer for Certificate(s) list
+          Select file format to download
         </h4>
       </div>
       <div class="modal-body">
-        <span style="text-align:center;">
-          <table align="center" id="printers">
-            <%
-               @available_printers = SETTINGS["printer_name"].split('|')
-               @available_printers.each do |printer| %>
-                <tr onmousedown="updateValue(this)" value="<%= printer %>">
-                  <td><input type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
-                  <td style="text-align: left; padding-left:50px;"><%= printer %></td>
-                </tr>
-            <% end %>
-          </table>
-        </span>
+          <div class="radio" onclick="fileType='CSV'">
+            <label><input type="radio" name="optradio">CSV</label>
+          </div>
+          <div class="radio" onclick="fileType='PDF'">
+            <label><input type="radio" name="optradio">PDF</label>
+          </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-primary" onclick="dispatchAll();">Dispatch</button>
+          <button type="button" class="btn btn-primary" onclick="dispatchAll();">Download</button>
           <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
         </div>
       </div>
@@ -633,7 +627,7 @@
 <script>
     selected = [];
     var table;
-    var url = "<%= request.url%>";
+    var url = "<%= @url %>";
 
     <% if !@birth_type.blank? %>
         jQuery("#birth_type").find("#" + '<%= @birth_type.downcase%>').prop('selected', true);
@@ -675,18 +669,23 @@
 
     function initTable(){
 
+        var menuLength = [[10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000], [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]]
+        <% if params[:statuses].include?("DC-PRINTED")  %>
+                menuLength = [[1000, 2500, 5000, 10000], [1000, 2500, 5000, 10000]]
+        <%end%>
         table =  $i('#example').DataTable(
                 {
                     "processing": true,
                     "serverSide": true,
                     "ordering": false,
-                    "lengthMenu": [[10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000], [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]],
+                    "lengthMenu": menuLength,
                     "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                         jQuery('td .action-btn', nRow).parent().parent().css('background', 'white');
                         jQuery('td .redd', nRow).parent().parent().css('background', '#FFBAD2');
                     },
                     "ajax": {
                         "url": url,
+                        "type":'POST',
                         "data": function(d){
                             d.type       = type;
                             d.district   = __$('districts').value;
@@ -932,6 +931,22 @@
         var form = __$('selected-submit')
         form.setAttribute("action", "/person/dispatch_certificates");
 
+        if(fileType.length == 0){
+            alert("Please select file type to download!");
+            return;
+        }else{
+          var input = document.createElement("input")
+          input.name = "file_type";
+          input.value =  fileType;
+          form.appendChild(input);
+        }
+        for(var i = 0; i <selected.length; i++){
+            var input = document.createElement("input")
+            input.name = "person_ids[]";
+            input.value = selected[i];
+            form.appendChild(input);
+        }
+
         for(var i = 0; i <selected.length; i++){
             var input = document.createElement("input")
             input.name = "person_ids[]";
@@ -939,6 +954,12 @@
             input.value = selected[i];
             form.appendChild(input);
         }
+
+        var input = document.createElement("input")
+        input.name = "dispatch_action";
+        input.type ="hidden";
+        input.value =  "download";
+        form.appendChild(input);
 
         var input = document.createElement("input")
         input.name = "printer_name";
@@ -1316,7 +1337,7 @@
             alert("Missing filter, please select village of registration");
             __$("filter_name").innerHTML = "";
         }else {
-            __$("filter_name").innerHTML = village + ", " + ta;
+            __$("filter_name").innerHTML = village + ", " + ta + ", "+ district;
         }
 
         __$("processing_wait").style.display = 'inline-block';

@@ -1906,6 +1906,7 @@ These Are Mandatory Fields, If One is Missing The Remote NID Server Will Return 
 
     str = "04~#{details.district_id_number}-#{details.brn}"
     str += "~#{person.printable_name}~#{person.birthdate.to_date.strftime("%d-%b-%Y")}~#{person.gender}"
+    str += "~#{person.id_number}" rescue
     str += "~#{place_of_birth}"
     str += ("~#{person.mother.printable_name}" rescue '~')
     str += ("~#{person.mother.citizenship}" rescue '~')

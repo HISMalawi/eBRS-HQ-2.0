@@ -87,11 +87,11 @@ class ApplicationController < ActionController::Base
 
   def check_notifications
 
-    @stats_time     = File.mtime("stats.json").to_pretty rescue ""
-    if ((Time.now - File.mtime("stats.json")) / 60 > 3)
+    @stats_time     = File.mtime("#{Rails.root}/tmp/stats.json").to_pretty rescue ""
+    if ((Time.now - File.mtime("#{Rails.root}/tmp/stats.json")) / 60 > 3)
       #Rerun Query
       stats       = PersonRecordStatus.stats
-      File.open("stats.json", 'w'){|f|
+      File.open("#{Rails.root}/tmp/stats.json", 'w'){|f|
         f.write(stats.to_json)
       }
     end
@@ -104,6 +104,12 @@ class ApplicationController < ActionController::Base
           assigned: 0,
         person_identifier_type_id: PersonIdentifierType.where(:name => "National ID Number").last.person_identifier_type_id
       ).count
+    end
+  end
+
+  def write_csv(file,type, row)
+    CSV.open(file, type=='header'? 'w' : 'a+' ) do |exporter|
+        exporter << row
     end
   end
 
