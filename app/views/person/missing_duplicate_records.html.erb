@@ -1,0 +1,33 @@
+<div style="height: 70vh;text-align: center;font-size: 1.8em;padding-top: 20vh">
+    <span style="color: red; font-weight: bold;"></span> Failed to find associated duplicate record(s) <br /><br />
+
+
+        <div class="btn btn-lg btn-success" onclick="ajaxChangeTo('HQ-CAN-PRINT')"><b>Push record to print queue</b></div>
+
+        <div class="btn btn-lg btn-success" onclick="ajaxChangeTo('HQ-ACTIVE')"><b>Send record back to DV</b></div>
+
+</div>
+
+<script>
+
+    function showShield(){}
+
+    function ajaxChangeTo(status){
+        var url = "/ajax_status_change?person_id=<%= params[:person_id]%>&status="+status
+        jQuery.ajax(
+                {
+                    url: url,
+                    success: function(result){
+                        if(result == 'ok'){
+                            window.location = "<%=session[:list_url]%>";
+                        }else{
+                            alert("Something went wrong!")
+                        }
+                    },
+                    error: function(){
+                        alert("Something went wrong!")
+                    }
+                }
+        )
+    }
+</script>

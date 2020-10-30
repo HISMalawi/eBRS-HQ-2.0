@@ -1,0 +1,68 @@
+
+
+<style type="text/css">
+  ${demo.css}
+</style>
+<script type="text/javascript">
+
+function initPie() {
+
+$i(function () {
+$i('#pie').highcharts({
+    chart: {
+        plotBackgroundColor: null,
+        plotBorderWidth: 1,//null,
+        plotShadow: false
+    },
+    title: {
+        text: 'Total reported births (all districts)'
+    },
+    tooltip: {
+        pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+    },
+    plotOptions: {
+        pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+                enabled: true,
+                format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                style: {
+                    color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                }
+            }
+        }
+    },
+     exporting: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      series: [{
+        type: 'pie',
+        name: 'Reported births',
+        data: [series_stats]
+    }]
+});
+});
+
+}
+
+var series_stats = [];
+<%(@pie_stats || []).each do |c, s|%>
+  series_stats.push(["<%= c %>", "<%= s %>"]);
+<%end%>
+
+initPie();
+
+</script>
+</head>
+<body>
+
+<div id="pie" style="min-width: 310px; height: 600px; width: 100%; margin: 0 auto"></div>
+
+</body>
+</html>
+
+

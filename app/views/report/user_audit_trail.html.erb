@@ -1,0 +1,173 @@
+
+<style>
+
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+.callout-info {
+  background-color: #00c0ef;
+}
+
+.search-params {
+  margin-bottom: 50px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<script>
+
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'excelHtml5',
+            'csvHtml5',
+        ],
+      "pageLength": 10,
+      "processing": true
+    });
+}
+
+
+function addRows(data) {
+  for(var i = 0 ; i < data.length ; i++){
+    dataTable.api().row.add([data[i].created_at, data[i].username, data[i].name, data[i].comment, data[i].client, data[i].location,data[i].mac_address, data[i].ip_address]).draw();
+  }
+}
+
+function fetchData() { 
+  var url = "get_user_audit_trail";
+  var start_date = jQuery("#start_date").val().split("/");
+  var end_date   = jQuery("#end_date").val().split("/");
+  url = url + "?start_date="+start_date[2]+"-"+start_date[1]+"-"+start_date[0]+
+              "&end_date="+end_date[2]+"-"+end_date[1]+"-"+end_date[0];
+
+  jQuery.getJSON(url,function(results){
+      if(results.length > 0){
+          dataTable.fnClearTable();
+          addRows(results); 
+      }
+  })                                                                                                                                   
+}
+
+
+</script>
+
+<h3>User audit trail</h3>
+
+<div class="callout callout-info" style="margin: 10px;">
+  <p>To view data:</p>
+  <p>Select:&nbsp;<b>Start date</b>.</p>
+  <p>Then end with:&nbsp;<b>End date</b>.</p>
+  <p>
+    <p><b><span style="color: red;">*</span>Start date should never be greater than End date</b></p>
+  </p>
+</div>
+
+<div class="search-params">
+  <label>Select <b>start date</b>:</label>
+  <input type="text" id="start_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>end date</b>:</label>
+  <input type="text" id="end_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
+  <input type='button' class='btn btn-success' value='Fetch data' onclick="fetchData();" />
+</div>
+
+<table style="width:100%" id="report" class="table table-striped table-advance table-hover">
+  <thead>
+    <tr>
+      <th style="width: 15%;">DateTime</th>
+      <th style="width: 10%;">Username</th>
+      <th style="width: 15%;">Name</th>
+      <th >Action</th>
+      <th style="width: 15%;">Client</th>
+      <th>District/Facility</th>
+      <th>Mac Adsress</th>
+      <th>IP Adress</th>
+
+    </tr>
+  </thead>
+  </tbody>
+  </tbody>
+</table>
+
+<script>
+  
+
+  function activeDate() {
+    jQuery(function() {
+      jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
+
+    jQuery(function() {
+      jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    }); 
+
+  }
+
+  activeDate();
+  dataT();
+  jQuery(document).ready(function(){
+        fetchData();
+  })
+</script>

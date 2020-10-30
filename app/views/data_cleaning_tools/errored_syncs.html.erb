@@ -1,0 +1,171 @@
+
+<style>
+th{
+    background: lightsteelblue;
+}
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+
+
+.search-params {
+  margin-bottom: 20px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<script>
+
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'excelHtml5',
+            'csvHtml5'
+        ],
+      "pageLength": 10,
+      "processing": true
+    });
+}
+
+
+function addRows(data) {
+  var records = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < records.length; i++) {
+    person_id     =  records[i]['person_id'];
+    first_name    =  records[i]['first_name'];
+    middle_name   =  records[i]['middle_name'];
+    last_name     =  records[i]['last_name'];
+    dob           =  records[i]['birthdate']; 
+    gender        =  records[i]['gender'];
+    ben           =  records[i]['birth_entry_number'];
+    brn           =  records[i]['registration_number'];
+    date           =  records[i]['date'];
+
+    dataTable.api().row.add([brn, ben, first_name, middle_name, last_name, dob, gender, date, '']).draw();
+  }
+}
+
+function fetchData() {
+    var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+    var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+
+    window.location.href = "/dispatches?start_date=" + start_date + "&end_date=" + end_date
+}
+
+
+</script>
+
+<h3>Records That Failed to Load to MYSQL from CouchDB</h3>
+
+<table id="report" class="table table-bordered table-sm table-inverse" style="margin-left: 1.5%;width: 98.5%;font-size: 1.1em;">
+
+  <thead>
+  <tr>
+    <th style="border-right: 2px solid #f8f8ff;background: white;width: 3%;">&nbsp;#</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">Date</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">Person ID</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 10%;">BEN</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 20%;">Name</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 35%;">Error Message</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 15%;">
+      &nbsp;
+    </th>
+
+  </tr>
+  </thead>
+  <tbody>
+  <% @issues.each do |d|%>
+        <tr id="<%=d['index']%>">
+            <td><%= d['index']%></td>
+            <td><%= d['datetime']%></td>
+            <td><%= d['person_id']%></td>
+            <td><%= d['ben']%></td>
+            <td><%= d['name']%></td>
+            <td style="background: lightcoral;font-weight: bold;"><%= d['data']%></td>
+            <td>
+              <% if !d['person'].blank?%>
+                <div type='button' class='btn btn-success btn-sm' onclick="window.location ='/show_person/<%=d['person_id']%>' ">View</div>
+              <% end %>
+
+              <div type='button' class='btn btn-success btn-sm' onclick="load('<%=d['person_id']%>', '<%=d['index']%>')">Re-run Sync</div>
+
+            </td>
+        </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<script>
+
+    function load(pid, index){
+
+        jQuery.ajax({
+            url: ("/data_cleaning_tools/reload_from_couch?person_id="+pid),
+            success: function(response){
+                console.log(response);
+                if (response == 'true'){
+                    jQuery("#" + index).fadeOut(1500);
+                }else{
+                    alert("Failed to resolve record!")
+                }
+            },
+            error: function(response){
+
+            }
+        })
+    }
+
+    dataT()
+</script>

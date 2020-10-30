@@ -1,0 +1,115 @@
+<style>
+    fieldset {
+        margin: 20px;
+        border-radius: 5px;
+        border: 1px solid #3465a4;
+        padding: 20px;
+    }
+
+    legend {
+        font-size: 18px;
+        font-weight: normal;
+        color: #3465a4;
+    }
+
+    div.field {
+        font-weight: normal;
+        display: inline-block;
+        margin: 10px;
+        color: #000;
+    }
+
+    select {
+        min-width: 100%;
+    }
+
+    /*input {
+        min-width: 100%;
+    }*/
+</style>
+
+<%= form_tag("/person/certificate_verification", "method" => "post") do |f|%>
+    <fieldset>
+      <legend>Birth Certificate Quality Assessment</legend>
+
+      <div class="field">
+        <label for="certificate_serial_number">Certificate Number</label><br>
+        <input id="certificate_serial_number" name="certificate_serial_number" type="text"
+               class="input_cell"  tt_onUnload = "checkValue()"  required="true"/>
+
+      </div></br>
+
+      <div class="field">
+        <label for="verdict">Does certificate meet quality metrics?</label><br>
+        <select id="verdict" name="verdict" class="input_cell">
+          <option></option>
+          <option value="Yes" >Yes</option>
+          <option value="No" >No</option>
+        </select>
+      </div></br>
+
+      <div class="field">
+        <label for="reason">Explanation for rejected certificate</label><br>
+        <select id="reason" name="reason" class="input_cell" condition="__$('textForverdict').value.trim() == 'No' " >
+          <option></option>
+          <option value="blurred print out" >Blurred print out</option>
+          <option value="distorted characters" >Distorted characters</option>
+          <option value="wrinkles or creases" >Wrinkles or creases</option>
+          <option value="skewed page" >Skewed page</option>
+          <option value="unwanted ink dots" >Unwanted ink dots</option>
+          <option value="other" >Other</option>
+        </select>
+      </div>
+    </fieldset>
+
+<% end %>
+
+<style>
+  .logout{
+      position: absolute;
+      bottom: 15px;
+      right: 20px;
+      width: 150px !important;
+  }
+
+   .red{
+       display: none;
+   }
+
+    .logout{
+        display: inline-block;
+    }
+</style>
+<script type="text/javascript">
+  init()
+
+  displayAlert()
+
+  function displayAlert()
+  {
+      <% if !flash[:error].blank? %>
+          showMsg('<%= flash[:error] %>');
+       <% elsif !flash[:notice].blank?%>
+          showMsg('<%= flash[:notice] %>');
+        <% end %>
+      __$('textForcertificate_serial_number').focus();
+  }
+
+  function checkValue(){
+      if(__$('textForcertificate_serial_number').value.trim().match(/\$$/)) {
+          __$('textForcertificate_serial_number').value = __$('textForcertificate_serial_number').value.trim().replace(/\$/, "");
+          __$('certificate_serial_number').value = __$('certificate_serial_number').value.trim().replace(/\$/, "");
+
+      }
+  }
+
+  setTimeout(function(){
+      var red = document.getElementsByClassName("red")[0].cloneNode();
+      red.className += " logout ";
+      red.innerHTML = "Logout";
+      red.onmousedown = function(){
+          window.location = "/logout"
+      }
+      document.body.appendChild(red);
+  }, 500);
+</script>

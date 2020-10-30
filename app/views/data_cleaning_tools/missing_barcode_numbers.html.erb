@@ -1,0 +1,21 @@
+<div style="height: 70vh;text-align: center;font-size: 1.8em;padding-top: 20vh">
+    <span style="color: red; font-weight: bold;"><%=@person_ids.length%></span> Record(s) With Missing Barcode Numbers Found (In Print Queue)
+    <br /><br />
+    <span style="color: blue; font-weight: bold;"><%=@free%></span>  Unassigned Barcode Number(s) Available
+    <br /><br />
+
+  <% if @person_ids.length > 0 && @free >= @person_ids.length %>
+      <div class="btn btn-lg btn-success"   onclick="assignBarcodeNumbers()"><b>Assign Missing Barcode Numbers</b></div>
+  <% else %>
+      <div class="btn btn-lg btn-success" disabled="disabled"><b>Assign Missing Barcode Numbers</b></div>
+  <% end %>
+</div>
+
+<script>
+
+    function showShield(){}
+
+    function assignBarcodeNumbers(){
+        window.location.href = "/data_cleaning_tools/assign_missing_barcode_numbers"
+    }
+</script>

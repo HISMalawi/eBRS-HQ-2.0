@@ -1,0 +1,51 @@
+
+
+<iframe  id="clone" style="display: none; width; 80%; height:80%; border: none;background: none transparent;"
+         allowtransparency="true" class="col-md-4" >
+
+</iframe>
+
+<div style="height: 10px;padding: 5px;width: 100%; text-align: center;margin: 5px;">
+        <span class="btn btn-success" onclick="back()"> << Back </span>
+        <span class="btn btn-success" onclick="next()"> Next >> </span>
+</div>
+
+<div style="height: 100vh;text-align: center;font-size: 1.8em;padding-top: 30px;" id="holder">
+
+</div>
+
+<script>
+    var pos = 0;
+    function load(){
+        console.log(pos)
+        jQuery.ajax({
+            url: ("/report/certificates?position=" + pos),
+            success: function(chunk){
+                chunk = JSON.parse(chunk);
+                jQuery("#holder").empty();
+
+                for(var i = 0; i < chunk.length; i++){
+                    var clone = __$('clone').cloneNode(true);
+                    clone.id = i;
+                    __$("holder").appendChild(clone);
+                    clone.style.display = "inline";
+                    clone.src = "/certificate_pdf?reference=" + chunk[i][0];
+                }
+            }
+        })
+    }
+
+    function next(){
+        pos = pos + 1;
+        load();
+    }
+
+    function back(){
+        pos = pos - 1;
+        load();
+    }
+
+    jQuery(document).ready(function(){
+        load();
+    })
+</script>

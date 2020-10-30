@@ -1,13 +1,14 @@
 source 'https://rubygems.org'
 
 ruby '2.1.2'
+
+#gem 'progress_bar', '1.2.0'
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.2.6'
 # Use mysql as the database for Active Record
 gem 'mysql2', '>= 0.3.13', '< 0.5'
-
+gem 'wkhtmltopdf-binary'
 gem 'mysql'
-
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 5.0'
 # Use Uglifier as compressor for JavaScript assets
@@ -26,6 +27,9 @@ gem 'jbuilder', '~> 2.0'
 # bundle exec rake doc:rails generates the API under doc/api.
 gem 'sdoc', '~> 0.4.0', group: :doc
 
+gem "whitesimilarity"
+#gem "wkhtmltopdf-binary"
+gem 'mac-address'
 # Use ActiveModel has_secure_password
 # gem 'bcrypt', '~> 3.1.7'
 
@@ -37,8 +41,16 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
-  gem 'byebug'
+ # gem 'byebug'
 end
+
+#gem 'redis'
+# gem 'jwt_sessions'
+
+#gem 'remote_lock'
+#gem 'hiredis', '0.4.5'
+#gem 'mlanett-redis-lock', '0.2.7'
+#gem 'redis-lock', '0.2.0'
 
 group :development do
   # Access an IRB console on exception pages or by using <%= console %> in views
@@ -49,6 +61,8 @@ group :development do
 end
 
 gem 'couchrest_model'
+ 
+gem 'rest-client'
 
 gem 'bcrypt', '3.1.7'
 
@@ -68,14 +82,28 @@ gem 'passenger', '4.0.53'
 
 gem 'rb-readline'
 
+gem 'barby'
+
+gem 'rmagick'
+
+gem 'rqrcode'
+
 gem 'chronic', '0.10.2'
 
 gem 'whenever',  :require => false 
-
-gem 'sucker_punch', '~> 2.0'
 
 gem 'countries'
 
 gem 'composite_primary_keys', '~> 8.0'
 
+gem 'sucker_punch', '~> 2.0'
 
+gem "faker", "~> 1.6.6"
+
+gem "will_paginate", "3.1.6"
+
+gem "activerecord-session_store"
+
+gem "pretty_time"
+
+gem 'rack-cors', require: 'rack/cors'

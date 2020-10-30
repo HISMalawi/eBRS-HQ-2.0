@@ -1,0 +1,369 @@
+<style type="text/css">
+    #table{
+        font-size: 1em;
+        color: darkslategray;
+        margin-top:1%;
+    }
+    #table th{
+        border: 1px solid #d3d3d3;
+        background: #d3d3d3;
+        width: 2%;
+        color: #3465a4;
+        padding: 0.5em
+    }
+    #table td{
+       border: 1px solid #d3d3d3;
+       padding: 0.5em
+    }
+
+    .cat{
+      font-weight: bold;
+    }
+    .mintable{
+      width: 100%;
+      border:none;
+      border-collapse: collapse;
+    }
+    .mintable td, .mintable th{
+        width: 33.33333% !important;
+        text-align: right;
+        padding-right: 10%;
+    }
+    input , select{
+        width: 70%;
+    }
+</style>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 50px;">
+      <table style="width: 100%;" id="filter_table">
+        <tr>
+          <td>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Birth reports</h3>
+          </td>
+          <td colspan="8" style="width: 60%;">
+            <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <div class="search-params"  style="width: 100%;margin:1%">
+      <table style="width: 100%;">
+          <tr><th>Filter</th><th></th></tr>
+          <tr>
+             <td>
+              <input onclick="check(this,['selected_birth_place'])" type="checkbox" class="input-small check" id="birth_place_check" style="margin-right: 105px;">
+            </td>
+            <td>Place of birth :</td>
+            <td><select id="selected_birth_place" style="margin-right: 3%; margin-bottom: 3%;" load="<%=params[:place_of_birth] rescue ''%>" disabled>
+                <option></option>
+                <option value="Home">Home</option>
+                <option value="Hospital">Hospital</option>
+                <option value="Other">Other</option>
+            </select>
+            </td>
+          </tr>
+          <tr>
+              <td>
+                <input onclick="check(this,['selected_dc'])" type="checkbox" class="input-small check" id="district_check" style="margin-right: 105px;">
+              </td>
+              <td>District :</td>
+              <td><select id="selected_dc" style="margin-right: 3%; margin-bottom: 3%;" load="<%=params[:district] rescue ''%>" disabled>
+                  <option></option>
+                  <%(@districts || []).each do |district|%>
+                    <option value="<%=district.id%>"><%=district.name%></option>
+                  <%end%>
+                </select>
+              </td>
+          </tr>
+          <tr>
+              <td>
+                  <input onclick="check(this,['selected_status'])" type="checkbox" class="input-small check" id="status_check" style="margin-right: 105px;">
+              </td>
+              <td>Record status</td>
+              <td><select id="selected_status" style="margin-right: 3%;margin-bottom: 3%;" disabled>
+                    <option></option>
+                    <%@statuses.each do |status|%>
+                      <option value="<%=status%>"><%=status%></option>
+                    <%end%>
+                  </select>
+              </td>
+          </tr>
+          <tr>
+            <td>
+                <input onclick="check(this,['operator','start_age'])" type="checkbox" class="input-small check" id="age_check" style="margin-right: 105px;">
+            </td>
+            <td>Select Age</td>
+            <td>
+              <select id="operator" onchange="checkAge(this)" disabled>
+                  <option> = </option>
+                  <option> < </option>
+                  <option> <= </option>
+                  <option> > </option>
+                  <option> >= </option>
+                  <option>>= Age <=</option>
+              </select>
+            </td>
+            <td id="start_age_text">
+                Age Value
+            </td>
+            <td>
+                <input id="start_age" type="number" disabled>
+            </td>
+             <td id="end_age_text">
+
+            </td>
+            <td id="end_age_container">
+
+            </td>
+          </tr>
+          <tr>
+              <td>
+                <input onclick="check(this,['start_date','en_date'])" type="checkbox" class="input-small check" id="registration_check" style="margin-right: 105px;" checked="true" disabled>
+              </td>
+              <td> Date Registered : Start date </td>
+              <td><input type="text" id="start_date"
+                    data-date-format="dd/mm//yyyy" onkeypress="return false;"
+                    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+                    class = "dates date" />
+                    <i class="fa fa-calendar"></i>
+              </td>
+              <td>Date Registered : End date</td>
+              <td><input type="text" id="end_date"
+                    data-date-format="dd/mm//yyyy" onkeypress="return false;"
+                    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+                    class = "dates date" />
+                    <i class="fa fa-calendar"></i>
+              </td>
+
+          </tr>
+      </table>
+      <br/>
+      <input type='button' class='btn btn-success pull-right' style="margin-right: 2%; width:100px;margin-bottom: 1%; " value='Load Data' onclick="fetchData();" />
+
+    </div>
+    <div id="default" style="width: 100%; margin: auto;  text-align: center; vertical-align: top; margin-top:1%;">
+    <table id='table' style="width: 100%;">
+
+      <thead>
+            <tr>
+              <th>Category</th>
+              <th>Sub category</th>
+              <th>Female</th>
+              <th>Male</th>
+              <th>Total</th>
+            </tr>
+      </thead>
+
+      <% @data.each do |cat, data|
+      %>
+          <tr>
+            <td>
+              <%= cat%>
+            </td>
+            <td style="padding:0">
+                <table style="width: 100%; border:none; border-collapse: collapse; ">
+                    <% data.each do |k, sub_data|
+                    %>
+                        <tr><td><%= k%></td></tr>
+                    <% end
+                    %>
+                </table>
+            </td>
+            <td colspan="3" style="padding:0">
+                <table class="mintable">
+                    <% data.each do |k, sub_data|
+                    %>
+                        <tr>
+                            <td><%= sub_data['Female']%></td>
+                            <td><%= sub_data['Male']%></td>
+                            <td><%= sub_data['Female'].to_i + sub_data['Male'].to_i %></td>
+                          </tr>
+                    <% end
+                    %>
+                </table>
+            </td>
+          </tr>
+      <% end %>
+    </table>
+    </div>
+</div>
+<script type="text/javascript">
+    function __$(id){
+        return document.getElementById(id);
+    }
+
+    function fetchData(){
+
+         var url = "/report/birth_reports?";
+         if (__$("district_check").checked) {
+             var district = jQuery("#selected_dc").val();
+            if(district.length == 0 ){
+                  alert("Please select district");
+                  return;
+             }
+             url = url + "&district="+district
+         }
+
+         if(__$("birth_place_check").checked){
+           var place_of_birth = jQuery("#selected_birth_place").val();
+           if(place_of_birth.length == 0){
+              alert("Please select place of birth");
+              return;
+           }
+           url = url + "&place_of_birth="+ place_of_birth;
+         }
+
+         if (__$("status_check").checked) {
+            var status = jQuery("#selected_status").val();
+            if(status.length == 0 ){
+                  alert("Please select status");
+                  return;
+            }
+            url = url +"&status="+status;
+         }
+
+         if (__$("age_check").checked) {
+            var value = jQuery("#operator").val().trim();
+            switch(value){
+                case "=":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter age value");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    url = url + "&operator="+value+"&start_age="+start_age;
+                    break;
+                case "<":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter age value");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    url = url + "&operator="+value+"&start_age="+start_age;
+                    break;
+                case "<=":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter age value");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    url = url + "&operator="+value+"&start_age="+start_age;
+                    break;
+                case ">":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter age value");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    url = url + "&operator="+value+"&start_age="+start_age;
+                    break;
+                case ">=":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter age value");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    url = url + "&operator="+value+"&start_age="+start_age;
+                    break;
+                case ">= Age <=":
+                    var start_age = jQuery("#start_age").val();
+                    if(start_age.length == 0 ){
+                        alert("Please enter start age");
+                        jQuery("#start_age").focus();
+                        return;
+                    }
+                    var end_age = jQuery("#start_age").val();
+                    if(end_age.length == 0 ){
+                        alert("Please enter end age");
+                        jQuery("#end_age").focus();
+                        return;
+                    }
+                    url = url + "&operator=BETWEEN&start_age="+start_age+"&end_age="+end_age;
+                    break;
+                default:
+                    alert(":(")
+            }
+         }
+
+         if (__$("registration_check").checked) {
+            var start_date = jQuery("#start_date").val();
+            var end_date = jQuery("#start_date").val();
+            url = url +"&start_date="+encodeURI(start_date)+"&end_date="+encodeURI(end_date)
+         }
+         window.location = url
+    }
+
+    function enableField(fields){
+          for(var i = 0 ; i< fields.length ; i++){
+              jQuery("#"+fields[i]).removeAttr("disabled")
+          }
+    }
+    function disableField(fields){
+          for(var i = 0 ; i< fields.length ; i++){
+              jQuery("#"+fields[i]).attr("disabled","disabled")
+              jQuery("#"+fields[i]).val("")
+          }
+    }
+    function check(element, fields){
+        if(element.checked){
+            enableField(fields)
+        }else{
+            disableField(fields)
+        }
+    }
+    function checkAge(element){
+        var value = element.value;
+        switch(value){
+            case "=":
+                jQuery("#end_age_text").html("")
+                jQuery("#end_age_container").html("")
+                break;
+            case "<":
+                jQuery("#end_age_text").html("")
+                jQuery("#end_age_container").html("")
+                break;
+            case "<=":
+                jQuery("#end_age_text").html("")
+                jQuery("#end_age_container").html("")
+                break;
+            case ">":
+                jQuery("#end_age_text").html("")
+                jQuery("#end_age_container").html("")
+                break;
+            case ">=":
+                jQuery("#end_age_text").html("")
+                jQuery("#end_age_container").html("")
+                break;
+            case ">= Age <=":
+                jQuery("#start_age_text").html("Start age")
+                jQuery("#end_age_text").html("End age")
+                var input = document.createElement("input");
+                input.type = "number";
+                input.id = "end_age"
+                jQuery("#end_age_container").append(input);
+                break;
+            default:
+                alert(":(")
+        }
+    }
+
+    jQuery(".date").datepicker();
+</script>

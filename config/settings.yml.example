@@ -1,0 +1,16 @@
+protocol: http
+location_id: 356 #default 356 for Lilongwe
+enable_role_privileges: true #ly works when in development mode
+duplicate_precision: 80
+potential_search: false
+printer_name: test1|tst2|test3
+barcodes_path: /var/www/barcodes/
+certificates_path: /var/www/certificates/
+nid_verifications_path: /var/www/nid_verifications/
+ebrs_services_link: http://0.0.0.0:9002
+activate_nid_integration: true
+query_by_nid_address:  http://192.168.43.43/api/Person/post
+request_for_nid_address: http://192.168.43.43/api/pbc/PostNPb
+batch_request_for_nid_address: http://192.168.43.43/api/pbc/BatchPostNPbc
+mass_data_migration_mode: false
+enable_qr_code: false

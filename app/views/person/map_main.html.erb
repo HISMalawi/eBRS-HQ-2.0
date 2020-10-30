@@ -1,0 +1,145 @@
+<html>
+<head>
+  <title>SVG</title>
+  <style>
+    #details{
+        background: ghostwhite;
+        font-size: 14px;
+        padding-top: 7px;
+
+    }
+   #details td{
+       border: 1px solid #d3d3d3;
+       padding: 5px;
+       padding-left: 0px;
+       padding-right: 0px;
+       width: 50%;
+       font-size: 13px;
+       font-weight: bold;
+       color: darkslategray;
+   }
+
+  .value{
+      text-align: right;
+      padding-right: 5px !important;
+  }
+  </style>
+</head>
+<body onload="resizeMap()" style="margin: 0px; padding: 0px; padding-left: 35px;">
+<div id="main" style="padding: 0px; text-align: center; overflow: hidden !important;"></div>
+<div id="details" style="width: 190px; position: absolute;bottom: 5px;left:5px;border: 1px solid #d3d3d3;font-size: 12px !important;">
+    <table style="width: 100%;">
+      <caption id="site_name" style="font-weight: bold;color: darkslategray">&nbsp;</caption>
+      <tr>
+        <td>Sync Status</td><td class='value' id="status"></td>
+      </tr>
+
+    </table>
+</div>
+
+<script src="/javascripts/jquery.js" charset="utf-8"></script>
+<script src="/javascripts/d3.js" charset="utf-8"></script>
+<script type="text/javascript">
+
+    var zoomlevel = 1;
+    var currentSite = "";
+    var alerts = {};
+    var sitesErrors = {};
+
+    var loader = d3.xml("/images/Malawi.svg", function(xml) {
+        document.getElementById("main").appendChild(xml.documentElement);
+
+    <% @sites.each do |site|%>
+
+        var color = "red";
+
+        <%
+        if site['online']%>
+             color = 'green';
+        <% end %>
+
+        d3.select("#<%=site['district']%>")
+            .style("stroke", 'white')
+            .style("fill", color)
+            .style('stroke-width', 1)
+            .style("cursor", 'pointer')
+            .attr("last_seen", "<%=site['last_seen']%>")
+            .attr("reported", "<%=site['reported']%>")
+            .attr("tag", "<%= site['name'] %>")
+                .on('mouseover', function(){
+                    //var tip = d3.select("#<%=site['district']%>").attr("tag");
+
+                })
+                .on("mousedown", function(){
+
+                document.getElementById('site_name').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
+                document.getElementById('status').innerHTML = d3.select("#<%=site['district']%>").attr("last_seen");
+                //document.getElementById('reported').innerHTML = d3.select("#<%=site['district']%>").attr("reported");
+
+                jQuery.ajax({
+                    url: "/person/get_district_stats?location_id=<%= site['location_id']%>",
+                    success: function(result){
+                        result = JSON.parse(result);
+                        console.log(result);
+                        for(var i = 0; i< result.length; i++){
+                            try {
+                                window.parent.document.getElementById(result[i][0]).innerHTML = result[i][1];
+                            }catch(e){}
+                        }
+                        window.parent.document.getElementById('district_label').innerHTML = d3.select("#<%=site['district']%>").attr("tag");
+                    }
+                })
+            });
+    <% end %>
+    });
+
+    var tooltip = d3.select("body")
+            .append("div")
+            .style("position", "absolute")
+            .style("z-index", "10")
+            .style("visibility", "hidden")
+            .style("background", "#f6f3d7")
+            .style("padding", "5px")
+            .style("border", "1px solid #000")
+            .style("border-radius", "5px")
+            .text("Tooltip");
+
+    function getSiteInfo(id){
+        var result = id;
+
+        if(document.getElementById(id)){
+            result = document.getElementById(id).getAttribute("tag");
+            if (sitesErrors[result]){
+                result = result + ",   " + sitesErrors[result];
+            }else{
+                result = result;
+            }
+        }
+
+        return result;
+    }
+
+    window.parent.document.getElementById('reset').onmousedown = function(){
+        resetStats();
+    }
+
+    function resetStats(){
+        document.getElementById('site_name').innerHTML = '&nbsp;';
+        document.getElementById('status').innerHTML = '&nbsp;';
+        //document.getElementById('reported').innerHTML = '&nbsp;';
+        var items =  window.parent.document.getElementsByClassName('stat-count');
+        for(var i=0; i<items.length; i++){
+            items[i].innerHTML = items[i].getAttribute('default-value')
+        }
+        window.parent.document.getElementById('district_label').innerHTML = "&nbsp;"
+    }
+
+    function resizeMap(){
+        zoomlevel = 1;
+
+        d3.select('#region').attr('transform','scale(' + zoomlevel + ')')
+                .style("background", "white")
+    }
+</script>
+</body>
+</html>

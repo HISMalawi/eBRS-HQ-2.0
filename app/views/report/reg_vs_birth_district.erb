@@ -1,0 +1,212 @@
+
+<style>
+th{
+    background: lightsteelblue;
+}
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+
+
+.search-params {
+  margin-bottom: 20px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<script>
+
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'excelHtml5',
+            'csvHtml5'
+        ],
+      "pageLength": 10,
+      "processing": true
+    });
+}
+
+
+function addRows(data) {
+  var records = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < records.length; i++) {
+    person_id     =  records[i]['person_id'];
+    first_name    =  records[i]['first_name'];
+    middle_name   =  records[i]['middle_name'];
+    last_name     =  records[i]['last_name'];
+    dob           =  records[i]['birthdate']; 
+    gender        =  records[i]['gender'];
+    ben           =  records[i]['birth_entry_number'];
+    brn           =  records[i]['registration_number'];
+    date           =  records[i]['date'];
+
+    dataTable.api().row.add([brn, ben, first_name, middle_name, last_name, dob, gender, date, '']).draw();
+  }
+}
+
+function fetchData() {
+    var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+    var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+
+    window.location.href = "/reg_vs_birth_district?start_date=" + start_date + "&end_date=" + end_date
+}
+
+
+</script>
+
+<h3>Matrix of District of Reg. Against District of Birth</h3>
+
+<div class="callout callout-info" style="margin: 10px;">
+  <p>To view data, first select <b>Start date</b>.</p>
+  <p>Then:&nbsp;<b>End date</b>.</p>
+  <p>
+    <p><b><span style="color: red;">*</span>Start date should never be greater than End date</b></p>
+  </p>
+</div>
+
+<div class="search-params">
+  <label>Select <b>start date</b>:</label>
+  <input type="text" id="start_date"
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"
+    value="<%=(params[:start_date].to_date rescue "2000-01-01".to_date).strftime('%d/%m/%Y') rescue nil%>"
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>end date</b>:</label>
+  <input type="text" id="end_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=(params[:end_date].to_date rescue Date.today).strftime('%d/%m/%Y') rescue nil%>"
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
+
+  <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
+  <input type='button' class='btn btn-success' value='Fetch data' onclick="fetchData();" />
+</div>
+
+<table class="table table-bordered table-sm table-inverse" style="margin-left: 1.5%;width: 98.5%;">
+  <caption style="width: 100%; text-align: center; font-weight: bold; color: darkslategray;margin-bottom: 5px;">District of Birth</caption>
+  <div style="width: 50%; text-align: center; font-weight: bold; position: absolute; color: darkslategray; margin-left: -25% !important;margin-top: 25%;
+          -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);
+          -o-transform: rotate(-90deg); -ms-transform: rotate(-90deg); transform: rotate(-90deg);
+  ">District of Registration</div>
+
+  <thead>
+  <tr>
+    <th style="border-right: 2px solid #f8f8ff;background: white;">&nbsp;</th>
+   <% @columns.each do |code|%>
+    <th style="border-right: 1px solid #f8f8ff;"><%= code%></th>
+   <% end %>
+  </tr>
+  </thead>
+  <tbody>
+  <% @columns.each do |prim_code|%>
+      <tr>
+        <th scope="row"><%= prim_code%></th>
+        <% @columns.each do |sec_code|
+           color = ""
+           forcolor = ""
+           if prim_code == sec_code
+             color = 'green'
+             forcolor = 'white'
+           elsif prim_code != sec_code && ((@data[prim_code][sec_code].to_i > 0) rescue false )
+            color = 'yellow'
+           end
+        %>
+            <td onclick="loadDrilldownFrame('/crossmatch?reg_code=<%= prim_code%>&birth_code=<%= sec_code%>')"
+            style="background-color: <%= color%>; color:<%= forcolor%>;cursor: pointer;"><%= ((@data[prim_code][sec_code] || "0") rescue "0")%></td>
+        <% end %>
+      </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<iframe id="iframe"
+style="position: fixed; display: none; width: 82%;min-height: 75vh;left: 13%; top: 10% !important;margin-top: 25px !important;
+        padding: 4px; background: white;z-index: 2500; background: darkslategray;"
+src="" ></iframe>
+<shield id="shield" onmousedown="hideFrame()"
+        style="position: absolute; display: none; height: 300vh; width: 150%;top: 0px; left: 0px; z-index: 2000;background: black; opacity: 0.5;"></shield>
+
+<script>
+    function loadDrilldownFrame(url){
+        url = url + "&start_date=" + jQuery("#start_date").val() + "&end_date=" + jQuery("#end_date").val();
+        __$("iframe").setAttribute("src", url);
+        jQuery("#iframe, #shield").show();
+    }
+
+    function hideFrame(){
+        __$("iframe").setAttribute("src", "");
+        jQuery("#iframe, #shield").hide();
+    }
+
+    function activeDate() {
+      jQuery(function() {
+        jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
+
+      jQuery(function() {
+        jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
+
+    }
+
+    activeDate();
+</script>

@@ -1,0 +1,10 @@
+name,description
+Occupation,This is the current person occupation
+Race,Group of persons related by common descent or heredity
+Citizenship,Country of which this person is a member
+Cell Phone Number,Person primary cell phone number
+Home Phone Number,"Person home phone number, usually fixed line phone number"
+Office Phone Number,Person office phone number. Usually fixed line phone number
+Religion,Person religion
+Duplicate Ben, Duplicate birth entry number
+Signature, Signature for a user

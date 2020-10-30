@@ -1,0 +1,421 @@
+<style type="text/css">
+		#table{
+			width: 90%;
+			margin: auto;
+			margin-top: 2%;
+			border-collapse: collapse;
+			box
+		}
+		#table th {
+			padding: 1%;
+			border: 1px solid #bdbfc2;
+			width: 33.333%;
+		}
+		#table td {
+			padding: 1%;
+			border: 1px solid #bdbfc2;
+			text-align: center;
+			width: 33.333%
+		}
+		#table tr:nth-child(even) {
+			background: #eff0f2;
+		}
+
+		#table tr:hover {
+			color:#3465a4;
+		}
+		.btn{
+			margin-left: 0.5%;
+			margin-right: 0.5%;
+		}
+</style>
+<script>
+  return_path = '<%= session[:list_url]%>'
+</script>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+<div class="panel panel-default">
+    <div class="panel-heading" style="height: 50px;">
+      <table style="width: 100%;">
+        <tr>
+          <td>
+            <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">Amended Case</h3>
+          </td>
+          <td colspan="8" style="width: 60%;">
+            <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div id="stats" style="width: 100%; overflow: auto; border-bottom: 1px solid #ccc;padding: 12px;border: 1px solid lightsteelblue;">
+
+
+      <table id="table">
+        <thead>
+        <tr>
+          <th style="border:none"></th>
+          <th style="color: #093a1a;background: #bdbfc2;">Existing record</th>
+          <th style="color: #98530f;background: #bdbfc2;">Amended record</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr onmousedown="amendField('Death Entry Number')">
+          <th >Birth Entry Number</th>
+          <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
+          <td><%= @birth_details.district_id_number rescue 'XXXXXXXXXX' %></td>
+        </tr>
+        <tr onmousedown="amendField('Registration Number')">
+          <th>Registration Number</th>
+          <td><%= @birth_details.brn rescue 'XXXXXXXXXX' %></td>
+          <td><%= @birth_details.brn rescue 'XXXXXXXXXX' %></td>
+        </tr>
+        <tr onmousedown="amendField('Name')">
+          <th>Name</th>
+          <% if @person_prev_values["person_name"].present?%>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values["person_name"] %>
+              </td>
+              <td>
+                <%= @person.name %>
+
+              </td>
+          <%else%>
+              <td>
+                <%= @person.name %>
+
+              </td>
+              <td>
+                <%= @person.name %>
+
+              </td>
+          <%end%>
+
+        </tr>
+        <tr onmousedown="amendField('Date of birth')">
+          <th >Date of birth</th>
+          <% if @person_prev_values['birthdate'].present? %>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values['birthdate']? @person_prev_values['birthdate'].to_date.strftime('%d/%b/%Y') : "" %></td>
+              <td>
+                <%= @person.birthdate.to_date.strftime('%d/%b/%Y') %>
+
+              </td>
+          <%else%>
+              <td><%= @person.birthdate.to_date.strftime('%d/%b/%Y') %></td>
+              <td><%= @person.birthdate.to_date.strftime('%d/%b/%Y') %></td>
+          <%end%>
+
+        </tr>
+        <tr onmousedown="amendField('Sex')">
+          <th >Sex</th>
+          <% if @person_prev_values['gender'].present? %>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values['gender'] %>
+              </td>
+              <td>
+                <%= @person.full_gender %>
+              </td>
+          <%else%>
+              <td><%= @person.full_gender %></td>
+              <td><%= @person.full_gender %></td>
+          <%end%>
+
+        </tr>
+        <tr onmousedown="amendField('Place of birth')">
+          <th >Place of birth</th>
+          <% if @person_prev_values['place_of_birth'].present? %>
+              <td style="text-decoration: line-through" ><%= @person_prev_values['place_of_birth']%></td>
+              <td><%= @birth_details.birthplace %></td>
+          <%else%>
+              <td><%= @birth_details.birthplace %></td>
+              <td><%= @birth_details.birthplace %></td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Name of mother')">
+          <th >Name of mother</th>
+          <% if @person_prev_values["mother_name"].present?%>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values["mother_name"] %>
+              </td>
+              <td><%= @person.mother.name %></td>
+          <%else%>
+              <td><%= @person.mother.name %></td>
+              <td><%= @person.mother.name %></td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Nationality of Mother')">
+          <th>Nationality of Mother</th>
+          <% if @person_prev_values["mother_citizenship"].present?%>
+              <td style="text-decoration: line-through"><%= @person_prev_values["mother_citizenship"] %></td>
+              <td><%= @mother_nationality %></td>
+          <% else %>
+              <td><%= @mother_nationality %></td>
+              <td><%= @mother_nationality %></td>
+          <% end %>
+        </tr>
+        <tr onmousedown="amendField('Name of father')">
+          <th >Name of father</th>
+          <% if @person_prev_values["father_name"].present?%>
+              <td style="text-decoration: line-through">
+                <%= @person_prev_values["father_name"] %>
+              </td>
+              <td><%= @person.father.name rescue '' %></td>
+          <%else%>
+              <td><%= @person.father.name rescue 'N/A' %> </td>
+              <td><%= @person.father.name rescue 'N/A' %> </td>
+          <%end%>
+        </tr>
+        <tr onmousedown="amendField('Nationality of Father')">
+          <th>Nationality of Father</th>
+          <% if @person_prev_values["father_citizenship"].present?%>
+              <td style="text-decoration: line-through"><%= @person_prev_values["father_citizenship"] %></td>
+              <td><%= @father_nationality %></td>
+          <% else %>
+              <td><%= @father_nationality %></td>
+              <td><%= @father_nationality %></td>
+          <% end %>
+        </tr>
+
+        </tbody>
+      </table>
+
+      <% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
+
+      <div style="margin-right: 100px;margin-left:100px;margin-top: 5px;">
+        <button id="Grant Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('-REJECTED','')+'-GRANTED')">
+          <span class="fa"></span>
+          Grant Request
+        </button>
+                <button id="Reject Request" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>-REJECTED-TBA')">
+          <span class="fa"></span>
+          Reject Request
+        </button>
+
+        <button id="Reject Request to DC" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('HQ','DC'))">
+          <span class="fa"></span>
+          Reject Request to DC
+        </button>
+
+        <button id="Approve Request" class="btn btn-success  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', 'HQ-CAN-PRINT')">
+          <span class="fa"></span>
+          Approve Request
+        </button>
+
+        <button id="Reject Request to DS" class="btn btn-warning  pull-right" style="display:<%= display%>;"
+                onclick="generalComment('Enter rejection reason to proceed', '<%=@status%>'.replace('GRANTED','REJECTED').replace('-TBA',''))">
+          <span class="fa"></span>
+            Reject Request to DS
+        </button>
+      </div>
+
+      <button id="View Comments" class="btn btn-primary pull-right" style="display:<%= display%>;"
+              onclick= 'ajaxPullComments("view")' >
+        <span class="fa fa-comments"></span>
+        View Comments (<%= @comments.count%>)
+      </button>
+    </div>
+</div>
+
+ <div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header btn-primary">
+        <h4 class="modal-title" id="comment-header">Record Comments</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <div class=" form-group">
+              <div class="container">
+                <div class="row" style="width: 550px;">
+
+                  <div id="comments-list">
+
+                  </div>
+
+                  <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
+                    <form id="comment-form" action="/ajax_save_comment">
+                      <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
+                      <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments').modal('hide')" > Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
+  <div class="media-body" style="width: 550px;">
+    <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
+    <span class="comment" style="width: 100%;"></span>
+  </div>
+</div>
+<script type="text/javascript">
+      <% (@actions || []).each do |action|
+        next if (SETTINGS['enable_role_privileges'] == false)%>
+
+        if(__$('<%= action['button_name']%>')) {
+            __$('<%= action['button_name']%>').style.display = 'table-cell';
+        }
+     <% end %>
+	var can_not_amend = ['Date of registration','Death Entry Number','Registration Number']
+	function amendField(field){
+		return;
+		if(can_not_amend.indexOf(field) < 0){
+				window.location = "/person/amend_edit/<%=params[:id]%>?fields[]="+field
+		}else{
+				showMsg("Can not amend "+field)
+		}
+
+	}
+	function proceedReprint(){
+		window.location ="/person/amendiment_comment?id=<%=params[:id]%>&next_path=<%=params[:next_path]%>"
+	}
+
+	function ajaxify(status){
+        var role = '<%= User.current.user_role.role.role%>';
+
+        if (status == "HQ-COMPLETE") {
+            var status = ({
+                'Data Checking Clerk': 'HQ-COMPLETE',
+                'Administrator': 'HQ-COMPLETE',
+                'Data Supervisor': 'HQ-CONFLICT-TBA',
+                'Data Manager': 'HQ-CAN-PRINT'
+            })[role];
+        }
+        var url = "/ajax_status_change?person_id=<%= params[:id]%>&status="+status+"&comment=";
+
+        jQuery.ajax({
+            url: url,
+            success: function(feedback){
+                window.parent.location = return_path;
+            },
+            error: function(error){
+                alert("Something went wrong!");
+            }
+        })
+    }
+
+
+    function generalComment(header, status){
+        ajaxPullComments();
+
+        __$('submit_btn').style.display = 'inline';
+        __$("comment-header").innerHTML = header;
+
+        if(status){
+            __$('submit_btn').onclick = function(){
+                    saveComment(status);
+                };
+        }
+    }
+
+    function reject(){
+
+    }
+
+	function ajaxPullComments(mode){
+        jQuery("#comment-list").html("");
+
+        if (mode && mode == 'view'){
+            __$('textarea').value = ''
+            __$('textarea').style.display = 'none';
+            __$('submit_btn').style.display = 'none';
+            __$("comment-header").innerHTML = "Record comments"
+        }else{
+            __$('textarea').style.display = 'inline';
+            __$('submit_btn').style.display = 'inline';
+            __$("comment-header").innerHTML = "Add comment to proceed";
+        }
+
+        jQuery.ajax(
+                {
+                    url: "/get_comments?person_id=<%= params[:id]%>",
+                    success: function(results){
+                        results = JSON.parse(results);
+                        var parent = document.getElementById("comments-list");
+                        parent.innerHTML = "";
+                        __$('textarea').value = ''
+                        var clone = document.getElementById("clone_me");
+                        for(var i = 0; i < results.length; i++){
+                            var dup = clone.cloneNode(true);
+                            dup.id = i;
+                            dup.style.display = "block";
+                            //set values
+                            dup.getElementsByClassName("name")[0].innerHTML = results[i]['user']
+                                    + " <small class='user_role'>" + results[i]['user_role'] + " - " + results[i]['date_added'] + " </small>";
+                            dup.getElementsByClassName("state")[0].innerHTML = results[i]['status'];
+                            dup.getElementsByClassName("comment")[0].innerHTML = results[i]['comment'];
+
+                            parent.appendChild(dup);
+                        }
+
+                        jQuery("#comments").modal('show');
+
+                        parent.scrollTop = parent.scrollHeight;
+
+                    },
+                    error: function(e){
+                        alert("Something went wrong!");
+                    }
+                }
+        )
+    }
+
+    function saveComment(status){
+        if (__$("textarea").value.trim().length == 0){
+            jQuery('#error').show();
+            return
+        }
+
+        var role = '<%= User.current.user_role.role.role%>';
+        if (!status) {
+            status = ({
+                'Data Supervisor': 'HQ-AMEND',
+                'Data Supervisor': 'HQ-INCOMPLETE-TBA',
+                'Data Manager': 'HQ-CAN-REPRINT-AMEND'
+            })[role];
+        }
+
+        var url = "/ajax_status_change?person_id=<%= params[:id]%>&status="+status+"&comment="
+        jQuery.ajax(
+                {
+                    url: url,
+                    data: {
+                        'comment' : __$("textarea").value,
+                        "authenticity_token": "<%= form_authenticity_token %>"
+                    },
+                    success: function(result){
+                        if(result == 'ok'){
+                            window.location = return_path;
+                        }else if(result == "duplicate"){
+
+                        }else{
+                            alert("Something went wrong!")
+                        }
+                    },
+                    error: function(){
+                        alert("Something went wrong!")
+                    }
+                }
+        )
+    }
+</script>

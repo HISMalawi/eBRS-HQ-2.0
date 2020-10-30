@@ -1,0 +1,458 @@
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<style>
+    #form select{
+        border-radius: 2px;
+        background: white;
+        padding: 2px;
+        padding-left: 5px;padding-right: 15px;
+    }
+    #form .filters .input{
+        border-radius: 2px;
+        background: white;
+        padding: 2px;
+        padding-left: 5px;padding-right: 15px;
+    }
+    #form select:disabled,  input:disabled{
+        background: ghostwhite !important;
+        width: 12%;
+        margin-right: 7px;
+    }
+    #form select:enabled,  input:enabled{
+        background: white !important;
+        width: 12%;
+        margin-right: 7px;
+    }
+    #form .check{
+        width: 10px !important;
+        margin-right: 40px !important;
+    }
+    #form label{
+        width: 8%;
+    }
+
+    th{
+        background: lightsteelblue;
+        color: black;
+    }
+</style>
+
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;">General Search</h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<div class="hide-when-print" id="query_form_with_buttons">
+  <form id="form" action="/search_cases">
+  <input type="hidden" value="1" id="set_filter" name="set_filter">
+  <div id="query_form_content">
+    <fieldset class="collapsible collapsed filters">
+      <div class="control-group"  style="padding-bottom: 10px;">
+        <span class="control-label">Filters</span><br />
+        <div class="controls form-inline ">
+
+          <input onclick="check(this)" type="checkbox" class="input-small check" id="fsn" style="margin-right: 105px;">
+
+          <label for="ben">BEN</label>
+          <input type="text" class="input-small"  id="ben" name="filter[ben]">
+
+          <label for="brn">BRN</label>
+          <input type="text" class="input-small"  id="brn" name="filter[brn]">
+        </div>
+      </div>
+
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this)" type="checkbox" class="input-small check" id="child_name" style="margin-right: 105px;">
+
+          <label for="last_name">Last name</label>
+          <input type="text" class="input-small"  id="last_name" name="filter[names][last_name]">
+          <label for="first_name">First name</label>
+          <input type="text" class="input-small" id="first_name" name="filter[names][first_name]">
+          <label for="last_name">Middle Name</label>
+          <input type="text" class="input-small"  id="middle_name" name="filter[names][middle_name]">
+        </div>
+      </div>
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this)" type="checkbox" class="input-small check" style="margin-right: 105px;">
+
+          <label for="last_name">Gender</label>
+          <select type="text" class="input-small"  id="gender" name="filter[gender]">
+            <option></option>
+            <option value="M">Male</option>
+            <option value="F">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this)" type="checkbox" class="input-small check" style="margin-right: 105px;">
+
+          <label for="last_name">Record status</label>
+          <select type="text" class="input-small"  id="status" name="filter[status]">
+            <option></option>
+            <% Status.all.order('name').each do |s|%>
+                <option value="<%= s.id%>"><%= s.name.titleize.gsub(/Hq/, 'HQ').gsub(/Dc/, 'DC').gsub(/Fc/, 'FC')%></option>
+            <% end %>
+          </select>
+        </div>
+      </div>
+
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this)" type="checkbox" class="input-small check" id="place" style="margin-right: 105px;">
+
+          <label for="place">Place of birth</label>
+          <select type="text" class="input-small"  id="place_of_birth" name="filter[place]" onchange="showFields(this)">
+            <option></option>
+            <option>Home</option>
+            <option>Hospital</option>
+            <option>Other</option>
+          </select>
+
+          <label for="district_of_birth">District of birth</label>
+          <select type="text" class="input-small"  id="district_of_birth" name="filter[district_of_birth]" onchange="load_tas(this)">
+            <option></option>
+            <% @districts.each do |d|%>
+                <option value="<%= d.name%>"><%= d.name%></option>
+            <% end %>
+          </select>
+
+          <label for="ta_of_birth" class=" place home">TA of birth</label>
+          <select type="text" class="input-small  place home"  id="ta_of_birth" name="filter[ta_of_birth]" onchange="load_villages(this)">
+            <option></option>
+            <% @districts.each do |d|%>
+                <option value="<%= d.id%>"><%= d.name%></option>
+            <% end %>
+          </select>
+
+          <label for="village_of_birth" class=" place home">Village of birth</label>
+          <select type="text" class="input-small place home"  id="village_of_birth" name="filter[village_of_birth]">
+            <option></option>
+            <% @districts.each do |d|%>
+                <option value="<%= d.id%>"><%= d.name%></option>
+            <% end %>
+          </select>
+
+          <label for="hospital_of_birth" class=" place hospital">Hospital of birth</label>
+          <select type="text" class="input-small place hospital"  id="hospital_of_birth" name="filter[hospital_of_birth]">
+            <option></option>
+            <% @districts.each do |d|%>
+                <option value="<%= d.id%>"><%= d.name%></option>
+            <% end %>
+          </select>
+
+          <label for="other_birth_place" class=" place other">Specify other birth place</label>
+          <input type="text" class="input-small place other"  id="other_birth_place" name="filter[other_birth_place]">
+        </div>
+      </div>
+      <div class="control-group" style="padding-bottom: 10px;">
+        <div class="controls form-inline ">
+          <input onclick="check(this,['start_date','end_date'])" type="checkbox" class="input-small check" id="date_issued" style="margin-right: 105px;" name="filter[date_issued]">
+          <label for="date">Date issued: Start date</label>
+           <input type="text" id="start_date"  class = "dates date"
+            data-date-format="dd/mm//yyyy" onkeypress="return false;"
+            value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+             class = "dates date" name="filter[start_date]">
+           <i class="fa fa-calendar"></i>
+
+           <label for="date">End date</label>
+           <input type="text" id="end_date"
+             data-date-format="dd/mm//yyyy" onkeypress="return false;"
+             value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>"
+             class = "dates date" name="filter[end_date]">
+             <i class="fa fa-calendar"></i>
+
+        </div>
+      </div>
+    </fieldset>
+  </div>
+  <div class="buttons">
+    <a class="btn btn-success btn-sm" onmousedown="reloadDataTable();" style="cursor: pointer;">Apply</a>
+  </div>
+</form>
+</div>
+
+<div style="width: 100%; margin: auto;margin-top: 12px; padding-top: 5px;border-top: 2px solid darkred">
+  <table id="example" class="display" cellspacing="0" width="100%">
+    <thead>
+    <tr>
+      <th style="text-align: left;">BRN</th>
+      <th style="text-align: left;">BEN</th>
+      <th style="text-align: left;">Name</th>
+      <th style="text-align: center; width:90px;">Birthdate</th>
+      <th style="text-align: left;">Mother's Name</th>
+      <th style="text-align: left;">Father's Name</th>
+      <th style="text-align: center;">Date Reported</th>
+      <th style="text-align: center;">Status</th>
+      <th>&nbsp;
+      </th>
+    </tr>
+    </thead>
+
+    <tbody id="tbody">
+    </tbody>
+  </table>
+</div>
+
+
+
+  <%(@records || []).each do |record|
+  %>
+    <tr>
+      <td style="text-align: left;width: 15%"><%= record['brn'] %>&nbsp;</td>
+      <td style="text-align: left;width: 15%"><%= record['ben'] %>&nbsp;</td>
+      <td style="text-align: left;width: 15%"></td>
+      <td style="text-align: center;width: 15%"><%= record['dob'] %></td>
+      <td style="text-align: center;width: 15%"><%= record['mother_name'] %></td>
+      <td style="text-align: center;width: 15%"><%= record['father_name'] %></td>
+      <td style="text-align: center;"><%= record['status'] %></td>
+      <td>
+        <table style="width: 100%; text-align: center; border-style: none;">
+          <tr>
+            <td class="act-btn">
+              <button onclick="javascript:location='/show_person/<%= record['id']%>'"
+                      class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+<%end%>
+
+
+<script type="text/javascript">
+  jQuery(".filters input, .filters select").attr('disabled', true).val('');
+  jQuery(".check").attr('disabled', false).val('');
+  jQuery(".home, .hospital, .other").hide().val('');
+
+  selected = [];
+  table = null;
+  initt = false;
+
+  $i(document).ready(function() {
+
+  });
+
+  function initTable(){
+      table =  $i('#example').DataTable(
+              {
+                  "processing": true,
+                  "serverSide": true,
+                  "ordering": false,
+                  "ajax": {
+                      "url": "/search_cases",
+                      "data": function(d){
+                          var ids =['ben', 'brn', 'last_name', 'middle_name', 'first_name', 'gender', 'status',
+                              'place_of_birth', 'district_of_birth', 'ta_of_birth', 'village_of_birth',
+                              'hospital_of_birth', 'other_birth_place','start_date','end_date'];
+
+                          for(var i = 0; i < ids.length; i++){
+                              var node = document.getElementById(ids[i]);
+                              d[node.getAttribute('name')] = node.value;
+                          }
+                      },
+                      dataFilter: function(data){
+                          var json = jQuery.parseJSON( data );
+                          for(var i = 0; i < json['data'].length; i ++){
+                              var last_index = json['data'][i].length - 1;
+                              var person_id = json['data'][i][last_index]
+                              json['data'][i][last_index] =   '<td class="act-btn"> ' +
+                                      '<button onclick="javascript:location=\'/show_person/' + person_id + ' \'"     ' +
+
+                                      '    class="action-btn btn btn-success btn-xs"><i class="fa fa-eye"></i></button></td>';
+                          }
+                          return JSON.stringify( json );
+                      }
+                  }
+              }
+      );
+  }
+
+  function activeDate() {
+    jQuery(function() {
+      jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
+    jQuery(function() {
+      jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+    });
+  }
+  function enableField(fields){
+        for(var i = 0 ; i< fields.length ; i++){
+            jQuery("#"+fields[i]).removeAttr("disabled")
+        }
+  }
+  function disableField(fields){
+        for(var i = 0 ; i< fields.length ; i++){
+            jQuery("#"+fields[i]).attr("disabled","disabled")
+            jQuery("#"+fields[i]).val("")
+        }
+  }
+  function check(node){
+      var nodes = jQuery(node).parent().children();
+
+      if(jQuery(node).is(':checked')){
+        nodes.attr('disabled', false)
+      }else{
+        nodes.attr('disabled', true).val('')
+      }
+
+      jQuery(node).attr('disabled', false)
+  }
+  function loadData(data){
+    var row = document.createElement('tr');
+    __$('tbody').appendChild(row);
+    var td = document.createElement('td');
+    td.className = 'table-cell'
+    td.style.textAlign = 'center';
+    td.innerHTML = data['ben'];
+    row.appendChild(td);
+
+    var td = document.createElement('td');
+    td.className = 'table-cell'
+    td.style.textAlign = 'center';
+    td.innerHTML = data['name'];
+    row.appendChild(td);
+
+      var td = document.createElement('td');
+      td.className = 'table-cell'
+      td.style.textAlign = 'center';
+      td.innerHTML = data['dob'];
+      row.appendChild(td);
+
+      var td = document.createElement('td');
+      td.className = 'table-cell'
+      td.style.textAlign = 'center';
+      td.innerHTML = data['gender'];
+      row.appendChild(td);
+
+      var td = document.createElement('td');
+      td.className = 'table-cell'
+      td.style.textAlign = 'center';
+      td.innerHTML = data['mother_name'];
+      row.appendChild(td);
+
+      var td = document.createElement('td');
+      td.className = 'table-cell'
+      td.style.textAlign = 'center';
+      td.innerHTML = data['father_name'];
+      row.appendChild(td);
+
+      var td = document.createElement('td');
+      td.className = 'table-cell'
+      td.style.textAlign = 'center';
+      td.innerHTML = data['status'];
+      row.appendChild(td);
+  }
+
+  function showFields(select){
+    var clas = select.value.toLowerCase();
+    jQuery(".place").hide().val('');
+    jQuery("." + clas).show().val('');
+  }
+
+  function reloadDataTable(node){
+
+      if (initt == true) {
+          table.ajax.reload();
+      }else{
+          initt = true;
+          initTable();
+      }
+
+
+  }
+
+    function capitalize(string){
+        string = string.replace(/\_/g, ' ');
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+
+    function __$(id){
+        return document.getElementById(id);
+    }
+
+    function load_tas(district){
+        var district_name = district.options[district.selectedIndex].text;
+
+        jQuery("#village_of_birth").empty();
+        jQuery("#ta_of_birth").empty();
+        jQuery("#hospital_of_birth").empty();
+
+        if (__$('place_of_birth').value == 'Home') {
+            jQuery.ajax({
+                url: '/person/get_ta_complete?district=' + district_name,
+                success: function (result) {
+                    var list = JSON.parse(result);
+
+                    for (var i = 0; i < list.length; i++) {
+                        var o = document.createElement('option');
+                        o.innerHTML = list[i][1];
+                        o.setAttribute('value', list[i][0]);
+                        __$('ta_of_birth').appendChild(o);
+                    }
+                }
+            })
+        }
+
+        if (__$('place_of_birth').value == 'Hospital') {
+            jQuery.ajax({
+                url: '/person/get_hospital_complete?district=' + district_name,
+                success: function (result) {
+                    var list = JSON.parse(result);
+
+
+                    for (var i = 0; i < list.length; i++) {
+                        var o = document.createElement('option');
+                        o.innerHTML = list[i][1];
+                        o.setAttribute('value', list[i][0]);
+                        __$('hospital_of_birth').appendChild(o);
+                    }
+                }
+            })
+        }
+    }
+
+  function load_villages(ta){
+      var district_name = __$('district_of_birth').options[__$('district_of_birth').selectedIndex].text;
+      var ta_name = ta.options[ta.selectedIndex].text;
+
+      jQuery.ajax({
+          url: '/person/get_village_complete?district=' + district_name + "&ta=" + ta_name,
+          success: function(result){
+              var list = JSON.parse(result);
+              jQuery("#village_of_birth").empty();
+              for(var i = 0; i < list.length; i++){
+                  var o = document.createElement('option');
+                  o.innerHTML = list[i][1];
+                  o.setAttribute('value', list[i][0]);
+                  __$('village_of_birth').appendChild(o);
+              }
+          }
+      })
+  }
+activeDate();
+</script>

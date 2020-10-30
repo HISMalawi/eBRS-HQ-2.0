@@ -1,0 +1,211 @@
+
+<style>
+
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+.callout-info {
+  background-color: #00c0ef;
+}
+
+.search-params {
+  margin-bottom: 50px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+th{
+    background: lightsteelblue;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<script>
+
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'copyHtml5',
+                exportOptions: {
+                 columns: ':contains("Office")'
+                }
+            },
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ],
+      "pageLength": 10,
+      "processing": true
+    });
+}
+
+
+function addRows(data) {
+  var records = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < records.length; i++) {
+    person_id     =  records[i]['person_id'];
+    first_name    =  records[i]['first_name'];
+    middle_name   =  records[i]['middle_name'];
+    last_name     =  records[i]['last_name'];
+    dob           =  records[i]['birthdate']; 
+    gender        =  records[i]['gender'];
+    ben           =  records[i]['birth_entry_number'];
+    brn           =  records[i]['registration_number'];
+
+    dataTable.api().row.add([ben, brn, first_name, middle_name, last_name, dob, gender, "--"]).draw();
+  }
+}
+
+function fetchData() {                                                       
+                                                                            
+  if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari  
+    xmlhttp=new XMLHttpRequest();                                             
+  }else{// code for IE6, IE5                                                  
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");                           
+  }                                                                           
+  xmlhttp.onreadystatechange=function() {                                     
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {                       
+      var results = xmlhttp.responseText;                                     
+      if(results == 'undefined' || results == '' || results == '"not validate"') {                           
+        return;                                                               
+      }else{                                                                  
+        dataTable.fnClearTable();
+        addRows(results);    
+      }                                                                       
+    }                                                                         
+  }      
+
+  var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+  var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+  var location_id = document.getElementById('selected_dc').value;
+                                                                     
+  xmlhttp.open("GET","/get_printed_certificates/" + location_id + "/" + start_date + "/" + end_date, true);           
+  xmlhttp.send();                                                             
+}
+
+
+</script>
+
+<h3>Printed certificates</h3>
+
+<div class="callout callout-info" style="margin: 10px;">
+  <p>To view data, first select the&nbsp;<b>period (district)</b>.</p>
+  <p>Select:&nbsp;<b>Start date</b>.</p>
+  <p>Then select:&nbsp;<b>End date</b>.</p>
+  <p>
+    <p><b><span style="color: red;">*</span>Start date should never be greater than End date</b></p>
+  </p>
+</div>
+
+<div class="search-params">
+  <label>Select district:</label>
+  <select id="selected_dc" style="margin-right: 10%;">
+    <option></option>
+    <%(@districts || []).each do |district|%>
+      <option value="<%=district.id%>"><%=district.name%></option>
+    <%end%>
+  </select>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>start date</b>:</label>
+  <input type="text" id="start_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>end date</b>:</label>
+  <input type="text" id="end_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
+  <input type='button' class='btn btn-success' value='Fetch data' onclick="fetchData();" />
+</div>
+
+<table style="width:100%" id="report" class="table table-striped table-advance table-hover">
+  <thead>
+    <tr>
+      <th style="width: 10%;">BRN</th>
+      <th style="width: 10%;">BEN</th>
+      <th>First name</th>
+      <th>Middle name</th>
+      <th>Last name</th>
+      <th>Birthdate</th>
+      <th>Gender</th>
+      <th>Date Reported</th>
+    </tr>
+  </thead>
+  </tbody>
+  </tbody>
+</table>
+
+<script>
+
+
+function activeDate() {
+  jQuery(function() {
+    jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+  });
+
+  jQuery(function() {
+    jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+  }); 
+
+}
+
+activeDate();
+dataT();
+</script>

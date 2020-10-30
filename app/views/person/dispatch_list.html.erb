@@ -1,0 +1,163 @@
+<!doctype html>
+<style>
+
+body {
+	-moz-user-select: none;
+	font-family: "Nimbus Sans L", "Arial Narrow", sans-serif;
+	margin-left: 25px;
+	margin-right: 20px;
+	color: #000;
+	font-size: 10px;
+}
+
+#logo {
+	padding-right: 10px;
+}
+
+#header th  {
+	text-align: left;
+}
+
+#datatable , #datatable th, #datatable td {
+	border-collapse: collapse;
+	border: 1px solid gray;
+}
+
+#datatable td {
+	margin-left: 5px;
+	margin-right: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+
+}
+
+
+#datatable thead {display: table-header-group;}
+
+tr { page-break-inside: avoid; }
+
+table, tr, td, th, tbody, thead, tfoot, td div {
+    page-break-inside: avoid !important;
+}
+
+
+
+
+</style>
+
+<div id="header">
+  <h5>NRB Printed Certificates List</h5>
+  <table>
+   <tr>
+     <td rowspan="4" colspan="4" id="logo">
+     	<img src="/assets/coa.png" height="60">
+
+     </td>
+   </tr>
+  
+   <tr><th>District:</th>
+       <td colspan="3" style="min-width: 100px;"><%= @district.name rescue "All" %></td>
+   </tr>
+
+   <tr><th>Printed On:</th>
+       <td colspan="3"><%= Date.today.strftime("%d %b %Y") %></td>
+   </tr>
+  </table>
+</div>
+<br/>
+<br/>
+<div id="content" style="width: 99%;" >
+	<table id="datatable" style="width: 100%;">
+		<thead>
+			<tr>
+				<th rowspan="2" width="5">#</th>
+				<th rowspan="2" width="100">Name</th>
+				<th rowspan="2" width="80">DoB</th>
+				<th rowspan="2" >Sex</th>
+				<th rowspan="2" >Place of Birth</th>
+				<th rowspan="2">Location</th>
+				<th rowspan="2"> Name of Mother </th>
+				<th colspan="4">Informant</th>
+				<th colspan="5" width="500">Collected By</th>
+		</tr>
+		<tr>
+				<th>Name</th>
+				<th>District</th>
+				<th>TA</th>
+				<th>Village</th>
+				<th width="130">Name</th>
+				<th width="80">ID Number<br/>(Type-Number)</th>
+				<th width="80">Phone Number</th>
+				<th width="80">Sig.</th>
+				<th width="80">Date</th>
+				
+		</tr>
+		</thead>
+	<tbody>
+		<% @data["data"].each_with_index do |row, i| %>
+			<% #PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "Dispatched at HQ")%>
+			<%
+				log = "#{Rails.root}/tmp/dispatch-#{Dir["#{Rails.root}/tmp/*"].count + 1}.txt"
+				`echo "#{row["person_id"]}" >> #{log}`
+			%>
+			<%  @village = row["VillageOfInformant"]
+				if row["VillageOfInformant"] =="Other"
+					@address = PersonAddress.find(row["person_addresses_id"])
+					@village = @address.current_village_other
+				end 
+				@ta = row["TraditionalAuthorityOfInformant"]
+				if row["TraditionalAuthorityOfInformant"] =="Other"
+					@address = PersonAddress.find(row["person_addresses_id"])
+					@ta = @address.current_ta_other
+				end 
+				mother_query = "SElECT person_a, person_b, person_name.first_name as MotherFirstName, person_name.last_name as MotherLastName
+				FROM person_relationship INNER JOIN person_name ON  person_relationship.person_b = person_name.person_id 
+				WHERE person_relationship_type_id = '5' AND  person_a = '#{row['person_id']}'"
+  
+				mother = ActiveRecord::Base.connection.select_all(mother_query ).as_json.first
+			%>
+			<tr>
+				<td style="text-align:right">
+					<%= i + 1 %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['Name'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['DoB'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['Sex'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['PoB'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['Location'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= "#{mother['MotherFirstName']} #{mother['MotherLastName']}" %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['NameOfInformant'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= row['DistrictOfInformant'] %>
+				</td>
+				<td style="text-align:center" >
+					<%= @ta %>
+				</td>
+				<td style="text-align:center" >
+					<%= @village %>
+				</td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		<% end %>
+
+	 </tbody>
+	</table>
+</div>

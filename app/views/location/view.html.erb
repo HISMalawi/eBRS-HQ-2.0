@@ -1,0 +1,43 @@
+<style>
+  strong{}
+</style>
+
+<div>
+  <ol class="breadcrumb " style="margin: 3px; padding: 5px;">
+    <li><a href="/">Home</a></li>
+    <li><a href="/location/index">Locations</a></li>
+    <li><a class='active' href="/location/view?location_id=<%=@location.id%>">View Location</a></li>
+  </ol>
+</div>
+<div class="panel panel-default">
+    <div class="panel-heading ">
+      <span class=""></span>
+      <b>View Location</b>
+      <% if false %>
+          <div class="panel-btn">
+            <a class="btn btn-sm btn-info" href="/location/edit?location_id=<%=@location.id%>">
+              <span class=""></span>
+              Edit
+            </a>
+          </div>
+      <% end %>
+    </div>
+    <div class="panel-body">
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-md-6">
+            <div class="display-details">
+              <h3><strong>Name</strong>&nbsp;&nbsp;&nbsp;<%= @location.name%></h3>
+              <% if @location.parent_location.present?%>
+                  <p><strong>Parent Location</strong>&nbsp;&nbsp;&nbsp;<%=Location.find(@location.parent_location).name%></p>
+              <% end %>
+              <p><strong>Location Type(s)</strong>&nbsp;&nbsp;&nbsp;<%=@tags.join(', ')%></p>
+              <p><strong>Location Code</strong>&nbsp;&nbsp;&nbsp;<%=@location.code%></p>
+              <p><strong>Description</strong>&nbsp;&nbsp;&nbsp;<%=@location.description%></p>
+              <p><strong>Date Created</strong>&nbsp;&nbsp;&nbsp;<%=@location.created_at.strftime("%d/%b/%Y")%></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

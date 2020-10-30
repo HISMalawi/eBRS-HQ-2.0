@@ -6,11 +6,11 @@
 
 # Ignore bundler config.
 /.bundle
-
+public/sites.yml
 # Ignore the default SQLite database.
 /db/*.sqlite3
 /db/*.sqlite3-journal
-
+metadata.sql
 # Ignore all logfiles and tempfiles.
 /log/*.log
 /tmp
@@ -23,3 +23,10 @@ config/*.yml
 *.pid
 .rvmrc
 passenger*
+*.swp
+nbproject/
+public/errors/*
+*.~*
+public/sites/*.yml
+public/query.sql
+public/*.pdf

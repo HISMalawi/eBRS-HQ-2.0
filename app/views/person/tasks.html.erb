@@ -1,0 +1,96 @@
+<style>
+
+
+.panel-btns-main-containers {
+  width: 100%;
+}
+
+.dashboard-title {
+  margin-left: 1%;
+}
+
+.separator-line {
+  width: 100%;
+  border-style: solid;
+  border-width: 1px 0px 0px 0px;
+}
+
+#table-container {
+  display: table;
+  width: 100%;
+}
+
+.rows  {
+  display: table-row;
+  width: 100%;
+}
+
+.cells {
+  display: table-cell;
+  padding: 10px;
+}
+
+.divbtn{
+    height: 112px;
+    padding: 0px;
+    background: ghostwhite;
+    text-align: left;
+    padding-left: 10px;
+}
+.icon-attr{
+    height: 70px;
+}
+
+</style>
+
+
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%>
+            <span style="padding-left: 50px;">
+              <small>statistics updated: <span style="color: darkseagreen"><%= @stats_time%></span></small>
+            </span>
+          </h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <div class="panel-body" style="">
+           <%(@tasks || []).each do |title, desc, stauses, link, icon, role|
+            count = stauses.collect{|s| (@stats[s] || 0)}.sum()
+            count =  @entered_at_dro_stats if title.match("Above 16")
+
+                  if role.present? && role != User.current.user_role.role.role && SETTINGS['enable_role_privileges'].to_s == 'true'
+                    next
+                  end
+
+                 if !link.match(/\?/)
+                    @link = link+"?" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 else
+                   @link = link+"&" + stauses.collect{|w| "statuses[]=#{w}"}.join("&") +"&destination="+title
+                 end
+            %>
+
+                  <span class="col-xs-6 col-sm-4 col-md-3 col-lg-2" onclick="window.location='<%=@link%>'">
+                    <span class="divbtn" style="padding-top: 0px;padding-bottom: 0px;">
+                       <span class="count-label pull-right" >
+                            <p style="padding-top: 5px;padding-right: 5px;font-weight: bold;color: black"><%= ((count == 0 || params[:destination] == 'Special Cases')? '' : count)%></p>
+                        </span>
+                        <span class="icons" >
+                            <img style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;" class="icon-attr" src="<%= icon %>">
+                            <p style="padding-top: 0px;margin-top: 0px;padding-bottom: 0px;margin-bottom: 0px;"><%=title%></p>
+                        </span>
+                    </span>
+
+                  </span>
+            <%end%>
+    </div>
+</div>

@@ -16,115 +16,156 @@ class UsersController < ApplicationController
 
   #Displays The Created User
   def show
-
-    @section = "View User"
-
-    @user = User.find(params[:id])
-
-    @person_name = PersonName.find_by_person_id(@user.person_id)
-
-    @user_role = UserRole.find(@user.user_role_id)
-
-    @targeturl = "/view_users"
-
-    render :layout => "facility"
-
+    @user = User.find(params[:user_id])
   end
 
   #Displays All Users
   def view
-
     @users = User.all.each
-
-    @section = "View Users"
-
-    @targeturl = "/users"
-
-    render :layout => "facility"
+    
   end
 
   #Adds A New User
   def new
-
     @user = User.new
+    @usernames = User.all.map(&:username)
+    
+    @roles = ['']
 
-    @section = "Create User"
 
-    @targeturl = "/user"
+    @gender = ['','Female','Male']
 
-    render :layout => "touch"
+  end
 
+  def get_roles
+    @roles = [['', '']]
+    Role.where(:level => params[:level]).order('role DESC').map do |r|
+      @roles << [r.role, r.id]
+    end
+
+    render text: @roles.to_json
   end
 
   # Edits Selected User
   def edit
-
-    #redirect_to "/" and return if !(User.current_user.activities_by_level("Facility").include?("Update User"))
-
-    @user = User.find(params[:id])
-
-    @section = "Edit User"
-
-    @targeturl = "/view_users"
-
-    render :layout => "touch"
+    @user = User.find(params[:user_id])
+    @usernames = User.all.map(&:username)
+    
+    @roles = ['']
+    
+    Role.where(:level => 'HQ').map do |r|
+      @roles << [r.role, r.id]
+    end
+    
+    @gender = ['','Female','Male']
 
   end
 
   #Creates A New User
   def create
 
-      @targeturl = "/user"
-      #user = User.find(params[:user]['username'])
+    role = Role.find(params[:post][:user_role]['role'])
+    username = params[:post][:username]
+    password = params[:post][:password]
+    email    = params[:post][:email]
 
-      #if user.present?
-        #flash["notice"] = "User already already exists"
-         #redirect_to "/user/new" and return
-      #end
-      core_person = CorePerson.create(person_type_id: 1)
-      person_name = PersonName.create(person_id: core_person.person_id, first_name: params[:user]['person']['first_name'], last_name: params[:user]['person']['last_name'] )
-      person_name_code = PersonNameCode.create(person_name_id: person_name.person_name_id, first_name_code: params[:user]['person']['first_name'].soundex, last_name_code: params[:user]['person']['last_name'].soundex )
-
-      user_role = UserRole.create(role: params[:user]['user_role']['role'], level: 1, voided: 0)
-
-      @user = User.create(username: params[:user]['username'], plain_password: params[:user]['plain_password'], location_id: 1, uuid: 1, user_role_id:     	 user_role.user_role_id,  email: params[:user]['email'], person_id: core_person.person_id)
-
-      respond_to do |format|
-
-      if @user.present?
-        format.html { redirect_to @user, :notice => 'User was successfully created.' }
-        format.json { render :show, :status => :created, :location => @user }
-      else
-        format.html { render :new }
-        format.json { render :json => @user.errors, :status => :unprocessable_entity }
-      end
+    first_name  = params[:post][:person_name][:first_name]
+    last_name   = params[:post][:person_name][:last_name]
+    similar_users = User.where(username: username)
+    if similar_users.count > 0
+      raise "User with Username = #{username} Already Exists, Please Try Another Username".to_s
     end
+
+    ActiveRecord::Base.transaction do
+      core_person = CorePerson.create(person_type_id: PersonType.where(name: 'User').first.id)
+      #person = Person.create(birthdate: '1700-01-01', birthdate_estimated: true, gender: gender, person_id: core_person.id)
+
+      names = PersonName.create(first_name: first_name, last_name: last_name, person_id: core_person.id)
+      PersonNameCode.create(first_name_code: first_name.soundex,
+        last_name_code: last_name.soundex, person_name_id: names.id)
+
+      user = User.create(person_id: core_person.id, username: username, password_hash: password, location_id:
+          SETTINGS['location_id'], email: email, last_password_date: Time.now)
+
+      UserRole.create(user_id: user.id, role_id: role.id)
+
+      if role.role == "Certificate Signatory"
+        uploaded_io = params[:post][:signature]
+        if uploaded_io.present?
+          File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+            file.write(uploaded_io.read)
+          end
+          signature = uploaded_io.original_filename
+          attribute_type = PersonAttributeType.find_by_name("Signature") 
+          PersonAttribute.create(person_id: core_person.id, 
+                                 person_attribute_type_id: attribute_type.id, 
+                                 value: signature)
+          gp = GlobalProperty.find_by_property("signatory")
+          gp.destroy if gp.present?
+          GlobalProperty.create(property: "signatory", 
+                                value: username, 
+                                uuid: SecureRandom.uuid)
+        end
+      end  
+      
+    end
+
+    redirect_to '/users'
   end
 
   def update
+    role = Role.find(params[:post][:user_role]['role'])
+    user = User.find(params[:user_id])
+    person = Person.find(user.person_id) rescue nil
+    person_name = PersonName.where(person_id: user.person_id).last
+    name_code = PersonNameCode.where(person_name_id: person_name.id).last
+    user_role = user.user_role
+    username = params[:post][:username]
+    password = params[:post][:password]
+    email    = params[:post][:email]
 
-    if request.referrer.match('edit_account')
-      @current_user.preferred_keyboard = params[:user][:preferred_keyboard]
-      @current_user.save!
-      redirect_to '/users/my_account' and return
-    end
+    first_name  = params[:post][:person_name][:first_name]
+    last_name   = params[:post][:person_name][:last_name]
+    gender      = (params[:post][:person][:gender].split('')[0] rescue params[:post][:person][:gender]) rescue nil
+    ActiveRecord::Base.transaction do
 
-    if params[:user][:plain_password].present? && params[:user][:plain_password].length > 1
-      @user.update_attributes(:password_hash => params[:user][:plain_password], :password_attempt => 0, :last_password_date => Time.now)
-
-    end
-
-    respond_to do |format|
-      #if ((User.current_user.role.strip.downcase.match(/admin/) rescue false) ? true : false) and @user.update_attributes(user_params)
-
-        if @user.present?
-        format.html { redirect_to @user, :notice => 'User was successfully updated.' }
-        format.json { render :show, :status => :ok, :location => @user }
-        else
-        format.html { render :edit }
-        format.json { render :json => @user.errors, :status => :unprocessable_entity }
+      if password.length > 4
+        user.update_attributes(
+          password_hash: password,
+          password_attempt: 0,
+          email: email,
+          last_password_date: Time.now)
       end
-      end
+
+      person.update_attributes(
+          gender: gender,
+      ) unless person.blank?
+
+      person_name.update_attributes(
+          first_name: first_name,
+          last_name: last_name
+      )
+
+      user_role.update_attributes(
+          role_id: role.id
+      )
+
+      if role.role == "Certificate Signatory"
+        uploaded_io = params[:post][:signature]
+        if uploaded_io.present?
+          File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+            file.write(uploaded_io.read)
+          end
+          signature = uploaded_io.original_filename
+          attribute_type = PersonAttributeType.find_by_name("Signature") 
+          PersonAttribute.create(person_id: person.id, 
+                                     person_attribute_type_id: attribute_type.id, 
+                                     value: signature)
+        end
+      end  
+
+      redirect_to '/users'
+    end
   end
 
   #Displays All Users
@@ -150,81 +191,62 @@ class UsersController < ApplicationController
     render :text => results.to_json
   end
 
-  #Deletes Selected User
-  def destroy
-
-    @user.destroy if ((User.current_user.role.strip.downcase.match(/admin/) rescue false) ? true : false)
-      respond_to do |format|
-      format.html { redirect_to "/view_users", :notice => 'User was successfully destroyed.' }
-      format.json { head :no_content }
-    end
-
-  end
-
-  #Revokes User Access Rights
-  def block
-
-    @users = User.all.each
-
-    @section = "Block User"
-
-    @targeturl = "/users"
-
-    render :layout => "facility"
-
-  end
-
   #Gives Back Bloked User Access Rights
   def unblock
+    user = User.find(params[:user_id]) rescue nil
+    if !user.nil?
+      if admin?
+        user.update_attributes(active: true, un_or_block_reason: nil)
+      end
+    end
 
-    @users = User.all.each
-
-    @section = "Unblock User"
-
-    @targeturl = "/users"
-
-    render :layout => "facility"
-
+    redirect_to "/users" and return
   end
 
   #Revokes User Access Rights
   def block_user
 
-    user = User.find(params[:id]) rescue nil
-
-    if !user.nil?
-
-      user.update_attributes(:active => false, :un_or_block_reason => params[:reason]) if ((User.current_user.role.strip.downcase.match(/admin/) rescue false) ? true : false)
-
+    if params['unblock'].present?
+      user = User.find(params[:user_id]) rescue nil
+      if !user.nil?
+        if admin?
+          user.update_attributes(active: true,
+                                 un_or_block_reason: 'Unkown')
+        end
+      end
+    else
+      user = User.find(params[:user_id]) rescue nil
+      if !user.nil?
+        if admin?
+          user.update_attributes(active: false,
+            un_or_block_reason: (params[:reason].blank? ? 'Unknown' : params[:reason]))
+        end
+      end
     end
 
-    redirect_to "/view_users" and return
-
+    render :text => true
   end
 
   #Gives Back Bloked User Access Rights
-  def unblock_user
+  def void_user
+    user = User.find(params[:user_id]) rescue nil
 
-    user = User.find(params[:id]) rescue nil
-
-    if !user.nil?
-
-      user.update_attributes(:active => true, :un_or_block_reason => params[:reason]) if ((User.current_user.role.strip.downcase.match(/admin/) rescue false) ? true : false)
+    if !user.blank?
+      if admin?
+        user.update_attributes(blocked: true)
+      end
     end
 
-    redirect_to "/view_users" and return
-
+  render :text => true
   end
 
   def search
 
     #redirect_to "/" and return if !(User.current_user.activities_by_level("Facility").include?("View Users"))
-
     @section = "Search for User"
 
     @targeturl = "/users"
 
-    render :layout => "facility"
 
   end
 
@@ -248,7 +270,7 @@ class UsersController < ApplicationController
 
     users.each do |user|
 
-      next if user.username.strip.downcase == User.current_user.username.strip.downcase
+      next if user.username.strip.downcase == User.current.username.strip.downcase
 
       record = {
           "username" => "#{user.username}",
@@ -278,7 +300,7 @@ class UsersController < ApplicationController
 
     users.each do |user|
 
-      next if user.username.strip.downcase == User.current_user.username.strip.downcase
+      next if user.username.strip.downcase == User.current.username.strip.downcase
 
       record = {
           "username" => "#{user.username}",
@@ -299,7 +321,7 @@ class UsersController < ApplicationController
 
 
   def username_availability
-    user = User.get_active_user(params[:search_str])
+    user = User.where(username: params[:search_str])
     render :text => user = user.blank? ? 'OK' : 'N/A' and return
   end
 
@@ -310,7 +332,7 @@ class UsersController < ApplicationController
 
     @targeturl = "/"
 
-    @user = User.current_user
+    @user = User.current
 
     render :layout => "facility"
 
@@ -323,15 +345,13 @@ class UsersController < ApplicationController
 
     @targeturl = "/"
 
-    @user = User.current_user
-
-    render :layout => "facility"
+    @user = User.current
 
   end
 
   def update_password
 
-    user = User.current_user
+    user = User.find(params[:user_id])
 
     result = user.password_matches?(params[:old_password])
 
@@ -349,6 +369,21 @@ class UsersController < ApplicationController
 
   end
 
+  def deleted
+    @users = User.unscoped.where(voided: true)
+  end
+
+  def recover
+    user = User.unscoped.find(params[:user_id]) rescue nil
+    if !user.nil?
+      if admin?
+        user.update_attributes(voided: false, void_reason: nil)
+      end
+    end
+
+    redirect_to "/deleted_users" and return
+  end
+
   private
   # Use callbacks to share common setup or constraints between actions.
   def set_user
@@ -361,11 +396,8 @@ class UsersController < ApplicationController
   end
 
   def check_if_user_admin
-
     @search = icoFolder("search")
-
-    @admin = ((User.current_user.role.strip.downcase.match(/admin/) rescue false) ? true : false)
-
+    @admin = ((User.current.user_role.role.role.strip.downcase.match(/Administrator/i) rescue false) ? true : false)
   end
 
 

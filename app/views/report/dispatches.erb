@@ -1,0 +1,230 @@
+
+<style>
+th{
+    background: lightsteelblue;
+}
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+
+
+.search-params {
+  margin-bottom: 20px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+
+<script>
+
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'excelHtml5',
+            'csvHtml5'
+        ],
+      "pageLength": 10,
+      "processing": true
+    });
+}
+
+
+function addRows(data) {
+  var records = JSON.parse(data);
+  counter = 0;
+  for (var i = 0; i < records.length; i++) {
+    person_id     =  records[i]['person_id'];
+    first_name    =  records[i]['first_name'];
+    middle_name   =  records[i]['middle_name'];
+    last_name     =  records[i]['last_name'];
+    dob           =  records[i]['birthdate']; 
+    gender        =  records[i]['gender'];
+    ben           =  records[i]['birth_entry_number'];
+    brn           =  records[i]['registration_number'];
+    date           =  records[i]['date'];
+
+    dataTable.api().row.add([brn, ben, first_name, middle_name, last_name, dob, gender, date, '']).draw();
+  }
+}
+
+function fetchData() {
+    var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+    var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+
+    window.location.href = "/dispatches?start_date=" + start_date + "&end_date=" + end_date
+}
+
+
+</script>
+
+<h3>Dispatch Batches</h3>
+
+<table id="report" class="table table-bordered table-sm table-inverse" style="margin-left: 1.5%;width: 98.5%;font-size: 1.1em;">
+
+  <thead>
+  <tr>
+    <th style="border-right: 2px solid #f8f8ff;background: white;width: 4%;">&nbsp;#</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 17%;">Dispatch Date</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 17%;">District</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 17%;">Dispatcher</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 16%;">Total Dispatched</th>
+    <th style="border-right: 1px solid #f8f8ff;width: 17%;">&nbsp;</th>
+
+  </tr>
+  </thead>
+  <tbody>
+  <% @data.each do |d|%>
+        <tr>
+            <td><%= d['index']%></td>
+            <td><%= d['datetime']%></td>
+            <td><%= d['district']%></td>
+            <td><%= d['user_names']%></td>
+            <td><%= d['count']%></td>
+            <td>
+              <div type='button' class='btn btn-success btn-sm' onclick="load('<%=d['datetime']%>')">Re-Print</div>
+            </td>
+        </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<iframe id="iframe"
+style="position: absolute; display: none; width: 82%;min-height: 75vh;left: 13%; top: 7% !important;margin-top: 25px !important;
+        padding: 4px; background: white;z-index: 2500; background: darkslategray;"
+src="" ></iframe>
+<shield id="shield" onmousedown="hideFrame()"
+        style="position: absolute; display: none; height: 300vh; width: 150%;top: 0px; left: 0px; z-index: 2000;background: black; opacity: 0.5;"></shield>
+
+<div class="modal fade" id="printerModal" tabindex="-1" role="dialog" aria-labelledby="printerModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="printerModalLabel" style="text-align: left;">
+          Select Printer for Certificate(s) List
+        </h4>
+      </div>
+      <div class="modal-body">
+        <span style="text-align:center;">
+          <table align="center" id="printers">
+            <% @available_printers.each do |printer| %>
+                <tr onmousedown="updateValue(this)" value="<%= printer %>">
+                  <td><input class='printer-radio' type="radio" class="printer_radio_button" value="<%= printer %>" name="printer_name"/></td>
+                  <td style="text-align: left; padding-left:50px;"><%= printer %></td>
+                </tr>
+            <% end %>
+          </table>
+        </span>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" id="dispatch_btn">Print Dispatch Note</button>
+          <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    printer_name = '';
+
+    function updateValue(obj){
+        printer_name = obj.getAttribute('value');
+    }
+
+    function loadDrilldownFrame(url){
+        url = url + "&start_date=" + jQuery("#start_date").val() + "&end_date=" + jQuery("#end_date").val();
+        __$("iframe").setAttribute("src", url);
+        jQuery("#iframe, #shield").show();
+    }
+
+    function hideFrame(){
+        __$("iframe").setAttribute("src", "");
+        jQuery("#iframe, #shield").hide();
+    }
+
+    function activeDate() {
+      jQuery(function() {
+        jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
+
+      jQuery(function() {
+        jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+      });
+
+    }
+
+    function load(date){
+
+        jQuery("#printerModal").modal('show');
+        __$('dispatch_btn').onmousedown = function(){
+            doPrint(date, printer_name);
+        }
+    }
+
+    function doPrint(date, printer_name){
+        jQuery.ajax({
+            url: ("/dispatch_note_reprint?date=" + date + "&printer_name=" + printer_name),
+            success: function(response){
+                jQuery("#printerModal").modal('hide');
+            },
+            error: function(response){
+                alert("Something Went Wrong!")
+            }
+        })
+    }
+
+    jQuery(".printer-radio").prop('checked', false);
+
+    activeDate();
+     dataT()
+</script>

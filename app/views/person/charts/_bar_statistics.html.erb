@@ -1,0 +1,102 @@
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+
+<style type="text/css">
+  ${demo.css}
+</style>
+
+<script type="text/javascript">
+function getMonthStr(i) {
+  months = ['Jan','Feb','Mar','Apr','May','June','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[i];
+}
+
+var stats_months = [];
+var stats_series = [];
+var series = [];
+
+<%(@sorted_months_years).each do |m|
+  year = m.to_s[-4..-1]
+  month = m.to_s.sub(year,'').to_i
+  %>
+  var m = getMonthStr(<%= (month - 1) %>);
+  stats_months.push(m + " <%=year%>");
+<%end%>
+
+<%(@districts_stats || {}).each do |code, data|
+  (data || []).each do |s|%>
+    series.push(<%= s %>);
+  <%end
+  if code.match(/BT/i) || code.match(/ZA/i) || code.match(/LL/i) || code.match(/NU/i) || code.match(/CP/i) %>
+    var true_false = true;
+  <%else%>
+    var true_false = false;
+  <%end%>
+  stats_series.push({name: "<%=code%>", data: series, visible: true_false });
+  series = [];
+<%end%>
+
+
+
+function renderChart(stats) {
+  $i(function () {
+  $i('#bar-chart').highcharts({
+      chart: {
+        type: 'line'
+      },
+      title: {
+          text: '<b>Last 12 months reported births</b>',
+          x: -20 //center
+      },
+      subtitle: {
+          text: '',
+          x: -20
+      },
+      xAxis: {
+          categories: stats_months
+      },
+      yAxis: {
+          allowDecimals: false,
+          min: 0,
+          title: {
+              text: 'No.of reported births'
+          },
+          plotLines: [{
+              value: 0,
+              width: 1,
+              color: '#808080'
+          }]
+      },
+      tooltip: {
+          valueSuffix: ''
+      },
+      legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          borderWidth: 0
+      },
+      exporting: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      series: stats
+  });
+  });
+}
+
+
+renderChart(stats_series);
+</script>
+
+<body>
+
+<div style="border-style: solid; border-width: 2px 0px 0px 0px; border-color: darkslategray;">&nbsp;</div>
+
+<div id="bar-chart" style="width: 100%; height: 300px; margin: 0 auto; margin-top: 0px; padding-top: 0px;"></div>
+
+</body>
+</html>

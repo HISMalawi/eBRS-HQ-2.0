@@ -1,0 +1,688 @@
+
+<style>
+
+    .record th {
+        padding: 8px;
+        background-color: #666;
+        color: #eee;
+        text-align: center !important;
+    }
+    
+    .record .existing {
+     
+       background-color: #316193;
+       
+    }
+
+    .record td {
+        padding: 8px;
+    }
+    #comment_popoup{
+    width: 45%;
+    height: 50%;
+    position: absolute;;
+    left: 25%;
+    top: 20%;
+    background: #eeeeef;
+    border-radius: 2%;
+    color: black;
+    box-shadow: 5px 5px 2px #888888;
+    visibility: hidden;
+  }
+  #title{
+    width: 98%;
+    margin:auto;
+    margin-top: 0.8%;
+    background: #345d8c;
+    font-size: 150%;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-align: center;
+    padding-top: 2%;
+    padding-bottom: 2%;
+    border-top-right-radius: 7%;
+    border-top-left-radius: 7%;
+    border-bottom: 2px solid #d9d8d7;
+  }
+  #comment{
+    width: 98%;
+    height: 58%;
+    overflow-y: scroll;
+  }
+  #comment ul{
+    list-style-type: none;
+  }
+  #comment ul > li{
+    display: block;
+    background: #FFFFFF;
+    width:92%;
+    padding: 1.5%;
+    margin: auto;
+    margin-top: 0%;
+    border-radius: 3%;
+    padding-left: 2.5%;
+    border: 1px solid #d9d8d7;
+  }
+  #button{
+    width: 100%;
+    text-align: center;
+    padding: 5%;
+  }
+
+</style>
+<%=javascript_include_tag "bootstrap/bootstrap.min" %>
+<div class="panel panel-default">
+  <div class="panel-heading" style="height: 50px;">
+    <table style="width: 100%;">
+      <tr>
+        <td>
+          <h3 style="padding-bottom: 15px;color:darkslategray; height: 40px;margin-top: 0px;"><%= @section%></h3>
+        </td>
+        <td colspan="8" style="width: 60%;">
+          <div class="pull-right" style="height: 40px; margin-top: 0px;">
+
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+<table class="record" style="width: 100%; margin-top: 10px;" border="1">
+<tr>
+  <th colspan='2' style="width: 49%;" class="duplicate">
+    Duplicate Record <i style="color: #999">(<%= @potential_duplicate[:status] %>)</i>
+  </th>
+  <td rowspan="25" style="border: none;">
+    &nbsp;
+  </td>
+  <th colspan='2' style="width: 49%;" class="existing">
+    Existing Record <i style="color: #999">(<span id="status"><%= @similar_records[params[:index].to_i][:status] %></span>)</i>
+    <div style="float: right"><span id="childNumber"> <%= (params[:index].to_i + 1)%></span> / <%= @similar_records.count %></div>
+  </th>
+</tr>
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:first_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left" id="childFName">
+      <%= @similar_records[params[:index].to_i][:first_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:middle_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left" id="childOName">
+      <%= @similar_records[params[:index].to_i][:middle_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Last Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:last_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Last Name
+  </td>
+  <td align="left" id="childLName">
+    <%= @similar_records[params[:index].to_i][:last_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Birth Entry Number
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:birth_entry_number] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Birth Entry Number
+  </td>
+  <td align="left" id="dob">
+      <%= @similar_records[params[:index].to_i][:birth_entry_number] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Registration Number
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:birth_registration_number] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Registration Number
+  </td>
+  <td align="left" id="dob">
+      <%= @similar_records[params[:index].to_i][:birth_registration_number] %>
+  </td>
+</tr>
+
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Date of Birth
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:birthdate].to_time.strftime("%d/%b/%Y") %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Date of Birth
+  </td>
+  <td align="left" id="dob">
+      <%= @similar_records[params[:index].to_i][:birthdate].to_time.strftime("%d/%b/%Y") %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Gender
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:gender] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Gender
+  </td>
+  <td align="left" id="gender">
+      <%= @similar_records[params[:index].to_i][:gender] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Place of Birth
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:place_of_birth] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Place of Birth
+  </td>
+  <td align="left" id="hospital">
+      <%= @similar_records[params[:index].to_i][:place_of_birth] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Location of Birth
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:location_of_birth] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Location of Birth
+  </td>
+  <td align="left" id="hospital">
+      <%= @similar_records[params[:index].to_i][:location_of_birth] %>
+  </td>
+</tr>
+<tr>
+  <th colspan="2">Mother details and physical address</th>
+  <th colspan="2">Mother details and Physical address</th>
+</tr>
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left">
+    <%= @potential_duplicate[:mother_first_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left" id="motherFName">
+      <%= @similar_records[params[:index].to_i][:mother_first_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:mother_middle_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left" id="motherMName">
+      <%= @similar_records[params[:index].to_i][:mother_middle_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Last Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:mother_last_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Last Name
+  </td>
+  <td align="left" id="motherLName">
+      <%= @similar_records[params[:index].to_i][:mother_last_name] %>
+  </td>
+</tr>
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Village
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:mother_village] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Village
+  </td>
+  <td align="left" id="village">
+    <%= @similar_records[params[:index].to_i][:mother_village] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    T/A
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:mother_ta] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    T/A
+  </td>
+  <td align="left" id="ta">
+      <%= @similar_records[params[:index].to_i][:mother_ta] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    District
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:mother_district] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    District
+  </td>
+  <td align="left" id="district">
+      <%= @similar_records[params[:index].to_i][:mother_district] %>
+  </td>
+</tr>
+<tr>
+  <th colspan="2">Father details and physical address</th>
+  <th colspan="2">Father details and Physical address</th>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left">
+    <%= @potential_duplicate[:father_first_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    First Name
+  </td>
+  <td align="left" id="motherFName">
+      <%= @similar_records[params[:index].to_i][:father_first_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:father_middle_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Middle Name
+  </td>
+  <td align="left" id="motherMName">
+      <%= @similar_records[params[:index].to_i][:father_middle_name] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Last Name
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:father_last_name] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Mother Last Name
+  </td>
+  <td align="left" id="motherLName">
+      <%= @similar_records[params[:index].to_i][:father_last_name] %>
+  </td>
+</tr>
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Village
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:father_village] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    Village
+  </td>
+  <td align="left" id="village">
+    <%= @similar_records[params[:index].to_i][:father_village] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    T/A
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:father_ta] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    T/A
+  </td>
+  <td align="left" id="ta">
+      <%= @similar_records[params[:index].to_i][:father_ta] %>
+  </td>
+</tr>
+
+<tr>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    District
+  </td>
+  <td align="left">
+      <%= @potential_duplicate[:father_district] %>
+  </td>
+  <td align="right" style="font-size: 12px; font-weight: bold;">
+    District
+  </td>
+  <td align="left" id="district">
+      <%= @similar_records[params[:index].to_i][:father_district] %>
+  </td>
+</tr>
+<tr>
+  <th colspan="2"></th>
+  <th colspan="2"></th>
+</tr>
+</table>
+
+</div>
+<div class="modal fade" id="comments" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header btn-primary">
+        <h4 class="modal-title" id="comment-header">Record Comments</h4>
+      </div>
+      <div class="modal-body">
+
+        <div class="row">
+          <div class="col-lg-12">
+
+            <div class=" form-group">
+              <div class="container">
+                <div id="main-row" class="row" style="width: 550px;">
+
+                  <div id="comments-list">
+
+                  </div>
+
+                  <div style="width: 100%;margin-top: 20px;border-top: 1px solid #d3d3d3">
+                    <form id="comment-form" action="/ajax_save_comment">
+                      <textarea class="form-control" name="comment" placeholder="Add Comment" id="textarea" style="width: 98%;margin-top: 4px;margin-bottom: 4px;"></textarea>
+                      <select id="comment-options" style="width: 80%; " onchange="__$('textarea').value = this.value ">
+                        <option value="">Select comment from list</option>
+                        <%(@options || []).each do |opt|%>
+                            <option><%=opt[0].upcase%></option>
+                        <% end %>
+                      </select>
+                      <label id='error' style="color: red;display: none;" class="pull-left">Comment cannot blank</label>
+                      <div id='submit_btn' onclick="saveComment();" class="btn btn-sm btn-primary pull-right">Submit</div>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer" id="comment_footer">
+           
+            <button id="comment_close" type="button" class="btn btn-sm btn-default pull-left" onclick="jQuery('#comments').modal('hide')" > Cancel </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="clone_me" class="media" style="padding: 5px;display:none;border-top: 1px solid lightgrey;">
+  <div class="media-body" style="width: 550px;">
+    <h4 class="media-heading user_name"><a class="name"> <small class="role"> </small> </a> <small class="state pull-right " style="margin-right: 15px;font-style: italic; text-transform: lowercase"> HQ-OPEN</small></h4>
+    <span class="comment" style="width: 100%;"></span>
+  </div>
+</div>
+
+<style type="text/css">
+    .btn{
+      margin-right: 2%;
+    }
+</style>
+
+<script>
+    return_path = '<%= session[:list_url]%>'
+</script>
+
+<button class="btn btn-danger pull-left"
+        onclick="window.parent.location = return_path ">
+  Cancel
+</button>
+
+<button id="btnNext"
+        class="btn btn-success pull-right"
+        onclick="nextSimilar()">Next Similar Record</button>
+
+<% display = SETTINGS['enable_role_privileges'] == false ? '' : 'none'%>
+<button id="DS Resolve" class="btn btn-primary  pull-right" style="display:<%= display%>;"
+                onclick="resolveDuplicate('Confirm-duplicate')">
+          <span class="fa"></span>
+          Resolve Duplicate
+</button>
+<button id="DM Resolve" class="btn btn-primary  pull-right" style="display:<%= display%>;"
+                onclick="resolveDuplicate('Resolve');">
+          <span class="fa"></span>
+          Resolve Duplicate
+</button>
+<button id="Verify with DC"
+          class="btn btn-primary pull-right" style="display:<%= display%>;"
+          onclick="otherDuplicateProcess('Verify-DC')">Verify with DC</button>
+<button id="Void Duplicate"
+          class="btn btn-primary pull-right" style="display:<%= display%>;"
+          onclick="otherDuplicateProcess('Void-duplicate')">Void Duplicate</button>
+<button class="btn btn-primary pull-right"
+              onclick= 'ajaxPullComments("view")' >
+        <span class="fa fa-comments"></span>
+        View Comments (<%= @comments.count%>)
+</button>
+
+<script type="text/javascript">
+
+  <% (@actions || []).each do |action|
+        next if (SETTINGS['enable_role_privileges'] == false)%>
+
+        if(__$('<%= action['button_name']%>')) {
+            __$('<%= action['button_name']%>').style.display = 'table-cell';
+        }
+  <% end %>
+
+	var current_index = parseInt("<%= params[:index]%>");
+	function nextSimilar(){
+		current_index = (current_index + 1) % parseInt("<%= @similar_records.count %>");
+		var path = location.href.slice(0,location.href.length - 1) + current_index;
+		console.log(path);
+		window.location.href = path;
+	}
+
+  function otherDuplicateProcess(operation){
+      var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
+      ajaxPullComments()
+      __$("comment-header").innerHTML = operation + " : Add comment to proceed"
+      __$("submit_btn").style.display ="none";
+      var proceed = document.createElement("button");
+      if(__$("proceed")){
+          proceed = __$("proceed");
+      }else{
+          proceed.setAttribute("class","btn btn-sm btn-primary pull-right");
+          proceed.id = "proceed"
+          proceed.innerHTML ="Proceed"
+      }
+      
+      __$("comment_footer").appendChild(proceed);
+      proceed.onmousedown = function(){
+               if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&comment="+__$("textarea").value
+              window.location.href = link
+      }
+  }
+
+	function resolveDuplicate(operation){
+    var link  = "/duplicate_processing/<%=params[:person_id]%>?operation="+operation
+
+		ajaxPullComments();
+    __$("comment-header").innerHTML = operation + " : Add comment to proceed"
+    __$("submit_btn").style.display ="none"
+    var comment_footer = __$("comment_footer");
+    var noactionBTN = __$("noaction")
+    if(noactionBTN){
+
+          noactionBTN.onmousedown = function(){
+              if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+              window.location.href = link
+          }
+    }else{
+          var noactionBTN = document.createElement("button");
+          noactionBTN.id = "noaction"
+          noactionBTN.className ="btn btn-primary pull-right"
+          noactionBTN.innerHTML ="Not Duplicate"
+          comment_footer.appendChild(noactionBTN);
+          noactionBTN.onmousedown = function(){
+              if(__$("textarea").value.length ==0){
+                  __$("textarea").placeholder = "Please add comment"
+                  __$("textarea").focus();
+                   return;
+              }
+              link = link + "&decision=NOT DUPLICATE&comment="+__$("textarea").value
+              window.location.href = link
+          }
+    }
+
+    var actionBTN = __$("action");
+
+    if(actionBTN){
+        actionBTN.onmousedown = function(){
+            if(__$("textarea").value.length ==0){
+                __$("textarea").placeholder = "Please add comment"
+                __$("textarea").focus();
+                return;
+            }
+            link = link + "&decision=DUPLICATE&comment="+__$("textarea").value
+            window.location.href = link
+        }
+    }else{
+        var actionBTN = document.createElement("button");
+        actionBTN.id = "action"
+        actionBTN.className = "btn btn-danger pull-right"
+        actionBTN.innerHTML ="Duplicate"
+        actionBTN.onmousedown = function(){
+            if(__$("textarea").value.length ==0){
+                __$("textarea").placeholder = "Please add comment"
+                __$("textarea").focus();
+                return;
+            }
+            link = link + "&decision=DUPLICATE&comment="+__$("textarea").value
+            window.location.href = link
+        }
+    }
+   
+    comment_footer.appendChild(actionBTN);
+
+	}
+
+  function ajaxPullComments(mode){
+        jQuery("#comment-list").html("");
+
+        if (mode && mode == 'view'){
+            __$('textarea').value = ''
+            __$('textarea').style.display = 'none';
+            __$('comment-options').style.display = 'none';
+            __$('submit_btn').style.display = 'none';
+            __$("comment-header").innerHTML = "Record comments"
+            jQuery("#action, #noaction").hide();
+        }else{
+            __$('textarea').style.display = 'inline';
+            __$('comment-options').style.display = 'inline';
+            __$('submit_btn').style.display = 'inline';
+            __$("comment-header").innerHTML = "Add comment to proceed";
+            jQuery("#action, #noaction").show();
+        }
+
+        jQuery.ajax(
+                {
+                    url: "/get_comments?person_id=<%= params[:person_id]%>",
+                    success: function(results){
+                        results = JSON.parse(results);
+                        var parent = document.getElementById("comments-list");
+                        parent.innerHTML = "";
+                        __$('textarea').value = ''
+                        var clone = document.getElementById("clone_me");
+                        for(var i = 0; i < results.length; i++){
+                            var dup = clone.cloneNode(true);
+                            dup.id = i;
+                            dup.style.display = "block";
+                            //set values
+                            dup.getElementsByClassName("name")[0].innerHTML = results[i]['user']
+                                    + " <small class='user_role'>" + results[i]['user_role'] + " - " + results[i]['date_added'] + " </small>";
+                            dup.getElementsByClassName("state")[0].innerHTML = results[i]['status'];
+                            dup.getElementsByClassName("comment")[0].innerHTML = results[i]['comment'];
+
+                            parent.appendChild(dup);
+                        }
+                        console.log(jQuery("#comments"));
+                        jQuery("#comments").modal('show');
+
+                        parent.scrollTop = parent.scrollHeight;
+
+                    },
+                    error: function(e){
+                        alert("Something went wrong!");
+                    }
+                }
+        )
+    }
+</script>

@@ -1,3 +1,4 @@
+#Create couch DB
 
 def create_user
   puts "Creating Person Type for User"
@@ -22,13 +23,13 @@ def create_user
 
   puts "Creating Role for User"
  
-  role = Role.where(role: 'Administrator').first
+  role = Role.where(role: 'Administrator', :level => 'HQ').first
 
   puts "Creating User"
 
-  user = User.create!(username: 'admin', 
+  user = User.create!(username: "admin#{SETTINGS['location_id']}",
                       password_hash: 'adminebrs', 
-                      creator: 1, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'), 
+                      creator: User.new.next_primary_key, last_password_date: Time.now().strftime('%Y-%m-%d %H:%M:%S'),
                       person_id: core_person.person_id)
 
   puts "Creating Role for User"
@@ -39,6 +40,9 @@ def create_user
   User.current = User.first
       
   puts "Successfully created local System Administrator: your new username is: #{user.username}  and password: adminebrs"
+
+  CouchdbSequence.create!(seq: 0)
+
 end
 
 begin
@@ -54,9 +58,17 @@ begin
       require Rails.root.join('db','load_districts.rb')
       require Rails.root.join('db','load_tas_and_villages.rb')
       require Rails.root.join('db','load_health_facilities.rb')
+      require Rails.root.join('db','load_place_of_birth.rb')
       require Rails.root.join('db','load_statuses.rb')
-      create_user
+      require Rails.root.join('db','load_person_attribute_types.rb')
+      require Rails.root.join('db','load_person_identifier_types.rb')
+      require Rails.root.join('db','load_birth_registration_type.rb')
+      require Rails.root.join("db","load_trail_types.rb")
+      require Rails.root.join("db","load_notification_types.rb")
+
+      #require Rails.root.join('db','load_couch_data.rb') #This will be handled by metadata
+      #create_user
     end
-rescue => e 
+rescue => e
 	puts "Error ::::  #{e.message}  ::  #{e.backtrace.inspect}"
 end

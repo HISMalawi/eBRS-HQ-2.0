@@ -7,12 +7,12 @@ class String
     # Grab a temporary copy of the word
     word = "#{self}"    
     # Handle blanks
-    return nil if word.blank?  
+    return '' if word.blank?  
     # Capitalize all letters in the word
     word.upcase!
     # Drop all punctuation marks and numbers and spaces
     word.gsub!(/[^A-Z]/, '')    
-    return nil if word.blank?  
+    return '' if word.blank?  
     # Words starting with M or N or D followed by another consonant should drop the first letter
     word.gsub!(/^M([BDFGJKLMNPQRSTVXZ])/, '\1') 
     word.gsub!(/^N([BCDFGJKLMNPQRSTVXZ])/, '\1')
