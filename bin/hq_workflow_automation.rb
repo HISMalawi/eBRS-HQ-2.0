@@ -3,7 +3,7 @@ status_id = Status.where(name: "HQ-ACTIVE").first.id
 person_ids = PersonRecordStatus.find_by_sql("
 	 SELECT d.person_id FROM person_birth_details d
 	INNER JOIN person_record_statuses prs ON d.person_id = prs.person_id
-	WHERE prs.status_id = #{status_id} AND prs.voided = 0 AND d.district_id_number like 'NS/%'
+	WHERE prs.status_id = #{status_id} AND prs.voided = 0
 	 ").map(&:person_id).uniq
 
 puts person_ids.count
@@ -13,6 +13,13 @@ user = User.where(username: "admin279").first.id
 #raise user.inspect
 
 person_ids.each_with_index do |person_id, i|
+
+	active_statuses = PersonRecordStatus.where(person_id: person_id, voided: 0).count
+	active_statuses = active_statuses.to_i
+        
+	next if active_statuses > 1
+
+        #raise active_statuses.inspect
 
 	child = PersonBirthDetail.where(person_id: person_id).first
 	child_id = child.person_id rescue nil
@@ -67,12 +74,11 @@ person_ids.each_with_index do |person_id, i|
 	first_name_father =father_names.first_name rescue nil
 	last_name_father = father_names.last_name rescue nil
 
-########## BUILD DUPLICATE CHECKING STRING ##############################################
+############# BUILD DUPLICATE QUERY STRING
+
 	def format_person(person_id)
 		person_names = PersonName.where(person_id: person_id).first 
 		p = Person.where(person_id: person_id).first
-
-		#raise person.birthdate.inspect
 
 		mother = PersonRelationship.where(person_a: person_id, person_relationship_type_id: 5).first
 		mother_id = mother.person_b rescue nil
@@ -87,44 +93,43 @@ person_ids.each_with_index do |person_id, i|
 
 		detail = PersonBirthDetail.where(person_id: person_id).first
 
-	  	person = {}
-	  	person["id"] = person_id
-	  	person["first_name"]= person_names.first_name rescue ''
-	  	person["last_name"] =  person_names.last_name rescue ''
-	  	person["middle_name"] = person_names.middle_name rescue ''
-	  	person["gender"] = p.gender rescue ''
-	  	person["birthdate"]= p.birthdate rescue ''
-	  	person["birthdate_estimated"] = 0
-	  	person["nationality"]=  mother_nationality rescue ''
-	  	person["place_of_birth"] = Location.find(detail.place_of_birth).name rescue '' 
-	  	person["district"] = Location.find(detail.district_of_birth).name rescue ''
-	  	person["mother_first_name"]= mother_names.first_name rescue ''
-	  	person["mother_last_name"] =  mother_names.last_name rescue ''
-	  	person["mother_middle_name"] = mother_names.middle_name rescue ''
+		person = {}
+		person["id"] = person_id
+		person["first_name"]= person_names.first_name rescue ''
+		person["last_name"] =  person_names.last_name rescue ''
+		person["middle_name"] = person_names.middle_name rescue ''
+		person["gender"] = p.gender rescue ''
+		person["birthdate"]= p.birthdate rescue ''
+		person["birthdate_estimated"] = 0
+		person["nationality"]=  mother_nationality rescue ''
+		person["place_of_birth"] = Location.find(detail.place_of_birth).name rescue '' 
+		person["district"] = Location.find(detail.district_of_birth).name rescue ''
+		person["mother_first_name"]= mother_names.first_name rescue ''
+		person["mother_last_name"] =  mother_names.last_name rescue ''
+		person["mother_middle_name"] = mother_names.middle_name rescue ''
 
-	  	person["mother_home_district"] = Location.find(address.home_district).name  rescue ''
-	  	person["mother_home_ta"] = Location.find(address.home_ta).name rescue ''
-	  	person["mother_home_village"] = Location.find(address.home_village).name rescue ''
+		person["mother_home_district"] = Location.find(address.home_district).name  rescue ''
+		person["mother_home_ta"] = Location.find(address.home_ta).name rescue ''
+		person["mother_home_village"] = Location.find(address.home_village).name rescue ''
 
-	  	person["mother_current_district"] = ''
-	  	person["mother_current_ta"] = ''
-	  	person["mother_current_village"] = ''
+		person["mother_current_district"] = ''
+		person["mother_current_ta"] = ''
+		person["mother_current_village"] = ''
 
-	  	person["father_first_name"]= father_names.first_name rescue ''
-	  	person["father_last_name"] =  father_names.last_name rescue ''
-	  	person["father_middle_name"] = father_names.middle_name rescue ''
+		person["father_first_name"]= father_names.first_name rescue ''
+		person["father_last_name"] =  father_names.last_name rescue ''
+		person["father_middle_name"] = father_names.middle_name rescue ''
 
-	  	person["father_home_district"] = Location.find(father_address.home_district).name rescue ''
-	  	person["father_home_ta"] = Location.find(father_address.home_ta).name rescue ''
-	  	person["father_home_village"] = Location.find(father_address.home_village).name rescue ''
+		person["father_home_district"] = Location.find(father_address.home_district).name rescue ''
+		person["father_home_ta"] = Location.find(father_address.home_ta).name rescue ''
+		person["father_home_village"] = Location.find(father_address.home_village).name rescue ''
 
-	  	person["father_current_district"] = ''
-	  	person["father_current_ta"] = ''
-	  	person["father_current_village"] = ''
-	  	person
+		person["father_current_district"] = ''
+		person["father_current_ta"] = ''
+		person["father_current_village"] = ''
+		person
 	end
 
-	duplicate_query_string = format_person(person_id)
 
 ###################### BEGIN COMPLETENESS CHECK ####################
 
@@ -249,6 +254,9 @@ person_ids.each_with_index do |person_id, i|
 
 		puts "#{child_id}: Missing mother names"
 
+	
+		
+
 	elsif informant.blank?
 		new_status_id = Status.where(name: "HQ-INCOMPLETE").first.id
 		prs = PersonRecordStatus.where(person_id: person_id, status_id: status_id).order('created_at asc').last
@@ -285,54 +293,51 @@ person_ids.each_with_index do |person_id, i|
 
 				puts "#{child_id}: Missing father nationality"
 			end
-
-                        #next if first_name_father.blank?
-                        #next if last_name_father.blank?
-                        #next if father_address.citizenship.blank?
+			next if first_name_father.blank?
+			next if last_name_father.blank?
+			next if father_address.citizenship.blank?
 		end
-
 
 ####### End of completeness Check ###################################
 
 ##### BEGIN DUPLICATE CHECK ##################
 
-		exact_duplicates = SimpleElasticSearch.query_duplicate_coded(duplicate_query_string, 100)
-		exact_duplicates.delete_if{|e| e["_id"].to_i == person_id.to_i}
-		if exact_duplicates.length > 0
-			new_status_id = Status.where(name: "HQ-DUPLICATE").first.id
+		duplicate_query_string = format_person(person_id)
+
+		birth_type = PersonBirthDetail.where(person_id: person_id).first
+		@results = []
+
+        duplicates = SimpleElasticSearch.query_duplicate_coded(duplicate_query_string,SETTINGS['duplicate_precision'])
+        duplicates.delete_if{|e| e["_id"].to_i == person_id.to_i}
+        duplicates.each do |dup|
+
+              #Only catch for against records with BEN or Record is still at DRO although available in HQ application
+              next if PersonBirthDetail.where(" person_id = #{dup['_id']} AND district_id_number IS NULL ").present?
+              @results << dup
+        end
+
+        if @results.present? && birth_type.type_of_birth == 1
+           potential_duplicate = PotentialDuplicate.create(person_id: person_id,created_at: (Time.now))
+           if potential_duplicate.present?
+                 @results.each do |result|
+                    potential_duplicate.create_duplicate(result["_id"])
+                 end
+           end
+
+           new_status_id = Status.where(name: "HQ-POTENTIAL DUPLICATE").first.id
 			prs = PersonRecordStatus.where(person_id: person_id, status_id: status_id).order('created_at asc').last
 			prs.voided = 1
 			prs.save
 
-			new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Exact Duplicate')
+			new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Marked Duplicate by autocheck')
 			new_status.save
 
-			puts "#{child_id}: Exact Duplicate"
+			puts "#{child_id}: Marked Duplicate"
 
-	    end
+        end
 
-	    next if exact_duplicates.length > 0
-
-	    potential_duplicates = SimpleElasticSearch.query_duplicate_coded(duplicate_query_string, 80)
-	    potential_duplicates.delete_if{|e| e["_id"].to_i == person_id.to_i}
-
-	    exact_duplicates_ids = exact_duplicates.collect{|e| e["_id"]}
-    	    potential_duplicates.delete_if{|o| exact_duplicates_ids.include?(o["_id"]) }
-
-	    if potential_duplicates.length > 0
-			new_status_id = Status.where(name: "HQ-POTENTIAL DUPLICATE").first.id
-			prs = PersonRecordStatus.where(person_id: person_id, status_id: status_id).order('created_at asc').last
-			prs.voided = 1
-			prs.save
-
-			new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Potential Duplicate')
-			new_status.save
-
-			puts "#{child_id}: Potential Duplicate"
-	    end
-
-	    next if potential_duplicates.length > 0
-
+        next if @results.present?
+		
 ######### END DUPLICATE CHECK ########
 
 		if child_age >= 16
@@ -357,7 +362,7 @@ person_ids.each_with_index do |person_id, i|
 					prs.voided = 1
 					prs.save
 
-                 			new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Could not validate National ID')
+					new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Could not validate National ID')
 					new_status.save
 
 					puts "#{child_id}: Could not validate National ID"
@@ -388,7 +393,7 @@ person_ids.each_with_index do |person_id, i|
 						prs.voided = 1
 						prs.save
 
-		                                new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Check mismatching details with NRIS')
+						new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Check mismatching details with NRIS')
 						new_status.save
 
 					else
@@ -403,7 +408,7 @@ person_ids.each_with_index do |person_id, i|
 						prs.voided = 1
 						prs.save
 
-                                                new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Pushed to CAN PRINT by autocheck after validating NID')
+						new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Pushed to CAN PRINT by autocheck after validating NID')
 						new_status.save
 
 						puts "#{child_id}: pushed to CAN PRINT after validating NID"
@@ -447,7 +452,7 @@ person_ids.each_with_index do |person_id, i|
 				prs.voided = 1
 				prs.save
 
-	new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Could not generate National ID')
+				new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Could not generate National ID')
 				new_status.save				
 			end #end nid_req
 			

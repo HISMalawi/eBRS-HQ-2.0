@@ -1447,3 +1447,502 @@ Mysql2::Error: Duplicate entry '10026612738' for key 'pid_UNIQUE': INSERT INTO b
 409 Conflict >>>>>> 100251143410
 409 Conflict >>>>>> 100251143401
 409 Conflict >>>>>> 100262119528
+409 Conflict >>>>>> 10026351962
+409 Conflict >>>>>> 10026378660
+409 Conflict >>>>>> 10026352134
+409 Conflict >>>>>> 10026352134
+409 Conflict >>>>>> 10026352134
+409 Conflict >>>>>> 10026378748
+409 Conflict >>>>>> 1002769270
+409 Conflict >>>>>> 10025275725
+409 Conflict >>>>>> 10025275725
+409 Conflict >>>>>> 10025275725
+409 Conflict >>>>>> 100266150093
+409 Conflict >>>>>> 100266150093
+409 Conflict >>>>>> 100266150093
+409 Conflict >>>>>> 100266150093
+409 Conflict >>>>>> 100266150093
+409 Conflict >>>>>> 100266150099
+409 Conflict >>>>>> 100266150099
+409 Conflict >>>>>> 135285539
+Mysql2::Error: Duplicate entry '1352857050' for key 'pid_UNIQUE': INSERT INTO brn_counter(person_id) VALUES (1352857050); >>>>>> 1352857050
+409 Conflict >>>>>> 100262124240
+409 Conflict >>>>>> 1002769038
+409 Conflict >>>>>> 100260120786
+409 Conflict >>>>>> 100262137324
+409 Conflict >>>>>> 100262137324
+409 Conflict >>>>>> 100262137324
+409 Conflict >>>>>> 100260158294
+409 Conflict >>>>>> 100260158085
+409 Conflict >>>>>> 100260199578
+409 Conflict >>>>>> 100260158288
+409 Conflict >>>>>> 100260158291
+409 Conflict >>>>>> 100262115636
+409 Conflict >>>>>> 100262131596
+409 Conflict >>>>>> 100262131596
+409 Conflict >>>>>> 100262118065
+409 Conflict >>>>>> 100262124023
+409 Conflict >>>>>> 100262123679
+409 Conflict >>>>>> 100262130154
+409 Conflict >>>>>> 100260199632
+409 Conflict >>>>>> 100277114462
+409 Conflict >>>>>> 100277113226
+409 Conflict >>>>>> 10026236074
+409 Conflict >>>>>> 100260158300
+409 Conflict >>>>>> 10026695105
+409 Conflict >>>>>> 1349708998
+409 Conflict >>>>>> 100262137337
+409 Conflict >>>>>> 100251162411
+409 Conflict >>>>>> 10025384407
+409 Conflict >>>>>> 100258154577
+409 Conflict >>>>>> 100251157145
+409 Conflict >>>>>> 10025211498
+409 Conflict >>>>>> 100266123692
+409 Conflict >>>>>> 13497012687
+409 Conflict >>>>>> 100260199835
+409 Conflict >>>>>> 100258165968
+409 Conflict >>>>>> 10025639002
+409 Conflict >>>>>> 100258155687
+409 Conflict >>>>>> 10027218343
+409 Conflict >>>>>> 100258151714
+409 Conflict >>>>>> 100251162508
+409 Conflict >>>>>> 100260200766
+409 Conflict >>>>>> 100260200766
+409 Conflict >>>>>> 10026454157
+409 Conflict >>>>>> 10026457388
+409 Conflict >>>>>> 100258170713
+409 Conflict >>>>>> 100258170524
+409 Conflict >>>>>> 10025835815
+409 Conflict >>>>>> 10025835815
+409 Conflict >>>>>> 10026457408
+409 Conflict >>>>>> 10026457408
+409 Conflict >>>>>> 10026457408
+409 Conflict >>>>>> 10026294380
+409 Conflict >>>>>> 10025845791
+409 Conflict >>>>>> 100262101383
+409 Conflict >>>>>> 100262101383
+409 Conflict >>>>>> 100262101383
+409 Conflict >>>>>> 10025846353
+409 Conflict >>>>>> 100262103405
+409 Conflict >>>>>> 10025638861
+409 Conflict >>>>>> 100266191485
+409 Conflict >>>>>> 10025190300
+409 Conflict >>>>>> 10025190226
+409 Conflict >>>>>> 10025190168
+409 Conflict >>>>>> 100262102776
+409 Conflict >>>>>> 100251106843
+409 Conflict >>>>>> 10025192886
+409 Conflict >>>>>> 10025198822
+409 Conflict >>>>>> 100251106486
+409 Conflict >>>>>> 100262110247
+409 Conflict >>>>>> 100262120894
+409 Conflict >>>>>> 100258169915
+409 Conflict >>>>>> 100258169915
+409 Conflict >>>>>> 100258169550
+409 Conflict >>>>>> 100258169439
+409 Conflict >>>>>> 100258169194
+409 Conflict >>>>>> 100262156307
+409 Conflict >>>>>> 100258168971
+409 Conflict >>>>>> 100262156265
+409 Conflict >>>>>> 100262156265
+409 Conflict >>>>>> 100258168931
+409 Conflict >>>>>> 100258168922
+409 Conflict >>>>>> 100258168841
+409 Conflict >>>>>> 100258168822
+409 Conflict >>>>>> 100262126027
+409 Conflict >>>>>> 100258168726
+409 Conflict >>>>>> 100258168726
+409 Conflict >>>>>> 100258168726
+409 Conflict >>>>>> 10025569553
+409 Conflict >>>>>> 100258169527
+409 Conflict >>>>>> 100258168516
+409 Conflict >>>>>> 100258173456
+409 Conflict >>>>>> 100258173419
+409 Conflict >>>>>> 100258173419
+409 Conflict >>>>>> 100258173358
+409 Conflict >>>>>> 100258173372
+409 Conflict >>>>>> 100258173337
+409 Conflict >>>>>> 100258173312
+409 Conflict >>>>>> 100258173189
+409 Conflict >>>>>> 100258173189
+409 Conflict >>>>>> 100262111650
+409 Conflict >>>>>> 100262111650
+409 Conflict >>>>>> 100262123546
+409 Conflict >>>>>> 100262123546
+409 Conflict >>>>>> 100262123546
+409 Conflict >>>>>> 100262123546
+409 Conflict >>>>>> 10025569529
+409 Conflict >>>>>> 10025569525
+409 Conflict >>>>>> 100258180181
+409 Conflict >>>>>> 100262133085
+409 Conflict >>>>>> 100262133085
+409 Conflict >>>>>> 100262133085
+409 Conflict >>>>>> 100262131422
+409 Conflict >>>>>> 100262137829
+409 Conflict >>>>>> 100258180036
+409 Conflict >>>>>> 100258180122
+409 Conflict >>>>>> 100258180122
+409 Conflict >>>>>> 100258180122
+409 Conflict >>>>>> 100262153201
+409 Conflict >>>>>> 100262153201
+409 Conflict >>>>>> 100258179900
+409 Conflict >>>>>> 100258179848
+409 Conflict >>>>>> 100262153122
+409 Conflict >>>>>> 100258179862
+409 Conflict >>>>>> 100262153037
+409 Conflict >>>>>> 10025569497
+409 Conflict >>>>>> 100258179736
+409 Conflict >>>>>> 100258179434
+409 Conflict >>>>>> 100258179324
+409 Conflict >>>>>> 100258179324
+409 Conflict >>>>>> 100262152857
+409 Conflict >>>>>> 100262152857
+execution expired >>>>>> 100262152857
+execution expired >>>>>> 100262152857
+execution expired >>>>>> 100258179324
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100262152857
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100258179324
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100258179324
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100262152857
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100262152857
+409 Conflict >>>>>> 100262150954
+409 Conflict >>>>>> 100262150954
+409 Conflict >>>>>> 100262149385
+409 Conflict >>>>>> 100262149385
+409 Conflict >>>>>> 100262149364
+409 Conflict >>>>>> 10026387338
+409 Conflict >>>>>> 10025569485
+409 Conflict >>>>>> 10025569469
+409 Conflict >>>>>> 10025569469
+409 Conflict >>>>>> 10025569434
+409 Conflict >>>>>> 10025569437
+409 Conflict >>>>>> 10025569410
+409 Conflict >>>>>> 10026458191
+409 Conflict >>>>>> 10026458191
+409 Conflict >>>>>> 10026458165
+409 Conflict >>>>>> 10026457729
+409 Conflict >>>>>> 10026457729
+409 Conflict >>>>>> 30026929013
+409 Conflict >>>>>> 30026929025
+409 Conflict >>>>>> 30026929025
+409 Conflict >>>>>> 10026460974
+409 Conflict >>>>>> 10025638813
+409 Conflict >>>>>> 10026460972
+409 Conflict >>>>>> 10026460721
+409 Conflict >>>>>> 10026461712
+409 Conflict >>>>>> 10026461712
+409 Conflict >>>>>> 10026461712
+409 Conflict >>>>>> 10025569343
+409 Conflict >>>>>> 10025569343
+409 Conflict >>>>>> 10026461605
+409 Conflict >>>>>> 100260199463
+409 Conflict >>>>>> 100260199463
+409 Conflict >>>>>> 100260199463
+409 Conflict >>>>>> 100260199463
+409 Conflict >>>>>> 10026461297
+409 Conflict >>>>>> 100260200072
+409 Conflict >>>>>> 10026461052
+409 Conflict >>>>>> 10026463056
+409 Conflict >>>>>> 10026463056
+409 Conflict >>>>>> 10026462964
+409 Conflict >>>>>> 10026462964
+409 Conflict >>>>>> 100258178514
+409 Conflict >>>>>> 100258178287
+409 Conflict >>>>>> 100258177878
+409 Conflict >>>>>> 100258178368
+409 Conflict >>>>>> 100258175341
+409 Conflict >>>>>> 100258175847
+409 Conflict >>>>>> 100258173846
+409 Conflict >>>>>> 100258182621
+409 Conflict >>>>>> 100258173923
+409 Conflict >>>>>> 100258181607
+409 Conflict >>>>>> 100258181607
+409 Conflict >>>>>> 100258181607
+409 Conflict >>>>>> 100258181607
+409 Conflict >>>>>> 100258181607
+409 Conflict >>>>>> 100258181607
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100258181590
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100258181590
+409 Conflict >>>>>> 100258181590
+409 Conflict >>>>>> 100258181590
+409 Conflict >>>>>> 100258181590
+409 Conflict >>>>>> 100258181681
+409 Conflict >>>>>> 100258181335
+409 Conflict >>>>>> 100258171739
+409 Conflict >>>>>> 100258171896
+409 Conflict >>>>>> 100258181164
+409 Conflict >>>>>> 10025569363
+409 Conflict >>>>>> 10025569367
+409 Conflict >>>>>> 10026627408
+409 Conflict >>>>>> 10026627420
+409 Conflict >>>>>> 10026628848
+409 Conflict >>>>>> 100266119404
+409 Conflict >>>>>> 100266119404
+409 Conflict >>>>>> 100266135106
+409 Conflict >>>>>> 100266135106
+409 Conflict >>>>>> 100266119582
+409 Conflict >>>>>> 100266135694
+409 Conflict >>>>>> 100266118878
+409 Conflict >>>>>> 10026686733
+409 Conflict >>>>>> 100266136654
+409 Conflict >>>>>> 100266136654
+409 Conflict >>>>>> 100266136654
+409 Conflict >>>>>> 100266117864
+409 Conflict >>>>>> 100266139097
+409 Conflict >>>>>> 100266128021
+409 Conflict >>>>>> 100266128021
+409 Conflict >>>>>> 1347523008
+409 Conflict >>>>>> 100266128029
+409 Conflict >>>>>> 100266127998
+409 Conflict >>>>>> 100266127998
+409 Conflict >>>>>> 1347522550
+409 Conflict >>>>>> 10026848048
+409 Conflict >>>>>> 10026833235
+409 Conflict >>>>>> 10026852089
+409 Conflict >>>>>> 100260199602
+409 Conflict >>>>>> 10025569242
+409 Conflict >>>>>> 10025569242
+409 Conflict >>>>>> 10025569220
+409 Conflict >>>>>> 10025569212
+409 Conflict >>>>>> 100266129731
+409 Conflict >>>>>> 100266128813
+409 Conflict >>>>>> 100266130912
+409 Conflict >>>>>> 100266129714
+409 Conflict >>>>>> 100266129110
+409 Conflict >>>>>> 100266129110
+409 Conflict >>>>>> 10025569198
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100266133641
+409 Conflict >>>>>> 100258173272
+409 Conflict >>>>>> 10026633237
+409 Conflict >>>>>> 100266130366
+409 Conflict >>>>>> 10026633237
+execution expired >>>>>> 10026633237
+409 Conflict >>>>>> 10026633237
+409 Conflict >>>>>> 10026633237
+execution expired >>>>>> 100266130366
+execution expired >>>>>> 100266130366
+execution expired >>>>>> 10026633237
+500 Internal Server Error >>>>>> 10027611523
+execution expired >>>>>> 10026633243
+execution expired >>>>>> 10026633243
+execution expired >>>>>> 10026633243
+execution expired >>>>>> 10026633243
+execution expired >>>>>> 10026633243
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026633243
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026633243
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026633243
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026633243
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026633243
+execution expired >>>>>> 100266132103
+execution expired >>>>>> 100266132103
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266128730
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266128730
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266135108
+409 Conflict >>>>>> 100266135108
+execution expired >>>>>> 10027610261
+execution expired >>>>>> 100266136889
+execution expired >>>>>> 100266136889
+execution expired >>>>>> 100266136889
+500 Internal Server Error >>>>>> 100266136889
+execution expired >>>>>> 100266136889
+500 Internal Server Error >>>>>> 100266136889
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027610285
+execution expired >>>>>> 10025569194
+409 Conflict >>>>>> 10027611588
+409 Conflict >>>>>> 10027611588
+409 Conflict >>>>>> 10027611588
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266138448
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266138448
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266138448
+409 Conflict >>>>>> 10025018995
+409 Conflict >>>>>> 10027314084
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027325104
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027325104
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027325104
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027325104
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027325104
+409 Conflict >>>>>> 10027366295
+execution expired >>>>>> 10027366295
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027365285
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027365285
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027365285
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027365285
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 10027365012
+409 Conflict >>>>>> 10027365012
+409 Conflict >>>>>> 10027365012
+500 Internal Server Error >>>>>> 1002505917
+execution expired >>>>>> 1002505917
+execution expired >>>>>> 10027365012
+execution expired >>>>>> 1002505917
+execution expired >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 10027365012
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+execution expired >>>>>> 10027365012
+execution expired >>>>>> 1002505917
+execution expired >>>>>> 1002505917
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002505917
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002505917
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002505917
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002505917
+409 Conflict >>>>>> 1002505917
+409 Conflict >>>>>> 10027363948
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10025569190
+409 Conflict >>>>>> 100266154439
+409 Conflict >>>>>> 100258178475
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201264
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 13572620577
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 13572620577
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 13471718142
+409 Conflict >>>>>> 100260200352
+500 Internal Server Error >>>>>> 1347179620
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1347177505
+500 Internal Server Error >>>>>> 100250572860
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100250572860
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 600269951
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 600269951
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 600269951
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027114930
+409 Conflict >>>>>> 10025033524
+409 Conflict >>>>>> 1002502693
+409 Conflict >>>>>> 1002502693
+409 Conflict >>>>>> 1002502693
+409 Conflict >>>>>> 100266160662
+409 Conflict >>>>>> 100266160662
+500 Internal Server Error >>>>>> 100266160662
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266161980
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10025027815
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266161980
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266161980
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100266161980
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10025027815
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10025027815
+409 Conflict >>>>>> 1347176986
+409 Conflict >>>>>> 1347179620
+409 Conflict >>>>>> 1347179620
+409 Conflict >>>>>> 100255142
+409 Conflict >>>>>> 100266175865
+409 Conflict >>>>>> 100266173254
+409 Conflict >>>>>> 100266173254
+409 Conflict >>>>>> 100266171756
+409 Conflict >>>>>> 100266171756
+409 Conflict >>>>>> 100266170521
+409 Conflict >>>>>> 100266170521
+409 Conflict >>>>>> 100266170521
+409 Conflict >>>>>> 1356591426
+409 Conflict >>>>>> 1356591426
+409 Conflict >>>>>> 1356591426
+409 Conflict >>>>>> 1356591426
+409 Conflict >>>>>> 100266169933
+409 Conflict >>>>>> 100266169336
+409 Conflict >>>>>> 100266169336
+409 Conflict >>>>>> 100266169336
+409 Conflict >>>>>> 100266169336
+409 Conflict >>>>>> 100266169336
+409 Conflict >>>>>> 10027515197
+409 Conflict >>>>>> 100266166408
+500 Internal Server Error >>>>>> 10026812501
+409 Conflict >>>>>> 1002683113
+409 Conflict >>>>>> 1002688633
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027217464
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260200234
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10027217183
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688653
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688653
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688653
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688653
+execution expired >>>>>> 1002688914
+execution expired >>>>>> 1002688914
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688914
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688914
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688914
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688914
+409 Conflict >>>>>> 1002688421
+execution expired >>>>>> 100260199593
+execution expired >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260199593
+Mysql2::Error: Duplicate entry '100260199166' for key 'pid_UNIQUE': INSERT INTO brn_counter(person_id) VALUES (100260199166); >>>>>> 100260199166
+Mysql2::Error: Duplicate entry '100260199166' for key 'pid_UNIQUE': INSERT INTO brn_counter(person_id) VALUES (100260199166); >>>>>> 100260199166
+409 Conflict >>>>>> 100260199166
+execution expired >>>>>> 100260199166
+execution expired >>>>>> 100260199166
+execution expired >>>>>> 100260199166
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100251144597
+execution expired >>>>>> 10026049051
+execution expired >>>>>> 10026049051
+409 Conflict >>>>>> 10026049051
+409 Conflict >>>>>> 10026049051
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10025037620
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002682971
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688400
+execution expired >>>>>> 10026841065
+execution expired >>>>>> 10026841065
+execution expired >>>>>> 10026037664
+execution expired >>>>>> 10026037664
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688665
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688665
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688665
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 1002688665
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026844183
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026844183
+409 Conflict >>>>>> 10025170334
+execution expired >>>>>> 1357264856
+execution expired >>>>>> 1002502001
+execution expired >>>>>> 100261133647
+execution expired >>>>>> 100261133647
+execution expired >>>>>> 10026839106
+execution expired >>>>>> 10026839106
+execution expired >>>>>> 10026839106
+execution expired >>>>>> 10026839106
+execution expired >>>>>> 10026810643
+409 Conflict >>>>>> 10026810643
+409 Conflict >>>>>> 10026810643
+execution expired >>>>>> 10026810589
+execution expired >>>>>> 10026810589
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 10026810589
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030
+Connection refused - Connection refused - connect(2) for "localhost" port 5900 (localhost:5900) >>>>>> 100260201030

@@ -1091,7 +1091,7 @@ EOF
     @tasks = [
               ["Active Records" ,"Record newly arrived from DC", ["HQ-ACTIVE"],"/person/view_active_cases","/assets/folder3.png"],
               ["Approve for Printing", "Approve for Printing" , ["HQ-COMPLETE", "HQ-CONFLICT"],"/person/view","/assets/folder3.png", 'Data Manager'],
-              ["Incomplete Records from DV","Incomplete records from DV" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
+              ["Incomplete Records","Incomplete records" , ["HQ-INCOMPLETE"],"/person/view","/assets/folder3.png"],
               ["Above 16 (Abroad)","Above 16 (Abroad)" , ["HQ-COMPLETE"],"/person/view","/assets/folder3.png"],
               ["View Printed Records", "Printed records", ["HQ-PRINTED", "DC-PRINTED"],"/person/printed_cases","/assets/folder3.png"],
               ["Dispatched Records", "Dispatched records" , ["HQ-DISPATCHED"],"/person/view","/assets/folder3.png"]
@@ -1552,6 +1552,7 @@ EOF
 
 
     person_name = PersonName.find_by_person_id(id)
+    #raise person_name.inspect
     person = Person.find(id)
 
     core_person = CorePerson.find(id)
@@ -2088,7 +2089,7 @@ EOF
         ['To be Approved by DM (HQ)', (stats['HQ-COMPLETE'] + stats['HQ-CONFLICT'])],
         ['Suspected Duplicate (HQ)', stats['HQ-POTENTIAL DUPLICATE']],
         ['Incomplete Record (HQ)', stats['HQ-INCOMPLETE']],
-        ['Printed (HQ)', stats['HQ-PRINTED']],
+        ['Printed', stats['HQ-PRINTED'] + stats['DC-PRINTED'], + stats['HQ-DISPATCHED']],
         ['Dispatched(HQ)', stats['HQ-DISPATCHED']],
         ['Amendment Request (HQ)', stats['HQ-AMEND']],
     ]
