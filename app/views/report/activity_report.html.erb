@@ -1,0 +1,204 @@
+
+<style>
+
+.callout {
+  border-left: 5px solid #eee;
+  border-radius: 3px;
+  margin: 0 0 20px;
+  padding: 15px 30px 15px 15px;
+}
+
+.callout .callout-info {
+  border-color: #0097bc;
+}
+
+.callout-info {
+  background-color: #00c0ef;
+}
+
+.search-params {
+  margin-bottom: 50px;
+  text-align: right;
+  padding-right: 10px;
+  border-width: 0px 0px 0px 0px;
+  border-style: solid;
+}
+
+.dates {
+}
+#report tr{
+    background: white;
+}
+.ui-icon-circle-triangle-e {
+  display: none;
+}
+
+.numbers {
+  text-align: right; 
+  padding-right: 30px;
+}
+#report th{
+    background: lightsteelblue;
+    text-align: left;
+    padding-left: 50px;
+    color: darkslategray;
+}
+
+#report td{
+    font-size: 1.1em;
+    font-weight: bold;
+    border-top: none;
+    border-left: none;
+    text-align: left;
+    padding-left: 50px;
+    color: darkslategray;
+}
+
+</style>
+
+<%#=stylesheet_link_tag "datepicker/wickedpicker" %>
+<%#=stylesheet_link_tag "datepicker/prettify" %>
+<%#=stylesheet_link_tag "datepicker/base" %>
+<%#=stylesheet_link_tag "datepicker/datepicker" %>
+
+
+<%=stylesheet_link_tag "datepicker/jquery.ui.theme" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.datepicker" %>
+<%=stylesheet_link_tag "datepicker/jquery.ui.accordion" %>
+
+<%#=stylesheet_link_tag "datepicker/datepicker-2.0" %>
+
+<%=javascript_include_tag "datepicker/moment" %>
+<%=javascript_include_tag "datepicker/datepicker" %>
+<%#=javascript_include_tag "datepicker/bootstrap-datepicker" %>
+
+<%=javascript_include_tag "datatables/prototype" %>
+<%=javascript_include_tag "datatables/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/dataTables.bootstrap" %>
+<%= stylesheet_link_tag "datatables/jquery.dataTables.min" %>
+<%= stylesheet_link_tag "datatables/buttons.dataTables.min" %>
+
+
+<%=javascript_include_tag "datatables/downloadable/jquery.dataTables.min" %>
+<%=javascript_include_tag "datatables/downloadable/dataTables.buttons.min" %>
+<%=javascript_include_tag "datatables/downloadable/jszip.min" %>
+<%=javascript_include_tag "datatables/downloadable/pdfmake.min" %>
+<%=javascript_include_tag "datatables/downloadable/vfs_fonts" %>
+<%=javascript_include_tag "datatables/downloadable/buttons.html5.min" %>
+<script>
+var datatable;
+function dataT(){          
+  dataTable = jQuery('#report').dataTable({
+      dom: 'Bfrtip',
+      buttons: [
+          'excelHtml5',
+          'csvHtml5'
+      ],
+      "pageLength": 50,
+      "processing": true,
+       "columnDefs": [
+         { className: "numbers", "targets": [ 1 ] }
+       ]
+    });
+}
+
+
+function addRows(data) {
+  var records = JSON.parse(data);
+  for (category in records) {
+
+    var count  =  records[category];
+    var category = eval(category);
+
+    dataTable.api().row.add([category[0], category[1], count]).draw();
+  }
+}
+
+function fetchData() {
+    dataTable.fnClearTable();
+    var start_date  = document.getElementById('start_date').value.replace(/\//g, '-');
+    var end_date    = document.getElementById('end_date').value.replace(/\//g, '-');
+    var location_id = document.getElementById('selected_dc').value;
+
+    jQuery.ajax(
+          {
+              url: "/report/general_report_query?district_id=" + __$("selected_dc").value + "&start_date=" + __$("start_date").value + "&end_date=" + __$("end_date").value,
+              success: function(results){
+                addRows(results);
+              }
+          }
+    )
+}
+
+</script>
+
+<h3>Registered Births</h3>
+
+<div class="callout callout-info" style="margin: 10px;">
+  <p>To view data, first select the&nbsp;<b>district</b>.</p>
+  <p>Then Select:&nbsp;<b>Start date</b>.</p>
+  <p>Then select:&nbsp;<b>End date</b>.</p>
+  <p>
+    <p><b><span style="color: red;">*</span>Start date should never be greater than End date</b></p>
+  </p>
+</div>
+
+<div class="search-params">
+  <label>Select district:</label>
+  <select id="selected_dc" style="margin-right: 10%;">
+    <option value="">All Districts</option>
+    <%(@districts || []).each do |district|%>
+      <option value="<%=district.id%>"><%=district.name%></option>
+    <%end%>
+  </select>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>start date</b>:</label>
+  <input type="text" id="start_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  <label>Select <b>end date</b>:</label>
+  <input type="text" id="end_date" 
+    data-date-format="dd/mm//yyyy" onkeypress="return false;"  
+    value="<%=Date.today.strftime('%d/%m/%Y') rescue nil%>" 
+    class = "dates date" />
+    <i class="fa fa-calendar"></i>
+  &nbsp;
+  &nbsp;
+  &nbsp;
+  <input type='button' class='btn btn-success' value='Fetch data' onclick="fetchData();" />
+</div>
+
+<table style="width:95%;margin: auto;" id="report" class="table table-striped table-advance table-hover table-condensed table-bordered">
+  <thead>
+    <tr>
+      <th style="width: 3%;">#</th>
+      <th style="width: 37%;">Category</th>
+      <th class="numbers">Count</th>
+    </tr>
+  </thead>
+  </tbody>
+  </tbody>
+</table>
+
+<script>
+
+
+function activeDate() {
+  jQuery(function() {
+    jQuery( "#start_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+  });
+
+  jQuery(function() {
+    jQuery( "#end_date" ).datepicker({ dateFormat: 'dd/mm/yy' });
+  }); 
+
+}
+
+activeDate();
+dataT();
+</script>

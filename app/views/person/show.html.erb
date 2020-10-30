@@ -585,11 +585,12 @@
           </table>
         </span>
 
+
         <% unless User.current.user_role.role.role == "Data Manager" && ["HQ-COMPLETE", "HQ-CONFLICT"].include?(@status) %>
             <div class="modal-footer">
               <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Close</button>
-              <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-COMPLETE')">Complete</button>
-              <button type="button" class="btn btn-danger" onclick="ajaxPullComments()" >Incomplete</button>
+              <button type="button" class="btn btn-primary" onclick="ajaxPullComments(null, 'HQ-CAN-PRINT')">Complete</button>
+              <button type="button" class="btn btn-danger" onclick="ajaxPullComments(null, 'HQ-REJECTED')" >Incomplete</button>
             </div>
         <% else %>
             <div class="modal-footer">
@@ -940,6 +941,7 @@
             }
         })
     }
+  
 
     function reSync(){
 
@@ -1007,6 +1009,10 @@
     function ajaxPullComments(mode, status){
         var role = '<%= User.current.user_role.role.role%>';
 
+        // alert(status);
+
+        // return;
+
         if(role == "Data Checking Clerk" && status == "HQ-COMPLETE"){
             ajaxify(status);
             return;
@@ -1033,6 +1039,8 @@
         }
 
         if(status && status.toLowerCase().match('complete')){
+            jQuery("#comments").attr('next_status', status)
+        }else if(status && status.length > 0){
             jQuery("#comments").attr('next_status', status)
         }else{
             jQuery("#comments").attr('next_status', '')

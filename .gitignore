@@ -30,3 +30,4 @@ public/errors/*
 public/sites/*.yml
 public/query.sql
 public/*.pdf
+public/uploads/signature.png
