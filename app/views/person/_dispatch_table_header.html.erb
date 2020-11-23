@@ -1,0 +1,84 @@
+<style>
+#logo {
+	padding-right: 10px;
+}
+.header{
+	page-break-before: always;
+}
+.header th  {
+	text-align: left;
+}
+
+.datatable , .datatable th, .datatable td {
+	border-collapse: collapse;
+	border: 1px solid gray;
+}
+
+.datatable td {
+	margin-left: 5px;
+	margin-right: 5px;
+	padding-left: 10px;
+	padding-right: 10px;
+
+}
+
+
+.datatable thead {display: table-header-group;}
+
+tr { page-break-inside: avoid; }
+
+table, tr, td, th, tbody, thead, tfoot, td div {
+    page-break-inside: avoid !important;
+}
+
+</style>
+<div class="header" style="page-break-before: always;">
+<h5>NRB Printed Certificates List</h5>
+    <table>
+    <tr>
+    <td rowspan="5" colspan="4" id="logo">
+        <img src="/assets/coa.png" height="60">
+
+    </td>
+    </tr>
+    
+    <tr><th>District:</th>
+        <td colspan="3" style="min-width: 100px;"><%= @district %></td>
+    </tr>
+    <tr><th>TA:</th>
+        <td colspan="3" style="min-width: 100px;"><%= @ta %></td>
+    </tr>
+    <tr><th>Village:</th>
+        <td colspan="3" style="min-width: 100px;"><%= @village %></td>
+    </tr>				
+    <tr><th>Printed On:</th>
+        <td colspan="3"><%= Date.today.strftime("%d %b %Y") %></td>
+    </tr>
+    </table>
+</div>
+<br/>
+<br/>
+
+<table class="datatable" style="width: 100%;">
+<thead>
+    <tr>
+            <th rowspan="2" width="5">#</th>
+            <th rowspan="2" width="100">Name</th>
+            <th rowspan="2" width="80">DoB</th>
+            <th rowspan="2" >Sex</th>
+            <th rowspan="2" >Place of Birth</th>
+            <th rowspan="2">Location</th>
+            <th rowspan="2"> Name of Mother </th>
+            <th colspan="1">Informant</th>
+            <th colspan="5" width="500">Collected By</th>
+    </tr>
+    <tr>
+            <th>Name</th>
+            <th width="130">Name</th>
+            <th width="80">ID Number<br/>(Type-Number)</th>
+            <th width="80">Phone Number</th>
+            <th width="80">Sig.</th>
+            <th width="80">Date</th>
+            
+    </tr>
+</thead>
