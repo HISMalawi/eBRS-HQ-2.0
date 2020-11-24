@@ -1641,6 +1641,7 @@ EOF
                   DATE_FORMAT(birthdate,'%Y-%m-%d') as DoB, place_of_birth.name as PoB, 
                   CONCAT(birth_location.name, ',', district_of_birth.name) as Location, 
                   DATE_FORMAT(person_birth_details.date_registered,'%Y-%m-%d') as DateOfReg,
+                  RecordStatus,
                   CONCAT( MotherFirstName, ' ', MotherLastName) as NameOfMother, 
                   CONCAT( InformantFirstName, ' ', InformantLastName) as NameOfInformant,
                   person_addresses_id, 
@@ -1655,9 +1656,8 @@ EOF
                                           FROM person_relationship INNER JOIN person_name 
                                                 ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '5' AND 
                                                 person_a IN('#{params[:person_ids].join("','")}')) mcr ) mother
-                            INNER JOIN (SELECT person_id FROM person_record_statuses 
-                                WHERE status_id IN (SELECT status_id FROM `statuses` 
-                                                        WHERE `name` = 'DC-PRINTED' OR `name` = 'HQ-PRINTED')) status 
+                            INNER JOIN (SELECT person_id, name as RecordStatus FROM person_record_statuses prs  INNER JOIN statuses s ON prs.status_id = s.status_id
+                                WHERE prs.voided = 0 AND person_id IN('#{params[:person_ids].join("','")}') ORDER BY prs.created_at DESC) status 
                             INNER JOIN (SELECT * FROM (SElECT person_a, person_b, person_name.first_name as InformantFirstName, person_name.last_name as InformantLastName
                                         FROM person_relationship INNER JOIN person_name 
                                               ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '4' AND 
