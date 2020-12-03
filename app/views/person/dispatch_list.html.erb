@@ -1,38 +1,46 @@
-<!doctype html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dispatch Page</title>
+</head>
 <style>
 
 body {
 	-moz-user-select: none;
 	font-family: "Nimbus Sans L", "Arial Narrow", sans-serif;
-	margin-left: 25px;
-	margin-right: 20px;
 	color: #000;
-	font-size: 10px;
+	font-size: 20px;
 }
 
 #logo {
 	padding-right: 10px;
 }
-
-#header th  {
+.header{
+	page-break-before: always;
+}
+.header th  {
 	text-align: left;
 }
+.datatable{
 
-#datatable , #datatable th, #datatable td {
+}
+.datatable{
+	width: 100%;
+}
+.datatable , .datatable th, .datatable td {
 	border-collapse: collapse;
 	border: 1px solid gray;
 }
 
-#datatable td {
+.datatable td {
 	margin-left: 5px;
 	margin-right: 5px;
-	padding-left: 5px;
-	padding-right: 5px;
+	padding: 0.8em;
 
 }
 
 
-#datatable thead {display: table-header-group;}
+.datatable thead {display: table-header-group;}
 
 tr { page-break-inside: avoid; }
 
@@ -45,119 +53,135 @@ table, tr, td, th, tbody, thead, tfoot, td div {
 
 </style>
 
-<div id="header">
-  <h5>NRB Printed Certificates List</h5>
-  <table>
-   <tr>
-     <td rowspan="4" colspan="4" id="logo">
-     	<img src="/assets/coa.png" height="60">
+<body>
 
-     </td>
-   </tr>
-  
-   <tr><th>District:</th>
-       <td colspan="3" style="min-width: 100px;"><%= @district.name rescue "All" %></td>
-   </tr>
+	<%
+		@dpage = ["","",""]
+		@i = 1
+		@j = 1
+		@district_change = false
+		@ta_change = false
+		@village_change = false
+		@ids = []
+	%>
+	<% @data["data"].each do |row| %>
 
-   <tr><th>Printed On:</th>
-       <td colspan="3"><%= Date.today.strftime("%d %b %Y") %></td>
-   </tr>
-  </table>
-</div>
-<br/>
-<br/>
-<div id="content" style="width: 99%;" >
-	<table id="datatable" style="width: 100%;">
-		<thead>
+		<% @district = row['DistrictOfInformant'] %>
+	
+		<%
+			log = "#{Rails.root}/tmp/dispatch-#{Dir["#{Rails.root}/tmp/*"].count + 1}.txt"
+			#`echo "#{row["person_id"]}" >> #{log}`
+		%>
+		<%  @village = row["VillageOfInformant"]
+
+			@ta = row["TraditionalAuthorityOfInformant"]
+			
+		%>
+
+		<% if @village != @dpage[2] || @village.blank? && @ta != @dpage[1] %>
+		<div class="header" style="page-break-before: always;">
+		<h4>NRB eBRS Records List</h4>
+			<table>
 			<tr>
-				<th rowspan="2" width="5">#</th>
-				<th rowspan="2" width="100">Name</th>
-				<th rowspan="2" width="80">DoB</th>
-				<th rowspan="2" >Sex</th>
-				<th rowspan="2" >Place of Birth</th>
-				<th rowspan="2">Location</th>
-				<th rowspan="2"> Name of Mother </th>
-				<th colspan="4">Informant</th>
-				<th colspan="5" width="500">Collected By</th>
-		</tr>
-		<tr>
-				<th>Name</th>
-				<th>District</th>
-				<th>TA</th>
-				<th>Village</th>
-				<th width="130">Name</th>
-				<th width="80">ID Number<br/>(Type-Number)</th>
-				<th width="80">Phone Number</th>
-				<th width="80">Sig.</th>
-				<th width="80">Date</th>
-				
-		</tr>
-		</thead>
-	<tbody>
-		<% @data["data"].each_with_index do |row, i| %>
-			<% #PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "Dispatched at HQ")%>
-			<%
-				log = "#{Rails.root}/tmp/dispatch-#{Dir["#{Rails.root}/tmp/*"].count + 1}.txt"
-				`echo "#{row["person_id"]}" >> #{log}`
-			%>
-			<%  @village = row["VillageOfInformant"]
-				if row["VillageOfInformant"] =="Other"
-					@address = PersonAddress.find(row["person_addresses_id"])
-					@village = @address.current_village_other
-				end 
-				@ta = row["TraditionalAuthorityOfInformant"]
-				if row["TraditionalAuthorityOfInformant"] =="Other"
-					@address = PersonAddress.find(row["person_addresses_id"])
-					@ta = @address.current_ta_other
-				end 
-				mother_query = "SElECT person_a, person_b, person_name.first_name as MotherFirstName, person_name.last_name as MotherLastName
-				FROM person_relationship INNER JOIN person_name ON  person_relationship.person_b = person_name.person_id 
-				WHERE person_relationship_type_id = '5' AND  person_a = '#{row['person_id']}'"
-  
-				mother = ActiveRecord::Base.connection.select_all(mother_query ).as_json.first
-			%>
-			<tr>
-				<td style="text-align:right">
-					<%= i + 1 %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['Name'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['DoB'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['Sex'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['PoB'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['Location'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= "#{mother['MotherFirstName']} #{mother['MotherLastName']}" %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['NameOfInformant'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= row['DistrictOfInformant'] %>
-				</td>
-				<td style="text-align:center" >
-					<%= @ta %>
-				</td>
-				<td style="text-align:center" >
-					<%= @village %>
-				</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
+			<td rowspan="5" colspan="4" id="logo">
+				<img src="/assets/coa.png" height="60">
+		
+			</td>
 			</tr>
+			
+			<tr><th>District:</th>
+				<td colspan="3" style="min-width: 100px;"><%= @district %></td>
+			</tr>
+			<tr><th>TA:</th>
+				<td colspan="3" style="min-width: 100px;"><%= @ta %></td>
+			</tr>
+			<tr><th>Village:</th>
+				<td colspan="3" style="min-width: 100px;"><%= @village %></td>
+			</tr>				
+			<tr><th>Printed On:</th>
+				<td colspan="3"><%= Date.today.strftime("%d %b %Y") %></td>
+			</tr>
+			</table>
+		</div>
+		<br/>
+		<br/>
+		
+		<table class="datatable" style="width: 100%;">
+			<thead>
+				<tr>
+						<th rowspan="2" width="5">#</th>
+						<th rowspan="2" width="100">Name</th>
+						<th rowspan="2" width="130">DoB</th>
+						<th rowspan="2" width="50">Sex</th>
+						<th rowspan="2" width="80">Place of Birth</th>
+						<th rowspan="2" >Location</th>
+						<th rowspan="2" >Status</th>
+						<th rowspan="2"> Name of Mother </th>
+						<th rowspan="2">Informant Name</th>
+						<th colspan="5" width="600">Collected By</th>
+				</tr>
+				<tr>
+						<th width="200">Name</th>
+						<th width="100">ID Number<br/>(Type-Number)</th>
+						<th width="100">Phone Number</th>
+						<th width="100">Sig.</th>
+						<th width="100">Date</th>
+						
+				</tr>
+			</thead>
+		<% else %>
+		   
 		<% end %>
+		<% @dpage = [@district,@ta,@village] %>
+			<% if !@ids.include?(row['person_id']) %>
+				<tr>
+					<td style="text-align:right">
+						<%= @j%>
+					</td>
+					<td style="text-align:center" >
+						<%= row['Name'] %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['DoB'].to_time.strftime("%d/%b/%Y") %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['Sex'] %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['PoB'] %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['Location'] %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['RecordStatus'] %>
+					</td>
+					<td style="text-align:center" >
+						<%=  row['NameOfMother'] %>
+					</td>
+					<td style="text-align:center" >
+						<%= row['NameOfInformant'] %>
+					</td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+					<td></td>
+				</tr>
+			<%
+					@j = @j + 1
+					@ids << row['person_id']
+			end%>
 
-	 </tbody>
-	</table>
-</div>
+		<% if @data["data"][@i].present? && @village != @data["data"][@i]['VillageOfInformant'] || @data["data"].length == @i || @data["data"][@i].present? && @village.blank? && @ta != @data["data"][@i]['TraditionalAuthorityOfInformant'] %>
+			</table>
+			<% @j = 1 %>
+		<%end%>
+		<% 
+			@i = @i + 1
+			
+		%>
+	<% end %>
+
+</body>
+</html>

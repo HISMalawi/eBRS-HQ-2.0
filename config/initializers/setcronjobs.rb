@@ -10,7 +10,7 @@ end
 app_root = Rails.root
 
 entries_to_add = [		
-					"*/15 * * * * bash -l -c 'cd #{app_root} && bundle exec rails r bin/generate_stats.rb'"
+					"0 * * * * bash -l -c 'cd #{app_root} && bundle exec rails r bin/generate_stats.rb'"
 				]
 
 entries_to_add.each do |entry|
