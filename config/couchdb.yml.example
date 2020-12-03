@@ -14,3 +14,12 @@ production:
   <<: *development
   protocol: 'http'
   suffix: hq_production
+
+npid_migration:
+  <<: *development
+  prefix: ebrs_hq
+  suffix:
+  host: 192.168.48.2
+  port: 5900
+  username: admin
+  password: password

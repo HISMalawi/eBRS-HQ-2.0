@@ -1631,11 +1631,18 @@ EOF
 
   def dispatch_certificates  
     #raise params.inspect
+    mother_query = "(SELECT * FROM (SElECT person_a, person_b, person_name.first_name as MotherFirstName, person_name.last_name as MotherLastName
+    FROM person_relationship INNER JOIN person_name 
+          ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '5' AND 
+          person_a IN('#{params[:person_ids].join("','")}')) mcr ) mother"
+    #raise mother_query.to_s
     query = "SELECT person.person_id,person_birth_details.district_id_number as BEN, 
                   CONCAT(first_name,' ', last_name) as Name , gender as Sex, 
                   DATE_FORMAT(birthdate,'%Y-%m-%d') as DoB, place_of_birth.name as PoB, 
                   CONCAT(birth_location.name, ',', district_of_birth.name) as Location, 
-                  DATE_FORMAT(person_birth_details.date_registered,'%Y-%m-%d') as DateOfReg, 
+                  DATE_FORMAT(person_birth_details.date_registered,'%Y-%m-%d') as DateOfReg,
+                  RecordStatus,
+                  CONCAT( MotherFirstName, ' ', MotherLastName) as NameOfMother, 
                   CONCAT( InformantFirstName, ' ', InformantLastName) as NameOfInformant,
                   person_addresses_id, 
                   district as DistrictOfInformant, ta as TraditionalAuthorityOfInformant, 
@@ -1645,9 +1652,12 @@ EOF
                             INNER JOIN person_name INNER JOIN person_birth_details INNER 
                             JOIN location place_of_birth INNER JOIN location district_of_birth 
                             INNER JOIN location birth_location 
-                            INNER JOIN (SELECT person_id FROM person_record_statuses 
-                                WHERE status_id IN (SELECT status_id FROM `statuses` 
-                                                        WHERE `name` = 'DC-PRINTED' OR `name` = 'HQ-PRINTED')) status 
+                            INNER JOIN (SELECT * FROM (SElECT person_a, person_b, person_name.first_name as MotherFirstName, person_name.last_name as MotherLastName
+                                          FROM person_relationship INNER JOIN person_name 
+                                                ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '5' AND 
+                                                person_a IN('#{params[:person_ids].join("','")}')) mcr ) mother
+                            INNER JOIN (SELECT person_id, name as RecordStatus FROM person_record_statuses prs  INNER JOIN statuses s ON prs.status_id = s.status_id
+                                WHERE prs.voided = 0 AND person_id IN('#{params[:person_ids].join("','")}') ORDER BY prs.created_at DESC) status 
                             INNER JOIN (SELECT * FROM (SElECT person_a, person_b, person_name.first_name as InformantFirstName, person_name.last_name as InformantLastName
                                         FROM person_relationship INNER JOIN person_name 
                                               ON  person_relationship.person_b = person_name.person_id WHERE person_relationship_type_id = '4' AND 
@@ -1681,6 +1691,8 @@ EOF
                     AND person_birth_details.place_of_birth = place_of_birth.location_id 
                     AND person_birth_details.district_of_birth = district_of_birth.location_id 
                     AND person_birth_details.birth_location_id = birth_location.location_id 
+                    AND mother.person_a = person.person_id
+                    WHERE person_name.voided = 0
                     ORDER BY district, ta, village, person_name.last_name, person_name.first_name LIMIT 20000"
     #raise query.to_s
     @data = ActiveRecord::Base.connection.select_all(query).as_json
@@ -1702,17 +1714,12 @@ EOF
             ta = address.current_ta_other
           end
 
-          mother_query = "SElECT person_a, person_b, person_name.first_name as MotherFirstName, person_name.last_name as MotherLastName
-                      FROM person_relationship INNER JOIN person_name ON  person_relationship.person_b = person_name.person_id 
-                      WHERE person_relationship_type_id = '5' AND  person_a = '#{row['person_id']}'"
-        
-          mother = ActiveRecord::Base.connection.select_all(mother_query ).as_json.first
           
-          write_csv(dispatch_file,"content", [row["Name"],	row["Sex"], row["DoB"], row["PoB"], row["Location"], "#{mother['MotherFirstName']} #{mother['MotherLastName']}", row["NameOfInformant"], row["DistrictOfInformant"], ta, village,"","","","", ""])
+          write_csv(dispatch_file,"content", [row["Name"],	row["Sex"], row["DoB"], row["PoB"], row["Location"],  row["NameOfMother"], row["NameOfInformant"], row["DistrictOfInformant"], ta, village,"","","","", ""])
           
           log = "#{Rails.root}/tmp/dispatch-#{Dir["#{Rails.root}/tmp/*"].count + 1}.txt"
-          `echo "\n" >> #{log}`
-          `echo "#{row["person_id"]}" >> #{log}`
+          #`echo "\n" >> #{log}`
+          #`echo "#{row["person_id"]}" >> #{log}`
   
           #PersonRecordStatus.new_record_state(row["person_id"], "HQ-DISPATCHED", "DC-DISPATCHED")
         end
@@ -1729,7 +1736,7 @@ EOF
         dispatch_file = "#{Rails.root}/tmp/Dispatch.pdf"
         #print_url = "wkhtmltopdf 	--orientation landscape --zoom 0.75 --page-size A4 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id} #{path}.pdf\n"
         dispatch_url = "wkhtmltopdf  -O landscape --zoom 0.75 #{SETTINGS["protocol"]}://#{request.env["SERVER_NAME"]}:#{request.env["SERVER_PORT"]}/person/dispatch_list?user_id=#{User.current.id} #{dispatch_file}\n"
-     
+        #raise dispatch_url.to_s
         Kernel.system dispatch_url
         send_file(dispatch_file, :filename => "Dispatch #{Time.now}.pdf", :disposition => 'inline', type: 'application/pdf')
         #render :text => @data.to_json
