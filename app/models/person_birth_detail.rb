@@ -197,22 +197,23 @@ class PersonBirthDetail < ActiveRecord::Base
 			end 
 
 			if self.national_serial_number.blank? 
-				counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id}").as_json['counter'] rescue nil
-				if counter.blank? 
-					missing_brn = nil #PersonBirthDetail.next_missing_brn
+				# counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id}").as_json['counter'] rescue nil
+				# if counter.blank? 
+				# 	missing_brn = nil #PersonBirthDetail.next_missing_brn
+				# 	if !missing_brn.blank?
+				# 		ActiveRecord::Base.connection.execute("DELETE FROM brn_counter WHERE counter = #{missing_brn.to_i};")
+				# 		ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(counter, person_id) VALUES (#{missing_brn.to_i}, #{self.person_id});")
+				# 	else
+				# 		ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(person_id) VALUES (#{self.person_id});")
+				# 	end 
+				# 	counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id};").as_json['counter']
 
-					if !missing_brn.blank?
-						ActiveRecord::Base.connection.execute("DELETE FROM brn_counter WHERE counter = #{missing_brn.to_i};")
-						ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(counter, person_id) VALUES (#{missing_brn.to_i}, #{self.person_id});")
-					else
-						ActiveRecord::Base.connection.execute("INSERT INTO brn_counter(person_id) VALUES (#{self.person_id});")
-					end 
+				# end
+        params = PushToRemote.format_for_birth(pid['person_id'])
+        person = Person.find(pid['person_id'])
+        response = PushToRemote.to_central(person, params)
 
-					counter = ActiveRecord::Base.connection.select_one("SELECT counter FROM brn_counter WHERE person_id = #{self.person_id};").as_json['counter']
-
-				end
-
-				brn = counter
+				brn = response["birth_registration_number"]
 				puts brn
 				self.update_attributes(national_serial_number: brn)
 			end
