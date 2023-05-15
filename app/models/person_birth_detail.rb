@@ -210,6 +210,7 @@ class PersonBirthDetail < ActiveRecord::Base
 
 				# end
         params = PushToRemote.format_for_birth(pid['person_id'])
+        params[:assign_brn] = true
         person = Person.find(pid['person_id'])
         response = PushToRemote.to_central(person, params)
 
