@@ -443,6 +443,10 @@ person_ids.each_with_index do |person_id, i|
 				new_status = PersonRecordStatus.new(status_id: new_status_id, person_id: person_id, creator: user, voided: 0, void_reason: nil, voided_by: nil, date_voided: nil, comments: 'Pushed to CAN PRINT after generating NID')
 				new_status.save
 
+				params = PushToRemote.format_for_birth(person_id)
+				person = Person.find(person_id)
+				response = PushToRemote.to_central(person, params)
+
 				puts "#{child_id}:  ## #{new_nid} pushed to CAN PRINT by autocheck"
 
 
